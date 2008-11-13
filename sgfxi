@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.1
+####  version: 4.0.2
 ####  Date: November 13 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -47,8 +47,9 @@
 ####  smxi supports advanced testing triggers to do various things, using -! <arg>
 ####  -! 1 - triggers default B_TESTING_1='true' to trigger some test or other
 ####  -! 2 - triggers default B_TESTING_2='true' to trigger some test or other
-####  -! 3 - triggers B_TESTING_1='true' and B_TESTING_2='true'
-####  -! 4 - triggers B_TESTING_1='true' and B_SKIP_FUNCTION='true'
+####  -! 3 - triggers default B_SKIP_FUNCTION='true' to turn off some functions
+####  -! 4 - triggers B_TESTING_1='true' and B_TESTING_2='true'
+####  -! 5 - triggers B_TESTING_1='true' and B_SKIP_FUNCTION='true'
 ####  -! 10 - triggers an update from the primary dev download server
 ####  -! 11 - triggers an update from svn branch one - if present, of course
 ####  -! 12 - triggers an update from svn branch two - if present, of course
@@ -3315,10 +3316,12 @@ get_options()
 						;;
 					2)	B_TESTING_2='true'
 						;;
-					3)	B_TESTING_1='true'
-						B_TESTING_2='true'
+					3)	B_SKIP_FUNCTION='true'
 						;;
 					4)	B_TESTING_1='true'
+						B_TESTING_2='true'
+						;;
+					5)	B_TESTING_1='true'
 						B_SKIP_FUNCTION='true'
 						;;
 					10)
