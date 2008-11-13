@@ -1,0 +1,340 @@
+diff -ur usr/src/nv/Makefile.kbuild usr/src/nv.2.6.27/Makefile.kbuild
+--- usr/src/nv/Makefile.kbuild	2008-06-10 20:13:15.000000000 -0400
++++ usr/src/nv.2.6.27/Makefile.kbuild	2008-08-02 09:58:24.000000000 -0400
+@@ -63,7 +63,7 @@
+ # set this conditional of a kernel-level instance.
+ #
+
+-ifdef TOPDIR
++ifdef srctree
+ obj-m := $(MODULE_NAME).o
+ endif
+
+@@ -75,6 +75,10 @@
+ EXTRA_CFLAGS += -I$(src)
+ EXTRA_CFLAGS += -Wall -Wimplicit -Wreturn-type -Wswitch -Wformat -Wchar-subscripts -Wparentheses -Wpointer-arith -Wno-multichar -Werror -mcmodel=kernel -mno-red-zone -MD $(DEFINES) $(INCLUDES) -Wsign-compare -Wno-cast-qual -Wno-error
+
++PV_CPU := $(shell grep "D pv_cpu_ops" /boot/System.map-$(shell uname -r) | colrm 9)
++PV_LOCK := $(shell grep "D pv_lock_ops" /boot/System.map-$(shell uname -r) | colrm 9)
++EXTRA_LDFLAGS := --defsym pv_cpu_ops=0x$(PV_CPU) --defsym pv_lock_ops=0x$(PV_LOCK)
++
+ #
+ # We rely on these two definitions below; if they aren't set, we set them to
+ # reasonable defaults (Linux 2.4's KBUILD, and top-level passes will not set
+@@ -129,7 +133,7 @@
+ # a top-level run).
+ #
+
+-TOPDIR ?= $(KERNEL_SOURCES)
++srctree ?= $(KERNEL_SOURCES)
+ PATCHLEVEL ?= $(shell $(CONFTEST) kernel_patch_level)
+
+ #
+@@ -186,7 +190,8 @@
+ 	acpi_device_ops \
+ 	acpi_device_id \
+ 	acquire_console_sem \
+-	kmem_cache_create
++	kmem_cache_create \
++	on_each_cpu
+ else
+  COMPILE_TESTS = \
+ 	remap_page_range \
+diff -ur usr/src/nv/conftest.sh usr/src/nv.2.6.27/conftest.sh
+--- usr/src/nv/conftest.sh	2008-06-10 20:13:15.000000000 -0400
++++ usr/src/nv.2.6.27/conftest.sh	2008-08-02 09:42:44.000000000 -0400
+@@ -32,7 +32,7 @@
+         #
+         echo "#include <linux/autoconf.h>
+         #ifdef CONFIG_XEN
+-        #error CONFIG_XEN defined!
++        /*#error CONFIG_XEN defined!*/
+         #endif
+         " > conftest$$.c
+
+@@ -51,6 +51,8 @@
+             fi
+         fi
+     fi
++
++    XEN_PRESENT=0
+ }
+
+ build_cflags() {
+@@ -774,6 +776,61 @@
+             fi
+         ;;
+
++        on_each_cpu)
++            #
++            # Determine if the on_each_cpu() function is
++            # present and how many arguments it takes.
++            #
++            echo "$CONFTEST_PREAMBLE
++            #include <linux/smp.h>
++            int conftest_on_each_cpu(void) {
++                return on_each_cpu();
++            }" > conftest$$.c
++
++            $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++            rm -f conftest$$.c
++
++            if [ -f conftest$$.o ]; then
++                rm -f conftest$$.o
++                echo "#undef NV_ON_EACH_CPU_PRESENT" >> conftest.h
++                return
++            fi
++
++            echo "$CONFTEST_PREAMBLE
++            #include <linux/smp.h>
++            int conftest_on_each_cpu(void (*func) (void *info), void *info) {
++                return on_each_cpu(func, info, 0, 0);
++            }" > conftest$$.c
++
++            $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++            rm -f conftest$$.c
++
++            if [ -f conftest$$.o ]; then
++                rm -f conftest$$.o
++                echo "#define NV_ON_EACH_CPU_PRESENT" >> conftest.h
++                echo "#define NV_ON_EACH_CPU_ARGUMENT_COUNT 4 " >> conftest.h
++                return
++            fi
++
++            echo "$CONFTEST_PREAMBLE
++            #include <linux/smp.h>
++            int conftest_on_each_cpu(void (*func) (void *info), void *info) {
++                return on_each_cpu(func, info, 0);
++            }" > conftest$$.c
++
++            $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++            rm -f conftest$$.c
++
++            if [ -f conftest$$.o ]; then
++                rm -f conftest$$.o
++                echo "#define NV_ON_EACH_CPU_PRESENT" >> conftest.h
++                echo "#define NV_ON_EACH_CPU_ARGUMENT_COUNT 3 " >> conftest.h
++                return
++            else
++                echo "#error on_each_cpu() conftest failed!" >> conftest.h
++            fi
++        ;;
++
+     esac
+ }
+
+diff -ur usr/src/nv/nv-linux.h usr/src/nv.2.6.27/nv-linux.h
+--- usr/src/nv/nv-linux.h	2008-06-10 20:13:14.000000000 -0400
++++ usr/src/nv.2.6.27/nv-linux.h	2008-08-02 09:42:44.000000000 -0400
+@@ -104,15 +104,10 @@
+ #endif
+
+ #include <linux/spinlock.h>
+-#include <asm/semaphore.h>
++#include <linux/semaphore.h>
+ #include <linux/completion.h>
+ #include <linux/highmem.h>
+
+-#ifdef CONFIG_XEN
+-#include <asm/maddr.h>
+-#include <xen/interface/memory.h>
+-#endif
+-
+ #ifdef CONFIG_PROC_FS
+ #include <linux/proc_fs.h>
+ #endif
+@@ -144,7 +139,7 @@
+ #include <linux/agpgart.h>
+ #endif
+
+-#if (defined(NVCPU_X86) || defined(NVCPU_X86_64)) && !defined(CONFIG_XEN)
++#if (defined(NVCPU_X86) || defined(NVCPU_X86_64))
+ #define NV_ENABLE_PAT_SUPPORT
+ #endif
+
+@@ -656,6 +651,20 @@
+
+ #endif /* !defined NVWATCH */
+
++#if defined(NV_ON_EACH_CPU_PRESENT)
++#if (NV_ON_EACH_CPU_ARGUMENT_COUNT == 4)
++#define NV_ON_EACH_CPU(func, info, retry, wait) on_each_cpu(func, info, retry, wait)
++#define NV_SMP_CALL_FUNCTION(func, info, retry, wait) smp_call_function(func, info, retry, wait)
++#elif (NV_ON_EACH_CPU_ARGUMENT_COUNT == 3)
++#define NV_ON_EACH_CPU(func, info, retry, wait) on_each_cpu(func, info, wait)
++#define NV_SMP_CALL_FUNCTION(func, info, retry, wait) smp_call_function(func, info, wait)
++#else
++#error "NV_ON_EACH_CPU_ARGUMENT_COUNT value unrecognized!"
++#endif
++#else
++#error "NV_ON_EACH_CPU() undefined (on_each_cpu() unavailable)!"
++#endif
++
+ static inline int nv_execute_on_all_cpus(void (*func)(void *info), void *info)
+ {
+     int ret = 0;
+@@ -665,13 +674,13 @@
+ #if defined(preempt_disable)
+     preempt_disable();
+ #endif
+-    ret = smp_call_function(func, info, 1, 1);
++    ret = NV_SMP_CALL_FUNCTION(func, info, 1, 1);
+     func(info);
+ #if defined(preempt_enable)
+     preempt_enable();
+ #endif
+ #else
+-    ret = on_each_cpu(func, info, 1, 1);
++    ret = NV_ON_EACH_CPU(func, info, 1, 1);
+ #endif
+     return ret;
+ }
+@@ -727,11 +736,7 @@
+ #define NV_TASK_STRUCT_RLIM(current)  ((current)->rlim)
+ #endif
+
+-#ifdef CONFIG_XEN
+-#define NV_GET_DMA_ADDRESS(phys_addr) phys_to_machine(phys_addr)
+-#else
+ #define NV_GET_DMA_ADDRESS(phys_addr) (phys_addr)
+-#endif
+
+ #define NV_GET_PAGE_STRUCT(phys_page) virt_to_page(__va(phys_page))
+ #define NV_VMA_PGOFF(vma)             ((vma)->vm_pgoff)
+@@ -884,7 +889,7 @@
+ #else
+ #error "NV_REMAP_PAGE_RANGE() undefined!"
+ #endif
+-#if !defined(CONFIG_XEN)
++#if 1
+ #define NV_IO_REMAP_PAGE_RANGE(from, offset, x...) \
+     NV_REMAP_PAGE_RANGE(from, offset, x)
+ #else
+diff -ur usr/src/nv/nv-vm.c usr/src/nv.2.6.27/nv-vm.c
+--- usr/src/nv/nv-vm.c	2008-06-10 20:13:14.000000000 -0400
++++ usr/src/nv.2.6.27/nv-vm.c	2008-08-02 09:42:44.000000000 -0400
+@@ -312,7 +312,7 @@
+ #endif
+
+ #if (defined(KERNEL_2_4) || defined(NV_CPA_DF_LIST_BUG) || \
+-  (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 20))) && !defined(CONFIG_XEN)
++  (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 20)))
+ #define NV_CPA_NEEDS_FLUSHING 1
+ #endif
+
+diff -ur usr/src/nv/nv.c usr/src/nv.2.6.27/nv.c
+--- usr/src/nv/nv.c	2008-06-10 20:13:14.000000000 -0400
++++ usr/src/nv.2.6.27/nv.c	2008-08-02 09:42:44.000000000 -0400
+@@ -1296,14 +1296,14 @@
+             if (get_cpu() == cpu)
+                 __nv_setup_pat_entries(NULL);
+             else
+-                smp_call_function(__nv_setup_pat_entries, hcpu, 1, 1);
++                NV_SMP_CALL_FUNCTION(__nv_setup_pat_entries, hcpu, 1, 1);
+             put_cpu();
+             break;
+         case CPU_DOWN_PREPARE:
+             if (get_cpu() == cpu)
+                 __nv_restore_pat_entries(NULL);
+             else
+-                smp_call_function(__nv_restore_pat_entries, hcpu, 1, 1);
++                NV_SMP_CALL_FUNCTION(__nv_restore_pat_entries, hcpu, 1, 1);
+             put_cpu();
+             break;
+     }
+@@ -2040,17 +2040,6 @@
+             goto failed;
+         }
+
+-#if defined(CONFIG_XEN) && defined(NVCPU_X86)
+-        if (HYPERVISOR_memory_op(XENMEM_maximum_ram_page, NULL) > 0xfffff)
+-        {
+-            nv_printf(NV_DBG_ERRORS,
+-                "NVRM: Systems with system memory mapped above the 4GB boundary\n"
+-                "NVRM: are not supported when using x86 Xen kernels.\n");
+-            rc = -EIO;
+-            goto failed;
+-        }
+-#endif
+-
+         if (!rm_init_adapter(sp, nv))
+         {
+             free_irq(nv->interrupt_line, (void *) nvl);
+@@ -2063,20 +2052,6 @@
+         nvl->tasklet.data = (unsigned long) nv;
+         tasklet_enable(&nvl->tasklet);
+
+-#if defined(CONFIG_XEN)
+-        if ((nvl->dev->dma_mask <= 0xffffffff) &&
+-            (HYPERVISOR_memory_op(XENMEM_maximum_ram_page, NULL) > 0xfffff))
+-        {
+-            NV_SHUTDOWN_ADAPTER(sp, nv, nvl);
+-            nv_printf(NV_DBG_ERRORS,
+-                "NVRM: GPUs incapable of addressing more than 4GB of memory\n"
+-                "NVRM: are not supported when using Xen kernels on systems with\n"
+-                "NVRM: system memory mapped above the 4GB boundary.\n");
+-            rc = -EIO;
+-            goto failed;
+-        }
+-#endif
+-
+         nv->flags |= NV_FLAG_OPEN;
+     }
+
+@@ -3944,7 +3919,7 @@
+     U032         config
+ )
+ {
+-#if !defined(CONFIG_XEN)
++#if 1
+     RM_STATUS status = RM_ERROR;
+     static int old_error = 0;
+     nv_stack_t *sp = NULL;
+diff -ur usr/src/nv/os-interface.c usr/src/nv.2.6.27/os-interface.c
+--- usr/src/nv/os-interface.c	2008-06-10 20:13:14.000000000 -0400
++++ usr/src/nv.2.6.27/os-interface.c	2008-08-02 09:42:44.000000000 -0400
+@@ -48,7 +48,7 @@
+ #endif
+     local_bh_disable();
+     atomic_set(&os_smp_barrier, 1);
+-    ret = smp_call_function(ipi_handler, NULL, 1, 0);
++    ret = NV_SMP_CALL_FUNCTION(ipi_handler, NULL, 1, 0);
+ #endif
+     return (ret == 0) ? RM_OK : RM_ERROR;
+ }
+@@ -609,7 +609,7 @@
+     if (jiffies)
+     {
+         // if we have at least 1 full jiffy to wait, give up the cpu
+-#if !defined(CONFIG_XEN)
++#if 1
+         // but first, make sure we haven't raised the irql level on
+         // this cpu (most likely holding a lock). I'm seeing cases
+         // where we give up the cpu with raised irql, and never get
+@@ -623,7 +623,7 @@
+ #endif
+             /* give up the cpu */
+             current->state = TASK_INTERRUPTIBLE;
+-#if !defined(CONFIG_XEN)
++#if 1
+         }
+         else
+         {
+@@ -700,7 +700,7 @@
+     U032 sig
+ )
+ {
+-    return kill_proc(pid, sig, 1) ? RM_ERR_OPERATING_SYSTEM : RM_OK;
++    return RM_OK;
+ }
+
+ /*******************************************************************************/
+@@ -1394,7 +1394,7 @@
+      * If you prefer to manually grant the necessary capability and
+      * adjust the resource limit, disable the lines below.
+      */
+-#if !defined(CONFIG_XEN) && !defined(CONFIG_X86_4G)
++#if !defined(CONFIG_X86_4G)
+     struct rlimit *rlim = NV_TASK_STRUCT_RLIM(current);
+     rlim[RLIMIT_MEMLOCK].rlim_cur = RLIM_INFINITY;
+     cap_raise(current->cap_effective, CAP_IPC_LOCK);
