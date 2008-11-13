@@ -1,0 +1,569 @@
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.25/usr/src/nv/nv.c NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/nv.c
+--- usr/src/nv/nv.c	2008-07-18 01:48:29.402165378 +0200
++++ usr/src/nv/nv.c	2008-07-18 01:48:56.313165932 +0200
+@@ -21,10 +21,9 @@ MODULE_ALIAS_CHARDEV_MAJOR(NV_MAJOR_DEVI
+ #endif
+ 
+ #if defined(KERNEL_2_4) && (defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE))
+-// weak linking?
+ extern int i2c_add_adapter (struct i2c_adapter *) __attribute__ ((weak));
+ extern int i2c_del_adapter (struct i2c_adapter *) __attribute__ ((weak));
+-#endif // defined(KERNEL_2_4) && (defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE))
++#endif
+ 
+ /*
+  * our global state; one per device
+@@ -40,14 +39,7 @@ EXPORT_SYMBOL(nv_linux_devices);
+ static struct pm_dev *apm_nv_dev[NV_MAX_DEVICES] = { 0 };
+ #endif
+ 
+-int nv_pat_enabled = 0;
+-
+-#if !defined(NV_BUILD_NV_PAT_SUPPORT)
+-static int nv_disable_pat = 1;
+-#else
+-static int nv_disable_pat = 0;
+-NV_MODULE_PARAMETER(nv_disable_pat);
+-#endif
++int nv_pat_mode = NV_PAT_MODE_DISABLED;
+ 
+ #if defined(NVCPU_X86) || defined(NVCPU_X86_64)
+ NvU64 __nv_supported_pte_mask = ~_PAGE_NX;
+@@ -635,7 +627,7 @@ static void nvos_proc_create(void)
+     nv_state_t *nv;
+     nv_linux_state_t *nvl;
+ 
+-    proc_nvidia = create_proc_entry("nvidia", d_flags, proc_root_driver);
++    proc_nvidia = create_proc_entry("driver/nvidia", d_flags, NULL);
+     if (!proc_nvidia)
+         goto failed;
+ 
+@@ -887,18 +879,20 @@ static int nvl_remove_alloc(
+ static int   __nv_enable_pat_support   (void);
+ static void  __nv_disable_pat_support  (void);
+ 
+-#if defined(NV_BUILD_NV_PAT_SUPPORT)
++#if defined(NV_ENABLE_PAT_SUPPORT)
+ /*
+- * Private PAT support for use by the NVIDIA driver. This is an
+- * interim solution until the kernel offers PAT support.
++ * Private PAT support for use by the NVIDIA driver. This is used on
++ * kernels that do not modify the PAT to include a write-combining
++ * entry.
+  */
+ static int   __check_pat_support       (void);
+ static void  __nv_setup_pat_entries    (void *);
+ static void  __nv_restore_pat_entries  (void *);
+ 
+-#define NV_READ_PAT_ENTRIES(pat1, pat2)   rdmsr(IA32_CR_PAT, (pat1), (pat2))
+-#define NV_WRITE_PAT_ENTRIES(pat1, pat2)  wrmsr(IA32_CR_PAT, (pat1), (pat2))
+-#define NV_PAT_ENTRY(pat, index)          (((pat) & (0xff<<((index)*8)))>>((index)*8))
++#define NV_READ_PAT_ENTRIES(pat1, pat2)   rdmsr(0x277, (pat1), (pat2))
++#define NV_WRITE_PAT_ENTRIES(pat1, pat2)  wrmsr(0x277, (pat1), (pat2))
++#define NV_PAT_ENTRY(pat, index) \
++    (((pat) & (0xff << ((index)*8))) >> ((index)*8))
+ 
+ static inline void __nv_disable_caches(unsigned long *cr4)
+ {
+@@ -922,8 +916,10 @@ static inline void __nv_enable_caches(un
+ static int __check_pat_support()
+ {
+     unsigned int pat1, pat2, i;
++    U008 PAT_WC_index;
+ 
+-    if (!test_bit(X86_FEATURE_PAT, (volatile unsigned long *)&boot_cpu_data.x86_capability))
++    if (!test_bit(X86_FEATURE_PAT,
++            (volatile unsigned long *)&boot_cpu_data.x86_capability))
+     {
+         nv_printf(NV_DBG_ERRORS,
+             "NVRM: CPU does not support the PAT, falling back to MTRRs.\n");
+@@ -931,24 +927,30 @@ static int __check_pat_support()
+     }
+ 
+     NV_READ_PAT_ENTRIES(pat1, pat2);
++    PAT_WC_index = 0xf;
+ 
+     for (i = 0; i < 4; i++)
+     {
+-         // we plan to mark PAT entry 1 as WC. if it's already marked such,
+-         // that's fine, since it would be no different than us setting it.
+-         if ((i != 1) && NV_PAT_ENTRY(pat1, i) == 1)
+-         {
+-             nv_printf(NV_DBG_ERRORS, "NVRM: PAT index %d already configured for Write-Combining!\n", i);
+-             nv_printf(NV_DBG_ERRORS, "NVRM: Aborting, due to PAT already being configured\n");
+-             return 0;
+-         }
+-
+-         if (NV_PAT_ENTRY(pat2, i) == 1)
+-         {
+-             nv_printf(NV_DBG_ERRORS, "NVRM: PAT index %d already configured for Write-Combining!\n", i + 4);
+-             nv_printf(NV_DBG_ERRORS, "NVRM: Aborting, due to PAT already being configured\n");
+-             return 0;
+-         }
++        if (NV_PAT_ENTRY(pat1, i) == 0x01)
++        {
++            PAT_WC_index = i;
++            break;
++        }
++
++        if (NV_PAT_ENTRY(pat2, i) == 0x01)
++        {
++            PAT_WC_index = (i + 4);
++            break;
++        }
++    }
++
++    if (PAT_WC_index == 1)
++        nv_pat_mode = NV_PAT_MODE_KERNEL;
++    else if (PAT_WC_index != 0xf)
++    {
++        nv_printf(NV_DBG_ERRORS,
++            "NVRM: PAT configuration unsupported, falling back to MTRRs.\n");
++        return 0;
+     }
+ 
+     return 1;
+@@ -1002,20 +1004,22 @@ static void __nv_restore_pat_entries(voi
+     __nv_enable_caches(cr4);
+     NV_RESTORE_FLAGS(eflags);
+ }
+-
+-#endif /* defined(NV_BUILD_NV_PAT_SUPPORT) */
++#endif
+ 
+ static int __nv_enable_pat_support()
+ {
+-#if defined(NV_BUILD_NV_PAT_SUPPORT)
++#if defined(NV_ENABLE_PAT_SUPPORT)
+     unsigned long pat1, pat2;
+ 
+-    if (nv_pat_enabled)
++    if (nv_pat_mode != NV_PAT_MODE_DISABLED)
+         return 1;
+ 
+     if (!__check_pat_support())
+         return 0;
+ 
++    if (nv_pat_mode != NV_PAT_MODE_DISABLED)
++        return 1;
++
+     NV_READ_PAT_ENTRIES(orig_pat1, orig_pat2);
+     nv_printf(NV_DBG_SETUP, "saved orig pats as 0x%lx 0x%lx\n", orig_pat1, orig_pat2);
+ 
+@@ -1025,31 +1029,30 @@ static int __nv_enable_pat_support()
+         return 0;
+     }
+ 
+-    nv_pat_enabled = 1;
++    nv_pat_mode = NV_PAT_MODE_BUILTIN;
+ 
+     NV_READ_PAT_ENTRIES(pat1, pat2);
+     nv_printf(NV_DBG_SETUP, "changed pats to 0x%lx 0x%lx\n", pat1, pat2);
+-#endif /* defined(NV_BUILD_NV_PAT_SUPPORT) */
+-
++#endif
+     return 1;
+ }
+ 
+ static void __nv_disable_pat_support()
+ {
+-#if defined(NV_BUILD_NV_PAT_SUPPORT)
++#if defined(NV_ENABLE_PAT_SUPPORT)
+     unsigned long pat1, pat2;
+ 
+-    if (!nv_pat_enabled)
++    if (nv_pat_mode != NV_PAT_MODE_BUILTIN)
+         return;
+ 
+     if (nv_execute_on_all_cpus(__nv_restore_pat_entries, NULL) != 0)
+         return;
+ 
+-    nv_pat_enabled = 0;
++    nv_pat_mode = NV_PAT_MODE_DISABLED;
+ 
+     NV_READ_PAT_ENTRIES(pat1, pat2);
+     nv_printf(NV_DBG_SETUP, "restored orig pats as 0x%lx 0x%lx\n", pat1, pat2);
+-#endif /* defined(NV_BUILD_NV_PAT_SUPPORT) */
++#endif
+ }
+ 
+ #if defined(NV_CHANGE_PAGE_ATTR_BUG_PRESENT)
+@@ -1298,7 +1301,7 @@ failed:
+ #endif
+ }
+ 
+-#if defined(NV_BUILD_NV_PAT_SUPPORT) && defined(CONFIG_HOTPLUG_CPU)
++#if defined(NV_ENABLE_PAT_SUPPORT) && defined(CONFIG_HOTPLUG_CPU)
+ static int
+ nv_kern_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ {
+@@ -1330,8 +1333,7 @@ static struct notifier_block nv_hotcpu_n
+     .notifier_call = nv_kern_cpu_callback,
+     .priority = 0
+ };
+-
+-#endif /* defined(NV_BUILD_NV_PAT_SUPPORT) && defined(CONFIG_HOTPLUG_CPU) */
++#endif
+ 
+ 
+ /***
+@@ -1340,7 +1342,7 @@ static struct notifier_block nv_hotcpu_n
+ 
+ static int __init nvidia_init_module(void)
+ {
+-    int rc;
++    int rc, disable_pat = 0;
+     U032 i, count, data;
+     nv_state_t *nv = NV_STATE_PTR(&nv_ctl_device);
+     nv_stack_t *sp = NULL;
+@@ -1468,18 +1470,6 @@ static int __init nvidia_init_module(voi
+         nv_printf(NV_DBG_ERRORS, "NVRM: pte cache allocation failed\n");
+         goto failed;
+     }
+- 
+-#if defined(NV_BUILD_NV_PAT_SUPPORT) && defined(CONFIG_HOTPLUG_CPU)
+-    if (!nv_disable_pat)
+-    {
+-        if (register_hotcpu_notifier(&nv_hotcpu_nfb) != 0)
+-        {
+-            rc = -EIO;
+-            nv_printf(NV_DBG_ERRORS, "NVRM: CPU hotplug notifier registration failed!\n");
+-            goto failed;
+-        }
+-    }
+-#endif
+ 
+ #if defined(NV_SG_MAP_BUFFERS)
+     rm_read_registry_dword(sp, nv, "NVreg", "RemapLimit", &nv_remap_limit);
+@@ -1556,8 +1546,30 @@ static int __init nvidia_init_module(voi
+ 
+     nvos_proc_add_warning_file("README", __README_warning);
+ 
+-    if (!nv_disable_pat)
++    rc = rm_read_registry_dword(sp, nv,
++            "NVreg", "UsePageAttributeTable", &data);
++    if ((rc == 0) && ((int)data != ~0))
++    {
++        disable_pat = (data == 0);
++    }
++
++    if (!disable_pat)
++    {
+         __nv_enable_pat_support();
++#if defined(NV_ENABLE_PAT_SUPPORT) && defined(CONFIG_HOTPLUG_CPU)
++        if (nv_pat_mode == NV_PAT_MODE_BUILTIN)
++        {
++            if (register_hotcpu_notifier(&nv_hotcpu_nfb) != 0))
++            {
++                __nv_disable_pat_support();
++                rc = -EIO;
++                nv_printf(NV_DBG_ERRORS,
++                        "NVRM: CPU hotplug notifier registration failed!\n");
++                goto failed;
++            }
++        }
++#endif
++    }
+     else
+     {
+         nv_printf(NV_DBG_ERRORS,
+@@ -1710,10 +1722,10 @@ static void __exit nvidia_exit_module(vo
+     rm_unregister_compatible_ioctls(sp);
+ #endif
+ 
+-    if (nv_pat_enabled)
++    if (nv_pat_mode == NV_PAT_MODE_BUILTIN)
+     {
+         __nv_disable_pat_support();
+-#if defined(NV_BUILD_NV_PAT_SUPPORT) && defined(CONFIG_HOTPLUG_CPU)
++#if defined(NV_ENABLE_PAT_SUPPORT) && defined(CONFIG_HOTPLUG_CPU)
+         unregister_hotcpu_notifier(&nv_hotcpu_nfb);
+ #endif
+     }
+@@ -1837,6 +1849,8 @@ nv_kern_vma_release(struct vm_area_struc
+     }
+ }
+ 
++#if !defined(NV_VM_INSERT_PAGE_PRESENT)
++static
+ struct page *nv_kern_vma_nopage(
+     struct vm_area_struct *vma,
+     unsigned long address,
+@@ -1847,22 +1861,21 @@ struct page *nv_kern_vma_nopage(
+ #endif
+ )
+ {
+-#if !defined(NV_VM_INSERT_PAGE_PRESENT)
+     struct page *page;
+ 
+     page = pfn_to_page(vma->vm_pgoff);
+     get_page(page);
+ 
+     return page;
+-#else
+-    return NOPAGE_SIGBUS;
+-#endif
+ }
++#endif
+ 
+ struct vm_operations_struct nv_vm_ops = {
+     .open   = nv_kern_vma_open,
+     .close  = nv_kern_vma_release,  /* "close" */
++#if !defined(NV_VM_INSERT_PAGE_PRESENT)
+     .nopage = nv_kern_vma_nopage,
++#endif
+ };
+ 
+ static nv_file_private_t *
+@@ -1876,7 +1889,7 @@ nv_alloc_file_private(void)
+ 
+     memset(nvfp, 0, sizeof(nv_file_private_t));
+ 
+-    sema_init(&nvfp->sp_lock, 1);
++    NV_INIT_MUTEX(&nvfp->sp_lock);
+ 
+     // initialize this file's event queue
+     init_waitqueue_head(&nvfp->waitqueue);
+@@ -2232,11 +2245,12 @@ int nv_encode_caching(
+             *prot = pgprot_noncached(*prot);
+             break;
+         case NV_MEMORY_WRITECOMBINED:
+-#if defined(NV_BUILD_NV_PAT_SUPPORT)
+-            if (nv_pat_enabled &&
+-                (memory_type != NV_MEMORY_TYPE_REGISTERS))
++#if defined(NV_ENABLE_PAT_SUPPORT)
++            if ((nv_pat_mode != NV_PAT_MODE_DISABLED) &&
++                    (memory_type != NV_MEMORY_TYPE_REGISTERS))
+             {
+-                *prot = pgprot_writecombined(*prot);
++                pgprot_val(*prot) &= ~(_PAGE_PSE | _PAGE_PCD | _PAGE_PWT);
++                *prot = __pgprot(pgprot_val(*prot) | _PAGE_PWT);
+                 break;
+             }
+ #endif
+@@ -2259,7 +2273,6 @@ int nv_encode_caching(
+                 break;
+             return 1;
+         case NV_MEMORY_CACHED:
+-        //case NV_MEMORY_WRITEBACK:
+             /*
+              * RAM is cached on Linux by default, we can assume there's
+              * nothing to be done here. This is not the case for the
+@@ -2276,8 +2289,6 @@ int nv_encode_caching(
+              */
+             if (memory_type == NV_MEMORY_TYPE_SYSTEM)
+                 break;
+-        //case NV_MEMORY_WRITETHRU:
+-        //case NV_MEMORY_WRITEPROTECT:
+         default:
+             nv_printf(NV_DBG_ERRORS,
+                 "NVRM: VM: memory type %d not supported for memory space %d!\n",
+@@ -3514,6 +3525,10 @@ NvU64 nv_get_phys_address(
+     BOOL kern
+ )
+ {
++#if defined(NV_SET_PAGES_UC_PRESENT) && defined(NVCPU_X86)
++    nv_printf(NV_DBG_ERRORS,
++        "NVRM: can't translate address in nv_get_phys_address()!\n");
++#else
+     struct mm_struct *mm;
+     pgd_t *pgd = NULL;
+     pmd_t *pmd = NULL;
+@@ -3526,15 +3541,7 @@ NvU64 nv_get_phys_address(
+         down_read(&mm->mmap_sem);
+     }
+     else
+-    {
+-#if defined(NV_SET_PAGES_UC_PRESENT) && defined(NVCPU_X86)
+-        /* nv_printf(NV_DBG_ERRORS,
+-            "NVRM: can't translate KVA in nv_get_phys_address()!\n"); */
+-        return 0;
+-#else
+         mm = NULL;
+-#endif
+-    }
+ 
+     pgd = NV_PGD_OFFSET(address, kern, mm);
+     if (!NV_PGD_PRESENT(pgd))
+@@ -3562,6 +3569,7 @@ NvU64 nv_get_phys_address(
+ failed:
+     if (!kern)
+         up_read(&mm->mmap_sem);
++#endif
+     return 0;
+ }
+ 
+@@ -3797,8 +3805,9 @@ static void nv_lock_init_locks
+ 
+     nv_init_lock(nvl->rm_lock);
+ 
+-    sema_init(&nvl->ldata_lock, 1);
+-    sema_init(&nvl->at_lock, 1);
++    NV_INIT_MUTEX(&nvl->ldata_lock);
++    NV_INIT_MUTEX(&nvl->at_lock);
++
+     NV_ATOMIC_SET(nvl->usage_count, 0);
+ 
+     nvl->rm_lock_cpu = -1;
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.25/usr/src/nv/nv-linux.h NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/nv-linux.h
+--- usr/src/nv/nv-linux.h	2008-04-21 18:29:20.899751817 +0200
++++ usr/src/nv/nv-linux.h	2008-07-18 00:59:19.418165477 +0200
+@@ -136,16 +136,19 @@
+ #endif
+ 
+ #if (defined(NVCPU_X86) || defined(NVCPU_X86_64)) && !defined(CONFIG_XEN)
+-#define NV_BUILD_NV_PAT_SUPPORT 1
++#define NV_ENABLE_PAT_SUPPORT
+ #endif
+ 
+-#if defined(NV_BUILD_NV_PAT_SUPPORT)
+-#include "pat.h"
++#define NV_PAT_MODE_DISABLED    0
++#define NV_PAT_MODE_KERNEL      1
++#define NV_PAT_MODE_BUILTIN     2
++
++extern int nv_pat_mode;
++
+ #if defined(CONFIG_HOTPLUG_CPU)
+ #include <linux/cpu.h>              /* CPU hotplug support              */
+ #include <linux/notifier.h>         /* struct notifier_block, etc       */
+ #endif
+-#endif
+ 
+ #if (defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE))
+ #include <linux/i2c.h>
+@@ -662,6 +665,13 @@ static inline int nv_execute_on_all_cpus
+ #define nv_down(lock)                   down(&lock)
+ #define nv_up(lock)                     up(&lock)
+ 
++#define NV_INIT_MUTEX(mutex)                       \
++    {                                              \
++        struct semaphore __mutex =                 \
++            __SEMAPHORE_INITIALIZER(*(mutex), 1);  \
++        *(mutex) = __mutex;                        \
++    }
++
+ #if defined (KERNEL_2_4)
+ #  define NV_IS_SUSER()                 suser()
+ #  define NV_PCI_DEVICE_NAME(dev)       ((dev)->name)
+@@ -1004,19 +1014,6 @@ static inline pgprot_t pgprot_noncached(
+     }
+ #endif
+ 
+-#if defined(NV_BUILD_NV_PAT_SUPPORT) && !defined (pgprot_writecombined)
+-static inline pgprot_t pgprot_writecombined(pgprot_t old_prot)
+-    {
+-        pgprot_t new_prot = old_prot;
+-        if (boot_cpu_data.x86 > 3)
+-        {
+-            pgprot_val(old_prot) &= ~(_PAGE_PCD | _PAGE_PWT);
+-            new_prot = __pgprot(pgprot_val(old_prot) | _PAGE_WRTCOMB);
+-        }
+-        return new_prot;
+-    }
+-#endif
+-
+ #if defined(KERNEL_2_4) && defined(NVCPU_X86) && !defined(pfn_to_page)
+ #define pfn_to_page(pfn) (mem_map + (pfn))
+ #endif
+@@ -1112,8 +1109,6 @@ typedef struct {
+     struct semaphore at_lock;
+ } nv_linux_state_t;
+ 
+-extern int nv_pat_enabled;
+-
+ #if defined(NV_LINUX_ACPI_EVENTS_SUPPORTED)
+ /*
+  * acpi data storage structure
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.25/usr/src/nv/os-agp.c NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/os-agp.c
+--- usr/src/nv/os-agp.c	2007-09-12 23:53:20.000000000 +0200
++++ usr/src/nv/os-agp.c	2008-07-18 01:26:50.037165456 +0200
+@@ -115,7 +115,7 @@ RM_STATUS KernInitAGP(
+         goto release;
+     }
+ 
+-    if (!nv_pat_enabled)
++    if (nv_pat_mode == NV_PAT_MODE_DISABLED)
+     {
+ #ifdef CONFIG_MTRR
+         /*
+@@ -175,7 +175,7 @@ RM_STATUS KernInitAGP(
+ 
+ failed:
+ #ifdef CONFIG_MTRR
+-    if (!nv_pat_enabled)
++    if (nv_pat_mode == NV_PAT_MODE_DISABLED)
+         mtrr_del(-1, agp_info.aper_base, agp_info.aper_size << 20);
+ #endif
+ release:
+@@ -205,7 +205,7 @@ RM_STATUS KernTeardownAGP(
+     nvl = NV_GET_NVL_FROM_NV_STATE(nv);
+ 
+ #ifdef CONFIG_MTRR
+-    if (!nv_pat_enabled)
++    if (nv_pat_mode == NV_PAT_MODE_DISABLED)
+         mtrr_del(-1, nv->agp.address, nv->agp.size);
+ #endif
+ 
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.25/usr/src/nv/os-interface.c NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/os-interface.c
+--- usr/src/nv/os-interface.c	2008-04-21 18:53:28.735750157 +0200
++++ usr/src/nv/os-interface.c	2008-07-18 01:27:41.407165337 +0200
+@@ -1328,7 +1328,7 @@ void NV_API_CALL os_unregister_compatibl
+ 
+ BOOL NV_API_CALL os_pat_supported(void)
+ {
+-    return nv_pat_enabled;
++    return (nv_pat_mode != NV_PAT_MODE_DISABLED);
+ }
+ 
+ void NV_API_CALL os_dump_stack()
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.25/usr/src/nv/os-registry.c NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/os-registry.c
+--- usr/src/nv/os-registry.c	2008-04-21 18:54:59.126751444 +0200
++++ usr/src/nv/os-registry.c	2008-07-18 01:06:00.650166528 +0200
+@@ -491,6 +491,38 @@ static int NVreg_RMEdgeIntrCheck = 1;
+ NV_MODULE_PARAMETER(NVreg_RMEdgeIntrCheck);
+ 
+ /*
++ * Option: UsePageAttributeTable
++ *
++ * Description:
++ *
++ * Enable/disable use of the page attribute table (PAT) available in
++ * modern x86/x86-64 processors to set the effective memory type of memory
++ * mappings to write-combining (WC). If disabled, the driver will fall
++ * back to using MTRRs, if possible.
++ *
++ * If enabled, an x86 processor with PAT support is present and the host
++ * system's Linux kernel did not configure one of the PAT entries to
++ * indicate the WC memory type, the driver will change the second entry in
++ * the PAT from its default (write-through (WT)) to WC at module load
++ * time. If the kernel did update one of the PAT entries, the driver will
++ * not modify the PAT.
++ *
++ * In both cases, the driver will honor attempts to map memory with the WC
++ * memory type by selecting the appropriate PAT entry using the correct
++ * set of PTE flags.
++ *
++ * Possible values:
++ *
++ * ~0 = use the NVIDIA driver's default logic (default)
++ *  1 = enable use of the PAT for WC mappings.
++ *  0 = disable use of the PAT for WC mappings.
++ */
++
++static int NVreg_UsePageAttributeTable = ~0;
++NV_MODULE_PARAMETER(NVreg_UsePageAttributeTable);
++
++
++/*
+  * You can enable any of the registry options disabled by default by
+  * editing their respective entries in the table below. The last field
+  * determines if the option is considered valid - in order for the
+@@ -525,6 +557,7 @@ nv_parm_t nv_parms[] = {
+     { "NVreg",  "PanelBrightnessLimits",    &NVreg_PanelBrightnessLimits,    1 },
+     { "NVreg",  "UseVBios",                 &NVreg_UseVBios,                 1 },
+     { "NVreg",  "RMEdgeIntrCheck",          &NVreg_RMEdgeIntrCheck,          1 },
++    { "NVreg",  "UsePageAttributeTable",    &NVreg_UsePageAttributeTable,    1 },
+     {  NULL,     NULL,                      NULL,                            0 }
+ };
+ 

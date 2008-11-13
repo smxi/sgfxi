@@ -1,0 +1,576 @@
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/conftest.sh NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.27/usr/src/nv/conftest.sh
+--- usr/src/nv/conftest.sh	2008-04-21 18:19:44.000000000 +0200
++++ usr/src/nv/conftest.sh	2008-10-14 00:32:46.503646497 +0200
+@@ -37,6 +37,12 @@ if [ -n "$BUILD_PARAMS" ]; then
+     CFLAGS="$CFLAGS -D$BUILD_PARAMS"
+ fi
+ 
++CONFTEST_PREAMBLE="#include <linux/autoconf.h>
++    #if defined(CONFIG_XEN) && \
++        defined(CONFIG_XEN_INTERFACE_VERSION) &&  !defined(__XEN_INTERFACE_VERSION__)
++    #define __XEN_INTERFACE_VERSION__ CONFIG_XEN_INTERFACE_VERSION
++    #endif"
++
+ case "$5" in
+     remap_page_range)
+         #
+@@ -1078,4 +1084,128 @@ case "$5" in
+         fi
+     ;;
+ 
++    smp_call_function)
++        #
++        # Determine if the smp_call_function() function is
++        # present and how many arguments it takes.
++        #
++        echo "$CONFTEST_PREAMBLE
++        #include <linux/smp.h>
++        void conftest_smp_call_function(void) {
++        #ifdef CONFIG_SMP
++            smp_call_function();
++        #endif
++        }" > conftest$$.c
++
++        $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++        rm -f conftest$$.c
++
++        if [ -f conftest$$.o ]; then
++            rm -f conftest$$.o
++            exit 1
++        fi
++
++        echo "$CONFTEST_PREAMBLE
++        #include <linux/smp.h>
++        void conftest_smp_call_function(void) {
++            smp_call_function(NULL, NULL, 0, 0);
++        }" > conftest$$.c
++
++        $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++        rm -f conftest$$.c
++
++        if [ -f conftest$$.o ]; then
++            rm -f conftest$$.o
++            echo "4"
++            exit 0
++        fi
++
++        echo "$CONFTEST_PREAMBLE
++        #include <linux/smp.h>
++        void conftest_smp_call_function(void) {
++            smp_call_function(NULL, NULL, 0);
++        }" > conftest$$.c
++
++        $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++        rm -f conftest$$.c
++
++        if [ -f conftest$$.o ]; then
++            rm -f conftest$$.o
++            echo "3"
++            exit 0
++        else
++            exit 1
++        fi
++    ;;
++
++    on_each_cpu)
++        #
++        # Determine if the on_each_cpu() function is present
++        # and how many arguments it takes.
++        #
++        echo "$CONFTEST_PREAMBLE
++        #include <linux/smp.h>
++        void conftest_on_each_cpu(void) {
++        #ifdef CONFIG_SMP
++            on_each_cpu();
++        #endif
++        }" > conftest$$.c
++
++        $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++        rm -f conftest$$.c
++
++        if [ -f conftest$$.o ]; then
++            rm -f conftest$$.o
++            exit 1
++        fi
++
++        echo "$CONFTEST_PREAMBLE
++        #include <linux/smp.h>
++        void conftest_on_each_cpu(void) {
++            on_each_cpu(NULL, NULL, 0, 0);
++        }" > conftest$$.c
++
++        $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++        rm -f conftest$$.c
++
++        if [ -f conftest$$.o ]; then
++            rm -f conftest$$.o
++            echo "4"
++            exit 0
++        fi
++
++        echo "$CONFTEST_PREAMBLE
++        #include <linux/smp.h>
++        void conftest_on_each_cpu(void) {
++            on_each_cpu(NULL, NULL, 0);
++        }" > conftest$$.c
++
++        $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++        rm -f conftest$$.c
++
++        if [ -f conftest$$.o ]; then
++            rm -f conftest$$.o
++            echo "3"
++            exit 0
++        else
++            exit 1
++        fi
++    ;;
++
++    semaphore_include)
++        #
++        # Run a series of compile tests to determine the set of interfaces
++        # and features available in the target kernel.
++        #
++        FILE="linux/semaphore.h"
++
++        if [ -f $HEADERS/$FILE -o -f $OUTPUT/include/$FILE ]; then
++            echo "1"
++        else
++            echo "0"
++        fi
++
++        exit 0
++    ;;
++
+ esac
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/Makefile.kbuild NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.27/usr/src/nv/Makefile.kbuild
+--- usr/src/nv/Makefile.kbuild	2008-04-21 18:26:00.000000000 +0200
++++ usr/src/nv/Makefile.kbuild	2008-10-14 00:31:53.276647537 +0200
+@@ -264,6 +264,34 @@ ifeq ($(VMAP_ARGS), 4)
+  EXTRA_CFLAGS += -DNV_VMAP_4_PRESENT
+ endif
+ 
++ifeq ($(PATCHLEVEL), 4)
++ SMP_CALL_ARGS := $(shell $(CONFTEST) smp_call_function)
++ ifeq ($(SMP_CALL_ARGS), 4)
++  EXTRA_CFLAGS += -DNV_SMP_CALL_4_PRESENT
++ endif
++ ifeq ($(SMP_CALL_ARGS), 3)
++  EXTRA_CFLAGS += -DNV_SMP_CALL_3_PRESENT
++ endif
++else
++ ON_EACH_CPU_ARGS := $(shell $(CONFTEST) on_each_cpu)
++ ifeq ($(ON_EACH_CPU_ARGS), 4)
++  EXTRA_CFLAGS += -DNV_ON_EACH_CPU_4_PRESENT
++ endif
++ ifeq ($(ON_EACH_CPU_ARGS), 3)
++  EXTRA_CFLAGS += -DNV_ON_EACH_CPU_3_PRESENT
++ endif
++ SMP_CALL_ARGS := $(shell $(CONFTEST) smp_call_function)
++ ifeq ($(SMP_CALL_ARGS), 4)
++  EXTRA_CFLAGS += -DNV_SMP_CALL_4_PRESENT
++ endif
++ ifeq ($(SMP_CALL_ARGS), 3)
++  EXTRA_CFLAGS += -DNV_SMP_CALL_3_PRESENT
++ endif
++ ifeq ($(shell $(CONFTEST) semaphore_include), 1)
++ EXTRA_CFLAGS += -DNV_LINUX_SEMAPHORE_H_PRESENT
++ endif
++endif
++
+ #
+ # Miscellaneous NVIDIA kernel module build support targets. They are needed
+ # to satisfy KBUILD requirements and to support NVIDIA specifics.
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/Makefile.nvidia NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.27/usr/src/nv/Makefile.nvidia
+--- usr/src/nv/Makefile.nvidia	2007-09-12 23:53:20.000000000 +0200
++++ usr/src/nv/Makefile.nvidia	2008-10-14 00:28:22.134646180 +0200
+@@ -98,6 +98,14 @@ ifeq ($(shell $(CONFTEST) i2c_adapter_in
+  DEFINES += -DNV_I2C_ADAPTER_INC_USE_PRESENT
+ endif
+ 
++SMP_CALL_ARGS := $(shell $(CONFTEST) smp_call_function)
++ifeq ($(SMP_CALL_ARGS), 4)
++ DEFINES += -DNV_SMP_CALL_4_PRESENT
++endif
++ifeq ($(SMP_CALL_ARGS), 3)
++ DEFINES += -DNV_SMP_CALL_3_PRESENT
++endif
++
+ DEFINES+=$(EXTRA_DEFINES)
+ 
+ # allow build parameters to be passed in through the environment
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/nv.c NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.27/usr/src/nv/nv.c
+--- usr/src/nv/nv.c	2008-10-14 04:17:48.778539978 +0200
++++ usr/src/nv/nv.c	2008-10-14 04:16:54.786540905 +0200
+@@ -965,7 +965,7 @@ static void __nv_setup_pat_entries(void 
+ 
+ #if defined(CONFIG_HOTPLUG_CPU)
+     int cpu = (NvUPtr)info;
+-    if ((cpu != 0) && (cpu != smp_processor_id()))
++    if ((cpu != 0) && (cpu != (int)smp_processor_id()))
+         return;
+ #endif
+ 
+@@ -991,7 +991,7 @@ static void __nv_restore_pat_entries(voi
+ 
+ #if defined(CONFIG_HOTPLUG_CPU)
+     int cpu = (NvUPtr)info;
+-    if ((cpu != 0) && (cpu != smp_processor_id()))
++    if ((cpu != 0) && (cpu != (int)smp_processor_id()))
+         return;
+ #endif
+ 
+@@ -1212,8 +1212,7 @@ int nv_verify_page_mappings(
+     unsigned int cachetype
+ )
+ {
+-#if defined(NV_CHANGE_PAGE_ATTR_PRESENT) || \
+-    (defined(NV_SET_PAGES_UC_PRESENT) && !defined(NVCPU_X86))
++#if defined(NV_CHANGE_PAGE_ATTR_PRESENT)
+     unsigned long retval = -1;
+ #if defined(NVCPU_X86) || defined(NVCPU_X86_64)
+     pgd_t *pgd = NULL;
+@@ -1305,27 +1304,27 @@ failed:
+ static int
+ nv_kern_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ {
+-    int cpu = (NvUPtr)hcpu;
++    unsigned int cpu = get_cpu();
+ 
+     switch (action)
+     {
+         case CPU_DOWN_FAILED:
+         case CPU_ONLINE:
+-            if (get_cpu() == cpu)
++            if (cpu == (NvUPtr)hcpu)
+                 __nv_setup_pat_entries(NULL);
+             else
+-                smp_call_function(__nv_setup_pat_entries, hcpu, 1, 1);
+-            put_cpu();
++                NV_SMP_CALL_FUNCTION(__nv_setup_pat_entries, hcpu, 1);
+             break;
+         case CPU_DOWN_PREPARE:
+-            if (get_cpu() == cpu)
++            if (cpu == (NvUPtr)hcpu)
+                 __nv_restore_pat_entries(NULL);
+             else
+-                smp_call_function(__nv_restore_pat_entries, hcpu, 1, 1);
+-            put_cpu();
++                NV_SMP_CALL_FUNCTION(__nv_restore_pat_entries, hcpu, 1);
+             break;
+     }
+ 
++    put_cpu();
++
+     return NOTIFY_OK;
+ }
+ 
+@@ -2868,11 +2867,6 @@ void nv_kern_isr_bh(
+     nv_state_t *nv = (nv_state_t *) data;
+     nv_linux_state_t *nvl = NV_GET_NVL_FROM_NV_STATE(nv);
+ 
+-    /*
+-     * XXX: This level of indirection is necessary to work around
+-     * problems with Linux kernels using a non-standard calling
+-     * convention, i.e. Arjan van de Ven's/RedHat's 2.6.0 kernels.
+-     */
+     NV_CHECK_PCI_CONFIG_SPACE(nvl->isr_bh_sp, nv, TRUE);
+     rm_isr_bh(nvl->isr_bh_sp, nv);
+ }
+@@ -3525,7 +3519,7 @@ NvU64 nv_get_phys_address(
+     BOOL kern
+ )
+ {
+-#if defined(NV_SET_PAGES_UC_PRESENT) && defined(NVCPU_X86)
++#if defined(NV_SET_PAGES_UC_PRESENT)
+     nv_printf(NV_DBG_ERRORS,
+         "NVRM: can't translate address in nv_get_phys_address()!\n");
+ #else
+@@ -4430,6 +4424,8 @@ nv_power_management(
+ #else /* end of NV_PM_SUPPORT_NEW_STYLE_APM */
+         case PCI_D3hot:
+             nv_printf(NV_DBG_INFO, "NVRM: ACPI: received suspend event\n");
++
++            tasklet_disable(&lnv->tasklet);
+             status = rm_power_management(sp, nv, 0, NV_PM_ACPI_STANDBY);            
+ 
+             __nv_disable_pat_support();
+@@ -4441,6 +4437,7 @@ nv_power_management(
+             status = rm_power_management(sp, nv, 0, NV_PM_ACPI_RESUME);
+ 
+             __nv_enable_pat_support();
++            tasklet_enable(&lnv->tasklet);
+ 
+             break;
+ 
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/nv-linux.h NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.27/usr/src/nv/nv-linux.h
+--- usr/src/nv/nv-linux.h	2008-07-18 00:59:19.418165477 +0200
++++ usr/src/nv/nv-linux.h	2008-10-14 02:02:44.810181499 +0200
+@@ -95,7 +95,11 @@
+ #endif
+ 
+ #include <linux/spinlock.h>
++#if defined(NV_LINUX_SEMAPHORE_H_PRESENT)
++#include <linux/semaphore.h>
++#else
+ #include <asm/semaphore.h>
++#endif
+ #include <linux/completion.h>
+ #include <linux/highmem.h>
+ 
+@@ -637,6 +641,38 @@ extern void *nv_stack_t_cache;
+ 
+ #endif /* !defined NVWATCH */
+ 
++#if defined(NV_SMP_CALL_4_PRESENT)
++#define NV_SMP_CALL_FUNCTION(func, info, wait)               \
++    ({                                                       \
++        int __ret = smp_call_function(func, info, 1, wait);  \
++        __ret;                                               \
++     })
++#elif defined(NV_SMP_CALL_3_PRESENT)
++#define NV_SMP_CALL_FUNCTION(func, info, wait)               \
++    ({                                                       \
++        int __ret = smp_call_function(func, info, wait);     \
++        __ret;                                               \
++     })
++#elif defined(CONFIG_SMP)
++#error "NV_SMP_CALL_FUNCTION() undefined (smp_call_function() unavailable)!"
++#endif
++
++#if defined(NV_ON_EACH_CPU_4_PRESENT)
++#define NV_ON_EACH_CPU(func, info, wait)               \
++    ({                                                 \
++        int __ret = on_each_cpu(func, info, 1, wait);  \
++        __ret;                                         \
++     })
++#elif defined(NV_ON_EACH_CPU_3_PRESENT)
++#define NV_ON_EACH_CPU(func, info, wait)               \
++    ({                                                 \
++        int __ret = on_each_cpu(func, info, wait);     \
++        __ret;                                         \
++     })
++#elif !defined(KERNEL_2_4) && defined(CONFIG_SMP)
++#error "NV_ON_EACH_CPU() undefined (on_each_cpu() unavailable)!"
++#endif
++
+ static inline int nv_execute_on_all_cpus(void (*func)(void *info), void *info)
+ {
+     int ret = 0;
+@@ -646,13 +682,13 @@ static inline int nv_execute_on_all_cpus
+ #if defined(preempt_disable)
+     preempt_disable();
+ #endif
+-    ret = smp_call_function(func, info, 1, 1);
++    ret = NV_SMP_CALL_FUNCTION(func, info, 1);
+     func(info);
+ #if defined(preempt_enable)
+     preempt_enable();
+ #endif
+ #else
+-    ret = on_each_cpu(func, info, 1, 1);
++    ret = NV_ON_EACH_CPU(func, info, 1);
+ #endif
+     return ret;
+ }
+@@ -665,12 +701,16 @@ static inline int nv_execute_on_all_cpus
+ #define nv_down(lock)                   down(&lock)
+ #define nv_up(lock)                     up(&lock)
+ 
++#if defined(CONFIG_PREEMPT_RT)
++#define NV_INIT_MUTEX(mutex) init_MUTEX(mutex)
++#else
+ #define NV_INIT_MUTEX(mutex)                       \
+     {                                              \
+         struct semaphore __mutex =                 \
+             __SEMAPHORE_INITIALIZER(*(mutex), 1);  \
+         *(mutex) = __mutex;                        \
+     }
++#endif
+ 
+ #if defined (KERNEL_2_4)
+ #  define NV_IS_SUSER()                 suser()
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/nv-vm.c NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.27/usr/src/nv/nv-vm.c
+--- usr/src/nv/nv-vm.c	2008-04-21 18:32:45.000000000 +0200
++++ usr/src/nv/nv-vm.c	2008-10-14 02:55:01.536180498 +0200
+@@ -284,39 +284,35 @@ static inline void nv_sg_unmap_buffer(
+ #endif  /* NV_SG_MAP_BUFFERS */
+ 
+ 
+-/* cache flushing
+- * when allocating new pages, we convert the kernel mapping from cached to
+- * uncached to avoid cache aliasing. one problem with this is that cpus can 
+- * still contain data cached from these pages, in addition to stale ptes that
+- * are cached and think the pages are still cached. normally, the cpu's self
+- * snoop (SS) capability would catch this between cpus, but if the pages are
+- * mapped through the agp aperture, SS is not capable of detecting these
+- * conflicts. we try to rely on the kernel's provided interfaces when possible,
+- * but need additional flushing on earlier kernels.
+- */
+ /*
+- * 2.4 kernels handle flushing in the change_page_attr() call, but kernels 
+- * earlier than 2.4.27 don't flush on cpus that support Self Snoop, so we
+- * manually flush on these kernels (actually, we go ahead and flush on all
+- * 2.4 kernels, as it's possible some others may be missing this fix and
+- * we'd prefer to be a little slower flushing caches than hanging the 
+- * system.
+- * 2.6 kernels split the flushing out to a seperate call, 
+- * global_flush_tlb(), so we rely on that. however, there are some 2.6
+- * x86_64 kernels that do not properly flush. Likewise, a number of kernels
+- * starting with 2.6.20-rc1 do not flush correctly.
++ * Cache flushes and TLB invalidation
++ *
++ * Allocating new pages, we may change their kernel mappings' memory types
++ * from cached to UC to avoid cache aliasing. One problem with this is
++ * that cache lines may still contain data from these pages and there may
++ * be then stale TLB entries.
++ *
++ * The Linux kernel's strategy for addressing the above has varied since
++ * the introduction of change_page_attr(): it has been implicit in the
++ * change_page_attr() interface, explicit in the global_flush_tlb()
++ * interface and, as of this writing, is implicit again in the interfaces
++ * replacing change_page_attr(), i.e. set_pages_*().
++ *
++ * In theory, any of the above should satisfy the NVIDIA graphics driver's
++ * requirements. In practise, none do reliably:
++ *
++ *  - some Linux 2.4 kernels (e.g. vanilla 2.4.27) did not flush caches
++ *    on CPUs with Self Snoop capability, but this feature does not
++ *    interact well with AGP.
++ *
++ *  - most Linux 2.6 kernels' implementations of the global_flush_tlb()
++ *    interface fail to flush caches on all or some CPUs, for a
++ *    variety of reasons.
++ *
++ * Due to the above, the NVIDIA Linux graphics driver is forced to perform
++ * heavy-weight flush/invalidation operations to avoid problems due to
++ * stale cache lines and/or TLB entries.
+  */
+-#if !defined(KERNEL_2_4) && defined(NVCPU_X86_64) && \
+-  (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 14))
+-#define NV_CPA_DF_LIST_BUG 1
+-#endif
+-
+-#if defined(KERNEL_2_4) || defined(NV_CPA_DF_LIST_BUG) || \
+-  (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 20))
+-#define NV_CPA_NEEDS_FLUSHING 1
+-#endif
+-
+-#if defined(NV_CPA_NEEDS_FLUSHING)
+ static void cache_flush(void *p)
+ {
+     unsigned long reg0, reg1;
+@@ -324,7 +320,7 @@ static void cache_flush(void *p)
+     CACHE_FLUSH();
+ 
+     // flush global TLBs
+-#if defined (NVCPU_X86)
++#if defined(NVCPU_X86)
+     asm volatile("movl %%cr4, %0;  \n"
+                  "andl $~0x80, %0; \n"
+                  "movl %0, %%cr4;  \n"
+@@ -334,7 +330,7 @@ static void cache_flush(void *p)
+                  "movl %0, %%cr4;  \n"
+                  : "=&r" (reg0), "=&r" (reg1)
+                  : : "memory");
+-#else
++#elif defined(NVCPU_X86_64)
+     asm volatile("movq %%cr4, %0;  \n"
+                  "andq $~0x80, %0; \n"
+                  "movq %0, %%cr4;  \n"
+@@ -346,18 +342,14 @@ static void cache_flush(void *p)
+                  : : "memory");
+ #endif
+ }
+-#endif /* NV_CPA_NEEDS_FLUSHING */
+ 
+ static void nv_flush_caches(void)
+ {
+-#if defined(KERNEL_2_4)
+-    // for 2.4 kernels, just automatically flush the caches and invalidate tlbs
+-    nv_execute_on_all_cpus(cache_flush, NULL);
+-#else
+-    // for 2.6 (and later) kernels, rely on global_flush_tlb
+-#if defined(NV_CPA_NEEDS_FLUSHING)
+-    nv_execute_on_all_cpus(cache_flush, NULL);
++#if defined(CONFIG_XEN)
++    return;
+ #endif
++    nv_execute_on_all_cpus(cache_flush, NULL);
++#if !defined(KERNEL_2_4)
+ #if (defined(NVCPU_X86) || defined(NVCPU_X86_64)) && \
+   defined(NV_CHANGE_PAGE_ATTR_PRESENT)
+     global_flush_tlb();
+@@ -393,12 +385,6 @@ static void nv_flush_caches(void)
+  * additionally, some platforms require us to allocate 64-bit addresses,
+  * then remap them through an iommu/swiotlb to get 32-bit addresses. this
+  * is handled here as well.
+- *
+- * the official kernel interface for allocating dma memory is to use
+- * pci_alloc_consistent. this will abstract many of the 32-bit issues from us
+- * mentioned above and will allow us to clean our code up quite a bit. we're
+- * migrating towards this interface, but it's not quite stable in all cases
+- * yet. em64t is one such current case.
+  */
+ 
+ int nv_vm_malloc_pages(
+diff -Nuarp NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.26/usr/src/nv/os-interface.c NVIDIA-Linux-x86_64-100.14.19-pkg2-2.6.27/usr/src/nv/os-interface.c
+--- usr/src/nv/os-interface.c	2008-07-18 01:27:41.407165337 +0200
++++ usr/src/nv/os-interface.c	2008-10-14 02:12:53.990180546 +0200
+@@ -42,7 +42,7 @@ RM_STATUS NV_API_CALL os_raise_smp_barri
+     preempt_disable();
+ #endif
+     os_block_on_smp_barrier = 1;
+-    ret = smp_call_function(ipi_handler, NULL, 1, 0);
++    ret = NV_SMP_CALL_FUNCTION(ipi_handler, NULL, 0);
+ #if defined(preempt_enable)
+     preempt_enable();
+ #endif
+@@ -76,7 +76,11 @@ typedef struct os_sema_s
+ {
+     nv_stack_t        *sp;
+     struct completion  completion;
++#if defined(CONFIG_PREEMPT_RT)
++    raw_spinlock_t     lock;
++#else
+     spinlock_t         lock;
++#endif
+     S032               count;
+ } os_sema_t;
+ 
+@@ -663,7 +667,11 @@ RM_STATUS NV_API_CALL os_kill_process(
+     U032 sig
+ )
+ {
++    #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)
++    return RM_ERR_NOT_SUPPORTED;
++    #else
+     return kill_proc(pid, sig, 1) ? RM_ERR_OPERATING_SYSTEM : RM_OK;
++    #endif
+ }
+ 
+ /*******************************************************************************/
+@@ -844,6 +852,23 @@ void* NV_API_CALL os_pci_init_handle(
+ {
+     struct pci_dev *dev;
+     unsigned int devfn = PCI_DEVFN(slot, function);
++    nv_state_t *nv;
++
++    if (!NV_MAY_SLEEP())
++    {
++        nv_printf(NV_DBG_ERRORS,
++            "NVRM: os_pci_init_handle: invalid context!\n");
++    }
++
++    if ((function == 0) && (bus != 255 && slot != 255))
++    {
++        if ((nv = nv_get_adapter_state(bus, slot)) != NULL)
++            return nv->handle;
++    }
++
++    if (!NV_MAY_SLEEP())
++        return NULL;
++
+     dev = NV_PCI_GET_SLOT(bus, devfn);
+     if (dev) {
+         if (vendor) *vendor = dev->vendor;
