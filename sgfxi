@@ -1455,8 +1455,8 @@ check_update_script()
 	# if newer version, download / replace lib file
 	case $1 in
 		$SCRIPT_NAME)
-			if [ "$FORCE_UPDATE" != 'true' -a "$4" != 'repeat' ];then
-				uArgs='u'
+			if [ "$FORCE_UPDATE" != 'true' -a "$4" != 'repeat' -a -n "$( grep 'echpat' <<< $2 )" ];then
+				uArgs='?u'
 			fi
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
 			wget -q -O$fileNameTemp $downloadUrl$1$uArgs || error_handler 198 $1
