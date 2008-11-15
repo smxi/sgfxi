@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.3
+####  version: 4.0.4
 ####  Date: November 14 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -25,6 +25,7 @@
 ########################################################################
 ####  CONVENTIONS:
 ####  Indentation: TABS
+####  Do not use `....`, those are totally non-reabable, use $(....)
 ####  Do not use one liner flow controls. The ONLY time you should use ; is in
 ####  this single case: if [ condition ];then (ie, never: [ condition ] && statement)
 ####
@@ -3189,7 +3190,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbcCdDeEhj:K:nN:o:pP:QrRsStUvWXxZ!: opt
+	while getopts AbcCdDeEhj:K:nN:o:pP:QrRsStUvWXxZ:! opt
 	do
 		case $opt in
 			A) AUTORUN='true'
@@ -3225,7 +3226,11 @@ get_options()
 			j)	if [ -n "$( egrep '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
 					START_OPTIONS=$START_OPTIONS" -j $OPTARG"
-					set_script_colors
+					# no reason to reset the colors if they are default
+					if [ "$SCRIPT_COLORS" != 1 ];then
+						START_OPTIONS=$START_OPTIONS" -j $SCRIPT_COLORS"
+						set_script_colors
+					fi
 				else
 					error_handler 228 $OPTARG
 				fi
