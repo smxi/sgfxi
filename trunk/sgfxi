@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.4
-####  Date: November 14 2008
+####  version: 4.0.5
+####  Date: November 15 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -18,6 +18,11 @@
 ####  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 ####
 ####  Get the full text of the GPL here: http://www.gnu.org/licenses/gpl.txt
+########################################################################
+####  Script URL: http://techpatterns.com/downloads/distro/sgfxi
+####  Script SVN: http://code.google.com/p/sgfxi
+####  Script Documentation: http://techpatterns.com/docs/
+####  Script Home page: http://techpatterns.com/forums/about933.html
 ########################################################################
 #### DEFINE:
 #### TRUE: -eq 0; == 'true'; function return 0
@@ -1483,10 +1488,10 @@ check_update_script()
 
 				if [ "$4" != 'repeat' ];then
 					# let's try this once again to make sure it wasn't just a temp problem
-					echo "${E}The file ${C}$1${E} did not download correctly from:\n$2\nRetrying download now...${N}"
+					echo -e "${E}The file ${C}$1${E} did not download correctly from:\n$2\nRetrying download now...${N}"
 					check_update_script "$1" "$2" "$3" 'repeat'
 				else
-					error_handler 231 $2$1
+					error_handler 231 $1
 				fi
 			fi
 			;;
@@ -3190,7 +3195,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbcCdDeEhj:K:nN:o:pP:QrRsStUvWXxZ:! opt
+	while getopts AbcCdDeEhj:K:nN:o:pP:QrRsStUvWXxZ!: opt
 	do
 		case $opt in
 			A) AUTORUN='true'
@@ -3351,6 +3356,7 @@ get_options()
 					*)	error_handler 178 "$OPTARG"
 						;;
 				esac
+				START_OPTIONS="$START_OPTIONS -! $OPTARG"
 				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -! $OPTARG - You are using an advanced Testing option. Only use this if you know what you are doing!\n"
 				;;
 			*) show_options err
