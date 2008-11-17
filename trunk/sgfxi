@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.6
+####  version: 4.0.7
 ####  Date: November 16 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -19,9 +19,9 @@
 ####
 ####  Get the full text of the GPL here: http://www.gnu.org/licenses/gpl.txt
 ########################################################################
-####  Script URL: http://techpatterns.com/downloads/distro/sgfxi
+####  Script URL: http://smxi.org/sg/sgfxi
 ####  Script SVN: http://code.google.com/p/sgfxi
-####  Script Documentation: http://techpatterns.com/docs/
+####  Script Documentation: http://smxi.org/docs/
 ####  Script Home page: http://techpatterns.com/forums/about933.html
 ########################################################################
 #### DEFINE:
@@ -217,8 +217,8 @@ INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
 # SD and SD_DEV are the same now but will change
-PATCH_DOWNLOAD='http://techpatterns.com/downloads/distro/'
-SCRIPT_DOWNLOAD='http://techpatterns.com/downloads/distro/'
+PATCH_DOWNLOAD='http://smxi.org/sg/distro/'
+SCRIPT_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
 SCRIPT_DOWNLOAD_BRANCH_1='http://sgfxi.googlecode.com/svn/branches/one/'
 SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
