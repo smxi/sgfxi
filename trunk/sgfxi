@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.7
-####  Date: November 16 2008
+####  version: 4.0.8
+####  Date: November 17 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
 # SD and SD_DEV are the same now but will change
-PATCH_DOWNLOAD='http://smxi.org/sg/distro/'
+PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
 SCRIPT_DOWNLOAD_BRANCH_1='http://sgfxi.googlecode.com/svn/branches/one/'
