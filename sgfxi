@@ -216,7 +216,7 @@ SCRIPT_HOME='/usr/local/bin'
 INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
-# SD and SD_DEV are the same now but will change
+# file and patch urls
 PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
