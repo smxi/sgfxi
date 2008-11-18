@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.8
+####  version: 4.0.9
 ####  Date: November 17 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -157,7 +157,7 @@ NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 )
 NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 )
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
-NV_TESTING='180.06:173.14.15:96.43.09:71.86.07'
+NV_TESTING='180.08:180.06:173.14.15:96.43.09:71.86.07'
 NV_OTHERS='177.80:169.12:100.14.19:96.43.05:71.86.04'
 
 # debian sid legacies:
@@ -315,7 +315,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.[5-9]|2.[0-9]|7.[6-9])
 								case $DRIVER_DEFAULT in
-									180.06|177.82|177.80|173.14.15|96.43.09|71.86.07)
+									180.08|180.06|177.82|177.80|173.14.15|96.43.09|71.86.07)
 										: ## support should be working, see feedback
 										;;
 									*)
@@ -333,7 +333,7 @@ driver_support_tests()
 						esac
 						# handle change to legacy 5xxx level cards
 						case $DRIVER_DEFAULT in
-							180.06|177.82|177.80)
+							180.08|180.06|177.82|177.80)
 								if [ "$LEGACY_LEVEL" -eq 3 ];then
 									error_handler 227
 								fi
@@ -350,7 +350,7 @@ driver_support_tests()
 								;;
 							26)
 								case $DRIVER_DEFAULT in
-									180.06|177.82|177.80|173.14.15|173.14.12|100.14.19|96.43.09|96.43.07|71.86.07|71.86.06|$DEBIAN_NVIDIA)
+									180.08|180.06|177.82|177.80|173.14.15|173.14.12|100.14.19|96.43.09|96.43.07|71.86.07|71.86.06|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -360,7 +360,7 @@ driver_support_tests()
 								;;
 							27)
 								case $DRIVER_DEFAULT in
-									180.06|177.82|177.80|173.14.15|173.14.12|100.14.19|96.43.09|96.43.07|71.86.07|71.86.06|$DEBIAN_NVIDIA)
+									180.08|180.06|177.82|177.80|173.14.15|173.14.12|100.14.19|96.43.09|96.43.07|71.86.07|71.86.06|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -372,7 +372,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									180.06|177.82|177.80|173.14.15|96.43.09|71.86.07)
+									180.08|180.06|177.82|177.80|173.14.15|96.43.09|71.86.07)
 										: # do nothing
 										;;
 									*)
