@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.10
-####  Date: November 17 2008
+####  version: 4.0.11
+####  Date: November 19 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -50,7 +50,7 @@
 ####  All functions should follow standard naming, ie, verb adjective noun, get_cpu_data
 ########################################################################
 ####  TESTING FLAGS
-####  smxi supports advanced testing triggers to do various things, using -! <arg>
+####  sgfxi supports advanced testing triggers to do various things, using -! <arg>
 ####  -! 1 - triggers default B_TESTING_1='true' to trigger some test or other
 ####  -! 2 - triggers default B_TESTING_2='true' to trigger some test or other
 ####  -! 3 - triggers default B_SKIP_FUNCTION='true' to turn off some functions
@@ -615,9 +615,9 @@ set_test_data()
 
 # 		# note: devs: double check this output to make sure it's your user name
 # 		username=$( getent passwd 1000|cut -d \: -f1 )
-# 		SCRIPT_HOME="/home/$username/bin/scripts/graphics/"
-# 		INSTALL_WORKING_DIR="/home/$username/bin/scripts/graphics/"
-# 		LOG_FILE_DIR="/home/$username/bin/scripts/graphics/"
+# 		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
+# 		INSTALL_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev/"
+# 		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/"
 # 		cd $SCRIPT_HOME
 # 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
@@ -2363,7 +2363,7 @@ install_debian_drivers()
 				m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_NVIDIA
 
 				#m-a prepare && m-a qa-i nvidia
-				#nvdiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
+				#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
 				echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
 				install_package $nvidiaGlx
 
@@ -3182,6 +3182,21 @@ show_options()
 	echo "   want X start/stop tests to run. Gives start X option on completion if not in X."
 	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
 	echo "   you are sure your connection is fine."
+	if [ "$1" == 'full' ];then
+		echo ""
+		echo "Developer and Testing Options (Advanced):"
+		echo "-! 1 - Sets flag B_TESTING_1='true' to trigger testing condition 1."
+		echo "-! 2 - Sets flag B_TESTING_2='true' to trigger testing condition 2."
+		echo "-! 3 - Sets flag B_SKIP_FUNCTION='true' to turn off some functions."
+		echo "-! 4 - Sets flags B_TESTING_1='true' and B_TESTING_2='true'."
+		echo "-! 5 - Sets flags B_TESTING_1='true' and B_SKIP_FUNCTION='true'."
+		echo "-! 10 - Triggers an update from the primary dev download server."
+		echo "-! 11 - Triggers an update from svn branch one - if present, of course."
+		echo "-! 12 - Triggers an update from svn branch two - if present, of course."
+		echo "-! <http://......> - Triggers an update from whatever server you list."
+		echo "-! 20 - Uses patch from svn branch one server (must be in branch/one/patches)."
+		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
+	fi
 	echo
 	if [ "$1" == 'err' ];then
 		exit 1
@@ -3195,7 +3210,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbcCdDeEhj:K:nN:o:pP:QrRsStUvWXxZ!: opt
+	while getopts AbcCdDeEhHj:K:nN:o:pP:QrRsStUvWXxZ!: opt
 	do
 		case $opt in
 			A) AUTORUN='true'
@@ -3260,7 +3275,7 @@ get_options()
 				fi
 				;;
 			o) DRIVER_OVERRIDE="$OPTARG"
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -o - Driver override. Forces install of this driver: $DRIVER_OVERRIDE (nVdia|ATI fglrx only)\n"
+				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -o - Driver override. Forces install of this driver: $DRIVER_OVERRIDE (nVidia|ATI fglrx only)\n"
 				START_OPTIONS=$START_OPTIONS" -o $OPTARG"
 				;;
 			p) PRINT_VER='true'
@@ -3318,6 +3333,8 @@ get_options()
 				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -Z - Skip the script connection tests. Limited utility, unless you already have downloaded the driver.\n"
 				;;
 			h) show_options
+				;;
+			H)	show_options 'full'
 				;;
 			## debuggers and testing options
 			!)	# test for various supported methods
