@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.11
-####  Date: November 19 2008
+####  version: 4.0.12
+####  Date: November 25 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -1147,8 +1147,8 @@ basic_startup_tests()
 	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(stable|etch)' )
 	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(testing)' )
 	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(sid|unstable)' )
-	### basic system requirements for this script to run, first so user doesn't
-	### have to be root or out of x to get basic failure information
+	## basic system requirements for this script to run, first so user doesn't
+	## have to be root or out of x to get basic failure information
 	# make sure that it's a debian based system
 	if [ ! -f "$EDV" ];then
 		error_handler 252
@@ -1170,7 +1170,7 @@ basic_startup_tests()
 		error_handler 243
 	fi
 
-	### basic execute requirements
+	## basic execute requirements
 	cd $SCRIPT_HOME
 	if [ "$(whoami)" != 'root' ];then
 		error_handler 251
@@ -2149,7 +2149,7 @@ preinstall_cleanup()
 		cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY
 	fi
 
-	####### NVIDIA removal...
+	## NVIDIA removal...
 	# double check, clean up anything left after uninstaller runs
 	rm -f /usr/src/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	rm -rf /usr/src/modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
@@ -2187,7 +2187,7 @@ preinstall_cleanup()
 		dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 
-	####### FGLRX removal...
+	## FGLRX removal...
 	# this is for manually installed amdccle removal
 	rm -f /usr/local/bin/amdccle
 
@@ -2232,7 +2232,7 @@ apply_module_patch()
 	eval $LOGPE
 }
 
-### run patch module, then install
+## run patch module, then install
 run_driver_installer()
 {
 	eval $LOGPS
@@ -2703,7 +2703,7 @@ start_stop_x()
 	# setting the default will handle cases like default 2 while still handling 3/5
 	local defaultRunlevel=$( grep ':initdefault:' /etc/inittab | egrep -o '[0-5]' )
 
-	### restart x if this is not being run by smxi
+	## restart x if this is not being run by smxi
 	if [ -z "$DISPLAY_MANAGER" ];then
 		for dman in $displayManagers
 		do
@@ -2980,7 +2980,7 @@ remove_modelines()
 	eval $LOGUS
 	local removeThem=''
 
-	### this handles standard cases, always for fglrx, never for native ati/nv
+	## this handles standard cases, always for fglrx, never for native ati/nv
 	#   and whenever required by argument. I'll see if native ever needs them removed
 	if [ "$CARD" == $FGLRX  -o "$REMOVE_MODELINES" == 'true' ];then
 		if [ "$NATIVE_DRIVER" == 'true' -a "$REMOVE_MODELINES" == 'true' ];then
@@ -3062,7 +3062,7 @@ update_xorg()
 				s/^([\s]*Driver\s*"fglrx")/\1\n\tOption      "UseInternalAGPGART" "'$agpart'"\n\tOption "TexturedXrender"/' $EXXC
 				;;
 		esac
-	### Native ati/nv specific stuff
+	## Native ati/nv specific stuff
 	else
 		if [ "$CARD" == $INTEL ];then
 			:
@@ -3398,12 +3398,12 @@ if [ -z "$INSTALL_TO_KERNEL" ];then
 	kernel_string_info
 fi
 
-### if this exits with error, no lib files will be downloaded
+## if this exits with error, no lib files will be downloaded
 if [ "$B_SKIP_FUNCTION" != 'true' ];then
 	basic_startup_tests
 fi
 
-### update everything, restart if not run from smxi
+## update everything, restart if not run from smxi
 if [ "$SKIP_RESTART" != 'true' -a "$SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$SKIP_WGET" != 'true' ];then
 	check_update_script $SCRIPT_NAME "$SCRIPT_DOWNLOAD" 'default server'
 fi
@@ -3418,7 +3418,7 @@ if [ "$PRINT_VER" != 'true' ];then
 	print_information
 fi
 
-### this is separate so card can get set first for native installer
+## this is separate so card can get set first for native installer
 set_card
 if [ "$NATIVE_DRIVER" != 'true' ];then
 	detect_card_version
@@ -3435,7 +3435,7 @@ fi
 if [ "$NATIVE_DRIVER" == 'true' ];then
 	install_native_driver
 fi
-### ready to set the data for version/system info
+## ready to set the data for version/system info
 if [ "$USE_DEBIAN_DRIVER" != 'true' ];then
 	check_supported_driver # make sure user entered data is correct
 	set_cpu_data
@@ -3461,8 +3461,8 @@ if [ "$B_SKIP_FUNCTION" != 'true' ];then
 	preinstall_cleanup
 fi
 
-### this is going to run either the fglrx or nvidia patch library file function
-### both have same function name, so no detection is required, we did it already
+## this is going to run either the fglrx or nvidia patch library file function
+## both have same function name, so no detection is required, we did it already
 if [ "$USE_DEBIAN_DRIVER" != 'true' ];then
 	run_patches
 	if [ "$B_SKIP_FUNCTION" == 'true' ];then
