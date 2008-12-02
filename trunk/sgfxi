@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.0.12
-####  Date: November 25 2008
+####  version: 4.0.13
+####  Date: December 2 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -157,7 +157,7 @@ NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 )
 NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 )
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
-NV_TESTING='180.08:180.06:173.14.15:96.43.09:71.86.07'
+NV_TESTING='180.11:180.08:180.06:173.14.15:96.43.09:71.86.07'
 NV_OTHERS='177.80:169.12:100.14.19:96.43.05:71.86.04'
 
 # debian sid legacies:
@@ -327,13 +327,13 @@ driver_support_tests()
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
 						case $DRIVER_DEFAULT in
-							180.08|173.14.15|96.43.09|71.86.07)
+							180.11|180.08|173.14.15|96.43.09|71.86.07)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
 						# handle change to legacy 5xxx level cards
 						case $DRIVER_DEFAULT in
-							180.08|180.06|177.82|177.80)
+							180.11|180.08|180.06|177.82|177.80)
 								if [ "$LEGACY_LEVEL" -eq 3 ];then
 									error_handler 227
 								fi
@@ -360,7 +360,7 @@ driver_support_tests()
 								;;
 							27)
 								case $DRIVER_DEFAULT in
-									180.08|180.06|177.82|177.80|173.14.15|173.14.12|100.14.19|96.43.09|96.43.07|71.86.07|71.86.06|$DEBIAN_NVIDIA)
+									180.11|180.08|180.06|177.82|177.80|173.14.15|173.14.12|100.14.19|96.43.09|96.43.07|71.86.07|71.86.06|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -372,7 +372,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									180.08|180.06|177.82|177.80|173.14.15|96.43.09|71.86.07)
+									180.11|180.08|180.06|177.82|177.80|173.14.15|96.43.09|71.86.07)
 										: # do nothing
 										;;
 									*)
@@ -1461,7 +1461,7 @@ check_update_script()
 	# if newer version, download / replace lib file
 	case $1 in
 		$SCRIPT_NAME)
-			if [ "$FORCE_UPDATE" != 'true' -a "$4" != 'repeat' -a -n "$( grep 'echpat' <<< $2 )" ];then
+			if [ "$FORCE_UPDATE" != 'true' -a "$4" != 'repeat' -a -n "$( grep 'smxi.org' <<< $2 )" ];then
 				uArgs='?u'
 			fi
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
