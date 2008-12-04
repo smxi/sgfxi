@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.1.1
+####  version: 4.1.2
 ####  Date: December 3 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -999,7 +999,7 @@ detect_card_version()
 					;;
 				# This is for the GeForce FX 5xxx series. Not sure about the quadro fx series:
 				# 004d 004e 09d0 009d 00cd 00ce 00fe 019d 019e
-				00fa|00fb|00fc|0320|0321|0322|0323|0324|0325|0326|0327|0328|0329|032c|032d|0330|0331|0332|0333|0334|0341|0342|0343|0344|0347|0348)
+				00fa|00fb|00fc|031a|031b|0311|0312|0314|0320|0321|0322|0323|0324|0325|0326|0327|0328|0329|032c|032d|0330|0331|0332|0333|0334|0341|0342|0343|0344|0347|0348)
 					DRIVER_INSTALL=$NV_LEGACY_3
 					LEGACY_LEVEL=3
 					;;
