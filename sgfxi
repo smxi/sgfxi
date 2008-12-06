@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.0
+####  version: 4.2.1
 ####  Date: December 5 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -3285,7 +3285,7 @@ get_options()
 				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -b - TripleBuffer is on (nVidia only)\n"
 				;;
 			B)	B_USE_BETA='true'
-				START_OPTIONS=$START_OPTIONS' -b'
+				START_OPTIONS=$START_OPTIONS' -B'
 				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -B - Use Beta Driver (nVidia only. Only if available)\n"
 				;;
 			c) B_COMPOSITE='true'
