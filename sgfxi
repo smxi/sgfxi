@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.2
+####  version: 4.2.3
 ####  Date: December 7 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -1195,13 +1195,12 @@ basic_startup_tests()
 	# these tests will be improved over time, but are ok for now
 	local isEtch=$( grep -is '^4.' $EDV )
 	local isLennyStable=$( grep -is '^5.' $EDV )
-	local isSqueezeSid=$( grep -is '^6.' $EDV )
 	local isLennyTesting=$( grep -is '^lenny/sid' $EDV )
-	local isSqueezeTesting=$( grep -is '^squeeze/sid' $EDV )
+	local isSqueezeSid=$( egrep -is '^(squeeze/sid|6\.)' $EDV )
 
 	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(stable|etch)' )
 	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(squeeze|testing)' )
-	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.l
+	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(sid|unstable)' )
 	## basic system requirements for this script to run, first so user doesn't
 	## have to be root or out of x to get basic failure information
 	# make sure that it's a debian based system
@@ -1254,7 +1253,7 @@ basic_startup_tests()
 		else
 			SYSTEM_BASE='stable'
 		fi
-	elif [ "$isUnstable" -eq 0 ] && [ -n "$isLennyTesting" -o -n "$isSqueezeTesting" -o "$isTesting" -gt 0 ];then
+	elif [ "$isUnstable" -eq 0 ] && [ -n "$isLennyTesting" -o -n "$isSqueezeSid" -o "$isTesting" -gt 0 ];then
 		SYSTEM_BASE='testing'
 	else
 		SYSTEM_BASE='sid'
