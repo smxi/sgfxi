@@ -2027,12 +2027,14 @@ set_version()
 		newKernelText="\n${S}onto the kernel: ${C}$INSTALL_TO_KERNEL${N}"
 	fi
 	# this is only true if use beta flag true and beta driver exists
-	if [ "$B_USE_BETA" == 'true' ];then
+	if [ "$B_USE_BETA" == 'true' -a "$CARD" == $NVIDIA ];then
 		if [ "$B_BETA_EXISTS" == 'true' ];then
 			betaDriverText="\n${M}This is the latest ${C}Nvidia Beta driver${M} for your card type.${N}\n"
 		else
 			betaDriverText="\n${M}There is ${C}no current beta driver${M} for your ${C}nVidia${M} card type.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
 		fi
+	elif [ "$B_USE_BETA" == 'true' -a "$CARD" == $FGLRX ];then
+		betaDriverText="\n${M}There is no ${C}beta fglrx driver${M} for your ${C}ATI${M} card.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
 	fi
 	print_information_continue 'standard' "The graphics installer will be installing the ${C}$CARD${S} driver: ${C}$DRIVER_DEFAULT${N}$betaDriverText$newKernelText"
 
