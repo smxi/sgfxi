@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.5
-####  Date: December 13 2008
+####  version: 4.2.6
+####  Date: December 22 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -559,8 +559,50 @@ run_patches()
 }
 
 ########################################################################
-#### primary startup - colors, test data,
+#### primary startup - test data, colors
 #### -------------------------------------------------------------------
+
+# only for debugging purposes
+set_test_data()
+{
+	local username=''
+
+	if [ "$B_TESTING_1" == 'true' ];then # set testing directories etc
+## NOTE: it's important to start all comments in here at first character for cleanup updater
+#		# this is required for testing to make sure we always are starting with true
+#		# latest script versions
+
+# 		# note: devs: double check this output to make sure it's your user name
+		username=$( getent passwd 1000|cut -d \: -f1 )
+		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
+		INSTALL_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev/"
+		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/"
+		cd $SCRIPT_HOME
+		rm -f sgfxi.log
+# 		# sgfxi doesn't support any legacy ATI stuff
+# 		CARD_DATA=1002:7280 # fake ati
+# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
+# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
+# 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
+# 		FG_DEFAULT='8-5'
+# 		NV_DEFAULT='177.80'
+# 		# set system bits to test 32/64 specific behaviors
+# 		BITS=64
+# 		# if you want to test for/without sidux kernels, set to null '' or 'true'
+# 		IS_SIDUX_KERNEL=''
+# 		# to test patches/error handling for a specific kernel major version,
+# 		# ie: 2.6.25 here
+# 		KERNEL_THIRD=28
+# 		# values: '' or 'true'
+# 		IS_XEN=''
+# 		# check for specific system base tests, can be:
+# 		# 'sid' 'testing' 'stable' 'etch'
+# 		SYSTEM_BASE='testing'
+# leave this at first character or errors in updater tools will occur
+:
+	fi
+}
 
 # set global color variables
 # options: 0 - turns off all colors; 1 - defaults
@@ -614,48 +656,6 @@ set_script_colors()
 	S=${B} # this is slightly tricky, making standard blue AFTER the caller def is set.
 
 	LINE='- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
-}
-
-# only for debugging purposes
-set_test_data()
-{
-	local username=''
-
-	if [ "$B_TESTING_1" == 'true' ];then # set testing directories etc
-## NOTE: it's important to start all comments in here at first character for cleanup updater
-#		# this is required for testing to make sure we always are starting with true
-#		# latest script versions
-
-# 		# note: devs: double check this output to make sure it's your user name
-		username=$( getent passwd 1000|cut -d \: -f1 )
-		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
-		INSTALL_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev/"
-		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/"
-		cd $SCRIPT_HOME
-		rm -f sgfxi.log
-# 		# sgfxi doesn't support any legacy ATI stuff
-# 		CARD_DATA=1002:7280 # fake ati
-# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
-# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
-		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
-# 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
-# 		FG_DEFAULT='8-5'
-# 		NV_DEFAULT='177.80'
-# 		# set system bits to test 32/64 specific behaviors
-# 		BITS=64
-# 		# if you want to test for/without sidux kernels, set to null '' or 'true'
-# 		IS_SIDUX_KERNEL=''
-# 		# to test patches/error handling for a specific kernel major version,
-# 		# ie: 2.6.25 here
-# 		KERNEL_THIRD=28
-# 		# values: '' or 'true'
-# 		IS_XEN=''
-# 		# check for specific system base tests, can be:
-# 		# 'sid' 'testing' 'stable' 'etch'
-# 		SYSTEM_BASE='testing'
-# leave this at first character or errors in updater tools will occur
-:
-	fi
 }
 
 ########################################################################
@@ -1190,16 +1190,17 @@ print_information()
 #print_information
 basic_startup_tests()
 {
-	local nonDebianPattern='(sidux|opera|debian-multimedia|skype|swiftfox|virtualbox)'
-	# these tests will be improved over time, but are ok for now
+	local nonDebianPattern='(sidux|opera|debian-multimedia|mepis|skype|swiftfox|virtualbox)'
+
 	# these tests will be improved over time, but are ok for now
 	local isEtch=$( grep -is '^4.' $EDV )
+	local isLenny=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(lenny)' )
 	local isLennyStable=$( grep -is '^5.' $EDV )
 	local isLennyTesting=$( grep -is '^lenny/sid' $EDV )
 	local isSqueezeSid=$( egrep -is '^(squeeze/sid|6\.)' $EDV )
 
 	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(stable|etch)' )
-	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(squeeze|testing)' )
+	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(squeeze|testing|lenny)' )
 	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(sid|unstable)' )
 	## basic system requirements for this script to run, first so user doesn't
 	## have to be root or out of x to get basic failure information
