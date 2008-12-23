@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.6
-####  Date: December 22 2008
+####  version: 4.2.7
+####  Date: December 23 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -183,6 +183,8 @@ FG_DEFAULT='8-12'
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
 FG_OTHERS='8-9:8-8:8-7:8-6:8-5:8-4'
+# set to sid/lenny/etch
+FG_DISTRO=''
 DRIVER_INSTALL=''
 DRIVER_DEFAULT=''
 DRIVER_OVERRIDE=''
@@ -580,7 +582,7 @@ set_test_data()
 		cd $SCRIPT_HOME
 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
-# 		CARD_DATA=1002:7280 # fake ati
+		CARD_DATA=1002:7280 # fake ati
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -590,7 +592,7 @@ set_test_data()
 # 		# set system bits to test 32/64 specific behaviors
 # 		BITS=64
 # 		# if you want to test for/without sidux kernels, set to null '' or 'true'
-# 		IS_SIDUX_KERNEL=''
+		IS_SIDUX_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
 # 		KERNEL_THIRD=28
@@ -1194,10 +1196,8 @@ basic_startup_tests()
 
 	# these tests will be improved over time, but are ok for now
 	local isEtch=$( grep -is '^4.' $EDV )
-	local isLenny=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(lenny)' )
-	local isLennyStable=$( grep -is '^5.' $EDV )
-	local isLennyTesting=$( grep -is '^lenny/sid' $EDV )
-	local isSqueezeSid=$( egrep -is '^(squeeze/sid|6\.)' $EDV )
+	local isLenny=$( grep -is '^5.' $EDV )
+	local isSqueeze=$( egrep -is '^(squeeze|6\.)' $EDV )
 
 	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(stable|etch)' )
 	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(squeeze|testing|lenny)' )
@@ -1251,13 +1251,17 @@ basic_startup_tests()
 	if [ -n "$isEtch" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
 		if [ -n "$isEtch" ];then
 			SYSTEM_BASE='etch'
+			FG_DISTRO='etch'
 		else
 			SYSTEM_BASE='stable'
+			FG_DISTRO='etch'
 		fi
-	elif [ "$isUnstable" -eq 0 ] && [ -n "$isLennyTesting" -o -n "$isSqueezeSid" -o "$isTesting" -gt 0 ];then
+	elif [ "$isUnstable" -eq 0 ] && [ -n "$isLenny" -o -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
 		SYSTEM_BASE='testing'
+		FG_DISTRO='lenny'
 	else
 		SYSTEM_BASE='sid'
+		FG_DISTRO='sid'
 	fi
 }
 
@@ -2336,7 +2340,7 @@ run_driver_installer()
 			;;
 		$FGLRX)
 			distroId='Debian'
-			distroCodeName='sid'
+			distroCodeName=$FG_DISTRO
 			installer='ati-installer.sh'
 			installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 			log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
