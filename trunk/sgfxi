@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.8
-####  Date: December 23 2008
+####  version: 4.2.9
+####  Date: December 30 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
 ####  Code contributions copyright: Latino 2008
@@ -1312,9 +1312,6 @@ check_install_tools()
 		if [ -n "$( dpkg -l | grep 'dpkg-cross' )" ];then
 			remove_package 'dpkg-cross' $CARD
 		fi
-		# force update of xserver-xorg-core package to handle 8.37.6 update
-		# not for now...
-		# install_package xserver-xorg-core
 	fi
 
 	if [ -f /etc/modutils/1alsa ];then
@@ -1789,34 +1786,16 @@ install_native_driver()
 
 		currentlyInstalled=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep "$driver" )
 
-		case $CARD in
-			$FGLRX)
-				# prep_native_driver # remove all the possible packages installed by experimental
-				if [ "$B_EXPERIMENTAL" == 'true' ];then
-	# 				echo "${S}There is no current experimental ${C}$driver${S}. Installing sid ${C}$driver${N}"
-	# 				install_package $driver
-	# 				install_package libdrm2 unstable # this may need some work to undo it
-					echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
-					native_driver_experimental "$driver"
-				# this will clean up experimental stuff if present
-				else
-					echo "${S}Reinstalling driver ${C}$driver${S} now...${N}"
-					install_package $driver
-					# install_package libdrm2 unstable # this may need some work to undo it
-				fi
-				;;
-			*)
-				## install driver only if needed, don't want to force an unwanted xorg update
-				if [ -z "$currentlyInstalled" ];then
-					# intel i810
-					#  libc6 (>= 2.3.6-6), libdrm2, libexpat1 (>= 1.95.8), libgl1-mesa-glx (= 6.5.1-0.6)
-					echo "${S}Installing missing driver ${C}$driver${S} now...${N}"
-					install_package $driver
-				else
-					echo "${S}Using your currently installed ${C}$driver${S} driver...${N}"
-				fi
-				;;
-		esac
+		echo "${S}Updating your ${C}xserver-xorg-core${S} package to latest now...${N}"
+		install_package 'xserver-xorg-core' '' '--reinstall'
+
+		if [ "$CARD" == "$FGLRX" -a "$B_EXPERIMENTAL" == 'true' ];then
+			echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
+			native_driver_experimental "$driver"
+		else
+			echo "${S}Installing latest xorg driver ${C}$driver${S} now...${N}"
+			install_package $driver '' '--reinstall'
+		fi
 
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		update_xorg
