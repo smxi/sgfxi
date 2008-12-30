@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.9
+####  version: 4.2.10
 ####  Date: December 30 2008
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2008
@@ -1463,6 +1463,19 @@ remove_package()
  	eval $LOGUE
 }
 
+# args: $1 - package to hold. sets hold for apt-get/aptitude
+hold_package()
+{
+	eval $LOGUS
+	# first set for aptitude syntax
+	if [ "$APT_TYPE" == 'aptitude' ];then
+		$APT_TYPE hold $1
+	fi
+	# then set hold into dpkg
+	echo $1 hold | dpkg --set-selections
+	eval $LOGUE
+}
+
 update_to_nonfree_sources()
 {
 	eval $LOGPS
@@ -2404,9 +2417,9 @@ install_debian_drivers()
 			# start the install
 			if [ "$LEGACY_LEVEL" -ne 0 ];then
 				echo "${S}Installing ${C}$DEBIAN_NVIDIA${S} components...${N}"
-				install_package nvidia-kernel-common
-				install_package nvidia-settings
-				install_package $nvidiaSource
+				install_package 'nvidia-kernel-common'
+				install_package 'nvidia-settings'
+				install_package "$nvidiaSource"
 				echo "${S}Creating  ${C}$DEBIAN_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
 				# m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i $nvidiaSource
 				m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_NVIDIA
@@ -2418,7 +2431,7 @@ install_debian_drivers()
 				#m-a prepare && m-a qa-i nvidia
 				#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
 				echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
-				install_package $nvidiaGlx
+				install_package "$nvidiaGlx"
 
 				if [ -z "$( grep '^nvidia' /etc/modules )" ];then
 					echo 'nvidia' >> /etc/modules
@@ -2427,10 +2440,10 @@ install_debian_drivers()
 			;;
 		$FGLRX)
 			echo "${S}Installing ${C}$DEBIAN_FGLRX${S} components...${N}"
-			install_package fglrx-driver
-			install_package fglrx-control
-			# install_package fglrx-amdcccle
-			install_package fglrx-kernel-src
+			install_package 'fglrx-driver'
+			install_package 'fglrx-control'
+			# install_package 'fglrx-amdcccle'
+			install_package 'fglrx-kernel-src'
 			echo "${S}Creating  ${C}$DEBIAN_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
 
 			# damentz suggestion to make sure old module is used
@@ -2529,12 +2542,16 @@ install_fglrx_debs()
 			$usunf
 		fi
 
+		log_function_data "Actual driver packages to install:\nfgDriver: $fgDriver\nfgAmdcccle: $fgAmdcccle\nfgKernelSrc: $fgKernelSrc"
+
 		# due to problems with config file questions, trying no logging of 1>> now
 		dpkg -i $fgDriver 2>> $LOG_FILE || error_handler 195 $fgDriver
  		dpkg -i $fgAmdcccle 2>> $LOG_FILE || error_handler 195 $fgAmdcccle
  		dpkg -i $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
 
+		log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
 		CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
+		log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
 		m-a install -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
 
 		# restore freeze state
@@ -2544,8 +2561,8 @@ install_fglrx_debs()
 
 		# put packages on hold fglrx-amdcccle, fglrx-driver, fglrx module
 		echo "${S}Placing ATI packages on hold to avoid dist-upgrade issues with Debian fglrx drivers...${N}"
-		echo fglrx-amdcccle hold | dpkg --set-selections
-		echo fglrx-driver hold | dpkg --set-selections
+		hold_package 'fglrx-amdcccle'
+		hold_package 'fglrx-driver'
 		eval $LOGPE
 	fi
 }
@@ -2937,7 +2954,7 @@ update_xorgconf_driver_version()
 check_extensions()
 {
 	eval $LOGUS
-	local stateOn=1 stateOff=0  # default for nvidia
+	local stateOn='enable' stateOff='disable' # default for nvidia
 	local turnOff='' rendState=0 compState=0 aiglxString=''
 	local compComment='#' rendComment='#'
 
@@ -2946,8 +2963,6 @@ check_extensions()
 		$FGLRX)
 			#stateOn='Enable' # check into enable/disable syntax for fglrx/ati/radeon here
 			#stateOff='Disable'
-			stateOn='1'
-			stateOff='0'
 			compState=$stateOff
 			rendState=$stateOff
 			# this stuff needs to be Disabled explicitly, no comments for fglrx only.
@@ -3053,7 +3068,7 @@ update_xorg()
 	eval $LOGPS
 	# this to second time stamp should help fix that old repeated .1st bug
 	local timeStampXorg=$EXXC-bu-$( date +%Y-%m-%d-%H:%M:%S )
-	local stateOn='1' stateOff='0'
+	local stateOn='enable' stateOff='disable'
 	# nvidia stuff
 	local rend=$stateOn twin=$stateOn triple=$stateOff
 	#  note: putting a space in these subsitution patterns breaks perl -e
