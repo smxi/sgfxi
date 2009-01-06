@@ -1189,6 +1189,8 @@ check_kernel_headers()
 		echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
 		install_package "$headerName"
 	elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFile" ];then
+		echo "${S}Installing missing kernel header package ${C}$headerName${S}"
+		echo "using your archived header package: ${C}$headerFile${N}"
 		dpkg -i $headerFile || error_handler 223 "$headerFile"
 	elif [ -z "$headerInstalled" -a -z "$headerAvailable" ];then
 		error_handler 224 "$headerName"
