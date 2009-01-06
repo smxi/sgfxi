@@ -3,10 +3,10 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.10
-####  Date: December 30 2008
+####  version: 4.2.11
+####  Date: January 6 2009
 ########################################################################
-####  Copyright (C) Harald Hope 2007-2008
+####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  This program is free software; you can redistribute it and/or modify it under
@@ -392,7 +392,7 @@ driver_support_tests()
 										;;
 									*)
 										if [ "$B_TESTING_1" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
+											error_handler 225 $KERNEL_THIRD
 										fi
 										;;
 								esac
@@ -757,6 +757,10 @@ error_handler()
 			;;
 		226)
 			errorData="The driver you selected: $DRIVER_DEFAULT does not support your current Xorg version: $X_VERSION\nIf this is wrong, please let the script maintainer know."
+			;;
+		# this is only for nvidia latest kernel + beta errors
+		225)
+			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are running the $KERNEL_VERSION kernel. Please try the beta driver instead, use this command:\n$SCRIPT_NAME -cB"
 			;;
 		# specific install issues
 		200)
