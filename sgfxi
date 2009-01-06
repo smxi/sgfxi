@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.0
+####  version: 4.3.1
 ####  Date: January 6 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -765,6 +765,9 @@ error_handler()
 		224)
 			errorData="Your system is missing the required kernel header package: $errorExtra\n and it is not currently available in apt. Cannot continue.\nPlease either update your kernel and kernel headers,\nor find and install kernel headers for $KERNEL_INSTALL"
 			;;
+		223)
+			errorData="The install of the missing deb from your kernel-downloads directory:\n$extraData\nhas failed for unknown reasons. Sorry, we did our best."
+			;;
 		# specific install issues
 		200)
 			errorData="The package: $errorExtra failed to install, please check apt for any problems."
@@ -1177,14 +1180,18 @@ check_kernel_headers()
 	local headerInstalled=$( dpkg -l | awk '{print $2}' | egrep "^$headerName$" )
 	# want to make sure it's available, and not merely referenced
 	local headerAvailable=$( apt-cache search $headerName | awk '{print $1}' | egrep "^$headerName$" )
+	local headerFile="$( ls /usr/src/kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
 
-	log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable"
+	log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
 
-	if [ -z "$headerInstalled" -a -z "$headerAvailable" ];then
-		error_handler 224 "$headerName"
-	elif [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
+	# first try direct apt install, then dpkg from smxi downloads, then give up
+	if [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
 		echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
 		install_package "$headerName"
+	elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFile" ];then
+		dpkg -i $headerFile || error_handler 223 "$headerFile"
+	elif [ -z "$headerInstalled" -a -z "$headerAvailable" ];then
+		error_handler 224 "$headerName"
 	fi
 	eval $LOGUE
 }
