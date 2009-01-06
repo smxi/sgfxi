@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.2.11
+####  version: 4.3.0
 ####  Date: January 6 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -762,6 +762,9 @@ error_handler()
 		225)
 			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are running the $KERNEL_VERSION kernel. Please try the beta driver instead, use this command:\n$SCRIPT_NAME -cB"
 			;;
+		224)
+			errorData="Your system is missing the required kernel header package: $errorExtra\n and it is not currently available in apt. Cannot continue.\nPlease either update your kernel and kernel headers,\nor find and install kernel headers for $KERNEL_INSTALL"
+			;;
 		# specific install issues
 		200)
 			errorData="The package: $errorExtra failed to install, please check apt for any problems."
@@ -1165,6 +1168,27 @@ test_install_kernel_version()
 	fi
 }
 
+# this handles a case where there's a kernel header mismatch or
+# when they are simply missing, the former is strange, the latter normal
+check_kernel_headers()
+{
+	eval $LOGUS
+	local headerName="linux-headers-$KERNEL_VERSION"
+	local headerInstalled=$( dpkg -l | awk '{print $2}' | egrep "^$headerName$" )
+	# want to make sure it's available, and not merely referenced
+	local headerAvailable=$( apt-cache search $headerName | awk '{print $1}' | egrep "^$headerName$" )
+
+	log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable"
+
+	if [ -z "$headerInstalled" -a -z "$headerAvailable" ];then
+		error_handler 224 "$headerName"
+	elif [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
+		echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
+		install_package "$headerName"
+	fi
+	eval $LOGUE
+}
+
 print_information()
 {
 	local scriptVersion=$( egrep -o -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
@@ -1194,6 +1218,7 @@ print_information()
 	echo ${M}$LINE${N}
 }
 #print_information
+
 basic_startup_tests()
 {
 	local nonDebianPattern='(sidux|opera|debian-multimedia|mepis|skype|swiftfox|virtualbox)'
@@ -3520,6 +3545,10 @@ if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
 fi
 # needs to be out to give print version
 set_version
+if [ "$B_NATIVE_DRIVER" != 'true' ];then
+	# make sure user has kernel headers, to avoid running unneeded clean up or prep
+	check_kernel_headers
+fi
 
 if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
 	set_download_info # also triggers the download / extract function
