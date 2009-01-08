@@ -760,7 +760,7 @@ error_handler()
 			;;
 		# this is only for nvidia latest kernel + beta errors
 		225)
-			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are installing the driver to kernel: $KERNEL_VERSION\nPlease try the beta driver instead.\nUse this command to install beta drivers to either non-current kernel: $SCRIPT_NAME -cB -K $KERNEL_VERSION\nor to current kernel: $SCRIPT_NAME -cB"
+			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are installing the driver to kernel: $KERNEL_VERSION\nPlease try the beta driver instead. Use this command to install beta drivers\nto either non-current kernel: $SCRIPT_NAME -cB -K $KERNEL_VERSION\nor to current kernel: $SCRIPT_NAME -cB"
 			;;
 		224)
 			errorData="Your system is missing the required kernel header package: $errorExtra\n and it is not currently available in apt. Cannot continue.\nPlease either update your kernel and kernel headers,\nor find and install kernel headers for $KERNEL_INSTALL"
