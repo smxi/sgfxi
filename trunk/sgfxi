@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.3
-####  Date: January 8 2009
+####  version: 4.3.4
+####  Date: January 11 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1177,6 +1177,7 @@ check_kernel_headers()
 {
 	eval $LOGUS
 	local headerName="linux-headers-$KERNEL_VERSION"
+	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
 	local headerInstalled=$( dpkg -l | awk '{print $2}' | egrep "^$headerName$" )
 	# want to make sure it's available, and not merely referenced
 	local headerAvailable=$( apt-cache search $headerName | awk '{print $1}' | egrep "^$headerName$" )
@@ -1185,7 +1186,9 @@ check_kernel_headers()
 	log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
 
 	# first try direct apt install, then dpkg from smxi downloads, then give up
-	if [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
+	if [ -n "$headerPresent" ];then
+		: # do nothing, it's there
+	elif [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
 		echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
 		install_package "$headerName"
 	elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFile" ];then
