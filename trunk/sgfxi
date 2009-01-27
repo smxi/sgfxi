@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.5
-####  Date: January 26 2009
+####  version: 4.3.6
+####  Date: January 27 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -171,6 +171,7 @@ NV_OTHERS='177.82:169.12:100.14.19'
 # debian sid legacies:
 NV_DEBIAN_LEGACY_1='71xx'
 NV_DEBIAN_LEGACY_2='96xx'
+NV_DEBIAN_LEGACY_3='173xx'
 
 # default download site for nvidia
 NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
@@ -1233,7 +1234,7 @@ print_information()
 
 basic_startup_tests()
 {
-	local nonDebianPattern='(sidux|opera|debian-multimedia|mepis|skype|swiftfox|virtualbox)'
+	local nonDebianPattern='(deb-sdx|sidux|deb-op|opera|deb-mm|debian-multimedia|deb-mep|mepis|deb-skp|skype|deb-swift|swiftfox|deb-vb|virtualbox)'
 
 	# these tests will be improved over time, but are ok for now
 	local isEtch=$( grep -is '^4.' $EDV )
@@ -1524,6 +1525,7 @@ update_to_nonfree_sources()
 	local eas='/etc/apt/sources.list'
 	local easdl='/etc/apt/sources.list.d/debian.list'
 	local eassl='/etc/apt/sources.list.d/sidux.list'
+	local aptProx=''
 
 	# loop through possible files to update
 	for i in $eas $easdl $eassl
@@ -1538,11 +1540,16 @@ update_to_nonfree_sources()
 		for i in $eas $easdl $eassl
 		do
 			if [ -f "$i" ];then
-				echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
-				sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
-				# the second test requires the results of the first to work
-				# note that spaces are required for this to work more reliably for most patterns
-				sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
+				# I'm going to assume if the user has proxy stuff set up, they know what
+				# they are doing here.
+				aptProx=$( egrep -Esi '^[[:space:]]*deb.*:9999/' $i )
+				if [ -z "$aptProx" ];then
+					echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
+					sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
+					# the second test requires the results of the first to work
+					# note that spaces are required for this to work more reliably for most patterns
+					sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
+				fi
 			fi
 		done
 		$APT_TYPE update && UPDATED='true' # need to refresh
