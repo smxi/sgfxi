@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.4
-####  Date: January 11 2009
+####  version: 4.3.5
+####  Date: January 26 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -156,7 +156,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA=':173.14.15:96.43.09:71.86.07'
+NV_VERSIONS_BETA='180.25:173.14.15:96.43.09:71.86.07'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -338,7 +338,7 @@ driver_support_tests()
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
 						case $DRIVER_DEFAULT in
-							180.18|180.16|180.11|180.08|173.14.15|96.43.09|71.86.07)
+							180.25|180.18|180.16|180.11|180.08|173.14.15|96.43.09|71.86.07)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
@@ -582,7 +582,7 @@ set_test_data()
 		cd $SCRIPT_HOME
 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
-		CARD_DATA=1002:7280 # fake ati
+# 		CARD_DATA=1002:7280 # fake ati
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
