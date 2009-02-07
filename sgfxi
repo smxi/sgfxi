@@ -2245,7 +2245,7 @@ prep_install()
 		$FGLRX)
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
 			echo "${S}Updating ${C}libgl1-mesa-glx${S} now to avoid problems...${N}"
-			package_install 'libgl1-mesa-glx' '' '--reinstall'
+			install_package 'libgl1-mesa-glx' '' '--reinstall'
 			;;
 	esac
 
