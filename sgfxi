@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.10
-####  Date: January 30 2009
+####  version: 4.3.11
+####  Date: February 6 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1553,7 +1553,7 @@ update_to_nonfree_sources()
 			if [ -f "$i" ];then
 				# I'm going to assume if the user has proxy stuff set up, they know what
 				# they are doing here.
-				aptProx=$( egrep -Esi '^[[:space:]]*deb.*:9999/' $i )
+				aptProx=$( egrep -si '^[[:space:]]*deb.*:9999/' $i )
 				if [ -z "$aptProx" ];then
 					echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
 					sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
