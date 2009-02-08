@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.14
-####  Date: February 6 2009
+####  version: 4.3.15
+####  Date: February 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -3133,13 +3133,13 @@ update_xorg()
 	eval $LOGPS
 	# this to second time stamp should help fix that old repeated .1st bug
 	local timeStampXorg=$EXXC-bu-$( date +%Y-%m-%d-%H:%M:%S )
-	local stateOn='enable' stateOff='disable'
+	local stateOn='enable' stateOff='disable' stateTrue='true' stateFalse='false'
 	# nvidia stuff
-	local rend=$stateOn twin=$stateOn triple=$stateOff
+	local rend=$stateOn twin=$stateTrue triple=$stateFalse
 	#  note: putting a space in these subsitution patterns breaks perl -e
 	local ignoreDisplay='Option\t"IgnoreDisplayDevices"\t"TV"\n\t'
 	# fglrx stuff, we're using default agpart no now instead
-	local agpart='no' layout='AUTO,AUTO' allowGlx=''
+	local agpart='on' layout='AUTO,AUTO' allowGlx=''
 
 	# this is set in rare cases of dual card early copy of xorg.conf
 	if [ "$XORG_BACKED_UP" != 'true' ];then
@@ -3169,14 +3169,14 @@ update_xorg()
 				# triplebuffer can reduce 3d performance on cards with low graphics memory
 				# 64 mb or less. Default is off/disable/0
 				if [ "$B_TRIPLE_BUFFER" == 'true' ];then
-					triple=$stateOn
+					triple=$stateTrue
 				fi
 				# this should let 3D work again for older cards, 400 etc
 				if [ "$DRIVER_DEFAULT" == "$NV_LEGACY_1" ];then
-					allowGlx='Option\t"AllowGLXWithComposite"\t"1"\n\t'
+					allowGlx='Option\t"AllowGLXWithComposite"\t"'$stateTrue'"\n\t'
 				fi
 
-				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"1"\n\tOption      "RandRRotation"\t"1"\n\tOption      "AddARGBGLXVisuals"\t"1"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "DynamicTwinView"\t"'$twin'"/' $EXXC
+				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"'$stateTrue'"\n\tOption      "RandRRotation"\t"'$stateTrue'"\n\tOption      "AddARGBGLXVisuals"\t"'$stateTrue'"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "DynamicTwinView"\t"'$twin'"/' $EXXC
 				;;
 			$FGLRX)
 				# set any custom stuff here
