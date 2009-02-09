@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.4.0
+####  version: 4.4.1
 ####  Date: February 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2413,8 +2413,8 @@ run_driver_installer()
 				echo ${M}$LINE
 				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
 				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
-				echo "${S}Hit ${C}<enter>${S} now to start the direct installer.${N}"
-				echo ${M}$LINE
+				echo "${S}Hit ${C}<enter>${S} now to start the direct installer."
+				echo ${M}$LINE${N}
 				read nothing
 				installerArgs="$DRIVER_DEFAULT --install"
 				log_function_data "direct fglrx install - no debs: options: $installerArgs"
