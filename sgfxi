@@ -2339,6 +2339,8 @@ preinstall_cleanup()
 	if [ -f "$fglrxUninstaller" ];then
 		bash $fglrxUninstaller
 	fi
+	rm -rf /etc/ati
+
 	eval $LOGPE
 }
 
@@ -2409,7 +2411,7 @@ run_driver_installer()
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 			else
-				installerArgs="--install"
+				installerArgs="$DRIVER_DEFAULT --install"
 				log_function_data "direct fglrx install - no debs: options: $installerArgs"
 			fi
 
