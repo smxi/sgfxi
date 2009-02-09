@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.17
+####  version: 4.3.18
 ####  Date: February 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2409,8 +2409,8 @@ run_driver_installer()
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 			else
-				installerArgs=""
-				log_function_data "direct fglrx install - no debs"
+				installerArgs="--install"
+				log_function_data "direct fglrx install - no debs: options: $installerArgs"
 			fi
 
 			# tell fglrx installer correct x version
