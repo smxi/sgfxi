@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.4.1
+####  version: 4.4.2
 ####  Date: February 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -680,7 +680,7 @@ error_handler()
 {
 	local errorCode=$1 # error number
 	local errorExtra=$2 # this is secondary info, like failed package name
-	local errorData=''
+	local errorData='' errorData2=''
 	local ErrorMessage=''
 
 	case $errorCode in
@@ -713,7 +713,11 @@ error_handler()
 			errorData="The driver: $DRIVER_DEFAULT is not currently supported for kernel version 2.6.$KERNEL_THIRD"
 			;;
 		245)
-			errorData="The $CARD installer exited with the error: $errorExtra"
+			errorData2=''
+			if [ "$CARD" == "$FGLRX" ];then
+				errorData2="\nYou might want to try using the -f option instead, which will do a\ndirect (no debs) binary install from the FGLRX run package.\nThis works more reliably for some systems (especially 64 bit)."
+			fi
+			errorData="The $CARD installer exited with the error: $errorExtra$errorData2"
 			;;
 		244)
 			errorData="Xorg does not appear to be installed."
@@ -3309,8 +3313,8 @@ show_options()
 	# leaving these commented out in case new experimental xorg drivers need to be tested
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
-	echo "-f Install direct fglrx. This directly installs with FGLRX binary run package, without creating"
-	echo "   deb files. This method may work when others fail, so check it out if you have problems."
+	echo "-f Install direct fglrx with FGLRX binary run package, without creating deb files (ATI Only)."
+	echo "    This method may work when others fail, so check it out if you have problems."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
