@@ -2410,6 +2410,11 @@ run_driver_installer()
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 			else
+				echo ${M}$LINE
+				echo "${M}NOTE: When the direct installer runs, it will ask you a series of questions."
+				echo "Simply hit <enter> for each question the installer asks you, the defaults are good."
+				echo "${S}Hit <enter> now to start the direct installer.${N}"
+				echo ${M}$LINE
 				installerArgs="$DRIVER_DEFAULT --install"
 				log_function_data "direct fglrx install - no debs: options: $installerArgs"
 			fi
