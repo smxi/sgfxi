@@ -2412,8 +2412,8 @@ run_driver_installer()
 			else
 				echo ${M}$LINE
 				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
-				echo "Simply hit <enter> for each question the installer asks you, the defaults are good."
-				echo "${S}Hit <enter> now to start the direct installer.${N}"
+				echo "Simply hit <${C}enter${M}> for each question the installer asks you, the defaults are good."
+				echo "${S}Hit <${C}enter${S}> now to start the direct installer.${N}"
 				echo ${M}$LINE
 				read nothing
 				installerArgs="$DRIVER_DEFAULT --install"
