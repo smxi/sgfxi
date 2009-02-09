@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.19
+####  version: 4.4.0
 ####  Date: February 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2339,8 +2339,6 @@ preinstall_cleanup()
 	if [ -f "$fglrxUninstaller" ];then
 		bash $fglrxUninstaller
 	fi
-	# dont' do this, it causes all kinds of serious problems with uninstall
-# 	rm -rf /etc/ati
 
 	eval $LOGPE
 }
@@ -2546,22 +2544,21 @@ install_debian_drivers()
 clean_up_fglrx_junk()
 {
 	eval $LOGUS
+	# note that these cant' be removed or 3d dies in direct -f install
 	if [ "$B_FGLRX_DIRECT" != 'true' ];then
 		rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/char/drm/fglrx.*o
 		rm -f /lib/modules/$KERNEL_VERSION/volatile/fglrx.*o
-		rm -rf /usr/src/modules/fglrx
 		# this removes some config stuff that might cause watermarking issues
-		# but this breaks direct install systems so don't use it
-
+		# but this breaks direct install systems so don't remove it in direct install
 		rm -rf /etc/ati
-
-
-		if [ -d /usr/lib/opengl ];then
-			rm -rf /usr/lib/opengl
-			ldconfig
-			log_function_data 'Note: cleanup usr/lib/opengl'
-		fi
 	fi
+
+	if [ -d /usr/lib/opengl ];then
+		rm -rf /usr/lib/opengl
+		ldconfig
+		log_function_data 'Note: cleanup usr/lib/opengl'
+	fi
+
 	eval $LOGUE
 }
 
@@ -3306,6 +3303,8 @@ show_options()
 	# leaving these commented out in case new experimental xorg drivers need to be tested
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
+	echo "-f Install direct fglrx. This directly installs with FGLRX binary run package, without creating"
+	echo "   deb files. This method may work when others fail, so check it out if you have problems."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
@@ -3369,27 +3368,27 @@ get_options()
 		case $opt in
 			A) B_AUTORUN='true'
 				START_OPTIONS=$START_OPTIONS' -A'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -A - Autorun is selected\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -A - Autorun is selected\n"
 				;;
 			b) B_TRIPLE_BUFFER='true'
 				START_OPTIONS=$START_OPTIONS' -b'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -b - TripleBuffer is on (nVidia only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -b - TripleBuffer is on (nVidia only)\n"
 				;;
 			B)	B_USE_BETA='true'
 				START_OPTIONS=$START_OPTIONS' -B'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -B - Use Beta Driver (nVidia only. Only if available)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -B - Use Beta Driver (nVidia only. Only if available)\n"
 				;;
 			c) B_COMPOSITE='true'
 				START_OPTIONS=$START_OPTIONS' -c'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -c - Composite is on. Does not work with legacy nVidia driver (nVidia|Intel only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -c - Composite is on. Does not work with legacy nVidia driver (nVidia|Intel only)\n"
 				;;
 			C) B_SKIP_CONFIG='true'
 				START_OPTIONS=$START_OPTIONS' -C'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -C - Xorg.conf will not be modified by this script.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -C - Xorg.conf will not be modified by this script.\n"
 				;;
 			d) B_DISPLAY_DEVICES='true'
 				START_OPTIONS=$START_OPTIONS' -d'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -d - IgnoreDisplayDevices is off. TV will be used. nVidia only.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -d - IgnoreDisplayDevices is off. TV will be used. nVidia only.\n"
 				;;
 			D) B_SM_INSTALL='true'
 				S=${CALLER_DEF} # change standard text color to caller standard text
@@ -3403,7 +3402,7 @@ get_options()
 	# 			;;
 			f)	B_FGLRX_DIRECT='true'
 				START_OPTIONS=$START_OPTIONS' -f'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -f - Using direct FGLRX install. No debs created.\nBinary direct install from downloaded fglrx run file.\nThis is currently EXPERIMENTAL!"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - Using direct FGLRX install. No debs created. Binary direct install\n       from downloaded fglrx run file. THIS IS EXPERIMENTAL!!"
 				;;
 			j)	if [ -n "$( egrep '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
@@ -3418,26 +3417,26 @@ get_options()
 				fi
 				;;
 			K)	INSTALL_TO_KERNEL="$OPTARG"
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -K - You are installing a graphic driver onto the kernel: ${C}$INSTALL_TO_KERNEL${S}\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -K - You are installing a graphic driver onto the kernel: ${C}$INSTALL_TO_KERNEL${S}\n"
 				test_install_kernel_version
 				START_OPTIONS=$START_OPTIONS" -K $OPTARG"
 				;;
 			n) B_NATIVE_DRIVER='true'
 				START_OPTIONS=$START_OPTIONS' -n'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -n - Auto install of native xorg intel, nvidia, 3dfx, or ati drivers.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -n - Auto install of native xorg intel, nvidia, 3dfx, or ati drivers.\n"
 				;;
 			N)
 				if [ -n $( egrep '('$NATIVE_OVERRIDE_SUPPORTED')' <<< $NATIVE_OVERRIDE ) ];then
 					NATIVE_OVERRIDE="$OPTARG"
 					B_NATIVE_DRIVER='true'
-					START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -N - Native driver custom install. You have requested to install the xorg driver: $NATIVE_OVERRIDE\n"
+					START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -N - Native driver custom install. You have requested to install the xorg driver: $NATIVE_OVERRIDE\n"
 					START_OPTIONS=$START_OPTIONS" -N $OPTARG"
 				else
 					error_handler 237 $NATIVE_OVERRIDE
 				fi
 				;;
 			o) DRIVER_OVERRIDE="$OPTARG"
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -o - Driver override. Forces install of this driver: $DRIVER_OVERRIDE (nVidia|ATI fglrx only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -o - Driver override. Forces install of this driver: $DRIVER_OVERRIDE (nVidia|ATI fglrx only)\n"
 				START_OPTIONS=$START_OPTIONS" -o $OPTARG"
 				;;
 			p) B_PRINT_VER='true'
@@ -3453,25 +3452,25 @@ get_options()
 				;;
 			Q)	B_SKIP_X_QUESTION='true'
 				START_OPTIONS=$START_OPTIONS' -Q'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -Q - X will start automatically when the driver install is finished.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Q - X will start automatically when the driver install is finished.\n"
 				;;
 			r) B_REMOVE_MODELINES='true'
 				START_OPTIONS=$START_OPTIONS' -r'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -r - Remove modelines in xorg.conf (ATI only).\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -r - Remove modelines in xorg.conf (ATI only).\n"
 				;;
 			R) B_SKIP_RESTART='true'
 				;;
 			s)	B_USE_DEBIAN_DRIVER='true'
 				START_OPTIONS=$START_OPTIONS' -s'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -s - Install Debian driver. (ATI fglrx or nVidia)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -s - Install Debian driver. (ATI fglrx or nVidia)\n"
 				;;
 			S) B_SKIP_AUTOSTART='true'
 				START_OPTIONS=$START_OPTIONS' -S'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -S - Skip autostart of X/kde.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -S - Skip autostart of X/kde.\n"
 				;;
 			t) B_TWINVIEW='true'
 				START_OPTIONS=$START_OPTIONS' -t'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -t - twinview on: this is deprecated. Always sets for twinview (nVidia only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: this is deprecated. Always sets for twinview (nVidia only)\n"
 				;;
 			U) B_FORCE_UPDATE='true'
 				;;
@@ -3480,19 +3479,19 @@ get_options()
 				;;
 			W) B_SKIP_WGET='true'
 				START_OPTIONS=$START_OPTIONS' -W'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -W - Skip wget connection tests. Only use if you are having problems connecting but connection is fine.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget connection tests. Only use if you are having problems connecting but connection is fine.\n"
 				;;
 			x) B_NO_XVMC='true' # because two flags are required to use nvidia xvmc, this is fine
 				START_OPTIONS=$START_OPTIONS' -x'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -x - Skip nVidia xvmc setup. (nVidia only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -x - Skip nVidia xvmc setup. (nVidia only)\n"
 				;;
 			X) B_SKIP_X_TEST='true'
 				START_OPTIONS=$START_OPTIONS' -X'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -X - Skip the test for X/KDE. Only use if you know what you are doing!\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -X - Skip the test for X/KDE. Only use if you know what you are doing!\n"
 				;;
 			Z) B_SKIP_CONNECT='true'
 				START_OPTIONS=$START_OPTIONS' -Z'
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -Z - Skip the script connection tests. Limited utility, unless you already have downloaded the driver.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Z - Skip the script connection tests. Limited utility, unless you already have downloaded the driver.\n"
 				;;
 			h) show_options
 				;;
@@ -3536,7 +3535,7 @@ get_options()
 						;;
 				esac
 				START_OPTIONS="$START_OPTIONS -! $OPTARG"
-				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -! $OPTARG - You are using an advanced Testing option. Only use this if you know what you are doing!\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -! $OPTARG - You are using an advanced Testing option. Only use this if you know what you are doing!\n"
 				;;
 			*) show_options err
 				;;
