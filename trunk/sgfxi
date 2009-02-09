@@ -2339,7 +2339,8 @@ preinstall_cleanup()
 	if [ -f "$fglrxUninstaller" ];then
 		bash $fglrxUninstaller
 	fi
-	rm -rf /etc/ati
+	# dont' do this, it causes all kinds of serious problems with uninstall
+# 	rm -rf /etc/ati
 
 	eval $LOGPE
 }
