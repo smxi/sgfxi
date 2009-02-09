@@ -2546,19 +2546,21 @@ install_debian_drivers()
 clean_up_fglrx_junk()
 {
 	eval $LOGUS
-	rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/char/drm/fglrx.*o
-	rm -f /lib/modules/$KERNEL_VERSION/volatile/fglrx.*o
-	rm -rf /usr/src/modules/fglrx
-	# this removes some config stuff that might cause watermarking issues
-	# but this breaks direct install systems so don't use it
 	if [ "$B_FGLRX_DIRECT" != 'true' ];then
-		rm -rf /etc/ati
-	fi
+		rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/char/drm/fglrx.*o
+		rm -f /lib/modules/$KERNEL_VERSION/volatile/fglrx.*o
+		rm -rf /usr/src/modules/fglrx
+		# this removes some config stuff that might cause watermarking issues
+		# but this breaks direct install systems so don't use it
 
-	if [ -d /usr/lib/opengl ];then
-		rm -rf /usr/lib/opengl
-		ldconfig
-		log_function_data 'Note: cleanup usr/lib/opengl'
+		rm -rf /etc/ati
+
+
+		if [ -d /usr/lib/opengl ];then
+			rm -rf /usr/lib/opengl
+			ldconfig
+			log_function_data 'Note: cleanup usr/lib/opengl'
+		fi
 	fi
 	eval $LOGUE
 }
@@ -2670,7 +2672,7 @@ final_install_steps()
 		$FGLRX)
 			##  clean up install parts
 			rm -rf /usr/src/modules/fglrx
-			rm -f /tmp/fglrx* fglrx*
+			rm -rf /tmp/fglrx* fglrx*
 			dpkg --purge fglrx-kernel-src 1>> $LOG_FILE 2>> $LOG_FILE
 
 			# test for, then remove if present
