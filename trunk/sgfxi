@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.16
+####  version: 4.3.17
 ####  Date: February 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -86,6 +86,7 @@ B_DEBIAN_FLAG=''
 B_DISPLAY_DEVICES=''
 B_EXPERIMENTAL=''
 B_EXTRA_EXPERIMENTAL=''
+B_FGLRX_DIRECT=''
 B_FORCE_UPDATE=''
 B_NATIVE_DRIVER=''
 B_NO_XVMC=''
@@ -2273,6 +2274,7 @@ preinstall_cleanup()
 {
 	eval $LOGPS
 	local oldNvidia='' divertedPackages='' installer='nvidia-installer' oldFglrx=''
+	local fglrxUninstaller='/usr/share/ati/fglrx-uninstall.sh'
 
 	echo "${S}Running preinstall cleanup...${N}"
 	# this is not set as a path if native driver install
@@ -2333,6 +2335,10 @@ preinstall_cleanup()
 	do
 		dpkg-divert --package $package --remove $GL  1>> $LOG_FILE 2>> $LOG_FILE
 	done
+	# then confirm that it's truly not installed in case of manual direct install
+	if [ -f "$fglrxUninstaller" ];then
+		bash $fglrxUninstaller
+	fi
 	eval $LOGPE
 }
 
@@ -2399,8 +2405,13 @@ run_driver_installer()
 			distroId='Debian'
 			distroCodeName=$FG_DISTRO
 			installer='ati-installer.sh'
-			installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
-			log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
+			if [ "$B_FGLRX_DIRECT" != 'true' ];then
+				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
+				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
+			else
+				installerArgs=""
+				log_function_data "direct fglrx install - no debs"
+			fi
 
 			# tell fglrx installer correct x version
 	# 		if [ -n "$( echo $X_VERSION | egrep '[1-2]\.[4-9]' )" ]
@@ -3138,7 +3149,7 @@ update_xorg()
 	local rend=$stateOn twin=$stateTrue triple=$stateFalse
 	#  note: putting a space in these subsitution patterns breaks perl -e
 	local ignoreDisplay='Option\t"IgnoreDisplayDevices"\t"TV"\n\t'
-	# fglrx stuff, we're using default agpart no now instead
+	# fglrx stuff, we're using default agpart 'on' now instead
 	local agpart='on' layout='AUTO,AUTO' allowGlx=''
 
 	# this is set in rare cases of dual card early copy of xorg.conf
@@ -3345,7 +3356,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbBcCdDeEhHj:K:nN:o:pP:QrRsStUvWXxZ!: opt
+	while getopts AbBcCdDefEhHj:K:nN:o:pP:QrRsStUvWXxZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -3382,6 +3393,10 @@ get_options()
 	# 		E) B_EXTRA_EXPERIMENTAL='true'
 	# 			START_OPTIONS=$START_OPTIONS' -E'
 	# 			;;
+			f)	B_FGLRX_DIRECT='true'
+				START_OPTIONS=$START_OPTIONS' -f'
+				START_OPTIONS_PRINT=$START_OPTIONS_PRINT"  -f - Using direct FGLRX install. No debs created.\nBinary direct install from downloaded fglrx run file.\nThis is currently EXPERIMENTAL!"
+				;;
 			j)	if [ -n "$( egrep '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
 					START_OPTIONS=$START_OPTIONS" -j $OPTARG"
@@ -3613,7 +3628,9 @@ if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
 	fi
 	run_driver_installer
 	post_installer_steps
-	install_fglrx_debs
+	if [ "$B_FGLRX_DIRECT" != 'true' ];then
+		install_fglrx_debs
+	fi
 else
 	update_to_nonfree_sources
 	install_debian_drivers
