@@ -714,7 +714,7 @@ error_handler()
 			;;
 		245)
 			errorData2=''
-			if [ "$CARD" == "$FGLRX" ];then
+			if [ "$CARD" == "$FGLRX" -a "$B_FGLRX_DIRECT" != 'true' ];then
 				errorData2="\nYou might want to try using the -f option instead, which will do a\ndirect (no debs) binary install from the FGLRX run package.\nThis works more reliably for some systems (especially 64 bit)."
 			fi
 			errorData="The $CARD installer exited with the error: $errorExtra$errorData2"
@@ -3314,7 +3314,7 @@ show_options()
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
 	echo "-f Install direct fglrx with FGLRX binary run package, without creating deb files (ATI Only)."
-	echo "    This method may work when others fail, so check it out if you have problems."
+	echo "   This method may work when others fail, so check it out if you have problems."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
