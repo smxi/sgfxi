@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.3.15
+####  version: 4.3.16
 ####  Date: February 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3175,8 +3175,8 @@ update_xorg()
 				if [ "$DRIVER_DEFAULT" == "$NV_LEGACY_1" ];then
 					allowGlx='Option\t"AllowGLXWithComposite"\t"'$stateTrue'"\n\t'
 				fi
-
-				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"'$stateTrue'"\n\tOption      "RandRRotation"\t"'$stateTrue'"\n\tOption      "AddARGBGLXVisuals"\t"'$stateTrue'"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "DynamicTwinView"\t"'$twin'"/' $EXXC
+				# note: coolbits requires an integer value
+				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"1"\n\tOption      "RandRRotation"\t"'$stateTrue'"\n\tOption      "AddARGBGLXVisuals"\t"'$stateTrue'"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "DynamicTwinView"\t"'$twin'"/' $EXXC
 				;;
 			$FGLRX)
 				# set any custom stuff here
