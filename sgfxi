@@ -3020,7 +3020,7 @@ check_extensions()
 {
 	eval $LOGUS
 	local stateOn='enable' stateOff='disable' # default for nvidia
-	local turnOff='' rendState=0 compState=0 aiglxString=''
+	local turnOff='' rendState=$stateOff compState=$stateOff aiglxString=''
 	local compComment='#' rendComment='#'
 
 	# for composite to be active, fglrx composite must be set to 0, not 1
