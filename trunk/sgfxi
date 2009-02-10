@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.4.2
-####  Date: February 8 2009
+####  version: 4.4.3
+####  Date: February 9 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -149,7 +149,7 @@ DISPLAY_MANAGER=$( basename $DISPLAY_MANAGER 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now
-NV_VERSIONS='180.22:173.14.12:96.43.07:71.86.06'
+NV_VERSIONS='180.29:173.14.12:96.43.07:71.86.06'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -157,7 +157,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='180.27:173.14.16:96.43.10:71.86.08'
+NV_VERSIONS_BETA=':173.14.16:96.43.10:71.86.08'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -166,8 +166,8 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:180.18:180.11:180.08:173.14.15:96.43.09:71.86.07"
-NV_OTHERS='177.82:169.12:100.14.19'
+NV_TESTING="$NV_VERSIONS_BETA:180.27:180.18:180.11:173.14.15:96.43.09:71.86.07"
+NV_OTHERS='180.22:177.82:169.12:100.14.19'
 
 # debian sid legacies:
 NV_DEBIAN_LEGACY_1='71xx'
@@ -340,7 +340,7 @@ driver_support_tests()
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
 						case $DRIVER_DEFAULT in
-							180.27|180.18|180.16|180.11|180.08|173.14.16|173.14.15|96.43.10|96.43.09|71.86.08|71.86.07)
+							180.29|180.27|180.18|180.11|173.14.16|173.14.15|96.43.10|96.43.09|71.86.08|71.86.07)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
