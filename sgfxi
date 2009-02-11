@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.4.3
-####  Date: February 9 2009
+####  version: 4.4.4
+####  Date: February 11 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1197,7 +1197,8 @@ check_kernel_headers()
 	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
 	local headerInstalled=$( dpkg -l | awk '{print $2}' | egrep "^$headerName$" )
 	# want to make sure it's available, and not merely referenced
-	local headerAvailable=$( apt-cache search $headerName | awk '{print $1}' | egrep "^$headerName$" )
+	local headerAvailable=$( check_package_status "$headerName" 'c' )
+	#local headerAvailable=$( apt-cache search $headerName | awk '{print $1}' | egrep "^$headerName$" )
 	local headerFile="$( ls /usr/src/kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
 
 	log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
@@ -1345,14 +1346,17 @@ cleanup_temp_files()
 check_install_tools()
 {
 	eval $LOGPS
-	# nvidia and fglrx tools
-	if [ ! -x /usr/bin/module-assistant ];then
+	# nvidia and fglrx tools check_package_status
+	# if [ ! -x /usr/bin/module-assistant ];then
+	if [ -z "$( check_package_status 'module-assistant' 'i' )" ];then
 		install_package 'module-assistant'
 	fi
-	if [ ! -d /usr/share/build-essential ];then
+	# if [ ! -d /usr/share/build-essential ];then
+	if [ -z "$( check_package_status 'build-essential' 'i' )" ];then
 		install_package 'build-essential'
 	fi
-	if [ -z "$( which logrotate )" ];then
+	# if [ -z "$( which logrotate )" ];then
+	if [ -z "$( check_package_status 'logrotate' 'i' )" ];then
 		install_package 'logrotate'
 	fi
 
@@ -1360,14 +1364,17 @@ check_install_tools()
 		:
 	# fglrx tools and tests
 	elif [ "$CARD" == $FGLRX ];then
-		if [ ! -x /usr/bin/dh_testdir ];then
+		#if [ ! -x /usr/bin/dh_testdir ];then
+		if [ -z "$( check_package_status 'debhelper' 'i' )" ];then
 			install_package 'debhelper'
 		fi
-		if [ ! -f /usr/lib/libstdc++.so.5 ];then
+		#if [ ! -f /usr/lib/libstdc++.so.5 ];then
+		if [ -z "$( check_package_status 'libstdc++5' 'i' )" ];then
 			install_package 'libstdc++5'
 		fi
 		# presence of this package will break fglrx install
-		if [ -n "$( dpkg -l | grep 'dpkg-cross' )" ];then
+		#if [ -n "$( dpkg -l | grep 'dpkg-cross' )" ];then
+		if [ -n "$( check_package_status 'dpkg-cross' 'i' )" ];then
 			remove_package 'dpkg-cross' $CARD
 		fi
 	fi
@@ -1451,6 +1458,27 @@ get_set_prefs()
 			fi
 			;;
 	esac
+	eval $LOGUE
+}
+
+# Returns null if package is not available in user system apt.
+# args: $1 - package to test; $2 c/i
+check_package_status()
+{
+	eval $LOGUS
+	local packageVersion='' statusType=''
+
+	case $2 in
+		c)	statusType='Candidate:'
+			;;
+		i)	statusType='Installed:'
+			;;
+	esac
+
+	LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( apt-cache policy $1 2>/dev/null | grep -i "$statusType" | cut -d ':' -f 2-4 | cut -d ' ' -f2 | grep -iv '\(none\)' )
+
+	echo $packageVersion
+	log_function_data "Package Version: $packageVersion"
 	eval $LOGUE
 }
 
