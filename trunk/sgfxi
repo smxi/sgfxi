@@ -1895,7 +1895,6 @@ install_native_driver()
 		echo "${S}Updating your ${C}xserver-xorg-core${S} package to latest now...${N}"
 		install_package 'xserver-xorg-core' '' '--reinstall'
 		if [ "$CARD" == "$FGLRX" ];then
-			echo "${S}Updating ${C}libgl1-mesa-glx${S} now to avoid problems...${N}"
 			install_package 'libgl1-mesa-glx' '' '--reinstall'
 		fi
 
@@ -2282,7 +2281,6 @@ prep_install()
 			;;
 		$FGLRX)
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
-			echo "${S}Updating ${C}libgl1-mesa-glx${S} now to avoid problems...${N}"
 			install_package 'libgl1-mesa-glx' '' '--reinstall'
 			;;
 	esac
