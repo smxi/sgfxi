@@ -1898,7 +1898,7 @@ install_native_driver()
 		# this is required to do radeon xorg driver
 		native_driver_install_keep
 
-		currentlyInstalled=$( check_package_status "$driver" 'i' )
+# # 		currentlyInstalled=$( check_package_status "$driver" 'i' )
 
 		install_package 'xserver-xorg-core' '' '--reinstall'
 		if [ "$CARD" == "$FGLRX" ];then
