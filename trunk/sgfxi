@@ -1523,6 +1523,7 @@ install_package()
 			;;
 	esac
 	# then install the package with all options
+	echo "${S}Updating required package ${C}$1${S} now...${N}"
 	$APT_TYPE $install $useUntrusted $WITHOUT_RECOMMENDS $doYes $optionalArgs $1$distroVersion || error_handler 200 $1
 	eval $LOGUE
 }
