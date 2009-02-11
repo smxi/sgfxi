@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.4.4
+####  version: 4.4.5
 ####  Date: February 11 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -70,7 +70,8 @@ APT_TYPE='apt-get'
 CARD='' # card type: fglrx or nvidia
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
-NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
+#NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
+NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|cyrix|fbdev|glint|i128|i740|intel|i810|imstt|mga|neomagic|nsc|nv|radeonhd|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|openchrome|via|voodoo|vmware|v4l'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
 SCRIPT_COLORS=1
@@ -785,6 +786,9 @@ error_handler()
 		223)
 			errorData="The install of the missing deb from your kernel-downloads directory:\n$extraData\nhas failed for unknown reasons. Sorry, we did our best."
 			;;
+		222)
+			errorData="The Xorg driver $extraData you are trying to install is not available\nfor your version of Debian: $SYSTEM_BASE"
+			;;
 		# specific install issues
 		200)
 			errorData="The package: $errorExtra failed to install, please check apt for any problems."
@@ -1195,7 +1199,8 @@ check_kernel_headers()
 	eval $LOGUS
 	local headerName="linux-headers-$KERNEL_VERSION"
 	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
-	local headerInstalled=$( dpkg -l | awk '{print $2}' | egrep "^$headerName$" )
+	#local headerInstalled=$( dpkg -l | awk '{print $2}' | egrep "^$headerName$" )
+	local headerInstalled=$( check_package_status "$headerName" 'i' )
 	# want to make sure it's available, and not merely referenced
 	local headerAvailable=$( check_package_status "$headerName" 'c' )
 	#local headerAvailable=$( apt-cache search $headerName | awk '{print $1}' | egrep "^$headerName$" )
@@ -1489,7 +1494,7 @@ install_package()
 	eval $LOGUS
 	local distroVersion='' optionalArgs='' doYes='-y'
 	local useUntrusted='--allow-unauthenticated' install='install'
-	local packageInstalled=$( dpkg -l | grep "$1" | cut -d ' ' -f  3 )
+	local packageInstalled=$( check_package_status "$1" 'i' )
 
 	if [ "$UPDATED" != 'true' ];then
 		$APT_TYPE update && UPDATED='true'
@@ -1539,7 +1544,7 @@ remove_package()
 	echo $LINE
 	for package in $1
 	do
-		if [ -n "$( dpkg -l | grep "$package" )" ];then
+		if [ -n "$( check_package_status  "$package" 'i' )" ];then
 			echo "${S}Removing ${C}$package${S}...${N}"
 			$APT_TYPE purge $package || error_handler 190 "$package"
 		else
@@ -1876,7 +1881,10 @@ install_native_driver()
 		fi
 		# driver is the actual driver xorg will use
 		driver=$xorgBase$xorgDriver
-
+		# make sure the driver is available for the user's debian version
+		if [ -z "$( check_package_status $driver 'c' )" ];then
+			error_handler 222 "$driver"
+		fi
 		if [ "$B_PRINT_VER" != 'true' ];then
 			print_information_continue 'standard' "The graphics installer will be installing the${C}$experimentalText Free xorg${S} driver: ${C}$driverInstall${N}"
 		else
@@ -1890,7 +1898,7 @@ install_native_driver()
 		# this is required to do radeon xorg driver
 		native_driver_install_keep
 
-		currentlyInstalled=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep "$driver" )
+		currentlyInstalled=$( check_package_status "$driver" 'i' )
 
 		echo "${S}Updating your ${C}xserver-xorg-core${S} package to latest now...${N}"
 		install_package 'xserver-xorg-core' '' '--reinstall'
@@ -1926,10 +1934,10 @@ native_driver_install_keep()
 	local lgmd='libgl1-mesa-dri'  ldrm='libdrm2'
 
 	if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
-		if [ -z "$( dpkg -l | grep "$lgmd" )" ];then
+		if [ -z "$( check_package_status "$lgmd" 'i' )" ];then
 			install_package $lgmd
 		fi
-		if [ -z "$( dpkg -l | grep "$ldrm" )" ];then
+		if [ -z "$( check_package_status "$ldrm" 'i' )" ];then
 			install_package $ldrm
 		fi
 		if [ -n "$( which deborphan )" ];then
