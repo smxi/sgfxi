@@ -1900,7 +1900,6 @@ install_native_driver()
 
 		currentlyInstalled=$( check_package_status "$driver" 'i' )
 
-		echo "${S}Updating your ${C}xserver-xorg-core${S} package to latest now...${N}"
 		install_package 'xserver-xorg-core' '' '--reinstall'
 		if [ "$CARD" == "$FGLRX" ];then
 			install_package 'libgl1-mesa-glx' '' '--reinstall'
@@ -1910,7 +1909,6 @@ install_native_driver()
 			echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
 			native_driver_experimental "$driver"
 		else
-			echo "${S}Installing latest xorg driver ${C}$driver${S} now...${N}"
 			install_package $driver '' '--reinstall'
 		fi
 
