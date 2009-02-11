@@ -71,7 +71,7 @@ CARD='' # card type: fglrx or nvidia
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
-NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|cyrix|fbdev|glint|i128|i740|intel|i810|imstt|mga|neomagic|nsc|nv|radeonhd|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|openchrome|via|voodoo|vmware|v4l'
+NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|cyrix|fbdev|glint|i128|i740|intel|i810|imstt|mga|neomagic|nsc|nv|radeon|radeonhd|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|openchrome|via|voodoo|vmware|v4l'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
 SCRIPT_COLORS=1
@@ -2587,7 +2587,7 @@ install_debian_drivers()
 clean_up_fglrx_junk()
 {
 	eval $LOGUS
-	# note that these cant' be removed or 3d dies in direct -f install
+	# note that these can't be removed or 3d dies in direct -f install
 	if [ "$B_FGLRX_DIRECT" != 'true' ];then
 		rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/char/drm/fglrx.*o
 		rm -f /lib/modules/$KERNEL_VERSION/volatile/fglrx.*o
