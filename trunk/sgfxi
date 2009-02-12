@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.4.5
-####  Date: February 11 2009
+####  version: 4.5.0
+####  Date: February 12 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -62,6 +62,8 @@
 ####  -! <http://......> - Triggers an update from whatever server you list.
 ####  -! 20 - uses patch from svn branch one server (must be in branch/one/patches)
 ####  -! 21 - uses patch from svn branch two server (must be in branch/two/patches)
+########################################################################
+
 ########################################################################
 #### VARIABLES
 ########################################################################
@@ -231,6 +233,7 @@ FG_WORKING_DIR='fglrx-install'
 # file and patch urls
 PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
+SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
 SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
 SCRIPT_DOWNLOAD_BRANCH_1='http://sgfxi.googlecode.com/svn/branches/one/'
 SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
@@ -268,12 +271,12 @@ if [ -f $SM_VALUES ];then
 fi
 
 ########################################################################
-#### FUNCTIONS
+#### FUNCTIONS: UTILITY TOOLS
 ########################################################################
 
-########################################################################
-#### driver+kernel support tests, and patch handlers:
-#### -------------------------------------------------------------------
+### -------------------------------------------------------------------
+### driver+kernel support tests, and patch handlers:
+### -------------------------------------------------------------------
 
 ## these are first to make it easy to update each new driver release support data
 
@@ -574,9 +577,9 @@ run_patches()
 	eval $LOGPE
 }
 
-########################################################################
-#### primary startup - test data, colors
-#### -------------------------------------------------------------------
+### -------------------------------------------------------------------
+### primary startup - test data, colors
+### -------------------------------------------------------------------
 
 # only for debugging purposes
 set_test_data()
@@ -674,9 +677,9 @@ set_script_colors()
 	LINE='- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
 }
 
-########################################################################
-#### Error handling and detections
-#### -------------------------------------------------------------------
+### -------------------------------------------------------------------
+### Error handling
+### -------------------------------------------------------------------
 error_handler()
 {
 	local errorCode=$1 # error number
@@ -877,6 +880,10 @@ error_handler()
 
 	exit $errorCode
 }
+
+### -------------------------------------------------------------------
+### card type/version detections
+### -------------------------------------------------------------------
 
 # this only runs if card count > 1
 select_card()
@@ -1157,9 +1164,62 @@ assign_standard_or_beta_driver()
 	fi
 }
 
-########################################################################
-#### script utilities
-#### -------------------------------------------------------------------
+### -------------------------------------------------------------------
+### general script utilities
+### -------------------------------------------------------------------
+
+# args: $1 - get/set; $2 - prefname
+get_set_prefs()
+{
+	eval $LOGUS
+	local etcsm='/etc/smxi.conf' retValue='' name='' value=''
+
+	case $1 in
+		get)
+			retValue=$( grep -s $2 $etcsm )
+			echo $retValue
+			log_function_data "Return value: $retValue"
+			;;
+		set)
+			touch $etcsm
+			# test = first, this will handle the base name and anything else
+			name=$( cut -d '=' -f 1 <<< $2 )
+			# check to see if it's there, if it is, it must be a = type thing
+			if [ -z "$( grep -s $name $etcsm )" ];then
+				echo $2 >> $etcsm
+				log_function_data "Added $2 to $etcsm"
+			else
+				sed -i "s/$name.*/$2/" $etcsm
+				log_function_data "Updated $name to $2 in $etcsm"
+			fi
+			;;
+	esac
+	eval $LOGUE
+}
+
+# handles bug in stub installer that leaves tempfiles uncleaned
+cleanup_temp_files()
+{
+	eval $LOGUS
+	local all_files="" slxorg='sgfxi-lib-xorg'
+
+	# Note: if  * is in "" the wildcard does not work
+	# /dev/null handles case where no temp or original file exists
+	all_files=$( ls "${SCRIPT_NAME}."* 2> /dev/null )
+	# make sure stuff exists, rm files
+	if [ -n "$all_files" ];then
+		rm -f $all_files
+	fi
+	if [ -f $slxorg ];then
+		rm -f $slxorg # clean up old xorg lib file
+	fi
+	eval $LOGUE
+}
+
+### -------------------------------------------------------------------
+### kernel data and header testing
+### -------------------------------------------------------------------
+
 kernel_string_info()
 {
 	# The kernel variables stuff needs to be in a separate function to get data from
@@ -1224,35 +1284,9 @@ check_kernel_headers()
 	eval $LOGUE
 }
 
-print_information()
-{
-	local scriptVersion=$( egrep -o -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
-	local scriptDate=$( egrep -o -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
-	#local cardInfo=$( lspci | gawk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2%'  )
-	local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\s|nVidia\s|Intel\s)(Technologies\sInc\s|Corporation\s|Unknown\sdevice){1,2}(.*)%\1\3%g' )
-	local cardRam='' cardVendor='' busId=''
-
-	# we need the real busid, not the xorg one
-	busId=$( lspci -n | grep "$CARD_DATA" | egrep -io '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' )
-
-	if [ -n "$busId" ];then
-		cardRam=$( lspci -v -s $busId 2>/dev/null | egrep '.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]' | sed -r 's/.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]/\1/' )
-		cardVendor=$( lspci -v -s $busId 2>/dev/null | egrep '.*Subsystem:[[:space:]]*(.*)' | sed -r 's/.*Subsystem:[[:space:]]*(.*)/\1/' | sed 's/[dD]evice.*$//g' | sed 's/[uU]nknown//g' )
-	fi
-	echo ${M}$LINE
-	echo " ${M}$SCRIPT_NAME${S} :: version: ${C}$scriptVersion${S} :: last updated: ${C}$scriptDate"
-	echo ${M}$LINE
-	echo " ${S}graphics card information:"
-	echo "   ${S}series: ${C}$cardInfo"
-	if [ -n "$cardVendor" ];then
-		echo "   ${S}vendor: ${C}$cardVendor"
-	fi
-	if [ -n "$cardRam" ];then
-		echo "   ${S}ram:    ${C}$cardRam MegaBytes ${S}(note: not accurate for built in graphics)"
-	fi
-	echo ${M}$LINE${N}
-}
-#print_information
+### -------------------------------------------------------------------
+### startup and tools testing
+### -------------------------------------------------------------------
 
 basic_startup_tests()
 {
@@ -1329,25 +1363,6 @@ basic_startup_tests()
 	fi
 }
 
-# handles bug in stub installer that leaves tempfiles uncleaned
-cleanup_temp_files()
-{
-	eval $LOGUS
-	local all_files="" slxorg='sgfxi-lib-xorg'
-
-	# Note: if  * is in "" the wildcard does not work
-	# /dev/null handles case where no temp or original file exists
-	all_files=$( ls "${SCRIPT_NAME}."* 2> /dev/null )
-	# make sure stuff exists, rm files
-	if [ -n "$all_files" ];then
-		rm -f $all_files
-	fi
-	if [ -f $slxorg ];then
-		rm -f $slxorg # clean up old xorg lib file
-	fi
-	eval $LOGUE
-}
-
 check_install_tools()
 {
 	eval $LOGPS
@@ -1392,6 +1407,10 @@ check_install_tools()
 	eval $LOGPE
 }
 
+### -------------------------------------------------------------------
+### apt tools
+### -------------------------------------------------------------------
+
 check_apt_aptitude()
 {
 	eval $LOGUS
@@ -1434,35 +1453,6 @@ check_apt_aptitude()
 			WITHOUT_RECOMMENDS='--without-recommends'
 		fi
 	fi
-	eval $LOGUE
-}
-
-# args: $1 - get/set; $2 - prefname
-get_set_prefs()
-{
-	eval $LOGUS
-	local etcsm='/etc/smxi.conf' retValue='' name='' value=''
-
-	case $1 in
-		get)
-			retValue=$( grep -s $2 $etcsm )
-			echo $retValue
-			log_function_data "Return value: $retValue"
-			;;
-		set)
-			touch $etcsm
-			# test = first, this will handle the base name and anything else
-			name=$( cut -d '=' -f 1 <<< $2 )
-			# check to see if it's there, if it is, it must be a = type thing
-			if [ -z "$( grep -s $name $etcsm )" ];then
-				echo $2 >> $etcsm
-				log_function_data "Added $2 to $etcsm"
-			else
-				sed -i "s/$name.*/$2/" $etcsm
-				log_function_data "Updated $name to $2 in $etcsm"
-			fi
-			;;
-	esac
 	eval $LOGUE
 }
 
@@ -1532,6 +1522,7 @@ install_package()
 	$APT_TYPE $install $useUntrusted $WITHOUT_RECOMMENDS $doYes $optionalArgs $1$distroVersion || error_handler 200 $1
 	eval $LOGUE
 }
+
 # install_package nano '' --reinstall
 remove_package()
 {
@@ -1607,12 +1598,17 @@ update_to_nonfree_sources()
 	eval $LOGPE
 }
 
+### -------------------------------------------------------------------
+### script updating / patch file install tools
+### -------------------------------------------------------------------
+
 # args: $1 script to get/check; $2 - which download source to use
 # $3 - extra message; $4 - repeat, to only retest download failure once
 check_update_script()
 {
 	local fileNameTemp="$( mktemp -p $SCRIPT_HOME/ $1.XXXXXXXXXX )"
 	local isGood='' uArgs='' downloadUrl=$2 extraText=''
+	local origXorg='/etc/X11/xorg-conf-orig-sg'
 
 	if [ -n "$( egrep '(dev|svn|alt)' <<< $3 )" ];then
 		extraText="${C}$3:\n$2${S}"
@@ -1668,10 +1664,30 @@ check_update_script()
 			if [ "$B_SKIP_WGET" != 'true' ];then
 				wget -q -O$1 $downloadUrl$1 || error_handler 198 $2$1
 			fi
-			if [ ! -s $1 ];then
-				error_handler 199 $1 # if no file, exit with file name + error
+			# run fine, except for weird fringe cases where the ascii file is corrupted partially
+			isGood=$( grep '##\*\*EOF\*\*##' $1 )
+			if [ -n "$isGood" ];then
+				case $1 in
+					*xorg-conf)
+						echo "${S}Updating ${C}$EXXC${S} to new ${C}$1${S} version now...${N}"
+						if [ !-f $origXorg ];then
+							echo "${S}Backing up your original ${C}$EXXC${S} to ${C}$origXorg${S}...${N}"
+							mv -f $EXXC $origXorg
+						else
+							echo "${S}Your original ${C}$EXXC${S} has already been backed up to ${C}$origXorg${S}"
+						fi
+						echo "${S}Replacing your ${C}$EXXC${S} with ${C}$1${S} now...${N}"
+						mv -f $1 $EXXC
+						echo "${S}All done with the ${C}$EXXC${S} update."
+						echo "Try running ${C}$SCRIPT_NAME${S} again and see if your driver install works this time.${N}"
+						;;
+					*)
+						source ./$1 # load the library file
+						;;
+				esac
+			else
+				error_handler 199 $1 # if corrupted file, exit with file name + error
 			fi
-			source ./$1 # load the library file
 			;;
 	esac
 }
@@ -1706,6 +1722,40 @@ apply_patch_file()
 	eval $LOGUE
 }
 
+### -------------------------------------------------------------------
+### print data functions
+### -------------------------------------------------------------------
+
+print_information()
+{
+	local scriptVersion=$( egrep -o -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
+	local scriptDate=$( egrep -o -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
+	#local cardInfo=$( lspci | gawk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2%'  )
+	local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\s|nVidia\s|Intel\s)(Technologies\sInc\s|Corporation\s|Unknown\sdevice){1,2}(.*)%\1\3%g' )
+	local cardRam='' cardVendor='' busId=''
+
+	# we need the real busid, not the xorg one
+	busId=$( lspci -n | grep "$CARD_DATA" | egrep -io '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' )
+
+	if [ -n "$busId" ];then
+		cardRam=$( lspci -v -s $busId 2>/dev/null | egrep '.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]' | sed -r 's/.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]/\1/' )
+		cardVendor=$( lspci -v -s $busId 2>/dev/null | egrep '.*Subsystem:[[:space:]]*(.*)' | sed -r 's/.*Subsystem:[[:space:]]*(.*)/\1/' | sed 's/[dD]evice.*$//g' | sed 's/[uU]nknown//g' )
+	fi
+	echo ${M}$LINE
+	echo " ${M}$SCRIPT_NAME${S} :: version: ${C}$scriptVersion${S} :: last updated: ${C}$scriptDate"
+	echo ${M}$LINE
+	echo " ${S}graphics card information:"
+	echo "   ${S}series: ${C}$cardInfo"
+	if [ -n "$cardVendor" ];then
+		echo "   ${S}vendor: ${C}$cardVendor"
+	fi
+	if [ -n "$cardRam" ];then
+		echo "   ${S}ram:    ${C}$cardRam MegaBytes ${S}(note: not accurate for built in graphics)"
+	fi
+	echo ${M}$LINE${N}
+}
+#print_information
+
 # args: $1 testing or standard; $2 function/feature name; $3 function name
 print_information_continue()
 {
@@ -1731,6 +1781,10 @@ print_information_continue()
 	fi
 	eval $LOGUE
 }
+
+### -------------------------------------------------------------------
+### logging tools
+### -------------------------------------------------------------------
 
 create_log()
 {
@@ -1836,12 +1890,13 @@ log_writer()
 }
 
 ########################################################################
-#### Core graphic driver installer functions
-#### -------------------------------------------------------------------
+#### FUNCTIONS: CORE GRAPHIC DRIVER INSTALLER TOOLS
+########################################################################
 
 ### -------------------------------------------------------------------
 ### Native Driver installer section
 ### -------------------------------------------------------------------
+
 # this bypasses core binary installers and just runs the required pieces
 install_native_driver()
 {
@@ -2029,9 +2084,11 @@ prep_native_driver()
 	eval $LOGUE
 	remove_package "$packageList" $xxva
 }
+
 ### -------------------------------------------------------------------
 ### Non-free Driver installer section
 ### -------------------------------------------------------------------
+
 set_cpu_data()
 {
 	eval $LOGUS
@@ -2512,6 +2569,7 @@ post_installer_steps()
 ### -------------------------------------------------------------------
 ### debian sid fglrx/nvidia driver installer
 ### -------------------------------------------------------------------
+
 install_debian_drivers()
 {
 	eval $LOGPS
@@ -2578,7 +2636,6 @@ install_debian_drivers()
 	esac
 	eval $LOGPE
 }
-
 
 ### -------------------------------------------------------------------
 ### ATI fglrx specific stuff
@@ -2690,9 +2747,11 @@ install_fglrx_debs()
 		eval $LOGPE
 	fi
 }
+
 ### -------------------------------------------------------------------
 ### Finalizing steps
 ### -------------------------------------------------------------------
+
 final_install_steps()
 {
 	eval $LOGPS
@@ -2747,9 +2806,15 @@ process_xvmc()
 	fi
 	eval $LOGUE
 }
+
+########################################################################
+#### FUNCTIONS: XORG TOOLS
+########################################################################
+
 ### -------------------------------------------------------------------
 ### Stop / Start Xorg handling section
 ### -------------------------------------------------------------------
+
 x_start_stop_master()
 {
 	eval $LOGPS
@@ -2954,9 +3019,9 @@ x_is_running()
 	eval $LOGUE
 }
 
-########################################################################
-#### xorg configuration (previously in sgfxi-lib-xorg)
-#### -------------------------------------------------------------------
+### -------------------------------------------------------------------
+### xorg configuration (previously in sgfxi-lib-xorg)
+### -------------------------------------------------------------------
 
 # create required section device:
 create_section_device()
@@ -3265,8 +3330,9 @@ update_xorg()
 }
 
 ########################################################################
-#### OPTIONS
+#### OPTION HANDLER
 ########################################################################
+
 # keep this above getopts to keep it readable
 # args: $1 if err or not, $2 extra data
 show_options()
@@ -3391,6 +3457,8 @@ show_options()
 		echo "-! <http://......> - Triggers an update from whatever server you list."
 		echo "-! 20 - Uses patch from svn branch one server (must be in branch/one/patches)."
 		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
+		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version."
+		echo "-! 31 - Backup, download, replace, xorg.conf with basic sidux xorg.conf version."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
@@ -3572,7 +3640,19 @@ get_options()
 					21)
 						PATCH_DOWNLOAD="$SCRIPT_DOWNLOAD_BRANCH_2"
 						;;
-
+					# let these run in X
+					30)
+						B_SKIP_X_TEST='true'
+						basic_startup_tests
+						check_update_script "dm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
+						exit 0
+						;;
+					31)
+						B_SKIP_X_TEST='true'
+						basic_startup_tests
+						check_update_script "sm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
+						exit 0
+						;;
 					*)	error_handler 178 "$OPTARG"
 						;;
 				esac
@@ -3590,8 +3670,9 @@ get_options()
 }
 
 ########################################################################
-#### EXECUTE
+#### MAIN: EXECUTE
 ########################################################################
+
 # this must be set before anything else runs in script, -j will reset to no colors
 set_script_colors $COLOR_DEFAULT
 # set all options
