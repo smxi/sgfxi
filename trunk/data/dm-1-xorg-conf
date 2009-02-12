@@ -31,7 +31,7 @@ EndSection
 
 Section "Device"
 	Driver	"vesa"
-	Identifier	"Configured Video Device"
+	Identifier	"Device 0"
 	#BusID		"PCI:1:0:0"
 EndSection
 
