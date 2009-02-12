@@ -3,6 +3,10 @@
 # This is a replacement xorg.conf file designed to work around various
 # automated xorg.conf errors sgfxi users have been seeing, from things like
 # aticonfig, nvidia-config as well as possibly distro config tools.
+#
+# Please check your original xorg.conf found here: /etc/X11/xorg-conf-orig-sg
+# to make sure your keyboard and mouse data are correct.
+#
 # Download URL: http://smxi.org/sg/data/dm-1-xorg-conf
 #
 # Edit this file with caution, and see the xorg.conf manual page.
