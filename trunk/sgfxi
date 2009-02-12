@@ -1288,6 +1288,13 @@ check_kernel_headers()
 ### startup and tools testing
 ### -------------------------------------------------------------------
 
+check_root()
+{
+	if [ "$(whoami)" != 'root' ];then
+		error_handler 251
+	fi
+}
+
 basic_startup_tests()
 {
 	local nonDebianPattern='(deb-sdx|sidux|deb-op|opera|deb-mm|debian-multimedia|deb-mep|mepis|deb-skp|skype|deb-swift|swiftfox|deb-vb|virtualbox)'
@@ -1325,9 +1332,7 @@ basic_startup_tests()
 
 	## basic execute requirements
 	cd $SCRIPT_HOME
-	if [ "$(whoami)" != 'root' ];then
-		error_handler 251
-	fi
+	check_root
 	cleanup_temp_files
 
 	# this allows users to update in x, for example, to see latest drivers
@@ -3623,15 +3628,23 @@ get_options()
 						B_SKIP_FUNCTION='true'
 						;;
 					10)
+						cd $SCRIPT_HOME
+						check_root
 						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_DEV" 'dev server'
 						;;
 					11)
+						cd $SCRIPT_HOME
+						check_root
 						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_BRANCH_1" 'svn: branch one server'
 						;;
 					12)
+						cd $SCRIPT_HOME
+						check_root
 						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_BRANCH_2" 'svn: branch two server'
 						;;
 					http*)
+						cd $SCRIPT_HOME
+						check_root
 						check_update_script "$SCRIPT_NAME" "$OPTARG" 'alt server'
 						;;
 					20)
@@ -3642,14 +3655,14 @@ get_options()
 						;;
 					# let these run in X
 					30)
-						B_SKIP_X_TEST='true'
-						basic_startup_tests
+						cd $SCRIPT_HOME
+						check_root
 						check_update_script "dm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
 						exit 0
 						;;
 					31)
-						B_SKIP_X_TEST='true'
-						basic_startup_tests
+						cd $SCRIPT_HOME
+						check_root
 						check_update_script "sm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
 						exit 0
 						;;
