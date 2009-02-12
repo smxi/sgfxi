@@ -34,7 +34,6 @@ Section "InputDevice"
 	Option		"XkbRules"		"xorg"
 	Option		"XkbModel"		"pc105"
 	Option		"XkbLayout"		"us,ca"
-	Option		"XkbOptions"		"lv3:ralt_switch,compose:lwin,grp:alt_shift_toggle"
 EndSection
 
 Section "InputDevice"
