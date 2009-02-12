@@ -1675,7 +1675,7 @@ check_update_script()
 				case $1 in
 					*xorg-conf)
 						echo "${S}Updating ${C}$EXXC${S} to new ${C}$1${S} version now...${N}"
-						if [ !-f $origXorg ];then
+						if [ ! -f $origXorg ];then
 							echo "${S}Backing up your original ${C}$EXXC${S} to ${C}$origXorg${S}...${N}"
 							mv -f $EXXC $origXorg
 						else
