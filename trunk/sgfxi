@@ -1941,11 +1941,12 @@ install_native_driver()
 		fi
 		# driver is the actual driver xorg will use
 		driver=$xorgBase$xorgDriver
-		# make sure the driver is available for the user's debian version
-		if [ -z "$( check_package_status $driver 'c' )" ];then
-			error_handler 222 "$driver"
-		fi
+
 		if [ "$B_PRINT_VER" != 'true' ];then
+			# make sure the driver is available for the user's debian version
+			if [ -z "$( check_package_status $driver 'c' )" ];then
+				error_handler 222 "$driver"
+			fi
 			print_information_continue 'standard' "The graphics installer will be installing the${C}$experimentalText Free xorg${S} driver: ${C}$driverInstall${N}"
 		else
 			exit 0 # this is required for smxi native driver tests
