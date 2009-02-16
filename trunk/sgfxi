@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.0
-####  Date: February 12 2009
+####  version: 4.5.1
+####  Date: February 16 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -73,7 +73,7 @@ CARD='' # card type: fglrx or nvidia
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
-NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|cyrix|fbdev|glint|i128|i740|intel|i810|imstt|mga|neomagic|nsc|nv|radeon|radeonhd|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|openchrome|via|voodoo|vmware|v4l'
+NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|cyrix|fbdev|glint|i128|i740|intel|i810|imstt|mach64|mga|neomagic|nsc|nv|openchrome|radeon|radeonhd|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|openchrome|via|voodoo|vmware|v4l'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
 SCRIPT_COLORS=1
@@ -1921,7 +1921,7 @@ install_native_driver()
 			$NVIDIA)
 				xorgDriver=$xorgNv
 				;;
-			# note: radeon uses ati driver, so don't try to install xorg radeon
+			# note: use default ati here and only override to radeon for native override
 			$FGLRX)
 				xorgDriver=$xorgAti
 				;;
@@ -1933,10 +1933,8 @@ install_native_driver()
 		# driverInstall is just for output text for user to know what driver script installs
 		driverInstall=$xorgDriver
 		# replace with override if it's been set
-		if [ -n "$NATIVE_OVERRIDE" -a "$NATIVE_OVERRIDE" != 'radeon' ];then
+		if [ -n "$NATIVE_OVERRIDE" ];then
 			xorgDriver=$NATIVE_OVERRIDE
-			driverInstall=$NATIVE_OVERRIDE
-		elif [ "$NATIVE_OVERRIDE" == 'radeon' ];then
 			driverInstall=$NATIVE_OVERRIDE
 		fi
 		# driver is the actual driver xorg will use
@@ -1958,9 +1956,6 @@ install_native_driver()
 		preinstall_cleanup
 		# this is required to do radeon xorg driver
 		native_driver_install_keep
-
-# # 		currentlyInstalled=$( check_package_status "$driver" 'i' )
-
 		install_package 'xserver-xorg-core' '' '--reinstall'
 		if [ "$CARD" == "$FGLRX" ];then
 			install_package 'libgl1-mesa-glx' '' '--reinstall'
@@ -3139,7 +3134,7 @@ update_xorgconf_driver_version()
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mesa|mga|neomagic|newport|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|neomagic|newport|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	eval $LOGUE
 }
 

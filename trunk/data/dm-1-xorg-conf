@@ -24,7 +24,7 @@ Section "InputDevice"
 	Identifier	"Generic Keyboard"
 	Driver		"kbd"
 	Option		"XkbRules"	"xorg"
-	Option		"XkbModel"	"pc104"
+	Option		"XkbModel"	"pc105"
 	Option		"XkbLayout"	"us"
 EndSection
 
