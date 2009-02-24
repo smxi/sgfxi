@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.4
-####  Date: February 20 2009
+####  version: 4.5.5
+####  Date: February 22 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -223,6 +223,7 @@ B_COMPOSITE='' # default false
 # RENDER_ACCEL='true' # default use, true
 
 # system paths
+EAA='/etc/apt/apt.conf'
 EAS='/etc/apt/sources.list'
 EXXC='/etc/X11/xorg.conf'
 EDV='/etc/debian_version'
@@ -1304,9 +1305,16 @@ basic_startup_tests()
 	local isLenny=$( grep -is '^5.' $EDV )
 	local isSqueeze=$( egrep -is '^(squeeze|6\.)' $EDV )
 
+	# first tests sources
 	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(stable|etch)' )
 	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(squeeze|testing|lenny)' )
 	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(sid|unstable)' )
+
+	# then test conf for default version
+	local isStableDefault=$( egrep -sic 'APT::Default-Release[[:space:]]"(stable|etch|lenny)"' $EAA )
+	local isTestingDefault=$( egrep -sic 'APT::Default-Release[[:space:]]"(testing|squeeze)"' $EAA )
+	local isUnstableDefault=$( egrep -sic 'APT::Default-Release[[:space:]]"(sid|unstable)"' $EAA )
+
 	## basic system requirements for this script to run, first so user doesn't
 	## have to be root or out of x to get basic failure information
 	# make sure that it's a debian based system
@@ -1351,15 +1359,15 @@ basic_startup_tests()
 		error_handler 250
 	fi
 	# set system type. This test will never be perfect, but it's a good approximation
-	if [ -n "$isEtch" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
+	if [ -n "$isEtch" -o "$isStableDefault" -gt 0 ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
 		if [ -n "$isEtch" ];then
 			SYSTEM_BASE='etch'
 			FG_DISTRO='etch'
 		else
 			SYSTEM_BASE='stable'
-			FG_DISTRO='etch'
+			FG_DISTRO='lenny'
 		fi
-	elif [ "$isUnstable" -eq 0 ] && [ -n "$isLenny" -o -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
+	elif [ "$isUnstable" -eq 0 -o "$isTestingDefault" -gt 0 ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
 		SYSTEM_BASE='testing'
 		FG_DISTRO='lenny'
 	else
