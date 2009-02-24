@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.5
+####  version: 4.5.6
 ####  Date: February 22 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1311,9 +1311,9 @@ basic_startup_tests()
 	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(sid|unstable)' )
 
 	# then test conf for default version
-	local isStableDefault=$( egrep -sic 'APT::Default-Release[[:space:]]"(stable|etch|lenny)"' $EAA )
-	local isTestingDefault=$( egrep -sic 'APT::Default-Release[[:space:]]"(testing|squeeze)"' $EAA )
-	local isUnstableDefault=$( egrep -sic 'APT::Default-Release[[:space:]]"(sid|unstable)"' $EAA )
+	local isStableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(stable|etch|lenny)"' $EAA )
+	local isTestingDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(testing|squeeze)"' $EAA )
+	local isUnstableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(sid|unstable)"' $EAA )
 
 	## basic system requirements for this script to run, first so user doesn't
 	## have to be root or out of x to get basic failure information
@@ -1359,7 +1359,7 @@ basic_startup_tests()
 		error_handler 250
 	fi
 	# set system type. This test will never be perfect, but it's a good approximation
-	if [ -n "$isEtch" -o "$isStableDefault" -gt 0 ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
+	if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
 		if [ -n "$isEtch" ];then
 			SYSTEM_BASE='etch'
 			FG_DISTRO='etch'
@@ -1367,7 +1367,7 @@ basic_startup_tests()
 			SYSTEM_BASE='stable'
 			FG_DISTRO='lenny'
 		fi
-	elif [ "$isUnstable" -eq 0 -o "$isTestingDefault" -gt 0 ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
+	elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
 		SYSTEM_BASE='testing'
 		FG_DISTRO='lenny'
 	else
