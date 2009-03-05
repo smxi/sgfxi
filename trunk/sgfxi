@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.9
-####  Date: February 24 2009
+####  version: 4.5.10
+####  Date: March 5 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -3303,12 +3303,15 @@ update_xorg()
 				if [ "$B_TRIPLE_BUFFER" == 'true' ];then
 					triple=$stateTrue
 				fi
-				# this should let 3D work again for older cards, 400 etc
-				if [ "$DRIVER_DEFAULT" == "$NV_LEGACY_1" ];then
-					allowGlx='Option\t"AllowGLXWithComposite"\t"'$stateTrue'"\n\t'
-				fi
+				# this should let 3D work again for older cards, 400 etc:
+				# u
+# 				if [ "$DRIVER_DEFAULT" == "$NV_LEGACY_1" ];then
+# 					allowGlx='Option\t"AllowGLXWithComposite"\t"'$stateTrue'"\n\t'
+# 				fi
 				# note: coolbits requires an integer value
-				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"1"\n\tOption      "RandRRotation"\t"'$stateTrue'"\n\tOption      "AddARGBGLXVisuals"\t"'$stateTrue'"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "DynamicTwinView"\t"'$twin'"/' $EXXC
+				# \n\tOption      "RandRRotation"\t"'$stateTrue'"
+				# \n\tOption      "DynamicTwinView"\t"'$twin'"
+				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"1"\n\tOption      "AddARGBGLXVisuals"\t"'$stateTrue'"\n\tOption      "TripleBuffer"\t"'$triple'"/' $EXXC
 				;;
 			$FGLRX)
 				# set any custom stuff here
@@ -3321,18 +3324,22 @@ update_xorg()
 # 					layout='LVDS,AUTO' # no space in string
 # 				fi
 
-				# \n\tOption      "UseInternalAGPGART" "'$agpart'"\n\tOption      "VideoOverlay" "on"
+				# \n\tOption      "UseInternalAGPGART" "'$agpart'"
+				# \n\tOption      "VideoOverlay" "on"
 				# \n\tOption      "MonitorLayout" "'$layout'
-				perl -pi -e 's/^([\s]*Load\s*"extmod")/#\1\n\tSubSection  "extmod"\n\t  Option  "omit xfree86-dga"\n\tEndSubSection/;
-				s/^([\s]*Driver\s*"fglrx")/\1\n\tOption      "UseInternalAGPGART" "'$agpart'"\n\tOption "TexturedXrender"/' $EXXC
+				perl -pi -e 's/^([\s]*Load\s*"extmod")/#\1\n\tSubSection  "extmod"\n\t  Option  "omit xfree86-dga"\n\tEndSubSection/' $EXXC
+
+				#s/^([\s]*Driver\s*"fglrx")/\1\n\tOption      "UseInternalAGPGART" "'$agpart'"\n\tOption "TexturedXrender"/
 				;;
 		esac
 	## Native ati/nv specific stuff
 	else
 		if [ "$CARD" == $INTEL ];then
 			:
+		# note: changed XAA to EXA
 		elif [ "$NATIVE_OVERRIDE" == 'radeon' ];then
-			perl -pi -e 's/^([\s]*Driver\s*"radeon")/\1\n\tOption  "AGPFastWrite"    "off"\n\tOption  "AGPMode" "4"\n\tOption   "ColorTiling" "on"\n\tOption  "DynamicClocks"   "on"\n\tOption   "EnablePageFlip" "on"\n\tOption   "AccelMethod" "XAA"/' $EXXC
+			# removed: Option  "AGPFastWrite"    "off"\n\tOption  "AGPMode" "4"\n\tOption   "ColorTiling" "on"
+			perl -pi -e 's/^([\s]*Driver\s*"radeon")/\1\n\t\n\tOption  "DynamicClocks"   "on"\n\tOption   "EnablePageFlip" "on"\n\tOption   "AccelMethod" "EXA"/' $EXXC
 		fi
 	fi
 	eval $LOGPE
