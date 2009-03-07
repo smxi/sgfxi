@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.10
-####  Date: March 5 2009
+####  version: 4.5.11
+####  Date: March 6 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1306,8 +1306,8 @@ basic_startup_tests()
 	local isSqueeze=$( egrep -is '^(squeeze|6\.)' $EDV )
 
 	# first tests sources
-	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(stable|etch)' )
-	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(squeeze|testing|lenny)' )
+	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(stable|lenny|etch)' )
+	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(squeeze|testing)' )
 	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$nonDebianPattern" | egrep -icw '(sid|unstable)' )
 
 	# then test conf for default version
