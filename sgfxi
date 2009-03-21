@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.13
-####  Date: March 14 2009
+####  version: 4.5.14
+####  Date: March 20 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -152,7 +152,7 @@ DISPLAY_MANAGER=$( basename $DISPLAY_MANAGER 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now
-NV_VERSIONS='180.37:173.14.18:96.43.11:71.86.09'
+NV_VERSIONS='180.41:173.14.18:96.43.11:71.86.09'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -170,7 +170,7 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA:180.27:180.18:180.11:173.14.16:96.43.10:71.86.07"
-NV_OTHERS='180.35:180.29:177.82:173.14.17:173.14.12:169.12:100.14.19:96.43.07|71.86.08|71.86.06'
+NV_OTHERS='180.37:180.35:180.29:177.82:173.14.17:173.14.12:169.12:100.14.19:96.43.07|71.86.08|71.86.06'
 
 # debian sid legacies:
 NV_DEBIAN_LEGACY_1='71xx'
@@ -290,9 +290,25 @@ driver_support_tests()
 		supported-driver)
 			case $CARD in
 				$FGLRX)
+					# test for >= xorg 1.6 support, using a whitelist of current drivers
+					# drivers for now until old driver support is dropped, then change to
+					# blacklist
+					case $X_VERSION in
+						1.[6-9]|2.[0-9]|7.[7-9]|8.[0-9])
+							case $DRIVER_DEFAULT in
+								9.[3-9]|9.1[0-2])
+									: # all other drivers fail to support xorg >= 1.6
+									;;
+								*)
+									error_handler 226
+									;;
+							esac
+							;;
+					esac
+
 					case $KERNEL_THIRD in
 						# handle no sidux kernel support first
-						25|26|27)
+						2[5-9]|3[0-9])
 							# for testing/debugging set this re:
 							# http://techpatterns.com/docs/sgfxi-set-test-data.htm
 							if [ -n "$IS_SIDUX_KERNEL" ];then
@@ -304,17 +320,37 @@ driver_support_tests()
 									26)
 										case $DRIVER_DEFAULT in
 											8-4|8-5)
-												error_handler 234 26
+												error_handler 234 $KERNEL_THIRD
 												;;
 										esac
 										;;
 									27)
 										case $DRIVER_DEFAULT in
 											8-4|8-5|8-6|8-7|8-8|8-9)
-												error_handler 234 27
+												error_handler 234 $KERNEL_THIRD
 												;;
 											*)
-												: # not yet, let's see: error_handler 234 27
+												: # not yet
+												;;
+										esac
+										;;
+									28)
+										case $DRIVER_DEFAULT in
+											8-4|8-5|8-6|8-7|8-8|8-9)
+												error_handler 234 $KERNEL_THIRD
+												;;
+											*)
+												: # not yet
+												;;
+										esac
+										;;
+									29|3[0-9])
+										case $DRIVER_DEFAULT in
+											9.[3-9]|9.1[0-2])
+												: # not yet
+												;;
+											*)
+												error_handler 234 $KERNEL_THIRD
 												;;
 										esac
 										;;
@@ -345,7 +381,7 @@ driver_support_tests()
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
 						case $DRIVER_DEFAULT in
-							185.13|180.37|180.35|180.29|180.18|180.11|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07)
+							185.13|180.41|180.37|180.35|180.29|180.18|180.11|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
@@ -567,6 +603,16 @@ run_patches()
 							;;
 					esac
 					;;
+				29)
+					case $DRIVER_DEFAULT in
+						9.2)
+							# src: http://www.phoronix.com/forums/showthread.php?t=15165
+# 							patchFile='FGLRX-2.6.29-9.2.diff'
+# 							apply_patch_file $patchFile
+							:
+							;;
+					esac
+					;;
 			esac
 			;;
 	esac
@@ -600,7 +646,8 @@ set_test_data()
 		cd $SCRIPT_HOME
 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
-# 		CARD_DATA=1002:7280 # fake ati
+		CARD_DATA=1002:7280 # fake ati pre x2000 card
+# 		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -613,7 +660,7 @@ set_test_data()
 		IS_SIDUX_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
-# 		KERNEL_THIRD=28
+		KERNEL_THIRD=29
 # 		# values: '' or 'true'
 # 		IS_XEN=''
 # 		# check for specific system base tests, can be:
@@ -1105,6 +1152,16 @@ detect_card_version()
 				728c|7834|7835)
 					LEGACY_LEVEL=0
 					error_handler 253
+					;;
+				# this is going to handle all pre hd/x2000 cards, any exceptions will be added
+				# to an explicit whitelist above this if required
+				3*|4*|5*|7*)
+					LEGACY_LEVEL=1
+					# going to leave this in for now until debian kernels and
+					# xorgs catch up, but will permit by default for non legacy 0 cards
+					if [ "$B_DEBIAN_FLAG" == 'true' ];then
+						B_USE_DEBIAN_DRIVER='true'
+					fi
 					;;
 				*)
 					# if no working driver via standard ati installer. Here we're also handling
@@ -2353,7 +2410,9 @@ prep_install()
 			;;
 		$FGLRX)
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
-			install_package 'libgl1-mesa-glx' '' '--reinstall'
+			if [ "$B_SKIP_FUNCTION" != 'true' ];then
+				install_package 'libgl1-mesa-glx' '' '--reinstall'
+			fi
 			;;
 	esac
 
