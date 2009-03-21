@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.14
+####  version: 4.5.15
 ####  Date: March 20 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -290,6 +290,17 @@ driver_support_tests()
 		supported-driver)
 			case $CARD in
 				$FGLRX)
+					# first dump if legacy level 1
+					if [ "$LEGACY_LEVEL" == 1 -a "$B_USE_DEBIAN_DRIVER" != 'true' ];then
+						case $DRIVER_DEFAULT in
+							8-*|9-1|9.[2-3])
+								: # these drivers are fine
+								;;
+							*)
+								error_handler 221
+								;;
+						esac
+					fi
 					# test for >= xorg 1.6 support, using a whitelist of current drivers
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
@@ -839,6 +850,9 @@ error_handler()
 			;;
 		222)
 			errorData="The Xorg driver $extraData you are trying to install is not available\nfor your version of Debian: $SYSTEM_BASE"
+			;;
+		221)
+			errorData="AMD/ATI had dropped fglrx non-free driver support for your card type as of driver release 9.4\nOnly cards x2000 or newer are now supported by AMD/ATI for this driver.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know."
 			;;
 		# specific install issues
 		200)
