@@ -618,7 +618,7 @@ run_patches()
 					case $DRIVER_DEFAULT in
 						9.2)
 							# src: http://www.phoronix.com/forums/showthread.php?t=15165
-							patchFile='FGLRX-2.6.29-9.2-3.diff'
+							patchFile='FGLRX-2.6.29-9.2-4.diff'
 							apply_patch_file $patchFile
 							:
 							;;
