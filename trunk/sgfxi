@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.18
+####  version: 4.5.19
 ####  Date: March 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -654,6 +654,7 @@ set_test_data()
 		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
 		INSTALL_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev/"
 		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/"
+# 		PATCH_DOWNLOAD='http://smxi.org/sg/'
 		cd $SCRIPT_HOME
 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
