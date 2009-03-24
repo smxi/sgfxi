@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.17
+####  version: 4.5.18
 ####  Date: March 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -618,7 +618,7 @@ run_patches()
 					case $DRIVER_DEFAULT in
 						9.2)
 							# src: http://www.phoronix.com/forums/showthread.php?t=15165
-							patchFile='FGLRX-2.6.29-9.2-4.diff'
+							patchFile='FGLRX-2.6.29-9.2-5.diff'
 							apply_patch_file $patchFile
 							:
 							;;
@@ -2396,7 +2396,7 @@ download_extract_driver()
 			errorTemp="$?"
 			;;
 		$FGLRX)
-			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$runPackage --extract 1>> $LOG_FILE 2>> $LOG_FILE
+			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$runPackage --extract $FG_WORKING_DIR 1>> $LOG_FILE 2>> $LOG_FILE
 			errorTemp="$?"
 			;;
 	esac
@@ -2417,7 +2417,7 @@ prep_install()
 
 	# We now need to do active detection of fglrx-install directory name due to
 	# silly random directory naming schema ati just started with 8.35.5
-	# hint to ATI: just copy nvidia, they do it better than you!
+	# Note: you can set --extract $FG_WORKING_DIR to hard code this name
 	case $CARD in
 		$NVIDIA)
 			INSTALL_DIRECTORY=$DRIVER_FILE
