@@ -1796,7 +1796,7 @@ apply_patch_file()
 		log_function_data "Patch File: $patchDirectory$patchFile"
 		echo "${S}Running patch ${C}$patchFile${S}...${N}"
 
-		patch -p0 < $patchDirectory$patchFile || error_handler 179 $patchFile
+		patch -p 1 < $patchDirectory$patchFile || error_handler 179 $patchFile
 		# remove the patch file after use just to keep the stuff neat long term
 		rm -f $patchFile
 		echo "${S}Patching completed...${N}"
