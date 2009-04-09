@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.24
-####  Date: April 6 2009
+####  version: 4.5.25
+####  Date: April 8 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -2957,7 +2957,13 @@ start_x_question()
 			esac
 			;;
 	esac
-
+	ia32Alert=''
+	ia32Install=''
+	iaOpt=''
+	fgGlx=''
+	fgGlxOpt=''
+	fgGlxAlert=''
+	fgGlxInstall=''
 	if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ];then
 		startXReboot='reboot-now'
 		startXRebootText='You must reboot before you can continue into X.'
