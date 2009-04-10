@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.27
+####  version: 4.5.28
 ####  Date: April 10 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3050,6 +3050,10 @@ start_stop_x()
 	local displayManagers='entrance gdm kdm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
 	local defaultRunlevel=$( grep ':initdefault:' /etc/inittab | egrep -o '[0-5]' )
+	local noHup='nohup' xKillString=''
+	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
+		noHup=''
+	fi
 
 	## restart x if this is not being run by smxi
 	if [ -z "$DISPLAY_MANAGER" ];then
@@ -3057,7 +3061,8 @@ start_stop_x()
 		do
 			if [ -x /etc/init.d/$dman ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
-				nohup /etc/init.d/$dman $1 2>/dev/null && success='true'
+				xKillString="$noHup /etc/init.d/$dman $1 2>/dev/null && success='true'"
+				eval $xKillString
 			fi
 		done
 	else
@@ -3065,7 +3070,8 @@ start_stop_x()
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
-			nohup /etc/init.d/$DISPLAY_MANAGER $1 && success='true'
+			xKillString="$noHup /etc/init.d/$DISPLAY_MANAGER $1 && success='true'"
+			eval $xKillString
 		fi
 	fi
 	# this handles cases where somehow X is still running
@@ -3073,7 +3079,8 @@ start_stop_x()
 	if [ "$1" == 'stop' ];then
 		if [ "$( x_is_running )" -eq 0 ];then
 			echo "${M}Note: display manager shutdown failed... shutting down X directly instead...${N}"
-			nohup killall Xorg
+			xKillString="$noHup killall Xorg"
+			eval $xKillString
 		fi
 	fi
 	# this will exit the root shell on successful run of start x
