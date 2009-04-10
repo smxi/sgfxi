@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.28
+####  version: 4.5.29
 ####  Date: April 10 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3050,7 +3050,7 @@ start_stop_x()
 	local displayManagers='entrance gdm kdm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
 	local defaultRunlevel=$( grep ':initdefault:' /etc/inittab | egrep -o '[0-5]' )
-	local noHup='nohup' xActionString=''
+	local noHup='nohup' xActionString='' finalXKill=''
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
 	fi
@@ -3061,8 +3061,14 @@ start_stop_x()
 		do
 			if [ -x /etc/init.d/$dman ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
+				echo -n "${S}Action for display manager: /etc/init.d/$dman $1 attempted now... ${N}"
 				xActionString="$noHup /etc/init.d/$dman $1 2>/dev/null && success='true'"
 				eval $xActionString
+				if [ "$success" == 'true' ];then
+					echo "${S}success${N}"
+				else
+					echo "${W}failed${N}"
+				fi
 			fi
 		done
 	else
@@ -3070,17 +3076,28 @@ start_stop_x()
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
+			echo -n "${S}Action for default display manager: /etc/init.d/$DISPLAY_MANAGER $1 attempted now... ${N}"
 			xActionString="$noHup /etc/init.d/$DISPLAY_MANAGER $1 && success='true'"
 			eval $xActionString
+			if [ "$success" == 'true' ];then
+				echo "${S}success${N}"
+			else
+				echo "${W}failed${N}"
+			fi
 		fi
 	fi
 	# this handles cases where somehow X is still running
 	# startx x starts can for example bypass kdm tests, etc
 	if [ "$1" == 'stop' ];then
 		if [ "$( x_is_running )" -eq 0 ];then
-			echo "${M}Note: display manager shutdown failed... shutting down X directly instead...${N}"
-			xActionString="$noHup killall Xorg"
+			echo -n "${M}Note: display manager shutdown failed... shutting down X directly instead... ${N}"
+			xActionString="$noHup killall Xorg && finalXKill='true'"
 			eval $xActionString
+			if [ -z "$noHup" -a "$finalXKill" == 'true' ];then
+				echo "${S}success${N}"
+			else
+				echo "${W}failed${N}"
+			fi
 		fi
 	fi
 	# this will exit the root shell on successful run of start x
