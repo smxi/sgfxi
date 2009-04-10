@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.30
+####  version: 4.5.31
 ####  Date: April 10 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3061,17 +3061,14 @@ start_stop_x()
 		do
 			if [ -x /etc/init.d/$dman ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
-				echo -n "${S}Action for display manager: /etc/init.d/$dman $1 attempted now... ${N}"
-				if [ -n "$noHup" ];then
-					echo
-				fi
+				echo "${S}Attempting to ${C}$1${S} display manager $dman now... ${N}"
 				xActionString="$noHup /etc/init.d/$dman $1 2>/dev/null && success='true'"
 				eval $xActionString
 				if [ -z "$noHup" ];then
 					if [ "$success" == 'true' ];then
-						echo "${S}success${N}"
+						echo "${S}Display manager ${C}$1${S} sucessful.${N}"
 					else
-						echo "${W}failed${N}"
+						echo "${W}Display manager ${C}$1${S} failed${N}"
 					fi
 				fi
 			fi
@@ -3081,17 +3078,14 @@ start_stop_x()
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
-			echo -n "${S}Action for default display manager: /etc/init.d/$DISPLAY_MANAGER $1 attempted now... ${N}"
-			if [ -n "$noHup" ];then
-				echo
-			fi
+			echo "${S}Attempting to ${C}$1${S} default display manager $DISPLAY_MANAGER now... ${N}"
 			xActionString="$noHup /etc/init.d/$DISPLAY_MANAGER $1 && success='true'"
 			eval $xActionString
 			if [ -z "$noHup" ];then
 				if [ "$success" == 'true' ];then
-					echo "${S}success${N}"
+					echo "${S}Display manager ${C}$1${S} successful.${N}"
 				else
-					echo "${W}failed${N}"
+					echo "${W}Display manager ${C}$1${S} failed.${N}"
 				fi
 			fi
 		fi
@@ -3100,17 +3094,14 @@ start_stop_x()
 	# startx x starts can for example bypass kdm tests, etc
 	if [ "$1" == 'stop' ];then
 		if [ "$( x_is_running )" -eq 0 ];then
-			echo -n "${M}Note: display manager shutdown failed... shutting down X directly instead... ${N}"
-			if [ -n "$noHup" ];then
-				echo
-			fi
+			echo "${M}Note: display manager shutdown failed... shutting down X directly instead... ${N}"
 			xActionString="$noHup killall Xorg && finalXKill='true'"
 			eval $xActionString
 			if [ -z "$noHup" ];then
 				if [ "$finalXKill" == 'true' ];then
-					echo "${S}success${N}"
+					echo "${S}X shutdown successful.${N}"
 				else
-					echo "${W}failed${N}"
+					echo "${W}X shutdown failed.${N}"
 				fi
 			fi
 		fi
