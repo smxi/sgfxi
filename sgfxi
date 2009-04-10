@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.25
-####  Date: April 8 2009
+####  version: 4.5.26
+####  Date: April 10 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -305,9 +305,9 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
-						1.[6-9]|2.[0-9]|7.[7-9]|8.[0-9])
+						1.[6-9]|2.[0-9]|7.[4-9]|8.[0-9])
 							case $DRIVER_DEFAULT in
-								9-[4-9]|9-1[0-2])
+								9-[4-9]|9-1[0-2]|10-[1-9]|10-1[0-2])
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -377,7 +377,7 @@ driver_support_tests()
 						# test for >= xorg 1.5 support, using a blacklist now of previous
 						# drivers rather than whitelisting
 						case $X_VERSION in
-							1.[5-9]|2.[0-9]|7.[6-9])
+							1.[5-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
 									173.14.12|169.12|100.14.19|96.43.07|71.86.06)
 										error_handler 226
