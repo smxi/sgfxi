@@ -3050,7 +3050,7 @@ start_stop_x()
 	local displayManagers='entrance gdm kdm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
 	local defaultRunlevel=$( grep ':initdefault:' /etc/inittab | egrep -o '[0-5]' )
-	local noHup='nohup' xKillString=''
+	local noHup='nohup' xActionString=''
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
 	fi
@@ -3061,8 +3061,8 @@ start_stop_x()
 		do
 			if [ -x /etc/init.d/$dman ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
-				xKillString="$noHup /etc/init.d/$dman $1 2>/dev/null && success='true'"
-				eval $xKillString
+				xActionString="$noHup /etc/init.d/$dman $1 2>/dev/null && success='true'"
+				eval $xActionString
 			fi
 		done
 	else
@@ -3070,8 +3070,8 @@ start_stop_x()
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
-			xKillString="$noHup /etc/init.d/$DISPLAY_MANAGER $1 && success='true'"
-			eval $xKillString
+			xActionString="$noHup /etc/init.d/$DISPLAY_MANAGER $1 && success='true'"
+			eval $xActionString
 		fi
 	fi
 	# this handles cases where somehow X is still running
@@ -3079,8 +3079,8 @@ start_stop_x()
 	if [ "$1" == 'stop' ];then
 		if [ "$( x_is_running )" -eq 0 ];then
 			echo "${M}Note: display manager shutdown failed... shutting down X directly instead...${N}"
-			xKillString="$noHup killall Xorg"
-			eval $xKillString
+			xActionString="$noHup killall Xorg"
+			eval $xActionString
 		fi
 	fi
 	# this will exit the root shell on successful run of start x
