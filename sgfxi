@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.26
+####  version: 4.5.27
 ####  Date: April 10 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3222,7 +3222,7 @@ update_xorgconf_driver_version()
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|neomagic|newport|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|neomagic|newport|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	eval $LOGUE
 }
 
