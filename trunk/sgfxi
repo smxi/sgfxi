@@ -1692,7 +1692,7 @@ update_to_nonfree_sources()
 check_update_script()
 {
 	local fileNameTemp="$( mktemp -p $SCRIPT_HOME/ $1.XXXXXXXXXX )"
-	local isGood='' uArgs='' downloadUrl=$2 extraText=''
+	local isGood='' downloadUrl=$2 extraText='' uArgs='up' ua="-U s-tools/$SCRIPT_NAME"
 	local origXorg='/etc/X11/xorg-conf-orig-sg'
 
 	if [ -n "$( egrep '(dev|svn|alt)' <<< $3 )" ];then
@@ -1709,11 +1709,12 @@ check_update_script()
 	# if newer version, download / replace lib file
 	case $1 in
 		$SCRIPT_NAME)
-			if [ "$B_FORCE_UPDATE" != 'true' -a "$4" != 'repeat' -a -n "$( grep 'smxi.org' <<< $2 )" ];then
-				uArgs='?u'
+			if [ "$B_FORCE_UPDATE" == 'true' -o "$4" == 'repeat' ];then
+				uArgs='ufr'
 			fi
+			$ua="$ua.$uArgs"
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
-			wget -q -O$fileNameTemp $downloadUrl$1$uArgs || error_handler 198 $1
+			wget $ua -q -O$fileNameTemp $downloadUrl$1$uArgs || error_handler 198 $1
 
 			# all smxi files have this string as last line, so if it's there, the file should usually
 			# run fine, except for weird fringe cases where the ascii file is corrupted partially
