@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.31
-####  Date: April 10 2009
+####  version: 4.5.32
+####  Date: April 15 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1714,7 +1714,7 @@ check_update_script()
 			fi
 			$ua="$ua.$uArgs"
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
-			wget $ua -q -O$fileNameTemp $downloadUrl$1$uArgs || error_handler 198 $1
+			wget $ua -q -O$fileNameTemp $downloadUrl$1 || error_handler 198 $1
 
 			# all smxi files have this string as last line, so if it's there, the file should usually
 			# run fine, except for weird fringe cases where the ascii file is corrupted partially
