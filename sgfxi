@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.32
+####  version: 4.5.34
 ####  Date: April 15 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1712,7 +1712,7 @@ check_update_script()
 			if [ "$B_FORCE_UPDATE" == 'true' -o "$4" == 'repeat' ];then
 				uArgs='ufr'
 			fi
-			$ua="$ua.$uArgs"
+			ua="$ua.$uArgs"
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
 			wget $ua -q -O$fileNameTemp $downloadUrl$1 || error_handler 198 $1
 
