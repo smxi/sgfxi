@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.34
+####  version: 4.5.35
 ####  Date: April 15 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1785,14 +1785,14 @@ apply_patch_file()
 	local patchFile=$1
 	local patchDirectory="$INSTALL_WORKING_DIR$INSTALL_DIRECTORY/"
 	## this can be changed to branches with -! 20 or -! 21
-	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile"
+	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$patchFile"
 
 	cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY # first change to the correct directory
 	log_function_data "Patch File Dir: $INSTALL_WORKING_DIR$INSTALL_DIRECTORY"
 	log_function_data "Patch URL: $patchUrl"
 
 	echo "${S}Retrieving patch ${C}$patchFile${S}...${N}"
-	wget -q -O $patchDirectory$patchFile $patchUrl || error_handler 180 $patchFile
+	wget $ua -q -O $patchDirectory$patchFile $patchUrl || error_handler 180 $patchFile
 
 	if [ -f $patchFile ];then
 		log_function_data "Patch File: $patchDirectory$patchFile"
