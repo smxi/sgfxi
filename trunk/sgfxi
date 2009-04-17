@@ -187,7 +187,7 @@ FG_DEFAULT='9-3'
 
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
-FG_OTHERS='9-3:9-1:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
+FG_OTHERS='9-4:9-1:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
 FG_DISTRO=''
 DRIVER_INSTALL=''
