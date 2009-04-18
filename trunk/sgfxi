@@ -2325,6 +2325,7 @@ misc_fixes()
 			;;
 		drm-2-x-test)
 			local drmVersion=$( check_package_status 'libdrm2' 'i' )
+			log_function_data "drmVersion: $drmVersion"
 			local isLessThan=''
 			# set to 0 if null to avoid math errors
 			if [ -z "$drmVersion" ];then
@@ -2333,7 +2334,7 @@ misc_fixes()
 			# returns 0 for true/ 1 for false
 			dpkg --compare-versions $drmVersion lt 2.4
 			isLessThan=$?
-			
+			log_function_data "isLessThan: $isLessThan"
 			if [ "$isLessThan" -ne 0 ];then
 				error_handler '220' "$drmVersion"
 			fi
