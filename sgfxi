@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.39
+####  version: 4.5.40
 ####  Date: April 18 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -862,7 +862,7 @@ error_handler()
 			errorData="AMD/ATI had dropped fglrx non-free driver support for your card type as of driver release 9.4\nOnly cards x2000 or newer are now supported by AMD/ATI for this driver.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know."
 			;;
 		220)
-			errorData="The Driver you are trying to install does not work with libdrm2 version 2.4 or greater.\nYour installed version of libdrm2 is: $extraData\n\nIf you are using Debian Sid, you must downgrade your libdrm2 to 2.3, if it's still present in Debian Testing.\nTo do this, make sure to have Debian Testing sources in sources.list, then install\nlibdrm2 like so (after running apt-get update): apt-get install libdrm2/testing\nNote: after you install it, put it on hold like so: echo libdrm2 hold | dpkg --set-selections\nand leave it on hold until a new fglrx driver comes out that supports the new libdrm2."
+			errorData="The Driver you are trying to install does not work with libdrm2 version 2.4 or greater.\nYour installed version of libdrm2 is: $errorExtra\n\nIf you are using Debian Sid, you must downgrade your libdrm2 to 2.3, if it's still present in Debian Testing.\nTo do this, make sure to have Debian Testing sources in sources.list, then install\nlibdrm2 like so (after running apt-get update): apt-get install libdrm2/testing\nNote: after you install it, put it on hold like so: echo libdrm2 hold | dpkg --set-selections\nand leave it on hold until a new fglrx driver comes out that supports the new libdrm2."
 			;;
 		# specific install issues
 		200)
@@ -2325,7 +2325,6 @@ misc_fixes()
 			;;
 		drm-2-x-test)
 			local drmVersion=$( check_package_status 'libdrm2' 'i' )
-			log_function_data "drmVersion: $drmVersion"
 			local isLessThan=''
 			# set to 0 if null to avoid math errors
 			if [ -z "$drmVersion" ];then
