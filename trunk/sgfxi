@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.5.42
+####  version: 4.6.0
 ####  Date: April 19 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1794,7 +1794,7 @@ apply_patch_file()
 	local patchFile=$1
 	local patchDirectory="$INSTALL_WORKING_DIR$INSTALL_DIRECTORY/"
 	## this can be changed to branches with -! 20 or -! 21
-	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/sg-patches.$patchFile"
+	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SCRIPT_NAME.patches.$patchFile"
 
 	cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY # first change to the correct directory
 	log_function_data "Patch File Dir: $INSTALL_WORKING_DIR$INSTALL_DIRECTORY"
@@ -3484,6 +3484,41 @@ update_xorg()
 #### OPTION HANDLER
 ########################################################################
 
+# args: $1 - d (driver); f (fglrx data); n (nvidia data)
+show_extra_data()
+{
+	local fullUrl='' ua='-U s-tools/sgfxi' uaFull='' dataFull='' dataType=''
+	case $1 in
+		d)
+			fullUrl='http://smxi.org/sg/data/sg-drivers'
+			uaFull="$ua.driver-data"
+			dataType='Supported Drivers List'
+			;;
+		f)
+			fullUrl='http://smxi.org/sm/upgrade-data/video_support_fglrx'
+			uaFull="$ua.fglrx-status"
+			dataType='FGLRX Status'
+			;;
+		n)
+			fullUrl='http://smxi.org/sm/upgrade-data/video_support_nvidia'
+			uaFull="$ua.nvidia-status"
+			dataType='Nvidia Status'
+			;;
+	esac
+	echo -n "${S}Retrieving live data... ${N}"
+	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
+	if [ -n "$dataFull" ];then
+		echo "${S}Success! Here is the current $dataType:${N}"
+		echo $LINE
+		echo "$dataFull"
+	else
+		echo "${W}Failed!!${N}"
+		echo $WLINE
+		echo "${W}Unable to access the remote data file, exiting now, sorry."
+		echo "This feature requires a working internet connection.${N}"
+	fi
+}
+
 # keep this above getopts to keep it readable
 # args: $1 if err or not, $2 extra data
 show_options()
@@ -3569,6 +3604,8 @@ show_options()
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
 	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: sgfxi -K 2.6.25-2"
 	echo "   $SCRIPT_NAME will double check that the kernel exists."
+	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
+	echo "   n to show current nvidia support status; f to show current fglrx support status."
 	echo "-n Automatically installs correct native xorg nv, intel, or ati driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
 	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf"
@@ -3624,7 +3661,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbBcCdDefEhHj:K:nN:o:pP:QrRsStUvWXxZ!: opt
+	while getopts AbBcCdDefEhHj:K:L:nN:o:pP:QrRsStUvWXxZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -3681,6 +3718,13 @@ get_options()
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -K - You are installing a graphic driver onto the kernel: ${C}$INSTALL_TO_KERNEL${S}\n"
 				test_install_kernel_version
 				START_OPTIONS=$START_OPTIONS" -K $OPTARG"
+				;;
+			L)	if [ -n "$( egrep '^[dfn]$' <<< $OPTARG )" ];then
+					show_extra_data "$OPTARG"
+					exit 0
+				else
+					error_handler 228 $OPTARG
+				fi
 				;;
 			n) B_NATIVE_DRIVER='true'
 				START_OPTIONS=$START_OPTIONS' -n'
