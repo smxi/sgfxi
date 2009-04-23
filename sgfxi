@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.1
-####  Date: April 21 2009
+####  version: 4.6.2
+####  Date: April 22 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -377,9 +377,9 @@ driver_support_tests()
 					esac
 					;;
 				$NVIDIA)
-					if [ "$DRIVER_DEFAULT" == "$DEBIAN_NVIDIA" -a "$SYSTEM_BASE" == 'testing' ];then
-						print_information_continue 'standard' "Your system appears to be Debian Testing based.\nThe $DEBIAN_NVIDIA driver cannot build on Debian Testing because of a missing package.\nIf your system is Sid based, continue, otherwise exit now."
-					else
+# 					if [ "$DRIVER_DEFAULT" == "$DEBIAN_NVIDIA" -a "$SYSTEM_BASE" == 'testing' ];then
+# 						print_information_continue 'standard' "Your system appears to be Debian Testing based.\nThe $DEBIAN_NVIDIA driver cannot build on Debian Testing because of a missing package.\nIf your system is Sid based, continue, otherwise exit now."
+# 					else
 						# test for >= xorg 1.5 support, using a blacklist now of previous
 						# drivers rather than whitelisting
 						case $X_VERSION in
@@ -447,7 +447,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									185.*|180.*|177.*|173.14.18|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07)
+									185.*|180.*|177.*|173.14.18|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -459,7 +459,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									185.*|180.*|173.14.18|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08)
+									185.*|180.*|173.14.18|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -470,7 +470,7 @@ driver_support_tests()
 								esac
 								;;
 						esac
-					fi
+# 					fi
 					;;
 			esac
 			;;
@@ -2687,19 +2687,23 @@ install_debian_drivers()
 
 	case $CARD in
 		$NVIDIA)
-			if [ "$LEGACY_LEVEL" -eq 1 ];then
-				# nvidiaGlx='nvidia-glx-legacy'
-				# nvidiaSource='nvidia-kernel-legacy-source'
-				# if the two lines below don't work, comment them and uncomment the ones above
-				nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
-				nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
-			elif [ "$LEGACY_LEVEL" -eq 2 ];then
-				nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
-				nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
-			else
-				nvidiaGlx='nvidia-glx'
-				nvidiaSource='nvidia-kernel-source'
-			fi
+			case $LEGACY_LEVEL in
+				1)	# nvidiaGlx='nvidia-glx-legacy'
+					# nvidiaSource='nvidia-kernel-legacy-source'
+					# if the two lines below don't work, comment them and uncomment the ones above
+					nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
+					nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
+					;;
+				2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
+					nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
+					;;
+				3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
+					nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
+					;;
+				*)	nvidiaGlx='nvidia-glx'
+					nvidiaSource='nvidia-kernel-source'
+					;;
+			esac
 			# start the install
 			if [ "$LEGACY_LEVEL" -ne 0 ];then
 				echo "${S}Installing ${C}$DEBIAN_NVIDIA${S} components...${N}"
