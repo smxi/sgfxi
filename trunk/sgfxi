@@ -452,7 +452,7 @@ driver_support_tests()
 										;;
 									*)
 										if [ "$B_TESTING_1" != 'true' ];then
-											error_handler 225 $KERNEL_THIRD
+											error_handler 234 $KERNEL_THIRD
 										fi
 										;;
 								esac
@@ -462,9 +462,9 @@ driver_support_tests()
 									185.*|180.*|173.14.18|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
-									*)
+									*) # use 225 for beta testing errors
 										if [ "$B_TESTING_1" != 'true' ];then
-											error_handler 225 $KERNEL_THIRD
+											error_handler 234 $KERNEL_THIRD
 										fi
 										;;
 								esac
