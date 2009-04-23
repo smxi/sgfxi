@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.2
+####  version: 4.6.3
 ####  Date: April 22 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -169,7 +169,7 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:185.13:180.51:180.27:180.18:180.11:173.14.16:96.43.10:71.86.07"
+NV_TESTING="$NV_VERSIONS_BETA:185.13:180.53:180.27:180.18:180.11:173.14.16:96.43.10:71.86.07"
 NV_OTHERS='180.44:180.37:180.35:180.29:177.82:173.14.17:173.14.12:169.12:100.14.19:96.43.07:71.86.08:71.86.06'
 
 # debian sid legacies:
@@ -398,7 +398,7 @@ driver_support_tests()
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
 						case $DRIVER_DEFAULT in
-							185.19|185.13|180.51|180.37|180.35|180.29|180.18|180.11|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07)
+							185.19|185.13|180.53|180.51|180.37|180.35|180.29|180.18|180.11|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
