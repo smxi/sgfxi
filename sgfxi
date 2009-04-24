@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.4
-####  Date: April 22 2009
+####  version: 4.6.5
+####  Date: April 24 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -160,7 +160,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='185.19:::'
+NV_VERSIONS_BETA='185.18.04:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -169,8 +169,8 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:185.13:180.51:180.27:180.18:180.11:173.14.16:96.43.10:71.86.07"
-NV_OTHERS='180.44:180.37:180.35:180.29:177.82:173.14.17:173.14.12:169.12:100.14.19:96.43.07:71.86.08:71.86.06'
+NV_TESTING="$NV_VERSIONS_BETA:185.19:180.51:173.14.16:96.43.10:71.86.08"
+NV_OTHERS='180.44:180.37:177.82:173.14.12:169.12:100.14.19:96.43.07:71.86.08:71.86.06'
 
 # debian sid legacies:
 NV_DEBIAN_LEGACY_1='71xx'
@@ -397,8 +397,9 @@ driver_support_tests()
 						esac
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
+						
 						case $DRIVER_DEFAULT in
-							185.19|185.13|180.53|180.51|180.37|180.35|180.29|180.18|180.11|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07)
+							185.18.04|185.19|185.13|180.53|180.51|180.37|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
@@ -447,7 +448,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									185.*|180.*|177.*|173.14.18|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|71.86.07|$DEBIAN_NVIDIA)
+									185.*|180.*|177.*|173.14.18|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -459,7 +460,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									185.*|180.*|173.14.18|173.14.17|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
+									185.*|180.*|173.14.18|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
