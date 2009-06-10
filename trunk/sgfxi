@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.14
-####  Date: June 9 2009
+####  version: 4.6.15
+####  Date: June 10 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -2971,7 +2971,7 @@ start_x_question()
 	local ia32Alert='echo -e "\n${M}You should probably (re)install ${C}$ia32libs${M} (even if already installed)\nif you use applications that depend on them in your ${C}64 bit${M} system,\nfor example ${C}Wine${M}.${N}"'
 	local ia32Install='echo -e "${C}$iaOpt${M} - Install ${C}$ia32libs${M} libs."'
 	local fgGlxOpt='' fgGlx='' fgGlxAlert='' fgGlxInstall=''
-	local startXReboot='start-x' startXRebootText='All finished, (re-)start X/kde now.'
+	local startXReboot='start-desktop' startXRebootText='All finished, (re-)start desktop now.'
 
 	case $BITS in
 		32)
@@ -3002,7 +3002,7 @@ start_x_question()
 	fgGlxInstall=''
 	if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ];then
 		startXReboot='reboot-now'
-		startXRebootText='You must reboot before you can continue into X.'
+		startXRebootText='You must reboot before you can continue into your desktop.'
 	fi
 
 	echo ${M}$LINE
@@ -3013,7 +3013,7 @@ start_x_question()
 	eval $ia32Install
 	eval $fgGlxInstall
 	echo "${C}$startXReboot${M} - $startXRebootText"
-	echo "${C}quit${M} - Quit now, to do something else before starting X.${N}"
+	echo "${C}quit${M} - Quit now, to do something else before starting your desktop.${N}"
 	echo $LINE
 	options="$iaOpt $fgGlxOpt $startXReboot quit"
 	select opt in $options
@@ -3046,9 +3046,9 @@ start_x_question()
 				# repeat the question for users so they can start x now if they want.
 				repeat='true'
 				;;
-			start-x)
-				echo "${S}Ok, starting X now, thanks for using this script.${N}"
-				log_function_data "Final Step: start-x"
+			start-desktop)
+				echo "${S}Ok, starting your desktop now, thanks for using this script.${N}"
+				log_function_data "Final Step: start-desktop"
 				start_stop_x start
 				;;
 			reboot-now)
