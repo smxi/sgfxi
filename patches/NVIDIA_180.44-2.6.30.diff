@@ -1,0 +1,115 @@
+http://www.nvnews.net/vbulletin/showthread.php?p=1984486
+
+--- usr/src/nv/nv.c.orig 
++++ usr/src/nv/nv.c 
+@@ -16,6 +16,7 @@
+ #include "os-agp.h"
+ #include "nv-vm.h"
+ #include "nv-reg.h"
++#include <linux/version.h>
+ 
+ #ifdef MODULE_ALIAS_CHARDEV_MAJOR
+ MODULE_ALIAS_CHARDEV_MAJOR(NV_MAJOR_DEVICE_NUMBER);
+@@ -593,10 +594,11 @@
+      * Set the module owner to ensure that the reference
+      * count reflects accesses to the proc files.
+      */
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
+     proc_nvidia->owner = THIS_MODULE;
+     proc_nvidia_cards->owner = THIS_MODULE;
+     proc_nvidia_warnings->owner = THIS_MODULE;
+-
++#endif
+     for (j = 0; j < num_nv_devices; j++)
+     {
+         nvl = &nv_linux_devices[j];
+@@ -615,8 +617,9 @@
+ 
+         entry->data = nv;
+         entry->read_proc = nv_kern_read_cardinfo;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
+         entry->owner = THIS_MODULE;
+-
++#endif
+         if (nv_find_pci_capability(dev, PCI_CAP_ID_AGP))
+         {
+             /*
+@@ -628,8 +631,9 @@
+                 NV_PCI_DEV_PUT(dev);
+                 goto failed;
+             }
+-
+-            entry->owner = THIS_MODULE;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
++            entry->owner = THIS_MODULE; 
++#endif
+             proc_nvidia_agp = entry;
+ 
+             entry = create_proc_entry("status", flags, proc_nvidia_agp);
+@@ -640,8 +644,9 @@
+ 
+             entry->data = nv;
+             entry->read_proc = nv_kern_read_status;
+-            entry->owner = THIS_MODULE;
+-
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
++            entry->owner = THIS_MODULE;  
++#endif
+             entry = create_proc_entry("host-bridge", flags, proc_nvidia_agp);
+             if (!entry) {
+                 NV_PCI_DEV_PUT(dev);
+@@ -650,7 +655,9 @@
+ 
+             entry->data = NULL;
+             entry->read_proc = nv_kern_read_agpinfo;
+-            entry->owner = THIS_MODULE;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
++            entry->owner = THIS_MODULE; 
++#endif
+ 
+             entry = create_proc_entry("card", flags, proc_nvidia_agp);
+             if (!entry) {
+@@ -660,7 +667,9 @@
+ 
+             entry->data = nv;
+             entry->read_proc = nv_kern_read_agpinfo;
+-            entry->owner = THIS_MODULE;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
++            entry->owner = THIS_MODULE; 
++#endif
+         }
+ 
+         NV_PCI_DEV_PUT(dev);
+@@ -671,14 +680,17 @@
+         goto failed;
+ 
+     entry->read_proc = nv_kern_read_version;
+-    entry->owner = THIS_MODULE;
+-
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
++    entry->owner = THIS_MODULE; 
++#endif
+     entry = create_proc_entry("registry", flags, proc_nvidia);
+     if (!entry)
+         goto failed;
+ 
+     entry->read_proc = nv_kern_read_registry;
+-    entry->owner = THIS_MODULE;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
++    entry->owner = THIS_MODULE; 
++#endif
+ 
+     return;
+ 
+@@ -705,8 +717,10 @@
+ 
+     entry->data = (void *)message;
+     entry->read_proc = nv_kern_read_warning;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
+     entry->owner = THIS_MODULE;
+ #endif
++#endif
+ }
+ 
+ #ifdef CONFIG_PROC_FS
+
