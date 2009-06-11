@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.17
+####  version: 4.6.18
 ####  Date: June 11 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -476,7 +476,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									185.*|173.14.18|96.43.11|71.86.09|$DEBIAN_NVIDIA)
+									185.*|180.44|173.14.18|96.43.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -611,6 +611,11 @@ run_patches()
 							;;
 						173.14.18)
 							patchFile='NVIDIA_173.18.14-2.6.30.diff'
+							apply_patch_file $patchFile
+							;;
+						180.44)
+							# http://www.nvnews.net/vbulletin/showthread.php?p=1984486
+							patchFile='NVIDIA_180.44-2.6.30.diff'
 							apply_patch_file $patchFile
 							;;
 					esac
