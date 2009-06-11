@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.16
+####  version: 4.6.17
 ####  Date: June 11 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -476,7 +476,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									185.*|180.*|96.43.11|$DEBIAN_NVIDIA)
+									185.*|173.14.18|96.43.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -603,12 +603,16 @@ run_patches()
 					;;
 				30)
 					case $DRIVER_DEFAULT in
-						96.43.11)
-							# post 1:  http://www.nvnews.net/vbulletin/showthread.php?t=133990&highlight=2.6.30
+						96.43.11|71.86.09)
+							# post 1:  http://www.nvnews.net/vbulletin/showthread.php?t=133990
+							# alt: http://www.nvnews.net/vbulletin/showthread.php?p=1984486
 							patchFile='NVIDIA_96.43.11-2.6.30.diff'
 							apply_patch_file $patchFile
 							;;
-							
+						173.14.18)
+							patchFile='NVIDIA_173.18.14-2.6.30.diff'
+							apply_patch_file $patchFile
+							;;
 					esac
 					;;
 			esac
@@ -692,7 +696,7 @@ set_test_data()
 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-		CARD_DATA=1002:9442 # fake ati post x2000 card
+# 		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -705,7 +709,7 @@ set_test_data()
 		IS_SIDUX_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
-# 		KERNEL_THIRD=29
+		KERNEL_THIRD=30
 # 		# values: '' or 'true'
 # 		IS_XEN=''
 # 		# check for specific system base tests, can be:
