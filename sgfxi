@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.18
-####  Date: June 11 2009
+####  version: 4.6.19
+####  Date: June 16 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -186,12 +186,12 @@ NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='9-5:9-3:8-12'
-FG_DEFAULT='9-5'
+FG_VERSIONS='9-6:9-3:8-12'
+FG_DEFAULT='9-6'
 
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
-FG_OTHERS='9-4:9.2:9-1:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
+FG_OTHERS='9-5:9-4:9.2:9-1:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
 FG_DISTRO=''
 DRIVER_INSTALL=''
@@ -365,7 +365,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-									29|3[0-9])
+									29)
 										case $DRIVER_DEFAULT in
 											9.2|9-[3-9]|9-1[0-2])
 												: # not yet
@@ -374,6 +374,11 @@ driver_support_tests()
 												error_handler 234 $KERNEL_THIRD
 												;;
 										esac
+										;;
+									3[0-9])
+										if [ "$B_TESTING_1" != 'true' ];then
+											error_handler 234 $KERNEL_THIRD
+										fi
 										;;
 								esac
 							fi
@@ -658,7 +663,7 @@ run_patches()
 					;;
 				29)
 					case $DRIVER_DEFAULT in
-						9.2|9-3|9-4|9-5)
+						9.2|9-3|9-4|9-5|9-6)
 							# src: http://www.phoronix.com/forums/showthread.php?t=15165
 							patchFile='FGLRX-2.6.29-9.2-5.diff'
 							apply_patch_file $patchFile
