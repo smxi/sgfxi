@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.19
-####  Date: June 16 2009
+####  version: 4.6.20
+####  Date: June 17 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -2510,7 +2510,17 @@ prep_install()
 	if [ -x "$ubgv" ];then
 		export CC=$ubgv
 	else
-		error_handler 230 "$ubgv"
+		# going to try to update gcc to kernel version first before error exit.
+		if [ -n "$( check_package_status "gcc-$gccVersion" 'c' )" ];then
+			install_package "gcc-$gccVersion"
+			# this may not be needed, we'll see how it goes.
+# 			if [ "$( check_package_status "g++-$gccVersion" 'c' )" ];then
+# 				install_package "g++-$gccVersion"
+# 			fi
+			export CC=$ubgv
+		else
+			error_handler 230 "$ubgv"
+		fi
 	fi
 	eval $LOGPE
 }
