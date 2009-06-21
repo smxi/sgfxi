@@ -671,6 +671,16 @@ run_patches()
 							;;
 					esac
 					;;
+				30)
+					case $DRIVER_DEFAULT in
+						9-6)
+							if [ "$B_TESTING_1" != 'true' ];then
+								patchFile='FGLRX-2.6.30-9-6.diff'
+								apply_patch_file $patchFile
+							fi
+							;;
+						esac
+					;;
 			esac
 			;;
 	esac
@@ -706,7 +716,7 @@ set_test_data()
 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati post x2000 card
+		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
