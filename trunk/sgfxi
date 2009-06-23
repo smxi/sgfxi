@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.20
-####  Date: June 17 2009
+####  version: 4.6.21
+####  Date: June 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -169,7 +169,7 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:185.18.10:185.19:180.53:173.14.16:96.43.10:71.86.08"
+NV_TESTING="$NV_VERSIONS_BETA:185.18.10:185.19:180.53:173.14.19:173.14.16.43.12::96.43.10:71.86.10:71.86.08"
 # stable primary: 180.60 180.51 180.44
 # stable legacy 1: 71.86.09 71.86.06
 # stable legacy 2: 96.43.11
@@ -408,7 +408,7 @@ driver_support_tests()
 						# now for all beta driver releases. Stable drivers are using http
 						
 						case $DRIVER_DEFAULT in
-							185.18.14|185.18.10|185.19|180.60|180.53|180.51|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08)
+							185.18.14|185.18.10|185.19|180.60|180.53|180.51|173.14.19|173.14.16|96.43.12|96.43.11|96.43.10|71.86.10|71.86.09|71.86.08)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
@@ -457,7 +457,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									185.*|180.*|177.*|173.14.18|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
+									185.*|180.*|177.*|173.14.19|173.14.18|173.14.16|96.43.12|96.43.11|96.43.10|71.86.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -469,7 +469,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									185.*|180.*|173.14.18|173.14.16|96.43.11|96.43.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
+									185.*|180.*|177.*|173.14.19|173.14.18|173.14.16|96.43.12|96.43.11|96.43.10|71.86.10|71.86.09|71.86.08|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -481,7 +481,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									185.*|180.44|173.14.18|96.43.11|71.86.09|$DEBIAN_NVIDIA)
+									185.*|180.44|173.14.19|173.14.18|96.43.12|96.43.11|71.86.10|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -674,7 +674,7 @@ run_patches()
 				30)
 					case $DRIVER_DEFAULT in
 						9-6)
-							if [ "$B_TESTING_1" != 'true' ];then
+							if [ "$B_TESTING_1" == 'true' ];then
 								patchFile='FGLRX-2.6.30-9-6.diff'
 								apply_patch_file $patchFile
 							fi
@@ -2475,7 +2475,8 @@ download_extract_driver()
 			errorTemp="$?"
 			;;
 		$FGLRX)
-			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$runPackage --extract $FG_WORKING_DIR 1>> $LOG_FILE 2>> $LOG_FILE
+			# here we want to end up with a directory name like: fglrx-install-9-6 
+			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$runPackage --extract $FG_WORKING_DIR-$DRIVER_DEFAULT 1>> $LOG_FILE 2>> $LOG_FILE
 			errorTemp="$?"
 			;;
 	esac
