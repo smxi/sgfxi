@@ -1,0 +1,138 @@
+patch source: http://www.phoronix.com/forums/showpost.php?p=79084&postcount=153
+
+diff -Nru common/lib/modules/fglrx/build_mod-orig/drm_os_linux.h common/lib/modules/fglrx/build_mod/drm_os_linux.h
+--- common/lib/modules/fglrx/build_mod-orig/drm_os_linux.h	2009-05-30 01:21:53.000000000 +0200
++++ common/lib/modules/fglrx/build_mod/drm_os_linux.h	2009-06-17 14:08:22.000000000 +0200
+@@ -42,7 +42,7 @@
+ #define DRM_IRQ_ARGS		int irq, void *arg, struct pt_regs *regs
+ /** backwards compatibility with old irq return values */
+ #ifndef IRQ_HANDLED
+-typedef void irqreturn_t;
++//typedef void irqreturn_t;
+ #define IRQ_HANDLED   /* nothing */
+ #define IRQ_NONE      /* nothing */
+ #endif
+diff -Nru common/lib/modules/fglrx/build_mod-orig/firegl_public.c common/lib/modules/fglrx/build_mod/firegl_public.c
+--- common/lib/modules/fglrx/build_mod-orig/firegl_public.c	2009-05-30 01:21:53.000000000 +0200
++++ common/lib/modules/fglrx/build_mod/firegl_public.c	2009-06-17 15:21:09.000000000 +0200
+@@ -282,6 +282,18 @@
+ 
+ // ============================================================
+ /* global structures */
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,29)
++#undef pci_enable_msi
++int pci_enable_msi(struct pci_dev* dev)
++{
++	int status;
++
++	status = pci_enable_msi_block(dev, 1);
++
++	return status;
++}
++#endif //LINUX_VERSION_CODE > KERNEL_VERSION(2,6,29)
++
+ int ip_firegl_open(struct inode* inode, struct file* filp)
+ {
+     int m;
+@@ -1226,8 +1238,6 @@
+  */
+ int ATI_API_CALL KCL_SetPageCache_Array(unsigned long *pt, int pages, int enable)
+ {
+-    unsigned int i;
+-    int ret = 0;
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,28)
+     if (enable)
+     {
+@@ -1238,6 +1248,8 @@
+         return set_memory_array_uc(pt, pages);
+     }  
+ #else               
++    unsigned int i;
++    int ret = 0;
+     for( i = 0; i < pages; i++ )
+     {
+         ret = KCL_SetPageCache((void *)pt[i], 1, enable);
+@@ -1448,7 +1460,11 @@
+  */
+ KCL_TYPE_Uid ATI_API_CALL KCL_GetEffectiveUid(void)
+ {
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28)
++    return current->cred->euid;
++#else
+     return current->euid;
++#endif
+ }
+ 
+ /** /brief Delay execution for the specified number of microseconds
+@@ -1820,15 +1836,28 @@
+  */
+ void ATI_API_CALL KCL_PosixSecurityCapSetIPCLock(unsigned int lock)
+ {
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28)
++    struct cred *new = prepare_creds();
++    if (!new) {
++        printk(KERN_ERR "fglrx: could not allocate memory\n");
++        return;
++    }
++#else
++#define new current
++#endif
+     if (lock == 0 )
+     {
+-        cap_lower(current->cap_effective, CAP_IPC_LOCK);
++	cap_lower(new->cap_effective, CAP_IPC_LOCK);
+     }
+     else
+     {
+-        cap_raise(current->cap_effective, CAP_IPC_LOCK);
+-    }    
+-    return; 
++	cap_raise(new->cap_effective, CAP_IPC_LOCK);
++    }
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28)
++    commit_creds(new);
++#else
++#undef new
++#endif
+ }
+ 
+ /** \brief Get number of available RAM pages
+diff -Nru common/lib/modules/fglrx/build_mod-orig/firegl_public.h common/lib/modules/fglrx/build_mod/firegl_public.h
+--- common/lib/modules/fglrx/build_mod-orig/firegl_public.h	2009-05-30 01:21:53.000000000 +0200
++++ common/lib/modules/fglrx/build_mod/firegl_public.h	2009-06-17 14:11:15.000000000 +0200
+@@ -18,6 +18,7 @@
+ #define _FIREGL_PUBLIC_H_
+ 
+ #include <stdarg.h>
++#include <asm/pgtable.h>
+ #include "kcl_pci.h"
+ #include "kcl_io.h"
+ 
+@@ -600,6 +601,11 @@
+ #define cpu_has_pge test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability)
+ #endif
+ 
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28)
++#undef pgprot_writecombine
++#undef pgprot_noncached
++#endif#
++
+ #ifndef pgprot_writecombine
+ #define pgprot_writecombine(prot) __pgprot((pgprot_val(prot) & ~(_PAGE_PCD)) | _PAGE_PWT)
+ #endif
+diff -Nru common/lib/modules/fglrx/build_mod-orig/kcl_acpi.c common/lib/modules/fglrx/build_mod/kcl_acpi.c
+--- common/lib/modules/fglrx/build_mod-orig/kcl_acpi.c	2009-05-30 01:21:53.000000000 +0200
++++ common/lib/modules/fglrx/build_mod/kcl_acpi.c	2009-06-17 14:33:21.000000000 +0200
+@@ -18,6 +18,12 @@
+ #include <linux/autoconf.h>
+ #include <linux/acpi.h>
+ 
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28)
++#include <../drivers/acpi/acpica/acconfig.h>
++#include <../drivers/acpi/acpica/aclocal.h>
++#include <../drivers/acpi/acpica/acobject.h>
++#endif
++
+ #include "kcl_config.h"
+ #include "kcl_type.h"
+ #include "kcl_acpi.h"
