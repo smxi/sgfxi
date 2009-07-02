@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.23
-####  Date: June 28 2009
+####  version: 4.6.24
+####  Date: July 2 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1224,9 +1224,16 @@ detect_card_version()
 					LEGACY_LEVEL=0
 					error_handler 253
 					;;
-				728c|7834|7835)
+				7c37|728c|7834|7835)
 					LEGACY_LEVEL=0
 					error_handler 253
+					;;
+				# a few cards of the 7xxx numbering are actuall x2xxx cards
+				718a|7188|7210|7211)
+					LEGACY_LEVEL=100
+					if [ "$B_DEBIAN_FLAG" == 'true' ];then
+						B_USE_DEBIAN_DRIVER='true'
+					fi
 					;;
 				# this is going to handle all pre hd/x2000 cards, any exceptions will be added
 				# to an explicit whitelist above this if required
