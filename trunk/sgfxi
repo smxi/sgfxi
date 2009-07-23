@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.27
+####  version: 4.6.28
 ####  Date: July 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3504,9 +3504,10 @@ update_xorg()
 			$NVIDIA)
 				# set any custom stuff here
 				#[ "$RENDER_ACCEL" != 'true' ] && rend=$stateOff
-				if [ "$B_DISPLAY_DEVICES" == 'true' ];then
+				# switching off this, making default always off, watch for user feedback
+# 				if [ "$B_DISPLAY_DEVICES" == 'true' ];then
 					ignoreDisplay=''
-				fi
+# 				fi
 				# this is legacy, new default is on
 				#[ "$B_TWINVIEW" == 'true' ] && twin=$stateOn
 				# triplebuffer can reduce 3d performance on cards with low graphics memory
@@ -3669,7 +3670,7 @@ show_options()
 	echo "-c Use composite mode. For things like Beryl/Compiz (nVidia cards only)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
 	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
-	echo "-d Remove IgnoreDisplayDevices, allow TV for example (nVidia cards only)."
+# 	echo "-d Remove IgnoreDisplayDevices, allow TV for example (nVidia cards only)."
 	# leaving these commented out in case new experimental xorg drivers need to be tested
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
@@ -3762,7 +3763,7 @@ get_options()
 				;;
 			d) B_DISPLAY_DEVICES='true'
 				START_OPTIONS=$START_OPTIONS' -d'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -d - IgnoreDisplayDevices is off. TV will be used. nVidia only.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -d - IgnoreDisplayDevices is off. TV will be used. nVidia only (legacy - not used).\n"
 				;;
 			D) B_SM_INSTALL='true'
 				S=${CALLER_DEF} # change standard text color to caller standard text
