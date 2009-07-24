@@ -3763,7 +3763,7 @@ get_options()
 				;;
 			d) B_DISPLAY_DEVICES='true'
 				START_OPTIONS=$START_OPTIONS' -d'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -d - IgnoreDisplayDevices is off. TV will be used. nVidia only (legacy - not used).\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -d - IgnoreDisplayDevices is off. TV will be used. nVidia only,\n       DEPRECATED: legacy option - no longer used by $SCRIPT_NAME!\n"
 				;;
 			D) B_SM_INSTALL='true'
 				S=${CALLER_DEF} # change standard text color to caller standard text
@@ -3777,7 +3777,7 @@ get_options()
 	# 			;;
 			f)	B_FGLRX_DIRECT='true'
 				START_OPTIONS=$START_OPTIONS' -f'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - Using direct FGLRX install. No debs created. Binary direct install\n       from downloaded fglrx run file."
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - Using direct FGLRX install. No debs created. Binary direct install\n       from downloaded fglrx run file.\n"
 				;;
 			j)	if [ -n "$( egrep '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
