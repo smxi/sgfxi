@@ -1,0 +1,19 @@
+diff -ru usr/src/nv/nv.c usr/src/nv.572433/nv.c
+--- usr/src/nv/nv.c	2009-05-27 03:20:53.000000000 -0700
++++ usr/src/nv.572433/nv.c	2009-07-05 11:31:27.635210006 -0700
+@@ -888,6 +888,7 @@
+     unsigned int pat1, pat2, i;
+     U008 PAT_WC_index;
+ 
++#if 0 /* disabled */
+     if (!test_bit(X86_FEATURE_PAT,
+             (volatile unsigned long *)&boot_cpu_data.x86_capability))
+     {
+@@ -895,6 +896,7 @@
+             "NVRM: CPU does not support the PAT, falling back to MTRRs.\n");
+         return NV_PAT_MODE_DISABLED;
+     }
++#endif
+ 
+     NV_READ_PAT_ENTRIES(pat1, pat2);
+     PAT_WC_index = 0xf;
