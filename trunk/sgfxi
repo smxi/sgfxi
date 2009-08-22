@@ -1474,7 +1474,7 @@ check_root()
 
 basic_startup_tests()
 {
-	local nonDebianPattern='(deb-sdx|sidux|deb-op|opera|deb-mm|debian-multimedia|deb-mep|mepis|deb-skp|skype|deb-swift|swiftfox|deb-vb|virtualbox)'
+	local nonDebianPattern='(deb-sdx|sidux|deb-op|opera|deb-mm|debian-multimedia|deb-mep|google|mepis|deb-skp|skype|deb-swift|swiftfox|deb-vb|virtualbox)'
 
 	# these tests will be improved over time, but are ok for now
 	local isEtch=$( grep -is '^4.' $EDV )
