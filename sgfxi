@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.39
+####  version: 4.6.40
 ####  Date: August 22 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2710,7 +2710,8 @@ run_driver_installer()
 			fi
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
-			if [ "$BITS" == '64' ];then
+			# note that lenny can be assumed to not need, this, so wait til squeeze stable
+			if [ "$BITS" == '64' ] && [ "$SYSTEM_BASE" == 'sid' -o "$SYSTEM_BASE" == 'testing' ];then
 				installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
 			fi
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
