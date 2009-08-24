@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.41
+####  version: 4.6.42
 ####  Date: August 24 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1562,11 +1562,11 @@ check_install_tools()
 		install_package 'module-assistant'
 	fi
 	# if [ ! -d /usr/share/build-essential ];then
-	if [ -z "$( check_package_status 'build-essential' 'i' )" -n "$( check_package_status 'build-essential' 'c' )" ];then
+	if [ -z "$( check_package_status 'build-essential' 'i' )" -a -n "$( check_package_status 'build-essential' 'c' )" ];then
 		install_package 'build-essential'
 	fi
 	# if [ -z "$( which logrotate )" ];then
-	if [ -z "$( check_package_status 'logrotate' 'i' )" -n "$( check_package_status 'logrotate' 'c' )" ];then
+	if [ -z "$( check_package_status 'logrotate' 'i' )" -a -n "$( check_package_status 'logrotate' 'c' )" ];then
 		install_package 'logrotate'
 	fi
 
@@ -1575,13 +1575,13 @@ check_install_tools()
 	# fglrx tools and tests
 	elif [ "$CARD" == $FGLRX ];then
 		#if [ ! -x /usr/bin/dh_testdir ];then
-		if [ -z "$( check_package_status 'debhelper' 'i' )" -n "$( check_package_status 'debhelper' 'c' )" ];then
+		if [ -z "$( check_package_status 'debhelper' 'i' )" -a -n "$( check_package_status 'debhelper' 'c' )" ];then
 			install_package 'debhelper'
 		fi
-		if [ -z "$( check_package_status 'libstdc++5' 'i' )" -n "$( check_package_status 'libstdc++5' 'c' )" ];then
+		if [ -z "$( check_package_status 'libstdc++5' 'i' )" -a -n "$( check_package_status 'libstdc++5' 'c' )" ];then
 			install_package 'libstdc++5'
 		fi
-		if [ -z "$( check_package_status 'libstdc++6' 'i' )" -n "$( check_package_status 'libstdc++6' 'c' )" ];then
+		if [ -z "$( check_package_status 'libstdc++6' 'i' )" -a -n "$( check_package_status 'libstdc++6' 'c' )" ];then
 			install_package 'libstdc++6'
 		fi
 		# presence of this package will break fglrx install
