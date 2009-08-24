@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.40
-####  Date: August 22 2009
+####  version: 4.6.41
+####  Date: August 24 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1558,15 +1558,15 @@ check_install_tools()
 	eval $LOGPS
 	# nvidia and fglrx tools check_package_status
 	# if [ ! -x /usr/bin/module-assistant ];then
-	if [ -z "$( check_package_status 'module-assistant' 'i' )" ];then
+	if [ -z "$( check_package_status 'module-assistant' 'i' )" -a -n "$( check_package_status 'module-assistant' 'c' )" ];then
 		install_package 'module-assistant'
 	fi
 	# if [ ! -d /usr/share/build-essential ];then
-	if [ -z "$( check_package_status 'build-essential' 'i' )" ];then
+	if [ -z "$( check_package_status 'build-essential' 'i' )" -n "$( check_package_status 'build-essential' 'c' )" ];then
 		install_package 'build-essential'
 	fi
 	# if [ -z "$( which logrotate )" ];then
-	if [ -z "$( check_package_status 'logrotate' 'i' )" ];then
+	if [ -z "$( check_package_status 'logrotate' 'i' )" -n "$( check_package_status 'logrotate' 'c' )" ];then
 		install_package 'logrotate'
 	fi
 
@@ -1575,12 +1575,14 @@ check_install_tools()
 	# fglrx tools and tests
 	elif [ "$CARD" == $FGLRX ];then
 		#if [ ! -x /usr/bin/dh_testdir ];then
-		if [ -z "$( check_package_status 'debhelper' 'i' )" ];then
+		if [ -z "$( check_package_status 'debhelper' 'i' )" -n "$( check_package_status 'debhelper' 'c' )" ];then
 			install_package 'debhelper'
 		fi
-		#if [ ! -f /usr/lib/libstdc++.so.5 ];then
-		if [ -z "$( check_package_status 'libstdc++5' 'i' )" ];then
+		if [ -z "$( check_package_status 'libstdc++5' 'i' )" -n "$( check_package_status 'libstdc++5' 'c' )" ];then
 			install_package 'libstdc++5'
+		fi
+		if [ -z "$( check_package_status 'libstdc++6' 'i' )" -n "$( check_package_status 'libstdc++6' 'c' )" ];then
+			install_package 'libstdc++6'
 		fi
 		# presence of this package will break fglrx install
 		#if [ -n "$( dpkg -l | grep 'dpkg-cross' )" ];then
