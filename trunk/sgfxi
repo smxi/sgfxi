@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.42
-####  Date: August 24 2009
+####  version: 4.6.43
+####  Date: August 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -2908,8 +2908,8 @@ install_fglrx_debs()
 		local fgKernelSrc="$fgKsc$DRIVER_DEFAULT-1_*.deb"
 		local availableDebs=$( ls *fglrx*.deb )
 		local fgKsrc='fglrx-kernel-src'
-
-		local usunf='/usr/sbin/unfreeze-rc.d' frozen=0 forceIt=''
+		local usunf='/usr/sbin/unfreeze-rc.d' 
+		local frozen=0 forceIt=''
 
 		# this is slightly excessive, but may handle a case where extra debs exist
 		# due to weird user action. Also protects against new ati randomness.
@@ -2955,9 +2955,9 @@ install_fglrx_debs()
 		log_function_data "Actual driver packages to install:\nfgDriver: $fgDriver\nfgAmdcccle: $fgAmdcccle\nfgKernelSrc: $fgKernelSrc"
 
 		# due to problems with config file questions, trying no logging of 1>> now
-		dpkg -i $fgDriver 2>> $LOG_FILE || error_handler 195 $fgDriver
- 		dpkg -i $fgAmdcccle 2>> $LOG_FILE || error_handler 195 $fgAmdcccle
- 		dpkg -i $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
+		dpkg -i $forceIt $fgDriver 2>> $LOG_FILE || error_handler 195 $fgDriver
+ 		dpkg -i $forceIt $fgAmdcccle 2>> $LOG_FILE || error_handler 195 $fgAmdcccle
+ 		dpkg -i $forceIt $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
 
 		log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
 		CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
