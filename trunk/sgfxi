@@ -2027,6 +2027,8 @@ create_log()
 	echo "$SCRIPT_NAME script version: $sgfxiVersion" >> $LOG_FILE
 	echo "$SCRIPT_NAME start options: $START_OPTIONS" >> $LOG_FILE
 	echo "SYSTEM_BASE: $SYSTEM_BASE" >> $LOG_FILE
+	echo "FG_DISTRO: $FG_DISTRO" >> $LOG_FILE
+	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
 	# it's important to log these in case there's some issue or bug in the values
 	if [ -f $SM_VALUES ];then
