@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.43
+####  version: 4.6.44
 ####  Date: August 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2937,6 +2937,9 @@ install_fglrx_debs()
 			error_handler 186 $fgAmd
 		fi
 
+		if [ "$FG_DISTRO" != 'unstable' ];then
+			forceIt='--force-overwrite'
+		fi
 		if [ "$B_TESTING_1" == 'true' ];then
 			forceIt='--force-all'
 		fi
