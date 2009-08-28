@@ -1542,14 +1542,14 @@ basic_startup_tests()
 			FG_DISTRO='etch'
 		else
 			SYSTEM_BASE='stable'
-			FG_DISTRO='lenny'
+			FG_DISTRO='stable'
 		fi
 	elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
 		SYSTEM_BASE='testing'
-		FG_DISTRO='lenny'
+		FG_DISTRO='testing'
 	else
 		SYSTEM_BASE='sid'
-		FG_DISTRO='sid'
+		FG_DISTRO='unstable'
 	fi
 }
 
