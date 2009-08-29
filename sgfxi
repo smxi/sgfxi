@@ -2355,7 +2355,7 @@ set_version()
 		exit 0
 	fi
 	# need to puke and die here, not earlier because of print out 
-	if [ -n "$INSTALL_TO_KERNEL" -a "$B_FGLRX_DIRECT" == 'true' -a "$CARD" == $FGLRX ];then
+	if [ -n "$INSTALL_TO_KERNEL" -a "$B_FGLRX_DIRECT" == 'true' -a "$CARD" == $FGLRX -a "$( uname -r )" != "$INSTALL_TO_KERNEL" ];then
 		error_handler 219
 	fi
 
