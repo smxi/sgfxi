@@ -955,6 +955,9 @@ error_handler()
 		220)
 			errorData="The Driver you are trying to install does not work with libdrm2 version 2.4.x less than 2.4.11.\nYour installed version of libdrm2 is: $errorExtra\n\nIf you are using Debian Sid, you must upgrade your libdrm2 to 2.4.11 or greater."
 			;;
+		219)
+			errorData="Fglrx direct driver install method does not allow you to install the driver to another kernel,\nusing the -K option, sorry. You must be booted into the kernel you are installing\nthe driver to for this driver method to work."
+			;;
 		# specific install issues
 		200)
 			errorData="The package: $errorExtra failed to install, please check apt for any problems."
@@ -2350,6 +2353,10 @@ set_version()
 			echo $DEBIAN_FGLRX
 		fi
 		exit 0
+	fi
+	# need to puke and die here, not earlier because of print out 
+	if [ -n "$INSTALL_TO_KERNEL" -a "$B_FGLRX_DIRECT" == 'true' -a "$CARD" == $FGLRX ];then
+		error_handler 219
 	fi
 
 	if [ -n "$DRIVER_OVERRIDE" ];then
