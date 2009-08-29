@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.45
+####  version: 4.6.46
 ####  Date: August 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -92,7 +92,8 @@ B_DEBIAN_FLAG=''
 B_DISPLAY_DEVICES=''
 B_EXPERIMENTAL=''
 B_EXTRA_EXPERIMENTAL=''
-B_FGLRX_DIRECT=''
+B_FGLRX_DEB_BUILDER=''
+B_FGLRX_DIRECT='true' # raising the white flag of surrender...
 B_FORCE_UPDATE=''
 B_NATIVE_DRIVER=''
 B_NO_XVMC=''
@@ -3725,7 +3726,9 @@ show_options()
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
 	echo "-f Install direct fglrx with FGLRX binary run package, without creating deb files (ATI Only)."
-	echo "   This method may work when others fail, so check it out if you have problems."
+	echo "   Deprecated. Because of constant deb builder failures, the direct install method is now default."
+	echo "-F Build Debian debs for fglrx with FGLRX binary run package, then install them (ATI Only)."
+	echo "   Because of constant deb builder failures, the direct install method is recommended and default for $SCRIPT_NAME."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
@@ -3788,7 +3791,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbBcCdDefEhHj:K:L:nN:o:pP:QrRsStUvWXxZ!: opt
+	while getopts AbBcCdDeEfFhHj:K:L:nN:o:pP:QrRsStUvWXxZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -3828,6 +3831,11 @@ get_options()
 			f)	B_FGLRX_DIRECT='true'
 				START_OPTIONS=$START_OPTIONS' -f'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - Using direct FGLRX install. No debs created. Binary direct install\n       from downloaded fglrx run file.\n"
+				;;
+			F)	B_FGLRX_DEB_BUILDER='true'
+				B_FGLRX_DIRECT=''
+				START_OPTIONS=$START_OPTIONS' -F'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX Debian deb package builder install. Not reliable, but try if you want.\n       Builds debs from downloaded fglrx run file.\n"
 				;;
 			j)	if [ -n "$( egrep '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
@@ -3893,6 +3901,7 @@ get_options()
 			R) B_SKIP_RESTART='true'
 				;;
 			s)	B_USE_DEBIAN_DRIVER='true'
+				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -s'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -s - Install Debian driver. (ATI fglrx or nVidia)\n"
 				;;
@@ -4088,7 +4097,7 @@ if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
 	fi
 	run_driver_installer
 	post_installer_steps
-	if [ "$B_FGLRX_DIRECT" != 'true' ];then
+	if [ "$B_FGLRX_DEB_BUILDER" == 'true' ];then
 		install_fglrx_debs
 	fi
 else
