@@ -956,7 +956,7 @@ error_handler()
 			errorData="The Driver you are trying to install does not work with libdrm2 version 2.4.x less than 2.4.11.\nYour installed version of libdrm2 is: $errorExtra\n\nIf you are using Debian Sid, you must upgrade your libdrm2 to 2.4.11 or greater."
 			;;
 		219)
-			errorData="Fglrx direct driver install method does not allow you to install the driver to another kernel,\nusing the -K option, sorry. You must be booted into the kernel you are installing\nthe driver to for this driver method to work."
+			errorData="Fglrx direct driver install method does not allow you to install the\ndriver to another kernel, using the -K option, sorry. You must be booted into\nthe kernel you are installing the driver to for this driver method to work."
 			;;
 		# specific install issues
 		200)
