@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.53
-####  Date: October 14 2009
+####  version: 4.6.54
+####  Date: October 17 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -164,7 +164,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='190.36:::'
+NV_VERSIONS_BETA='190.40:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -173,7 +173,7 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:190.32:190.25:185.19:180.53:96.43.10"
+NV_TESTING="$NV_VERSIONS_BETA:190.36|190.25:185.19:180.53:96.43.10"
 # stable primary: 185.18.31 185.18.29 185.18.14 180.60 180.51 180.44
 # stable legacy 1: 71.86.09 71.86.06
 # stable legacy 2: 96.43.11
@@ -422,7 +422,7 @@ driver_support_tests()
 						# now for all beta driver releases. Stable drivers are using http
 						
 						case $DRIVER_DEFAULT in
-							190.36|190.32|190.25|185.18.14|185.19|180.60|180.53|180.51|173.14.20|96.43.13|96.43.11|96.43.10|71.86.11|71.86.09)
+							190.40|190.36|190.25|185.18.14|185.19|180.60|180.53|180.51|173.14.20|96.43.13|96.43.11|96.43.10|71.86.11|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
