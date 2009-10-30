@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.6.56
-####  Date: October 23 2009
+####  version: 4.7.0
+####  Date: October 30 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -967,6 +967,9 @@ error_handler()
 			;;
 		219)
 			errorData="Fglrx direct driver install method does not allow you to install the\ndriver to another kernel, using the -K option, sorry. You must be booted into\nthe kernel you are installing the driver to for this driver method to work."
+			;;
+		218)
+			errorData="Something went wrong in the creation of your new $EXXC file\nPlease let the script maintainer know."
 			;;
 		# specific install issues
 		200)
@@ -3311,12 +3314,59 @@ x_is_running()
 ### xorg configuration (previously in sgfxi-lib-xorg)
 ### -------------------------------------------------------------------
 
+# newest xorg will have no xorg.conf file
+create_x_conf()
+{
+	local repeat='' opt='' options=''
+	
+	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which X )" ];then
+		echo $MLINE
+		echo "${M}You are running a new version of X but you have no ${C}$EXXC${M} file. "
+		echo "Would you like to create one now (uses ${C}X -configure${M} command)?"
+		echo $MLINE
+		echo "${C}1 - yes-create-xorg-conf-file${M} - Create file and proceed.${N}"
+		echo "${C}2 - quit${M} - Quit now, not sure if I should do this.${N}"
+		echo $LINE
+		options="yes-create-xorg-conf-file quit"
+		select opt in $options
+		do
+			case $opt in
+				yes-create-xorg-conf-file)
+					echo "${S}Ok, creating your new $EXXC file now...${N}"
+					X -configure
+					mv -f /root/xorg.conf.new $EXXC
+					if [ -f $EXXC ];then
+						echo "${S}Ok, all done, continuing...${N}"
+					else
+						error_handler 218
+					fi
+					;;
+				quit)
+					echo "${S}Ok, you'll have to figure out what to do manually then if you want to run $SCRIPT_NAME.${N}"
+					exit 0
+					;;
+				*)
+					echo "${W}Please select one of the options in the list, thank you.${N}"
+					repeat='true'
+					;;
+			esac
+			break
+		done
+	
+		if [ "$repeat" == 'true' ];then
+			create_x_conf
+		fi
+	elif [ ! -f $EXXC -a -z "$( which X )" ];then
+		error_handler 244
+	fi
+}
+
 # create required section device:
 create_section_device()
 {
 	eval $LOGUS
 	# if this section is not present, create it
-	if [ "$( egrep -ic 'Section[ \t]*"Device"' $EXXC )" -eq 0 ];then
+	if [ "$( egrep -sic 'Section[ \t]*"Device"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
 		echo -e 'Section "Device"' >> $EXXC
 		echo -e '\tIdentifier "Card0"' >> $EXXC
@@ -3338,7 +3388,7 @@ create_driver_entry()
 {
 	eval $LOGUS
 	# since this is set in the above function, it must exist, but I'll check to make sure
-	local deviceLineNu=$( egrep -in 'Section[[:space:]]*"Device"' $EXXC | cut -d ':' -f 1 )
+	local deviceLineNu=$( egrep -isn 'Section[[:space:]]*"Device"' $EXXC | cut -d ':' -f 1 )
 
 	# echo deviceLineNu: $deviceLineNu
 	# make sure it's numeric, and that only one device section number was returned (space)
@@ -3467,7 +3517,7 @@ check_extensions()
 	s/^[\s]*#*[\s]*Option\s*"Aiglx".*\n?//' $EXXC
 
 	# if this section is not present, create it
-	if [ "$( grep -c 'Extensions' $EXXC )" -eq 0 ];then
+	if [ "$( grep -sc 'Extensions' $EXXC )" -eq 0 ];then
 		echo -e '\nSection "Extensions"' >> $EXXC
 		echo 'EndSection' >> $EXXC
 	fi
@@ -4041,6 +4091,7 @@ fi
 ## if this exits with error, no lib files will be downloaded
 if [ "$B_SKIP_FUNCTION" != 'true' ];then
 	basic_startup_tests
+	create_x_conf
 fi
 
 ## update everything, restart if not run from smxi
