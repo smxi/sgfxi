@@ -3323,10 +3323,10 @@ create_x_conf()
 	
 	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which X )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
-		echo $MLINE
+		echo $LINE
 		echo "${M}You are running a new version of X but you have no ${C}$EXXC${M} file. "
 		echo "Would you like to create one now (uses ${C}X -configure${M} command)?"
-		echo $MLINE
+		echo $LINE
 		echo "${C}1 - yes-create-xorg-conf-file${M} - Create file and proceed.${N}"
 		echo "${C}2 - quit${M} - Quit now, not sure if I should do this.${N}"
 		echo $LINE
