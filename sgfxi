@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.7.0
+####  version: 4.7.1
 ####  Date: October 30 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3317,9 +3317,12 @@ x_is_running()
 # newest xorg will have no xorg.conf file
 create_x_conf()
 {
+	eval $LOGPS
+	
 	local repeat='' opt='' options=''
 	
 	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which X )" ];then
+		log_function_data "xorg is present, no xorg.conf file"
 		echo $MLINE
 		echo "${M}You are running a new version of X but you have no ${C}$EXXC${M} file. "
 		echo "Would you like to create one now (uses ${C}X -configure${M} command)?"
@@ -3337,13 +3340,14 @@ create_x_conf()
 					mv -f /root/xorg.conf.new $EXXC
 					if [ -f $EXXC ];then
 						echo "${S}Ok, all done, continuing...${N}"
+						log_function_data "xorg xorg.conf file generated"
 					else
 						error_handler 218
 					fi
 					;;
 				quit)
 					echo "${S}Ok, you'll have to figure out what to do manually then if you want to run $SCRIPT_NAME.${N}"
-					exit 0
+					exit 100 # need to exit with 100 to not trigger pid root kill in smxi
 					;;
 				*)
 					echo "${W}Please select one of the options in the list, thank you.${N}"
@@ -3352,13 +3356,17 @@ create_x_conf()
 			esac
 			break
 		done
-	
+		
 		if [ "$repeat" == 'true' ];then
 			create_x_conf
 		fi
 	elif [ ! -f $EXXC -a -z "$( which X )" ];then
+		log_function_data "xorg is missing, no xorg.conf file"
 		error_handler 244
+	else
+		log_function_data "xorg is present with xorg.conf file"
 	fi
+	eval $LOGPE
 }
 
 # create required section device:
@@ -4091,7 +4099,6 @@ fi
 ## if this exits with error, no lib files will be downloaded
 if [ "$B_SKIP_FUNCTION" != 'true' ];then
 	basic_startup_tests
-	create_x_conf
 fi
 
 ## update everything, restart if not run from smxi
@@ -4119,6 +4126,10 @@ fi
 ## don't log the first start if restart/print output happens
 if [ "$B_PRINT_VER" != 'true' ];then
 	create_log
+fi
+# need to handle new xorg no xorg.conf systems
+if [ "$B_PRINT_VER" != 'true' -a "$B_SKIP_FUNCTION" != 'true' ];then
+	create_x_conf
 fi
 if [ "$B_PRINT_VER" != 'true' -a -z "$PACKAGE_MANAGER" -a "$B_SM_INSTALL" != 'true' -a "$B_AUTORUN" != 'true' ];then
 	check_apt_aptitude
