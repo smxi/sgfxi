@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.7.1
-####  Date: October 30 2009
+####  version: 4.7.2
+####  Date: October 31 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -4111,6 +4111,11 @@ set_test_data # this will set other test data for debugging
 if [ "$B_PRINT_VER" != 'true' ];then
 	# test for multiple video cards and select only one
 	if [ "$CARD_COUNT" -gt 1 ];then
+		# handle no xorg.conf with new X situation, only create xorg.conf
+		# if > 2 cards prior to testing for supported cards
+		if [ "$B_SKIP_FUNCTION" != 'true' ];then
+			create_x_conf
+		fi
 		select_card
 	fi
 	print_information
@@ -4128,6 +4133,8 @@ if [ "$B_PRINT_VER" != 'true' ];then
 	create_log
 fi
 # need to handle new xorg no xorg.conf systems
+# no need to create this if the card isn't supported, so this comes
+# after print info and log start unless > 1 card detected
 if [ "$B_PRINT_VER" != 'true' -a "$B_SKIP_FUNCTION" != 'true' ];then
 	create_x_conf
 fi
