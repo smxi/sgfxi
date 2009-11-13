@@ -446,7 +446,7 @@ driver_support_tests()
 						# now for all beta driver releases. Stable drivers are using http
 						
 						case $DRIVER_DEFAULT in
-							190.42|185.18.14|180.60|180.51|173.14.22|173.14.20|96.43.14|96.43.13|96.43.11|71.86.11|71.86.09)
+							190.42|185.18.14|180.60|180.51|173.14.2[02]|96.43.1[134]|71.86.11|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
