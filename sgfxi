@@ -174,8 +174,9 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA"
+# stable primary: 190.42
 # stable primary: 185.18.36 185.18.31 185.18.29 185.18.14 180.60 180.51 180.44
-# stable legacy 1: 71.86.09 71.86.06
+# stable legacy 1: 71.86.11 71.86.09 71.86.06
 # stable legacy 2: 96.43.13 96.43.11
 # stable legacy 3: 173.14.20 173.14.18 173.14.12
 NV_OTHERS='185.18.36:185.18.31:185.18.14:180.60:180.44:177.82:173.14.20:173.14.18:173.14.12:169.12:100.14.19:96.43.13:96.43.11:71.86.09:71.86.06'
