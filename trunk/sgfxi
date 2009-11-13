@@ -495,7 +495,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.13|96.43.11|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -507,7 +507,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.13|96.43.11|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -519,7 +519,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.44|173.14.2*|173.14.18|96.43.13|96.43.11|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									190.*|185.*|180.44|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -531,7 +531,7 @@ driver_support_tests()
 								;;
 							31|32)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|173.14.2*|96.43.13|71.86.11|$DEBIAN_NVIDIA)
+									190.*|185.*|173.14.2*|96.43.1[34]|71.86.11|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
