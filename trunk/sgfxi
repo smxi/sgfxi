@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Use for Debian Sid, Testing, and sidux graphic driver install.
 ####  Only supports true Debian based distros.
-####  version: 4.7.5
-####  Date: November 12 2009
+####  version: 4.8.0
+####  Date: November 15 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -111,6 +111,7 @@ B_TRIPLE_BUFFER=''
 B_TWINVIEW=''
 B_USE_BETA=''
 B_USE_DEBIAN_DRIVER=''
+B_MOVE_X_CONF=''
 ## debugger/testing boolean switches
 B_SKIP_FUNCTION=''
 B_TESTING_1=''
@@ -1055,6 +1056,9 @@ error_handler()
 			;;
 		178)
 			errorData="Unsupported testing option argument: -! $errorExtra"
+			;;
+		177)
+			errorData="Used -z command but no X application is present in system."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -3329,6 +3333,26 @@ x_is_running()
 ### xorg configuration (previously in sgfxi-lib-xorg)
 ### -------------------------------------------------------------------
 
+move_x_conf()
+{
+	eval $LOGUS
+	local x_full_bu="$EXXC-full-$( date +%Y-%m-%d-%H:%M:%S )"
+	
+	if [ -n "$( which X )" ];then
+		if [ -f $EXXC ];then
+			echo "${M}Moving ${C}$EXXC${M} to ${C}$x_full_bu${M}...${N}"
+			mv -f $EXXC $x_full_bu
+			echo "${S}Continuing to ${C}$EXXC${S} creation...${N}"
+		else
+			echo "${M}No ${C}$EXXC${M} file exists, continuing to ${C}$EXXC${M} creation...${N}"
+		fi
+	else
+		log_function_data "A rebuild of xorg.conf is requested, but there is no X application to rebuild it with."
+		error_handler 177
+	fi
+	eval $LOGUE
+}
+
 # newest xorg will have no xorg.conf file
 create_x_conf()
 {
@@ -3339,8 +3363,12 @@ create_x_conf()
 	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which X )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
 		echo $LINE
-		echo "${M}You are running a new version of X but you have no ${C}$EXXC${M} file. "
-		echo "Would you like to create one now (uses ${C}X -configure${M} command)?"
+		if [ "$B_MOVE_X_CONF" == 'true' ];then
+			echo "${S}Now it's time to make your new replacement ${C}$EXXC${S} file. "
+		else
+			echo "${S}You are running a new version of X but you have no ${C}$EXXC${S} file. "
+		fi
+		echo "${M}Would you like to create it now (uses ${C}X -configure${M} command)?"
 		echo $LINE
 		echo "${C}1 - yes-create-xorg-conf-file${M} - Create file and proceed.${N}"
 		echo "${C}2 - quit${M} - Quit now, not sure if I should do this.${N}"
@@ -3350,8 +3378,9 @@ create_x_conf()
 		do
 			case $opt in
 				yes-create-xorg-conf-file)
-					echo "${S}Ok, creating your new $EXXC file now...${N}"
+					echo "${S}Ok, creating your new ${C}$EXXC${S} file now...${N}"
 					X -configure
+					echo "${S}Moving newly created ${C}xorg.conf${S} to ${C}$EXXC${S} now...${N}"
 					mv -f /root/xorg.conf.new $EXXC
 					if [ -f $EXXC ];then
 						echo "${S}Ok, all done, continuing...${N}"
@@ -3376,7 +3405,7 @@ create_x_conf()
 			create_x_conf
 		fi
 	elif [ ! -f $EXXC -a -z "$( which X )" ];then
-		log_function_data "xorg is missing, no xorg.conf file"
+		log_function_data "There is no xorg.conf file, and no X command to build one with."
 		error_handler 244
 	else
 		log_function_data "xorg is present with xorg.conf file"
@@ -3849,6 +3878,8 @@ show_options()
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
 	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if not in X."
+	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X command)"
+	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
 	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
 	echo "   you are sure your connection is fine."
 	if [ "$1" == 'full' ];then
@@ -3881,7 +3912,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbBcCdDeEfFhHj:K:L:nN:o:pP:QrRsStUvWXxZ!: opt
+	while getopts AbBcCdDeEfFhHj:K:L:nN:o:pP:QrRsStUvWXxzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -4020,6 +4051,10 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -X'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -X - Skip the test for X/KDE. Only use if you know what you are doing!\n"
 				;;
+			z)	B_MOVE_X_CONF='true'
+				START_OPTIONS=$START_OPTIONS' -z'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -z - Backup and recreate xorg.conf using the command: X -configure\nOnly use if you know what you are doing!\n"
+				;;
 			Z) B_SKIP_CONNECT='true'
 				START_OPTIONS=$START_OPTIONS' -Z'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Z - Skip the script connection tests. Limited utility, unless you already have downloaded the driver.\n"
@@ -4151,6 +4186,9 @@ fi
 # no need to create this if the card isn't supported, so this comes
 # after print info and log start unless > 1 card detected
 if [ "$B_PRINT_VER" != 'true' -a "$B_SKIP_FUNCTION" != 'true' ];then
+	if [ "$B_MOVE_X_CONF" == 'true' ];then
+		move_x_conf
+	fi
 	create_x_conf
 fi
 if [ "$B_PRINT_VER" != 'true' -a -z "$PACKAGE_MANAGER" -a "$B_SM_INSTALL" != 'true' -a "$B_AUTORUN" != 'true' ];then
