@@ -1593,20 +1593,22 @@ basic_startup_tests()
 		error_handler 250
 	fi
 	# set system type. This test will never be perfect, but it's a good approximation
-	if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
-		if [ -n "$isEtch" ];then
-			DISTRIB_CODENAME='etch'
-			FG_DISTRO='etch'
+	if [ "$DISTRIB_ID" == 'Debian' ];then
+		if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
+			if [ -n "$isEtch" ];then
+				DISTRIB_CODENAME='etch'
+				FG_DISTRO='etch'
+			else
+				DISTRIB_CODENAME='stable'
+				FG_DISTRO='lenny' # note: 'stable' breaks the installer
+			fi
+		elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
+			DISTRIB_CODENAME='testing'
+			FG_DISTRO='testing'
 		else
-			DISTRIB_CODENAME='stable'
-			FG_DISTRO='lenny' # note: 'stable' breaks the installer
+			DISTRIB_CODENAME='sid'
+			FG_DISTRO='sid'
 		fi
-	elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
-		DISTRIB_CODENAME='testing'
-		FG_DISTRO='testing'
-	else
-		DISTRIB_CODENAME='sid'
-		FG_DISTRO='sid'
 	fi
 }
 
