@@ -73,6 +73,7 @@ NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alph
 
 APT_TYPE='apt-get'
 CARD='' # card type: fglrx or nvidia
+DISTRIB_CODENAME=''
 DISTRIB_ID='Debian'
 DISTRIB_RELEASE=''
 NATIVE_OVERRIDE=''
@@ -84,7 +85,6 @@ PACKAGE_MANAGER=''
 SCRIPT_COLORS=1
 START_OPTIONS_PRINT='' # for output to user of what options they used
 START_OPTIONS=''
-SYSTEM_BASE=''
 WITHOUT_RECOMMENDS=''
 
 ## main script boolean switches
@@ -416,7 +416,7 @@ driver_support_tests()
 					esac
 					;;
 				$NVIDIA)
-# 					if [ "$DRIVER_DEFAULT" == "$DEBIAN_NVIDIA" -a "$SYSTEM_BASE" == 'testing' ];then
+# 					if [ "$DRIVER_DEFAULT" == "$DEBIAN_NVIDIA" -a "$DISTRIB_CODENAME" == 'testing' ];then
 # 						print_information_continue 'standard' "Your system appears to be Debian Testing based.\nThe $DEBIAN_NVIDIA driver cannot build on Debian Testing because of a missing package.\nIf your system is Sid based, continue, otherwise exit now."
 # 					else
 						# test for >= xorg 1.5 support, using a blacklist now of previous
@@ -804,7 +804,7 @@ set_test_data()
 # 		IS_XEN=''
 # 		# check for specific system base tests, can be:
 # 		# 'sid' 'testing' 'stable' 'etch'
-# 		SYSTEM_BASE='testing'
+# 		DISTRIB_CODENAME='testing'
 # leave this at first character or errors in updater tools will occur
 :
 	fi
@@ -977,7 +977,7 @@ error_handler()
 			errorData="The install of the missing deb from your kernel-downloads directory:\n$extraData\nhas failed for unknown reasons. Sorry, we did our best."
 			;;
 		222)
-			errorData="The Xorg driver $extraData you are trying to install is not available\nfor your version of Debian: $SYSTEM_BASE"
+			errorData="The Xorg driver $extraData you are trying to install is not available\nfor your version of $DISTRIB_ID: $DISTRIB_CODENAME"
 			;;
 		221)
 			errorData="AMD/ATI had dropped fglrx non-free driver support for your card type as of driver release 9-4\nOnly cards x2000 or newer are now supported by AMD/ATI for this driver.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know."
@@ -1545,6 +1545,7 @@ basic_startup_tests()
 	# ideally all distros would use lsb-release, but sadly they don't. 
 	if [ -f $ELR ];then
 		lsbData="$( cat $ELR )"
+		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbData" | cut -d '=' -f 2 )
 		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbData" | cut -d '=' -f 2 )
 		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbData" | cut -d '=' -f 2 )
 	fi
@@ -1556,6 +1557,7 @@ basic_startup_tests()
 		if [ "$B_TESTING_1" != 'true' ];then
 			error_handler 248
 		fi
+		FG_DISTRO=$DISTRIB_CODENAME
 	fi
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
@@ -1593,17 +1595,17 @@ basic_startup_tests()
 	# set system type. This test will never be perfect, but it's a good approximation
 	if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
 		if [ -n "$isEtch" ];then
-			SYSTEM_BASE='etch'
+			DISTRIB_CODENAME='etch'
 			FG_DISTRO='etch'
 		else
-			SYSTEM_BASE='stable'
+			DISTRIB_CODENAME='stable'
 			FG_DISTRO='lenny' # note: 'stable' breaks the installer
 		fi
 	elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
-		SYSTEM_BASE='testing'
+		DISTRIB_CODENAME='testing'
 		FG_DISTRO='testing'
 	else
-		SYSTEM_BASE='sid'
+		DISTRIB_CODENAME='sid'
 		FG_DISTRO='sid'
 	fi
 }
@@ -1666,33 +1668,37 @@ check_apt_aptitude()
 
 	if [ -f /var/log/aptitude ];then
 		if [ -z "$aptPref" ];then
-			echo ${S}$LINE
-			echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
-			echo "Please pick your preferred package manager before you continue, or exit now."
-			echo
-			echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
-			echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
-			echo $LINE${N}
-
-			select opt in $managers
-			do
-				case $opt in
-					apt-get|aptitude)
-						APT_TYPE=$opt
-						log_function_data "Selected package manager: $opt"
-						get_set_prefs 'set' "apt-type=$opt"
-						;;
-					quit)
-						echo "${S}Ok, figure it out and try again later...${N}"
-						exit 0
-						;;
-					*)
-						echo "${E}You have to pick one before you can continue!${N}"
-						ask_apt_aptitude
-						;;
-				esac
-				break
-			done
+			if [ "$DISTRIB_ID" != 'Ubuntu' ];then
+				echo ${S}$LINE
+				echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
+				echo "Please pick your preferred package manager before you continue, or exit now."
+				echo
+				echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
+				echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
+				echo $LINE${N}
+	
+				select opt in $managers
+				do
+					case $opt in
+						apt-get|aptitude)
+							APT_TYPE=$opt
+							log_function_data "Selected package manager: $opt"
+							get_set_prefs 'set' "apt-type=$opt"
+							;;
+						quit)
+							echo "${S}Ok, figure it out and try again later...${N}"
+							exit 0
+							;;
+						*)
+							echo "${E}You have to pick one before you can continue!${N}"
+							ask_apt_aptitude
+							;;
+					esac
+					break
+				done
+			else
+				$APT_TYPE='aptitude'
+			fi
 		else # set apt type
 			APT_TYPE=$aptPref
 		fi
@@ -1737,7 +1743,7 @@ install_package()
 		$APT_TYPE update && UPDATED='true'
 	fi
 	if [ "$APT_TYPE" == 'aptitude' ];then
-		if [ "$SYSTEM_BASE" == 'etch' ];then
+		if [ "$DISTRIB_CODENAME" == 'etch' ];then
 			useUntrusted='' # etch aptitude doesn't support this
 		else
 			useUntrusted='--allow-untrusted'
@@ -2081,7 +2087,9 @@ create_log()
 	fi
 	echo "$SCRIPT_NAME script version: $sgfxiVersion" >> $LOG_FILE
 	echo "$SCRIPT_NAME start options: $START_OPTIONS" >> $LOG_FILE
-	echo "SYSTEM_BASE: $SYSTEM_BASE" >> $LOG_FILE
+	echo "DISTRIB_CODENAME: $DISTRIB_CODENAME" >> $LOG_FILE
+	echo "DISTRIB_ID: $DISTRIB_ID" >> $LOG_FILE
+	echo "DISTRIB_RELEASE: $DISTRIB_RELEASE" >> $LOG_FILE
 	echo "FG_DISTRO: $FG_DISTRO" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
@@ -2774,7 +2782,7 @@ run_driver_installer()
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
 			# note that lenny can be assumed to not need, this, so wait til squeeze stable
-			if [ "$BITS" == '64' ] && [ "$SYSTEM_BASE" == 'sid' -o "$SYSTEM_BASE" == 'testing' ];then
+			if [ "$BITS" == '64' ] && [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' ];then
 				installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
 			fi
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
@@ -2783,7 +2791,7 @@ run_driver_installer()
 			apply_module_patch post
 			;;
 		$FGLRX)
-			distroId='Debian'
+			distroId=$DISTRO_ID
 			distroCodeName=$FG_DISTRO
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
