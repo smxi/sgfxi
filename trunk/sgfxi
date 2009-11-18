@@ -2782,7 +2782,7 @@ run_driver_installer()
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
 			# note that lenny can be assumed to not need, this, so wait til squeeze stable
-			if [ "$BITS" == '64' ] && [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' ];then
+			if [ "$BITS" == '64' ] && [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' -o "$DISTRIB_ID" == 'Ubuntu' ];then
 				installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
 			fi
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
@@ -2791,7 +2791,7 @@ run_driver_installer()
 			apply_module_patch post
 			;;
 		$FGLRX)
-			distroId=$DISTRO_ID
+			distroId=$DISTRIB_ID
 			distroCodeName=$FG_DISTRO
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
