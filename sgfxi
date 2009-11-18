@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.8.1
+####  version: 4.8.2
 ####  Date: November 18 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -387,7 +387,7 @@ driver_support_tests()
 										;;
 									30)
 										case $DRIVER_DEFAULT in
-											9-8|9-9|9-10)
+											9-8|9-9|9-10|9-11)
 												: # not yet
 												;;
 											*)
@@ -397,7 +397,7 @@ driver_support_tests()
 										;;
 									31|32)
 										case $DRIVER_DEFAULT in
-											9-10)
+											9-10|9-11)
 												: # not yet
 												;;
 											*)
