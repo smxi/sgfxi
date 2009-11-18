@@ -1,10 +1,10 @@
 #!/bin/bash
 ########################################################################
 ####  Script Name: system graphics installer: sgfxi
-####  Use for Debian Sid, Testing, and sidux graphic driver install.
-####  Only supports true Debian based distros.
-####  version: 4.8.0
-####  Date: November 15 2009
+####  Debian Sid, Testing, and sidux graphic driver install.
+####  Experimental Ubuntu support in progress.
+####  version: 4.8.1
+####  Date: November 18 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -73,6 +73,8 @@ NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alph
 
 APT_TYPE='apt-get'
 CARD='' # card type: fglrx or nvidia
+DISTRIB_ID='Debian'
+DISTRIB_RELEASE=''
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
@@ -95,6 +97,7 @@ B_EXTRA_EXPERIMENTAL=''
 B_FGLRX_DEB_BUILDER=''
 B_FGLRX_DIRECT='true' # raising the white flag of surrender...
 B_FORCE_UPDATE=''
+B_MOVE_X_CONF=''
 B_NATIVE_DRIVER=''
 B_NO_XVMC=''
 B_PRINT_VER='' # utilities for smxi
@@ -111,7 +114,7 @@ B_TRIPLE_BUFFER=''
 B_TWINVIEW=''
 B_USE_BETA=''
 B_USE_DEBIAN_DRIVER=''
-B_MOVE_X_CONF=''
+
 ## debugger/testing boolean switches
 B_SKIP_FUNCTION=''
 B_TESTING_1=''
@@ -192,12 +195,12 @@ NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='9-10:9-9:9-3'
-FG_DEFAULT='9-10'
+FG_VERSIONS='9-11:9-10:9-3'
+FG_DEFAULT='9-11'
 
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
-FG_OTHERS='9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
+FG_OTHERS='9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
 FG_DISTRO=''
 DRIVER_INSTALL=''
@@ -237,6 +240,7 @@ EAA='/etc/apt/apt.conf'
 EAS='/etc/apt/sources.list'
 EXXC='/etc/X11/xorg.conf'
 EDV='/etc/debian_version'
+ELR='/etc/lsb-release'
 SCRIPT_HOME='/usr/local/bin'
 INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
@@ -1060,6 +1064,9 @@ error_handler()
 		177)
 			errorData="Used -z command but no X application is present in system."
 			;;
+		176)
+			errorData="Debian drivers are not supported in Ubuntu systems."
+			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
 			;;
@@ -1513,6 +1520,7 @@ check_root()
 
 basic_startup_tests()
 {
+	local lsbData=''
 	# these tests will be improved over time, but are ok for now
 	local isEtch=$( grep -is '^4.' $EDV )
 	local isLenny=$( grep -is '^5.' $EDV )
@@ -1527,16 +1535,27 @@ basic_startup_tests()
 	local isStableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(stable|etch|lenny)"' $EAA )
 	local isTestingDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(testing|squeeze)"' $EAA )
 	local isUnstableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(sid|unstable)"' $EAA )
-
+# 
 	## basic system requirements for this script to run, first so user doesn't
 	## have to be root or out of x to get basic failure information
 	# make sure that it's a debian based system
 	if [ ! -f "$EDV" ];then
 		error_handler 252
 	fi
+	# ideally all distros would use lsb-release, but sadly they don't. 
+	if [ -f $ELR ];then
+		lsbData="$( cat $ELR )"
+		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbData" | cut -d '=' -f 2 )
+		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbData" | cut -d '=' -f 2 )
+	fi
 	# no ubuntu support
 	if [ "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
-		error_handler 248
+		if [ "$B_USE_DEBIAN_DRIVER" == 'true' ];then
+			error_handler 176
+		fi
+		if [ "$B_TESTING_1" != 'true' ];then
+			error_handler 248
+		fi
 	fi
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
