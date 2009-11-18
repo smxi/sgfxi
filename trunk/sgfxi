@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.8.2
+####  version: 4.8.3
 ####  Date: November 18 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2708,7 +2708,7 @@ preinstall_cleanup()
 	# this is for manually installed amdccle removal
 	rm -f /usr/local/bin/amdccle
 
-	oldFglrx=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'fglrx' )
+	oldFglrx=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'fglrx' | grep -v 'fglrx-modalias' )
 	if [ -n "$oldFglrx" ];then
 		dpkg --purge $oldFglrx  1>> $LOG_FILE 2>> $LOG_FILE
 	fi
