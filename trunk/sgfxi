@@ -1699,7 +1699,7 @@ check_apt_aptitude()
 					break
 				done
 			else
-				$APT_TYPE='aptitude'
+				APT_TYPE='aptitude'
 			fi
 		else # set apt type
 			APT_TYPE=$aptPref
