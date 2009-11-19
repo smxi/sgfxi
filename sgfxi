@@ -2980,7 +2980,7 @@ install_fglrx_debs()
 		local fgAlias='' libAmdXv=''
 		
 		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
-			fgDri='xorg-fglrx-driver_'
+			fgDri='xorg-driver-fglrx_'
 			fgDriver="$fgDri*.deb"
 			fgAmdcccle="$fgAmd*.deb"
 			fgKernelSrc="$fgKsc*.deb"
