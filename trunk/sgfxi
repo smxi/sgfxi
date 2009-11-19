@@ -2988,7 +2988,7 @@ install_fglrx_debs()
 		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
 			fgDri='xorg-driver-fglrx_'
 			fgKsc='fglrx-kernel-source_'
-			fgKsrc='fglrx-kernel-source_'
+			fgKsrc='fglrx-kernel-source'
 			fgDriver="$fgDri*.deb"
 			fgAmdcccle="$fgAmd*.deb"
 			fgKernelSrc="$fgKsc*.deb"
