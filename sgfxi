@@ -1628,6 +1628,9 @@ check_install_tools()
 	if [ -z "$( check_package_status 'logrotate' 'i' )" -a -n "$( check_package_status 'logrotate' 'c' )" ];then
 		install_package 'logrotate'
 	fi
+	if [ -z "$( check_package_status 'patch' 'i' )" -a -n "$( check_package_status 'patch' 'c' )" ];then
+		install_package 'patch'
+	fi
 
 	if [ "$CARD" == $NVIDIA ];then
 		:
@@ -2996,6 +2999,10 @@ install_fglrx_debs()
 		local availableDebs=$( ls *fglrx*.deb )
 		local usunf='/usr/sbin/unfreeze-rc.d' 
 		local frozen=0 forceIt=''
+		
+		if [ "$DISTRIB_ID" == 'Ubuntu' ] && [ -z "$( check_package_status 'dkms' 'i' )" -a -n "$( check_package_status 'dkms' 'c' )" ];then
+			install_package 'dkms'
+		fi
 
 		# this is slightly excessive, but may handle a case where extra debs exist
 		# due to weird user action. Also protects against new ati randomness.
@@ -3042,6 +3049,9 @@ install_fglrx_debs()
 		fi
 
 		log_function_data "Actual driver packages to install:\nfgDriver: $fgDriver\nfgAmdcccle: $fgAmdcccle\nfgKernelSrc: $fgKernelSrc"
+		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
+		
+		fi
 
 		# due to problems with config file questions, trying no logging of 1>> now
 		dpkg -i $forceIt $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
