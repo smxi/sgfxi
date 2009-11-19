@@ -3049,9 +3049,6 @@ install_fglrx_debs()
 		fi
 
 		log_function_data "Actual driver packages to install:\nfgDriver: $fgDriver\nfgAmdcccle: $fgAmdcccle\nfgKernelSrc: $fgKernelSrc"
-		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
-		
-		fi
 
 		# due to problems with config file questions, trying no logging of 1>> now
 		dpkg -i $forceIt $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
