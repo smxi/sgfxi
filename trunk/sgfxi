@@ -2977,6 +2977,17 @@ install_fglrx_debs()
 		local fgDriver="$fgDri$DRIVER_DEFAULT-1_*.deb"
 		local fgAmdcccle="$fgAmd$DRIVER_DEFAULT-1_*.deb"
 		local fgKernelSrc="$fgKsc$DRIVER_DEFAULT-1_*.deb"
+		local fgAlias='' libAmdXv=''
+		
+		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
+			fgDri='xorg-fglrx-driver_'
+			fgDriver="$fgDri*.deb"
+			fgAmdcccle="$fgAmd*.deb"
+			fgKernelSrc="$fgKsc*.deb"
+			libAmdXv='libamdxvb*.deb'
+			fgAlias='fglrx-modaliases_*.deb'
+		fi
+		
 		local availableDebs=$( ls *fglrx*.deb )
 		local fgKsrc='fglrx-kernel-src'
 		local usunf='/usr/sbin/unfreeze-rc.d' 
@@ -3011,7 +3022,7 @@ install_fglrx_debs()
 # 		if [ "$FG_DISTRO" != 'unstable' ];then
 # 			forceIt='--force-overwrite'
 # 		fi
-		if [ "$B_TESTING_1" == 'true' ];then
+		if [ "$B_TESTING_1" == 'true' -a "$DISTRIB_ID" != 'Ubuntu' ];then
 			forceIt='--force-all'
 		fi
 
@@ -3032,6 +3043,18 @@ install_fglrx_debs()
 		dpkg -i $forceIt $fgDriver 2>> $LOG_FILE || error_handler 195 $fgDriver
  		dpkg -i $forceIt $fgAmdcccle 2>> $LOG_FILE || error_handler 195 $fgAmdcccle
  		dpkg -i $forceIt $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
+ 		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
+ 			if [ -n "$libAmdXv" ];then
+ 				dpkg -i $forceIt $libAmdXv 2>> $LOG_FILE || error_handler 195 $libAmdXv
+ 			else
+ 				echo "${E}ERROR: Missing ${C}$libAmdXv${E} but continuing...${N}"
+ 			fi
+ 			if [ -n "$fgAlias" ];then
+ 				dpkg -i $forceIt $fgAlias 2>> $LOG_FILE || error_handler 195 $libAmdXv
+ 			else
+ 				echo "${E}ERROR: Missing ${C}$fgAlias${E} but continuing...${N}"
+ 			fi
+ 		fi
 
 		log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
 		CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
@@ -3043,10 +3066,12 @@ install_fglrx_debs()
 			$usunf
 		fi
 
-		# put packages on hold fglrx-amdcccle, fglrx-driver, fglrx module
-		echo "${S}Placing ATI packages on hold to avoid dist-upgrade issues with Debian fglrx drivers...${N}"
-		hold_package 'fglrx-amdcccle'
-		hold_package 'fglrx-driver'
+		if [ "$DISTRIB_ID" != 'Ubuntu' ];then
+			# put packages on hold fglrx-amdcccle, fglrx-driver, fglrx module
+			echo "${S}Placing ATI packages on hold to avoid dist-upgrade issues with Debian fglrx drivers...${N}"
+			hold_package 'fglrx-amdcccle'
+			hold_package 'fglrx-driver'
+		fi
 		eval $LOGPE
 	fi
 }
