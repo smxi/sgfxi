@@ -3044,9 +3044,10 @@ install_fglrx_debs()
 		log_function_data "Actual driver packages to install:\nfgDriver: $fgDriver\nfgAmdcccle: $fgAmdcccle\nfgKernelSrc: $fgKernelSrc"
 
 		# due to problems with config file questions, trying no logging of 1>> now
+		dpkg -i $forceIt $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
 		dpkg -i $forceIt $fgDriver 2>> $LOG_FILE || error_handler 195 $fgDriver
  		dpkg -i $forceIt $fgAmdcccle 2>> $LOG_FILE || error_handler 195 $fgAmdcccle
- 		dpkg -i $forceIt $fgKernelSrc 2>> $LOG_FILE || error_handler 195 $fgKernelSrc
+ 		
  		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
  			if [ -n "$libAmdXv" ];then
  				dpkg -i $forceIt $libAmdXv 2>> $LOG_FILE || error_handler 195 $libAmdXv
