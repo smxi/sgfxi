@@ -2973,8 +2973,11 @@ install_fglrx_debs()
 	# fglrx-kernel-src_8.443.1-1_i386.deb
 	if [ "$CARD" == $FGLRX ];then
 		eval $LOGPS
-		local fgAmd='fglrx-amdcccle_' fgDri='fglrx-driver_' fgKsc='fglrx-kernel-src_'
+		local fgAmd='fglrx-amdcccle_' 
+		local fgDri='fglrx-driver_' 
+		local fgKsc='fglrx-kernel-src_'
 		local fgDriver="$fgDri$DRIVER_DEFAULT-1_*.deb"
+		local fgKsrc='fglrx-kernel-src'
 		local fgAmdcccle="$fgAmd$DRIVER_DEFAULT-1_*.deb"
 		local fgKernelSrc="$fgKsc$DRIVER_DEFAULT-1_*.deb"
 		local fgAlias='' libAmdXv=''
@@ -2982,6 +2985,7 @@ install_fglrx_debs()
 		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
 			fgDri='xorg-driver-fglrx_'
 			fgKsc='fglrx-kernel-source_'
+			fgKsrc='fglrx-kernel-source_'
 			fgDriver="$fgDri*.deb"
 			fgAmdcccle="$fgAmd*.deb"
 			fgKernelSrc="$fgKsc*.deb"
@@ -2990,7 +2994,6 @@ install_fglrx_debs()
 		fi
 		
 		local availableDebs=$( ls *fglrx*.deb )
-		local fgKsrc='fglrx-kernel-src'
 		local usunf='/usr/sbin/unfreeze-rc.d' 
 		local frozen=0 forceIt=''
 
