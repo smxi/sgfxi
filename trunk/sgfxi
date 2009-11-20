@@ -3067,11 +3067,17 @@ install_fglrx_debs()
  				echo "${E}ERROR: Missing ${C}$fgAlias${E} but continuing...${N}"
  			fi
  		fi
-
-		log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
-		CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
-		log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
-		m-a install -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
+		if [ "$DISTRIB_ID" != 'Ubuntu' ];then
+			log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
+			CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
+			log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
+			m-a install -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
+		else
+			log_function_data "Done installing debs created, now to: m-a build fglrx:"
+			CC=$CC m-a build fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 fglrx
+			log_function_data "Now to: m-a install fglrx:"
+			m-a install fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 fglrx
+		fi
 
 		# restore freeze state
 		if [ "$frozen" -eq 1 -a -x $usunf ];then
