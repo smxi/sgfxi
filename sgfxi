@@ -3073,10 +3073,12 @@ install_fglrx_debs()
 			log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
 			m-a install -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
 		else
-			log_function_data "Done installing debs created, now to: m-a build fglrx:"
-			CC=$CC m-a build fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 fglrx
-			log_function_data "Now to: m-a install fglrx:"
-			m-a install fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 fglrx
+			# note: note with dkms
+			:
+# 			log_function_data "Done installing debs created, now to: m-a build fglrx:"
+# 			CC=$CC m-a build fglrx-kernel 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 fglrx-kernel
+# 			log_function_data "Now to: m-a install fglrx:"
+# 			m-a install fglrx-kernel 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 fglrx-kernel
 		fi
 
 		# restore freeze state
