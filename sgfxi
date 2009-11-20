@@ -90,7 +90,7 @@ WITHOUT_RECOMMENDS=''
 ## main script boolean switches
 B_AUTORUN=''
 B_BETA_EXISTS=''
-B_DEBIAN_FLAG=''
+B_DISTRO_FLAG=''
 B_DISPLAY_DEVICES=''
 B_EXPERIMENTAL=''
 B_EXTRA_EXPERIMENTAL=''
@@ -113,7 +113,7 @@ B_SM_INSTALL='' # utilities for smxi
 B_TRIPLE_BUFFER=''
 B_TWINVIEW=''
 B_USE_BETA=''
-B_USE_DEBIAN_DRIVER=''
+B_USE_DISTRO_DRIVER=''
 
 ## debugger/testing boolean switches
 B_SKIP_FUNCTION=''
@@ -202,7 +202,7 @@ FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
 FG_OTHERS='9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
-FG_DISTRO=''
+FG_DISTRIB=''
 DRIVER_INSTALL=''
 DRIVER_DEFAULT=''
 DRIVER_OVERRIDE=''
@@ -305,7 +305,7 @@ driver_support_tests()
 			case $CARD in
 				$FGLRX)
 					# first dump if legacy level 1 and pre 9-4
-					if [ "$LEGACY_LEVEL" -eq 1 -a "$B_USE_DEBIAN_DRIVER" != 'true' ];then
+					if [ "$LEGACY_LEVEL" -eq 1 -a "$B_USE_DISTRO_DRIVER" != 'true' ];then
 						case $DRIVER_DEFAULT in
 							8-*|9-1|9.2|9-3)
 								: # these drivers are fine
@@ -1314,8 +1314,8 @@ detect_card_version()
 				# sadly, this doesn't build the module, so leaving it commented out, x series fail
 # 				718a|7188|7210|7211)
 # 					LEGACY_LEVEL=100
-# 					if [ "$B_DEBIAN_FLAG" == 'true' ];then
-# 						B_USE_DEBIAN_DRIVER='true'
+# 					if [ "$B_DISTRO_FLAG" == 'true' ];then
+# 						B_USE_DISTRO_DRIVER='true'
 # 					fi
 # 					;;
 				# this is going to handle all pre hd/x2000 cards, any exceptions will be added
@@ -1324,17 +1324,17 @@ detect_card_version()
 					LEGACY_LEVEL=1
 					# going to leave this in for now until debian kernels and
 					# xorgs catch up, but will permit by default for non legacy 0 cards
-					if [ "$B_DEBIAN_FLAG" == 'true' ];then
-						B_USE_DEBIAN_DRIVER='true'
+					if [ "$B_DISTRO_FLAG" == 'true' ];then
+						B_USE_DISTRO_DRIVER='true'
 					fi
 					;;
 				*)
 					# if no working driver via standard ati installer. Here we're also handling
 					# the monthly releases, so users can do an experimental test if needed
-					# if [ "$B_DEBIAN_FLAG" == 'true' -a "$B_TESTING_1" != 'true' ]
+					# if [ "$B_DISTRO_FLAG" == 'true' -a "$B_TESTING_1" != 'true' ]
 					LEGACY_LEVEL=100
-					if [ "$B_DEBIAN_FLAG" == 'true' ];then
-						B_USE_DEBIAN_DRIVER='true'
+					if [ "$B_DISTRO_FLAG" == 'true' ];then
+						B_USE_DISTRO_DRIVER='true'
 					fi
 					;;
 			esac
@@ -1551,13 +1551,13 @@ basic_startup_tests()
 	fi
 	# no ubuntu support
 	if [ "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
-		if [ "$B_USE_DEBIAN_DRIVER" == 'true' ];then
+		if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
 			error_handler 176
 		fi
 		if [ "$B_TESTING_1" != 'true' ];then
 			error_handler 248
 		fi
-		FG_DISTRO=$DISTRIB_CODENAME
+		FG_DISTRIB=$DISTRIB_CODENAME
 	fi
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
@@ -1597,17 +1597,17 @@ basic_startup_tests()
 		if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
 			if [ -n "$isEtch" ];then
 				DISTRIB_CODENAME='etch'
-				FG_DISTRO='etch'
+				FG_DISTRIB='etch'
 			else
 				DISTRIB_CODENAME='stable'
-				FG_DISTRO='lenny' # note: 'stable' breaks the installer
+				FG_DISTRIB='lenny' # note: 'stable' breaks the installer
 			fi
 		elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
 			DISTRIB_CODENAME='testing'
-			FG_DISTRO='testing'
+			FG_DISTRIB='testing'
 		else
 			DISTRIB_CODENAME='sid'
-			FG_DISTRO='sid'
+			FG_DISTRIB='sid'
 		fi
 	fi
 }
@@ -2095,7 +2095,7 @@ create_log()
 	echo "DISTRIB_CODENAME: $DISTRIB_CODENAME" >> $LOG_FILE
 	echo "DISTRIB_ID: $DISTRIB_ID" >> $LOG_FILE
 	echo "DISTRIB_RELEASE: $DISTRIB_RELEASE" >> $LOG_FILE
-	echo "FG_DISTRO: $FG_DISTRO" >> $LOG_FILE
+	echo "FG_DISTRIB: $FG_DISTRIB" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
 	# it's important to log these in case there's some issue or bug in the values
@@ -2409,7 +2409,7 @@ set_version()
 	# this is only for du output :: this has to go before assigning -o version number
 	if [ "$B_PRINT_VER" == 'true' ];then
 		# echo the basic list:
-		if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
+		if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 			echo $DRIVER_DEFAULT':'$VERSIONS
 		else
 			# note: because sometimes I'm turning off fglrx run install due to failure
@@ -2427,7 +2427,7 @@ set_version()
 		DRIVER_DEFAULT=$DRIVER_OVERRIDE
 	fi
 	# error_handler 246 $DRIVER_DEFAULT # for unsupported cards
-	if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
+	if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 		check_supported_driver last-check
 	else
 		case $CARD in
@@ -2702,7 +2702,7 @@ preinstall_cleanup()
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
-	oldNvidia=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'nvidia' )
+	oldNvidia=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'nvidia' | grep -v 'modalias' )
 	if [ -n "$oldNvidia" ];then
 		dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
 	fi
@@ -2711,7 +2711,7 @@ preinstall_cleanup()
 	# this is for manually installed amdccle removal
 	rm -f /usr/local/bin/amdccle
 
-	oldFglrx=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'fglrx' | grep -v 'fglrx-modalias' )
+	oldFglrx=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'fglrx' | grep -v 'modalias' )
 	if [ -n "$oldFglrx" ];then
 		dpkg --purge $oldFglrx  1>> $LOG_FILE 2>> $LOG_FILE
 	fi
@@ -2738,7 +2738,7 @@ apply_module_patch()
 	local lmkv="/lib/modules/$KERNEL_VERSION"
 
 	# the debian sid nvidia drivers are now working fine with xen enabled sid kernels
-	if [ "$B_USE_DEBIAN_DRIVER" != 'true' ] && [ -d "$lmkv" -a -n "$IS_XEN" ];then
+	if [ "$B_USE_DISTRO_DRIVER" != 'true' ] && [ -d "$lmkv" -a -n "$IS_XEN" ];then
 		# patch source: http://blog.creonfx.com/linux/how-to-install-nvidia-driver-on-2625-2-debian-kernel-with-xen
 		cd $lmkv
 		case $1 in
@@ -2797,7 +2797,7 @@ run_driver_installer()
 			;;
 		$FGLRX)
 			distroId=$DISTRIB_ID
-			distroCodeName=$FG_DISTRO
+			distroCodeName=$FG_DISTRIB
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
@@ -2869,7 +2869,7 @@ post_installer_steps()
 ### debian sid fglrx/nvidia driver installer
 ### -------------------------------------------------------------------
 
-install_debian_drivers()
+install_distro_drivers()
 {
 	eval $LOGPS
 	local nvidiaGlx='' nvidiaSource=''
@@ -3030,7 +3030,7 @@ install_fglrx_debs()
 			error_handler 186 $fgAmd
 		fi
 
-# 		if [ "$FG_DISTRO" != 'unstable' ];then
+# 		if [ "$FG_DISTRIB" != 'unstable' ];then
 # 			forceIt='--force-overwrite'
 # 		fi
 		if [ "$B_TESTING_1" == 'true' -a "$DISTRIB_ID" != 'Ubuntu' ];then
@@ -3860,7 +3860,7 @@ show_options()
 	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
 	local fgTesting='' nvTesting='' testingText='' fgDebianSid=''
 
-	if [ "$B_DEBIAN_FLAG" == 'true' ];then
+	if [ "$B_DISTRO_FLAG" == 'true' ];then
 		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently BROKEN. Script will default to: '$DEBIAN_FGLRX${N}'"'
 	else
 		fgDebianSid='echo -e "fglrx:  default: '$fgDefault'		supported-drivers: '$fgVersions'"'
@@ -4095,7 +4095,7 @@ get_options()
 				;;
 			R) B_SKIP_RESTART='true'
 				;;
-			s)	B_USE_DEBIAN_DRIVER='true'
+			s)	B_USE_DISTRO_DRIVER='true'
 				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -s'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -s - Install Debian driver. (ATI fglrx or nVidia)\n"
@@ -4272,7 +4272,7 @@ if [ "$B_NATIVE_DRIVER" == 'true' ];then
 	install_native_driver
 fi
 ## ready to set the data for version/system info
-if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
+if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	check_supported_driver # make sure user entered data is correct
 	set_cpu_data
 fi
@@ -4283,7 +4283,7 @@ if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	check_kernel_headers
 fi
 
-if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
+if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	set_download_info # also triggers the download / extract function
 	# must be after set_version for output of data to smxi
 	# note this must occur before binary driver install
@@ -4303,7 +4303,7 @@ fi
 
 ## this is going to run either the fglrx or nvidia patch library file function
 ## both have same function name, so no detection is required, we did it already
-if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
+if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	run_patches
 	if [ "$B_SKIP_FUNCTION" == 'true' ];then
 		exit # this is just to test up to download/extract point
@@ -4315,7 +4315,7 @@ if [ "$B_USE_DEBIAN_DRIVER" != 'true' ];then
 	fi
 else
 	update_to_nonfree_sources
-	install_debian_drivers
+	install_distro_drivers
 fi
 if [ "$B_SKIP_CONFIG" != 'true' ];then
 	update_xorg
