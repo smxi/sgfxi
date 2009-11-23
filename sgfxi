@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.8.4
-####  Date: November 22 2009
+####  version: 4.9.0
+####  Date: November 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -185,10 +185,14 @@ NV_TESTING="$NV_VERSIONS_BETA"
 # stable legacy 3: 173.14.20 173.14.18 173.14.12
 NV_OTHERS='185.18.36:185.18.31:185.18.14:180.60:180.44:177.82:173.14.20:173.14.18:173.14.12:169.12:100.14.19:96.43.13:96.43.11:71.86.09:71.86.06'
 
-# debian sid legacies:
+# distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
 NV_DEBIAN_LEGACY_2='96xx'
 NV_DEBIAN_LEGACY_3='173xx'
+
+NV_UB_CURRENT='185'
+NV_UB_LEGACY_3='173'
+NV_UB_LEGACY_2='96'
 
 # default download site for nvidia, take out http://us.download if problems
 NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
@@ -255,6 +259,8 @@ SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
 
 DEBIAN_FGLRX='debian-fglrx'
 DEBIAN_NVIDIA='debian-nvidia'
+UBUNTU_FGLRX='ubuntu-fglrx'
+UBUNTU_NVIDIA='ubuntu-nvidia'
 
 LOG_FILE_DIR="/var/log/sgfxi/"
 LOG_FILE='sgfxi.log'
@@ -439,7 +445,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.[6-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
-									71.86.11)
+									71.86.11|71.86.09)
 										error_handler 226
 										;;
 									*)
@@ -991,6 +997,9 @@ error_handler()
 		218)
 			errorData="Something went wrong in the creation of your new $EXXC file\nPlease let the script maintainer know."
 			;;
+		217)
+			errorData="No supported $CARD card found for the Distro Driver (-s) installer option!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
+			;;
 		# specific install issues
 		200)
 			errorData="The package: $errorExtra failed to install, please check apt for any problems."
@@ -1066,6 +1075,9 @@ error_handler()
 			;;
 		176)
 			errorData="Debian drivers are not supported in Ubuntu systems."
+			;;
+		175)
+			errorData="Whoops, how did this happen? It appears you are not running a supported Distro for distro driver install."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -1244,6 +1256,11 @@ detect_card_version()
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-1' 'set-exists' )
 					# RENDER_ACCEL='' # set default to false
 					LEGACY_LEVEL=1
+					# buntu doesn't have 71xxx drivers in package pool since they don't support
+					# new xorg
+					if [ "$DISTRIB_ID" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
+						error_handler 217 # if card in this list exit
+					fi
 					;;
 				0110|0111|0112|0113|0170|0171|0172|0173|0174|0175|0176|0177|0178|0179|017a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-2' 'driver' )
@@ -1551,9 +1568,6 @@ basic_startup_tests()
 	fi
 	# no ubuntu support
 	if [ "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
-		if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
-			error_handler 176
-		fi
 		if [ "$B_TESTING_1" != 'true' ];then
 			error_handler 248
 		fi
@@ -1630,6 +1644,9 @@ check_install_tools()
 	fi
 	if [ -z "$( check_package_status 'patch' 'i' )" -a -n "$( check_package_status 'patch' 'c' )" ];then
 		install_package 'patch'
+	fi
+	if [ -z "$( check_package_status 'fakeroot' 'i' )" -a -n "$( check_package_status 'fakeroot' 'c' )" ];then
+		install_package 'fakeroot'
 	fi
 
 	if [ "$CARD" == $NVIDIA ];then
@@ -2702,7 +2719,7 @@ preinstall_cleanup()
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
-	oldNvidia=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'nvidia' | grep -v 'modalias' )
+	oldNvidia=$( dpkg -l | awk '{print $2}' | grep 'nvidia' | grep -v 'modalias' )
 	if [ -n "$oldNvidia" ];then
 		dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
 	fi
@@ -2711,7 +2728,7 @@ preinstall_cleanup()
 	# this is for manually installed amdccle removal
 	rm -f /usr/local/bin/amdccle
 
-	oldFglrx=$( COLUMNS=200 dpkg -l | cut -d ' ' -f 3 | grep 'fglrx' | grep -v 'modalias' )
+	oldFglrx=$( dpkg -l | awk '{print $2}' | grep 'fglrx' | grep -v 'modalias' )
 	if [ -n "$oldFglrx" ];then
 		dpkg --purge $oldFglrx  1>> $LOG_FILE 2>> $LOG_FILE
 	fi
@@ -2872,69 +2889,100 @@ post_installer_steps()
 install_distro_drivers()
 {
 	eval $LOGPS
-	local nvidiaGlx='' nvidiaSource=''
+	local nvidiaGlx='' nvidiaSource='' nvidiaModal=''
 
 	clean_up_fglrx_junk
 
 	case $CARD in
 		$NVIDIA)
-			case $LEGACY_LEVEL in
-				1)	# nvidiaGlx='nvidia-glx-legacy'
-					# nvidiaSource='nvidia-kernel-legacy-source'
-					# if the two lines below don't work, comment them and uncomment the ones above
-					nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
-					nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
-					;;
-				2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
-					nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
-					;;
-				3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
-					nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
-					;;
-				*)	nvidiaGlx='nvidia-glx'
-					nvidiaSource='nvidia-kernel-source'
-					;;
-			esac
-			# start the install
-			if [ "$LEGACY_LEVEL" -ne 0 ];then
-				echo "${S}Installing ${C}$DEBIAN_NVIDIA${S} components...${N}"
-				install_package 'nvidia-kernel-common'
-				install_package 'nvidia-settings'
-				install_package "$nvidiaSource"
-				echo "${S}Creating  ${C}$DEBIAN_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
-				# m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i $nvidiaSource
-				m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_NVIDIA
-				m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_NVIDIA
-				m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_NVIDIA
-				m-a build -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_NVIDIA
-				m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_NVIDIA
-
-				#m-a prepare && m-a qa-i nvidia
-				#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
-				echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
-				install_package "$nvidiaGlx"
-
-				if [ -z "$( grep '^nvidia' /etc/modules )" ];then
-					echo 'nvidia' >> /etc/modules
+			if [ "$DISRIB_ID" == 'Debian' ];then
+				case $LEGACY_LEVEL in
+					1)	# nvidiaGlx='nvidia-glx-legacy'
+						# nvidiaSource='nvidia-kernel-legacy-source'
+						# if the two lines below don't work, comment them and uncomment the ones above
+						nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
+						nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
+						;;
+					2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
+						nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
+						;;
+					3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
+						nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
+						;;
+					*)	nvidiaGlx='nvidia-glx'
+						nvidiaSource='nvidia-kernel-source'
+						;;
+				esac
+				# start the install
+				if [ "$LEGACY_LEVEL" -ne 0 ];then
+					echo "${S}Installing ${C}$DEBIAN_NVIDIA${S} components...${N}"
+					install_package 'nvidia-kernel-common'
+					install_package 'nvidia-settings'
+					install_package "$nvidiaSource"
+					echo "${S}Creating  ${C}$DEBIAN_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
+					# m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i $nvidiaSource
+					m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_NVIDIA
+					m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_NVIDIA
+					m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_NVIDIA
+					m-a build -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_NVIDIA
+					m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_NVIDIA
+	
+					#m-a prepare && m-a qa-i nvidia
+					#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
+					echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
+					install_package "$nvidiaGlx"
+	
+					if [ -z "$( grep '^nvidia' /etc/modules )" ];then
+						echo 'nvidia' >> /etc/modules
+					fi
 				fi
+			elif [ "$DISTRIB_ID" == 'Ubuntu' ];then
+				# dependencies handle the rest of this
+				case $LEGACY_LEVEL in
+					1)	:
+						# this already be error handled.
+						;;
+					2)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_2"
+						nvidiaModal="nvidia-$NV_UB_LEGACY_2-modaliases"
+						;;
+					3)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_3"
+						nvidiaModal="nvidia-$NV_UB_LEGACY_3-modaliases"
+						;;
+					*)	nvidiaGlx="nvidia-glx-$NV_UB_CURRENT"
+						nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
+						;;
+				esac
+				echo "${S}Installing ${C}$UBUNTU_NVIDIA${S} components...${N}"
+				install_package "$nvidiaModal"
+				install_package "$nvidiaGlx"
+			else
+				error_handler 175
 			fi
 			;;
 		$FGLRX)
-			echo "${S}Installing ${C}$DEBIAN_FGLRX${S} components...${N}"
-			install_package 'fglrx-driver'
-			install_package 'fglrx-control'
-			# install_package 'fglrx-amdcccle'
-			install_package 'fglrx-kernel-src'
-			echo "${S}Creating  ${C}$DEBIAN_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
-
-			# damentz suggestion to make sure old module is used
-			# m-a a-i -f fglrx-kernel-src
-			# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i fglrx
-			m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_FGLRX
-			m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_FGLRX
-			m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_FGLRX
-			m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_FGLRX
-			m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_FGLRX
+			if [ "$DISRIB_ID" == 'Debian' ];then
+				echo "${S}Installing ${C}$DEBIAN_FGLRX${S} components...${N}"
+				install_package 'fglrx-driver'
+				install_package 'fglrx-control'
+				# install_package 'fglrx-amdcccle'
+				install_package 'fglrx-kernel-src'
+				echo "${S}Creating  ${C}$DEBIAN_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
+	
+				# damentz suggestion to make sure old module is used
+				# m-a a-i -f fglrx-kernel-src
+				# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i fglrx
+				m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_FGLRX
+				m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_FGLRX
+				m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_FGLRX
+				m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_FGLRX
+				m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_FGLRX
+			elif [ "$DISTRIB_ID" == 'Ubuntu' ];then
+				echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
+				install_package 'fglrx-modaliases'
+				install_package 'xorg-driver-fglrx'
+			else
+				error_handler 175
+			fi
 			;;
 	esac
 	eval $LOGPE
@@ -3959,7 +4007,7 @@ show_options()
 	echo "-r Remove mode lines from xorg.conf"
 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
 	echo "-R Skips self updating feature. No restart."
-	echo "-s Installs Debian nVidia/fglrx drivers. ATI/nVidia cards only."
+	echo "-s Installs Distro packaged nVidia/fglrx drivers. ATI/nVidia cards only."
 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
@@ -4114,7 +4162,7 @@ get_options()
 			s)	B_USE_DISTRO_DRIVER='true'
 				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -s'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -s - Install Debian driver. (ATI fglrx or nVidia)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -s - Install distro packaged driver. (ATI fglrx or nVidia)\n"
 				;;
 			S) B_SKIP_AUTOSTART='true'
 				START_OPTIONS=$START_OPTIONS' -S'
