@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.8.3
-####  Date: November 18 2009
+####  version: 4.8.4
+####  Date: November 22 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -3314,10 +3314,17 @@ start_stop_x()
 	eval $LOGUS
 	local displayManagers='entrance gdm kdm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
-	local defaultRunlevel=$( grep ':initdefault:' /etc/inittab | egrep -o '[0-5]' )
+	# also note, future systems will probably not use inittab, ubuntu doesn't, but
+	# they will read it, so we'll always use this as default to respect user changes
+	local defaultRunlevel=$( grep -s ':initdefault:' /etc/inittab | egrep -o '[0-5]' )
+	local serviceControl='/etc/init.d/'
 	local noHup='nohup' xActionString='' finalXKill=''
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
+	fi
+	# note that init.d does not take a space, but service does,for the first parameter like kdm
+	if [ -n "$( type -P service )" ];then
+		serviceControl='service '
 	fi
 
 	## restart x if this is not being run by smxi
@@ -3327,7 +3334,7 @@ start_stop_x()
 			if [ -x /etc/init.d/$dman ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
 				echo "${S}Attempting to ${C}$1${S} display manager $dman now... ${N}"
-				xActionString="$noHup /etc/init.d/$dman $1 2>/dev/null && success='true'"
+				xActionString="$noHup ${serviceControl}$dman $1 2>/dev/null && success='true'"
 				eval $xActionString
 				if [ -z "$noHup" ];then
 					if [ "$success" == 'true' ];then
@@ -3344,7 +3351,7 @@ start_stop_x()
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
 			echo "${S}Attempting to ${C}$1${S} default display manager $DISPLAY_MANAGER now... ${N}"
-			xActionString="$noHup /etc/init.d/$DISPLAY_MANAGER $1 && success='true'"
+			xActionString="$noHup ${serviceControl}$DISPLAY_MANAGER $1 && success='true'"
 			eval $xActionString
 			if [ -z "$noHup" ];then
 				if [ "$success" == 'true' ];then
@@ -3376,10 +3383,19 @@ start_stop_x()
 		if [ "$B_SM_INSTALL" != 'true' ];then
 			# the failure case handels a weird thing when kill gives error
 			if [ -n "$LOGIN_PID" ];then
-				init $defaultRunlevel && kill $LOGIN_PID && exit 0 || exit 1
+				if [ -n "$defaultRunlevel" ];then
+					init $defaultRunlevel && kill $LOGIN_PID && exit 0 || exit 1
+				else
+					kill $LOGIN_PID && exit 0 || exit 1
+				fi
 			else
-				echo "${E}No login Pid found to kill, starting init 5 and leaving your root logged in.${N}"
-				init $defaultRunlevel && exit 0 || exit 1
+				if [ -n "$defaultRunlevel" ];then
+					echo "${E}No login Pid found to kill, starting init $defaultRunlevel and leaving root logged in.${N}"
+					init $defaultRunlevel && exit 0 || exit 1
+				else
+					echo "${E}No login Pid found to kill, leaving root logged in.${N}"
+					exit 0
+				fi
 			fi
 		else
 			exit 0 # smxi will handle the pid root kill
