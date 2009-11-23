@@ -4094,7 +4094,7 @@ get_options()
 			F)	B_FGLRX_DEB_BUILDER='true'
 				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -F'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX Debian deb package builder install. Not reliable, but try if you want.\n       Builds debs from downloaded fglrx run file.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX Debian/Ubuntu deb package builder install. Not reliable, but try if you want.\n       Builds debs from downloaded fglrx run file.\n"
 				;;
 			j)	if [ -n "$( egrep '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
