@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.9.0
+####  version: 4.9.1
 ####  Date: November 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1000,6 +1000,9 @@ error_handler()
 		217)
 			errorData="No supported $CARD card found for the Distro Driver (-s) installer option!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
 			;;
+		216)
+			errorData="You are using Ubuntu but you do not appear to have the 'restricted' repos enabled.\nPlease enable them before continuing, thank you."
+			;;
 		# specific install issues
 		200)
 			errorData="The package: $errorExtra failed to install, please check apt for any problems."
@@ -1669,6 +1672,10 @@ check_install_tools()
 			remove_package 'dpkg-cross' $CARD
 		fi
 	fi
+	# we need to confirm that restricted repos are enabled before continuing
+	if [ "$DISTRIB_ID" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
+		update_to_nonfree_sources
+	fi
 
 	if [ -f /etc/modutils/1alsa ];then
 		mv /lib/modules/extra/alsa /lib/modules/$KERNEL_VERSION/
@@ -1842,33 +1849,42 @@ update_to_nonfree_sources()
 	local easdl='/etc/apt/sources.list.d/debian.list'
 	local eassl='/etc/apt/sources.list.d/sidux.list'
 	local aptProx=''
+	local ubRestricted='' ubMultiverse='' ubUniverse=''
 
-	# loop through possible files to update
-	for i in $eas $easdl $eassl
-	do
-		if [ -f "$i" ];then
-			counter=$( egrep -c 'deb.*debian\.org.*(contrib|non-free)' $i )
-			isFree=$(( $counter + $isFree ))
-		fi
-	done
-
-	if [ "$isFree" -eq 0 ];then
+	if [ "$DISTRIB_ID" == 'Debian' ];then
+		# loop through possible files to update
 		for i in $eas $easdl $eassl
 		do
 			if [ -f "$i" ];then
-				# I'm going to assume if the user has proxy stuff set up, they know what
-				# they are doing here.
-				aptProx=$( egrep -si '^[[:space:]]*deb.*:9999/' $i )
-				if [ -z "$aptProx" ];then
-					echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
-					sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
-					# the second test requires the results of the first to work
-					# note that spaces are required for this to work more reliably for most patterns
-					sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
-				fi
+				counter=$( egrep -c 'deb.*debian\.org.*(contrib|non-free)' $i )
+				isFree=$(( $counter + $isFree ))
 			fi
 		done
-		$APT_TYPE update && UPDATED='true' # need to refresh
+	
+		if [ "$isFree" -eq 0 ];then
+			for i in $eas $easdl $eassl
+			do
+				if [ -f "$i" ];then
+					# I'm going to assume if the user has proxy stuff set up, they know what
+					# they are doing here.
+					aptProx=$( egrep -si '^[[:space:]]*deb.*:9999/' $i )
+					if [ -z "$aptProx" ];then
+						echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
+						sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
+						# the second test requires the results of the first to work
+						# note that spaces are required for this to work more reliably for most patterns
+						sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
+					fi
+				fi
+			done
+			$APT_TYPE update && UPDATED='true' # need to refresh
+		fi
+	elif [ "$DISTRIB_ID" == 'Ubuntu' ];then
+		# just to make sure, want to get out fast
+		ubRestricted=$( grep -sE '^[[:space:]]*deb[[:space:]].*ubuntu.com.*restricted' $eas $eas.d/*.list )
+		if [ -z "$ubRestricted" ];then
+			error_handler 216
+		fi
 	fi
 	eval $LOGPE
 }
