@@ -1881,7 +1881,7 @@ update_to_nonfree_sources()
 		fi
 	elif [ "$DISTRIB_ID" == 'Ubuntu' ];then
 		# just to make sure, want to get out fast
-		ubRestricted=$( grep -sE '^[[:space:]]*deb[[:space:]].*ubuntu.com.*restricted' $eas $eas.d/*.list )
+		ubRestricted=$( grep -siE '^[[:space:]]*deb[[:space:]].*ubuntu.*restricted' $eas $eas.d/*.list )
 		if [ -z "$ubRestricted" ];then
 			error_handler 216
 		fi
