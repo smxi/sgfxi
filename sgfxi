@@ -1627,6 +1627,10 @@ basic_startup_tests()
 			FG_DISTRIB='sid'
 		fi
 	fi
+	# we need to confirm that restricted repos are enabled before continuing
+	if [ "$DISTRIB_ID" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
+		update_to_nonfree_sources
+	fi
 }
 
 check_install_tools()
@@ -1671,10 +1675,6 @@ check_install_tools()
 		if [ -n "$( check_package_status 'dpkg-cross' 'i' )" ];then
 			remove_package 'dpkg-cross' $CARD
 		fi
-	fi
-	# we need to confirm that restricted repos are enabled before continuing
-	if [ "$DISTRIB_ID" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
-		update_to_nonfree_sources
 	fi
 
 	if [ -f /etc/modutils/1alsa ];then
