@@ -2958,7 +2958,7 @@ install_distro_drivers()
 				# dependencies handle the rest of this
 				case $LEGACY_LEVEL in
 					1)	:
-						# this already be error handled.
+						# this has already been error handled.
 						;;
 					2)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_2"
 						nvidiaModal="nvidia-$NV_UB_LEGACY_2-modaliases"
@@ -3186,8 +3186,10 @@ final_install_steps()
 			##  clean up install parts
 			rm -rf /usr/src/modules/fglrx
 			rm -rf /tmp/fglrx* fglrx*
-			dpkg --purge fglrx-kernel-src 1>> $LOG_FILE 2>> $LOG_FILE
-
+			# note, since ubuntu uses dkms we don't want to purge the kernel source
+			if [ "$DISTRIB_WORKING" != 'Ubuntu' ];then
+				dpkg --purge fglrx-kernel-src 1>> $LOG_FILE 2>> $LOG_FILE
+			fi
 			# test for, then remove if present
 			for fgModule in $fgModules
 			do
