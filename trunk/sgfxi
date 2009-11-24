@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.9.2
+####  version: 4.9.3
 ####  Date: November 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -76,6 +76,7 @@ CARD='' # card type: fglrx or nvidia
 DISTRIB_CODENAME=''
 DISTRIB_ID='Debian'
 DISTRIB_RELEASE=''
+DISTRIB_WORKING='Debian'
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
@@ -1258,7 +1259,7 @@ detect_card_version()
 					LEGACY_LEVEL=1
 					# buntu doesn't have 71xxx drivers in package pool since they don't support
 					# new xorg
-					if [ "$DISTRIB_ID" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
+					if [ "$DISTRIB_WORKING" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
 						error_handler 217 # if card in this list exit
 					fi
 					;;
@@ -1573,6 +1574,7 @@ basic_startup_tests()
 # 			error_handler 248
 # 		fi
 		FG_DISTRIB=$DISTRIB_CODENAME
+		DISTRIB_WORKING='Ubuntu'
 	fi
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
@@ -1608,7 +1610,8 @@ basic_startup_tests()
 		error_handler 250
 	fi
 	# set system type. This test will never be perfect, but it's a good approximation
-	if [ "$DISTRIB_ID" == 'Debian' ];then
+	# mepis has lsb release but antix would be different.
+	if [ "$DISTRIB_WORKING" == 'Debian' ];then
 		if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
 			if [ -n "$isEtch" ];then
 				DISTRIB_CODENAME='etch'
@@ -1625,8 +1628,9 @@ basic_startup_tests()
 			FG_DISTRIB='sid'
 		fi
 	fi
+	# note that 
 	# we need to confirm that restricted repos are enabled before continuing
-	if [ "$DISTRIB_ID" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
+	if [ "$DISTRIB_WORKING" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
 		update_to_nonfree_sources
 	fi
 }
@@ -1695,7 +1699,7 @@ check_apt_aptitude()
 
 	if [ -f /var/log/aptitude ];then
 		if [ -z "$aptPref" ];then
-			if [ "$DISTRIB_ID" != 'Ubuntu' ];then
+			if [ "$DISTRIB_WORKING" != 'Ubuntu' ];then
 				echo ${S}$LINE
 				echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
 				echo "Please pick your preferred package manager before you continue, or exit now."
@@ -1849,7 +1853,7 @@ update_to_nonfree_sources()
 	local aptProx=''
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
 
-	if [ "$DISTRIB_ID" == 'Debian' ];then
+	if [ "$DISTRIB_WORKING" == 'Debian' ];then
 		# loop through possible files to update
 		for i in $eas $easdl $eassl
 		do
@@ -1877,7 +1881,7 @@ update_to_nonfree_sources()
 			done
 			$APT_TYPE update && UPDATED='true' # need to refresh
 		fi
-	elif [ "$DISTRIB_ID" == 'Ubuntu' ];then
+	elif [ "$DISTRIB_WORKING" == 'Ubuntu' ];then
 		# just to make sure, want to get out fast
 		ubRestricted=$( grep -siE '^[[:space:]]*deb[[:space:]].*ubuntu.*restricted' $eas $eas.d/*.list )
 		if [ -z "$ubRestricted" ];then
@@ -2125,6 +2129,7 @@ create_log()
 	echo "$SCRIPT_NAME start options: $START_OPTIONS" >> $LOG_FILE
 	echo "DISTRIB_CODENAME: $DISTRIB_CODENAME" >> $LOG_FILE
 	echo "DISTRIB_ID: $DISTRIB_ID" >> $LOG_FILE
+	echo "DISTRIB_WORKING: $DISTRIB_WORKING" >> $LOG_FILE
 	echo "DISTRIB_RELEASE: $DISTRIB_RELEASE" >> $LOG_FILE
 	echo "FG_DISTRIB: $FG_DISTRIB" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
@@ -2818,7 +2823,7 @@ run_driver_installer()
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
 			# note that lenny can be assumed to not need, this, so wait til squeeze stable
-			if [ "$BITS" == '64' ] && [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' -o "$DISTRIB_ID" == 'Ubuntu' ];then
+			if [ "$BITS" == '64' ] && [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' -o "$DISTRIB_WORKING" == 'Ubuntu' ];then
 				installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
 			fi
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
@@ -2827,7 +2832,7 @@ run_driver_installer()
 			apply_module_patch post
 			;;
 		$FGLRX)
-			distroId=$DISTRIB_ID
+			distroId=$DISTRIB_WORKING
 			distroCodeName=$FG_DISTRIB
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
@@ -2950,7 +2955,7 @@ install_distro_drivers()
 						echo 'nvidia' >> /etc/modules
 					fi
 				fi
-			elif [ "$DISTRIB_ID" == 'Ubuntu' ];then
+			elif [ "$DISTRIB_WORKING" == 'Ubuntu' ];then
 				# dependencies handle the rest of this
 				case $LEGACY_LEVEL in
 					1)	:
@@ -2990,7 +2995,7 @@ install_distro_drivers()
 				m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_FGLRX
 				m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_FGLRX
 				m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_FGLRX
-			elif [ "$DISTRIB_ID" == 'Ubuntu' ];then
+			elif [ "$DISTRIB_WORKING" == 'Ubuntu' ];then
 				echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
 				install_package 'fglrx-modaliases'
 				install_package 'xorg-driver-fglrx'
@@ -3047,7 +3052,7 @@ install_fglrx_debs()
 		local fgKernelSrc="$fgKsc$DRIVER_DEFAULT-1_*.deb"
 		local fgAlias='' libAmdXv=''
 		
-		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
+		if [ "$DISTRIB_WORKING" == 'Ubuntu' ];then
 			fgDri='xorg-driver-fglrx_'
 			fgKsc='fglrx-kernel-source_'
 			fgKsrc='fglrx-kernel-source'
@@ -3062,7 +3067,7 @@ install_fglrx_debs()
 		local usunf='/usr/sbin/unfreeze-rc.d' 
 		local frozen=0 forceIt=''
 		
-		if [ "$DISTRIB_ID" == 'Ubuntu' ] && [ -z "$( check_package_status 'dkms' 'i' )" -a -n "$( check_package_status 'dkms' 'c' )" ];then
+		if [ "$DISTRIB_WORKING" == 'Ubuntu' ] && [ -z "$( check_package_status 'dkms' 'i' )" -a -n "$( check_package_status 'dkms' 'c' )" ];then
 			install_package 'dkms'
 		fi
 
@@ -3117,7 +3122,7 @@ install_fglrx_debs()
 		dpkg -i $forceIt $fgDriver 2>> $LOG_FILE || error_handler 195 $fgDriver
  		dpkg -i $forceIt $fgAmdcccle 2>> $LOG_FILE || error_handler 195 $fgAmdcccle
  		
- 		if [ "$DISTRIB_ID" == 'Ubuntu' ];then
+ 		if [ "$DISTRIB_WORKING" == 'Ubuntu' ];then
  			if [ -n "$libAmdXv" ];then
  				dpkg -i $forceIt $libAmdXv 2>> $LOG_FILE || error_handler 195 $libAmdXv
  			else
@@ -3129,7 +3134,7 @@ install_fglrx_debs()
  				echo "${E}ERROR: Missing ${C}$fgAlias${E} but continuing...${N}"
  			fi
  		fi
-		if [ "$DISTRIB_ID" != 'Ubuntu' ];then
+		if [ "$DISTRIB_WORKING" != 'Ubuntu' ];then
 			log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
 			CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
 			log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
@@ -3148,7 +3153,7 @@ install_fglrx_debs()
 			$usunf
 		fi
 
-		if [ "$DISTRIB_ID" != 'Ubuntu' ];then
+		if [ "$DISTRIB_WORKING" != 'Ubuntu' ];then
 			# put packages on hold fglrx-amdcccle, fglrx-driver, fglrx module
 			echo "${S}Placing ATI packages on hold to avoid dist-upgrade issues with Debian fglrx drivers...${N}"
 			hold_package 'fglrx-amdcccle'
