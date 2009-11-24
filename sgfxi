@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.9.1
+####  version: 4.9.2
 ####  Date: November 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -889,7 +889,7 @@ error_handler()
 			errorData="No supported $CARD card found!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
 			;;
 		252)
-			errorData="This does not appear to be a Debian apt based system!"
+			errorData="This does not appear to be a Debian/Ubuntu apt based system!"
 			;;
 		251)
 			errorData="You must be logged in as root to run this script."
@@ -961,7 +961,7 @@ error_handler()
 			errorData="Could not detect gcc version: $errorExtra, or it is not installed.\nPlease let the script maintainer know, this may be a bug in the script."
 			;;
 		229)
-			errorData="The driver: $DRIVER_DEFAULT does not work on sidux kernels.\nYou are trying to install it to this kernel: $KERNEL_VERSION\nCurrently $FGLRX only works on new Debian kernels."
+			errorData="The driver: $DRIVER_DEFAULT does not work on sidux kernels.\nYou are trying to install it to this kernel: $KERNEL_VERSION\nCurrently $FGLRX only works on new non-sidux kernels."
 			;;
 		228)
 			errorData="The option you selected: $errorExtra is not supported."
@@ -1077,9 +1077,6 @@ error_handler()
 			errorData="Used -z command but no X application is present in system."
 			;;
 		176)
-			errorData="Debian drivers are not supported in Ubuntu systems."
-			;;
-		175)
 			errorData="Whoops, how did this happen? It appears you are not running a supported Distro for distro driver install."
 			;;
 		100)
@@ -1569,11 +1566,12 @@ basic_startup_tests()
 		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbData" | cut -d '=' -f 2 )
 		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbData" | cut -d '=' -f 2 )
 	fi
-	# no ubuntu support
-	if [ "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
-		if [ "$B_TESTING_1" != 'true' ];then
-			error_handler 248
-		fi
+	# check ubuntu, could use DISTRIB_ID but older ones might not have that
+	if [  "$DISTRIB_ID" == 'Ubuntu' -o "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
+		# removing ubuntu exit test for now
+# 		if [ "$B_TESTING_1" != 'true' ];then
+# 			error_handler 248
+# 		fi
 		FG_DISTRIB=$DISTRIB_CODENAME
 	fi
 	# make sure Xorg is installed
@@ -2972,7 +2970,7 @@ install_distro_drivers()
 				install_package "$nvidiaModal"
 				install_package "$nvidiaGlx"
 			else
-				error_handler 175
+				error_handler 176
 			fi
 			;;
 		$FGLRX)
@@ -2997,7 +2995,7 @@ install_distro_drivers()
 				install_package 'fglrx-modaliases'
 				install_package 'xorg-driver-fglrx'
 			else
-				error_handler 175
+				error_handler 176
 			fi
 			;;
 	esac
@@ -3097,7 +3095,7 @@ install_fglrx_debs()
 # 		if [ "$FG_DISTRIB" != 'unstable' ];then
 # 			forceIt='--force-overwrite'
 # 		fi
-		if [ "$B_TESTING_1" == 'true' -a "$DISTRIB_ID" != 'Ubuntu' ];then
+		if [ "$B_TESTING_1" == 'true' ];then
 			forceIt='--force-all'
 		fi
 
@@ -3941,7 +3939,7 @@ show_options()
 	local fgTesting='' nvTesting='' testingText='' fgDebianSid=''
 
 	if [ "$B_DISTRO_FLAG" == 'true' ];then
-		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently BROKEN. Script will default to: '$DEBIAN_FGLRX${N}'"'
+		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently broken in Debian (works in Ubuntu). Script will default to: '$DEBIAN_FGLRX${N}'"'
 	else
 		fgDebianSid='echo -e "fglrx:  default: '$fgDefault'		supported-drivers: '$fgVersions'"'
 	fi
@@ -3968,7 +3966,7 @@ show_options()
 		echo "${W}While you can run this script in X, we recommend you run it in terminal.${N}"
 		echo $LINE
 	fi
-	echo "Script Requirements: Only true Debian based systems. No *buntus."
+	echo "Script Requirements: Debian based systems. Ubuntu support experimental."
 	echo "Xorg version required: 7.1/1.1 or greater - Your X version: $xVersion"
 	echo "Linux Kernel required: 2.6.18 or greater - Your kernel: $(uname -r)"
 	echo $LINE
@@ -4000,7 +3998,7 @@ show_options()
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
 	echo "-f Install direct fglrx with FGLRX binary run package, without creating deb files (ATI Only)."
 	echo "   Deprecated. Because of constant deb builder failures, the direct install method is now default."
-	echo "-F Build Debian debs for fglrx with FGLRX binary run package, then install them (ATI Only)."
+	echo "-F Build Debian/Ubuntu debs for fglrx with FGLRX binary run package, then install them (ATI Only)."
 	echo "   Because of constant deb builder failures, the direct install method is recommended and default for $SCRIPT_NAME."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
@@ -4050,8 +4048,10 @@ show_options()
 		echo "-! <http://......> - Triggers an update from whatever server you list."
 		echo "-! 20 - Uses patch from svn branch one server (must be in branch/one/patches)."
 		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
-		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version."
-		echo "-! 31 - Backup, download, replace, xorg.conf with basic sidux xorg.conf version."
+		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version (legacy, don't use)."
+		echo "        Use X -configure instead to redo your xorg, or -z option in sgfxi."
+		echo "-! 31 - Backup, download, replace, xorg.conf with basic sidux xorg.conf version(legacy, don't use)."
+		echo "        Use X -configure instead to redo your xorg, or -z option in sgfxi."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
