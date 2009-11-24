@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.9.3
+####  version: 4.9.4
 ####  Date: November 23 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -169,7 +169,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA=':::'
+NV_VERSIONS_BETA='195.22:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -459,7 +459,7 @@ driver_support_tests()
 						# now for all beta driver releases. Stable drivers are using http
 						
 						case $DRIVER_DEFAULT in
-							190.42|185.18.14|180.60|173.14.2[02]|96.43.1[134]|71.86.11|71.86.09)
+							195.22|190.42|185.18.14|180.60|173.14.2[02]|96.43.1[134]|71.86.11|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
@@ -486,7 +486,7 @@ driver_support_tests()
 								;;
 							26)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -496,7 +496,7 @@ driver_support_tests()
 								;;
 							27)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -508,7 +508,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -520,7 +520,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -532,7 +532,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|180.44|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.44|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -544,7 +544,7 @@ driver_support_tests()
 								;;
 							31|32)
 								case $DRIVER_DEFAULT in
-									190.*|185.*|173.14.2*|96.43.1[34]|71.86.11|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|173.14.2*|96.43.1[34]|71.86.11|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -1628,7 +1628,6 @@ basic_startup_tests()
 			FG_DISTRIB='sid'
 		fi
 	fi
-	# note that 
 	# we need to confirm that restricted repos are enabled before continuing
 	if [ "$DISTRIB_WORKING" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
 		update_to_nonfree_sources
