@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  Experimental Ubuntu support in progress.
-####  version: 4.9.4
-####  Date: November 23 2009
+####  version: 4.9.5
+####  Date: November 27 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1500,11 +1500,9 @@ check_kernel_headers()
 	eval $LOGUS
 	local headerName="linux-headers-$KERNEL_VERSION"
 	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
-	#local headerInstalled=$( dpkg -l | awk '{print $2}' | egrep "^$headerName$" )
 	local headerInstalled=$( check_package_status "$headerName" 'i' )
 	# want to make sure it's available, and not merely referenced
 	local headerAvailable=$( check_package_status "$headerName" 'c' )
-	#local headerAvailable=$( apt-cache search $headerName | awk '{print $1}' | egrep "^$headerName$" )
 	local headerFile="$( ls /usr/src/kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
 
 	log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
@@ -1661,7 +1659,6 @@ check_install_tools()
 		:
 	# fglrx tools and tests
 	elif [ "$CARD" == $FGLRX ];then
-		#if [ ! -x /usr/bin/dh_testdir ];then
 		if [ -z "$( check_package_status 'debhelper' 'i' )" -a -n "$( check_package_status 'debhelper' 'c' )" ];then
 			install_package 'debhelper'
 		fi
@@ -1672,7 +1669,6 @@ check_install_tools()
 			install_package 'libstdc++6'
 		fi
 		# presence of this package will break fglrx install
-		#if [ -n "$( dpkg -l | grep 'dpkg-cross' )" ];then
 		if [ -n "$( check_package_status 'dpkg-cross' 'i' )" ];then
 			remove_package 'dpkg-cross' $CARD
 		fi
@@ -2737,7 +2733,7 @@ preinstall_cleanup()
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
-	oldNvidia=$( dpkg -l | awk '{print $2}' | grep 'nvidia' | grep -v 'modalias' )
+	oldNvidia=$( dpkg -l | awk '{print $2}' | grep 'nvidia' | grep -Ev '(modalias|libvdpau)' )
 	if [ -n "$oldNvidia" ];then
 		dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
 	fi
