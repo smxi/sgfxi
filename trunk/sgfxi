@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.80
+####  version: 4.9.81
 ####  Date: November 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2328,9 +2328,22 @@ log_writer()
 install_native_driver()
 {
 	eval $LOGPS
-	local xorgBase='xserver-xorg-video-' xorgNv='nv' xorgAti='ati' xorgIntel='intel'
-	local xorgDriver='' driver='' currentlyInstalled=''
-	local driverInstall='' experimentalText=''
+	local xorgBase='' xorgNv='nv' xorgAti='ati' xorgIntel='intel'
+	local xorgDriver='' driver='' currentlyInstalled='' xorgCore=''
+	local driverInstall='' experimentalText='' libMesaGlx=''
+	
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			xorgBase='xserver-xorg-video-'
+			xorgCore='xserver-xorg-core'
+			libMesaGlx='libgl1-mesa-glx'
+			;;
+		arch)
+			xorgBase='xf86-video-'
+			xorgCore=''
+			libMesaGlx='libgl'
+			;;
+	esac
 
 	if [ "$B_EXPERIMENTAL" == 'true' ];then
 		experimentalText=' experimental'
@@ -2378,9 +2391,11 @@ install_native_driver()
 		preinstall_cleanup
 		# this is required to do radeon xorg driver
 		native_driver_install_keep
-		install_package 'xserver-xorg-core' '' 'reinstall'
+		if [ -n "$xorgCore" ];then
+			install_package "$xorgCore" '' 'reinstall'
+		fi
 		if [ "$CARD" == "$FGLRX" ];then
-			install_package 'libgl1-mesa-glx' '' 'reinstall'
+			install_package "$libMesaGlx" '' 'reinstall'
 		fi
 
 		if [ "$CARD" == "$FGLRX" -a "$B_EXPERIMENTAL" == 'true' ];then
