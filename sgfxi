@@ -2,7 +2,7 @@
 ########################################################################
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
-####  New: Ubuntu support in progress.
+####  New: Ubuntu support in progress. Arch Support under development
 ####  version: 4.9.70
 ####  Date: November 28 2009
 ########################################################################
@@ -891,7 +891,7 @@ error_handler()
 			errorData="No supported $CARD card found!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
 			;;
 		252)
-			errorData="This does not appear to be a Debian/Ubuntu apt based system!"
+			errorData="This does not appear to be a Debian/Ubuntu/Arch based system!"
 			;;
 		251)
 			errorData="You must be logged in as root to run this script."
