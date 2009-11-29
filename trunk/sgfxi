@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.84
+####  version: 4.9.85
 ####  Date: November 29 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -2333,6 +2333,7 @@ install_native_driver()
 	local xorgBase='' xorgNv='nv' xorgAti='ati' xorgIntel='intel'
 	local xorgDriver='' driver='' currentlyInstalled='' xorgCore=''
 	local driverInstall='' experimentalText='' libMesaGlx=''
+	local extraAtiPackage1=''
 	
 	case $SYSTEM_BASE in
 		debian|ubuntu)
@@ -2341,8 +2342,9 @@ install_native_driver()
 			libMesaGlx='libgl1-mesa-glx'
 			;;
 		arch)
+			extraAtiPackage1="install_package 'ati-dri' '' 'reinstall'"
 			xorgBase='xf86-video-'
-			xorgCore=''
+			xorgCore='xorg-server'
 			libMesaGlx='libgl'
 			if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
 				NATIVE_OVERRIDE=$xorgAti
@@ -2408,6 +2410,9 @@ install_native_driver()
 			native_driver_experimental "$driver"
 		else
 			install_package $driver '' 'reinstall'
+			if [ "$CARD" == "$FGLRX" ];then
+				eval $extraAtiPackage1
+			fi
 		fi
 
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
@@ -2798,7 +2803,7 @@ prep_install()
 {
 	eval $LOGPS
 	local gccVersion=$( egrep -io 'gcc[[:space:]]*version[[:space:]]*[4-6]\.[0-9]{1,2}' /proc/version | egrep -o '[4-6]\.[0-9]{1,2}' )
-	local gccPackage="gcc-$gccVersion"
+	local gccPackage="gcc-$gccVersion" 
 	local ubgv="/usr/bin/$gccPackage" libMesaGlx=''
 	
 	case $SYSTEM_BASE in
@@ -2807,7 +2812,10 @@ prep_install()
 			libMesaGlx='libgl'
 			ubgv='/usr/bin/gcc'
 			;;
-		debian|ubuntu)
+		debian)
+			libMesaGlx='libgl1-mesa-glx'
+			;;
+		ubuntu)
 			libMesaGlx='libgl1-mesa-glx'
 			;;
 	esac
@@ -2979,7 +2987,6 @@ run_driver_installer()
 	local xModPath='/usr/lib/xorg/modules'
 	local xLibPath='/usr/lib'
 	local installer='nvidia-installer'
-
 	local distroId=''
 	local distroCodeName=''
 
@@ -3017,6 +3024,7 @@ run_driver_installer()
 			./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
 			# reverting the patched stuff before anything else happens
 			apply_module_patch post
+			install_libvdpau
 			;;
 		$FGLRX)
 			distroId=$SYSTEM_BASE
@@ -3056,6 +3064,27 @@ run_driver_installer()
 			;;
 	esac
 	eval $LOGPE
+}
+
+# nvidia new only
+install_libvdpau()
+{
+	local libVdPau=''
+	
+	case $SYSTEM_BASE in
+		arch)
+			libVdPau='libvdpau'
+			;;
+		debian)
+			libVdPau='nvidia-libvdpau1'
+			;;
+	esac
+	
+	if [ "$B_SKIP_FUNCTION" != 'true' -a -n "$libVdPau" -a "$LEGACY_LEVEL" -gt 3 ];then
+		if [ -n "$( check_package_status "$libVdPau" 'c' )" -a -z "$( check_package_status "$libVdPau" 'i' )" ];then
+			install_package "$libVdPau"
+		fi
+	fi
 }
 
 post_installer_steps()
