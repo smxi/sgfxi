@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.83
-####  Date: November 28 2009
+####  version: 4.9.84
+####  Date: November 29 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -89,6 +89,7 @@ SCRIPT_COLORS=1
 START_OPTIONS_PRINT='' # for output to user of what options they used
 START_OPTIONS=''
 WITHOUT_RECOMMENDS=''
+X_NAME=''
 
 ## main script boolean switches
 B_AUTORUN=''
@@ -1634,6 +1635,7 @@ check_set_distro()
 			APT_TYPE='pacman'
 			SYSTEM_BASE='arch'
 			SCRIPT_HOME='/usr/bin'
+			X_NAME='Xorg'
 			;;
 		debian)
 			SYSTEM_BASE='debian' # debian not using elr file yet
@@ -1654,10 +1656,12 @@ check_set_distro()
 				DISTRIB_CODENAME='sid'
 				FG_DISTRIB='sid'
 			fi
+			X_NAME='X'
 			;;
 		ubuntu)
 			SYSTEM_BASE='ubuntu'
 			FG_DISTRIB=$DISTRIB_CODENAME
+			X_NAME='X'
 			;;
 		*)
 			## basic system requirements for this script to run, first so user doesn't
@@ -2340,6 +2344,9 @@ install_native_driver()
 			xorgBase='xf86-video-'
 			xorgCore=''
 			libMesaGlx='libgl'
+			if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
+				NATIVE_OVERRIDE=$xorgAti
+			fi
 			;;
 	esac
 
@@ -3076,13 +3083,20 @@ post_installer_steps()
 		$FGLRX)
 			clean_up_fglrx_junk
 			rm -f fglrx-installer_*.changes
+			case $SYSTEM_BASE in
+				arch)
+					if [ -z "$( check_package_status 'mesa' 'i' )" -a -n "$( check_package_status 'mesa' 'c' )" ];then
+						install_package 'mesa'
+					fi
+					;;
+			esac
 			;;
 	esac
 	eval $LOGPE
 }
 
 ### -------------------------------------------------------------------
-### debian sid fglrx/nvidia driver installer
+### distro fglrx/nvidia driver installer
 ### -------------------------------------------------------------------
 
 install_distro_drivers()
@@ -3367,7 +3381,7 @@ install_fglrx_debs()
 final_install_steps()
 {
 	eval $LOGPS
-	local emod='/etc/modules' fgModules='radeon drm fglrx' fgModule=''
+	local emod='/etc/modules' fgModules='' fgModule=''
 
 	echo "${S}Finalizing install...${N}"
 	process_xvmc
@@ -3386,8 +3400,16 @@ final_install_steps()
 			rm -rf /tmp/fglrx* fglrx*
 			# note, since ubuntu uses dkms we don't want to purge the kernel source
 			case $SYSTEM_BASE in
+				arch)
+					fgModules='radeon drm'
+					modprobe fglrx
+					;;
 				debian)
 					dpkg --purge fglrx-kernel-src 1>> $LOG_FILE 2>> $LOG_FILE
+					fgModules='radeon drm fglrx'
+					;;
+				ubuntu)
+					fgModules='radeon drm fglrx'
 					;;
 			esac
 			# test for, then remove if present
@@ -3397,9 +3419,13 @@ final_install_steps()
 					rmmod $fgModule 1>> $LOG_FILE 2>> $LOG_FILE
 				fi
 			done
-
-			perl -pi -e 's/^[\s]*radeon/#radeon/' $emod
-			perl -pi -e 's/^[\s]*fglrx/#fglrx/' $emod
+			# need to see what this is doing elsewhere
+			case $SYSTEM_BASE in
+				debian|ubuntu)
+					perl -pi -e 's/^[\s]*radeon/#radeon/' $emod
+					perl -pi -e 's/^[\s]*fglrx/#fglrx/' $emod
+					;;
+			esac
 			;;
 	esac
 
@@ -3696,7 +3722,7 @@ move_x_conf()
 	eval $LOGUS
 	local x_full_bu="$EXXC-full-$( date +%Y-%m-%d-%H:%M:%S )"
 	
-	if [ -n "$( which X )" ];then
+	if [ -n "$( which $X_NAME )" ];then
 		if [ -f $EXXC ];then
 			echo "${M}Moving ${C}$EXXC${M} to ${C}$x_full_bu${M}...${N}"
 			mv -f $EXXC $x_full_bu
@@ -3718,7 +3744,7 @@ create_x_conf()
 	
 	local repeat='' opt='' options=''
 	
-	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which X )" ];then
+	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
 		echo $LINE
 		if [ "$B_MOVE_X_CONF" == 'true' ];then
@@ -3737,7 +3763,7 @@ create_x_conf()
 			case $opt in
 				yes-create-xorg-conf-file)
 					echo "${S}Ok, creating your new ${C}$EXXC${S} file now...${N}"
-					X -configure
+					$X_NAME -configure
 					echo "${S}Moving newly created ${C}xorg.conf${S} to ${C}$EXXC${S} now...${N}"
 					mv -f /root/xorg.conf.new $EXXC
 					if [ -f $EXXC ];then
@@ -4236,7 +4262,7 @@ show_options()
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
 	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if not in X."
-	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X command)"
+	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
 	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
 	echo "   you are sure your connection is fine."
