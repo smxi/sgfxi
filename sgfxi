@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.82
+####  version: 4.9.83
 ####  Date: November 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1805,9 +1805,9 @@ check_package_status()
 			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( apt-cache policy $1 2>/dev/null | grep -i "$statusType" | cut -d ':' -f 2-4 | cut -d ' ' -f2 | grep -iv '\(none\)' )
 			;;
 		pacman)
-			case $statusType in
+			case $2 in
 				c)
-					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( pacman -Si "$1" 2>/dev/null | grep -i '^Version:' | awk '{print $2}'  )
+					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( pacman -Si "$1" 2>/dev/null | grep -i '^Version' | awk '{print $3}'  )
 					;;
 				i)
 					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( pacman -Q "$1" 2>/dev/null | awk '{print $2}'  )
