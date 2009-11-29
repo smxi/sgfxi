@@ -63,7 +63,9 @@
 ####  -! 20 - uses patch from svn branch one server (must be in branch/one/patches)
 ####  -! 21 - uses patch from svn branch two server (must be in branch/two/patches)
 ########################################################################
-
+####  EXTRA DATA
+####  Cross referenced table of package manager commands (apt/yum/pacman etc):
+####  http://www.archlinux.it/wiki/index.php?title=Pacman_rosetta
 ########################################################################
 #### VARIABLES
 ########################################################################
