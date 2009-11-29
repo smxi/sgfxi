@@ -897,7 +897,7 @@ error_handler()
 			errorData="You must be logged in as root to run this script."
 			;;
 		250)
-			errorData="You must be out of X/KDE to run this graphics installer."
+			errorData="You must be out of X/Desktop (like KDE, Gnome, Flux, LXDE etc) to run this graphics installer."
 			;;
 		249)
 			errorData="Your system does not have the correct version of X, $EXXC"
