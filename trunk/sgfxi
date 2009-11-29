@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.70
+####  version: 4.9.80
 ####  Date: November 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1545,6 +1545,52 @@ check_root()
 
 basic_startup_tests()
 {
+	check_set_distro
+	# make sure Xorg is installed
+	if [ -z "$( which Xorg )" ];then
+		error_handler 244
+	fi
+	# make sure xorg.conf exists, with xorg > 1.4 exception to handle null xorg.conf
+	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" ];then
+		error_handler 249
+	fi
+	# double check only 2.6 series kernels
+	if [ "$KERNEL_BASE" != '2.6' ];then
+		error_handler 243
+	fi
+
+	## basic execute requirements
+	cd $SCRIPT_HOME
+	check_root
+	cleanup_temp_files
+
+	# this allows users to update in x, for example, to see latest drivers
+	if [ "$B_FORCE_UPDATE" == 'true' ];then
+		check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD" 'default server'
+	fi
+
+	# only support current systems, xorg >= 7.1/1.x
+	if [ -z "$X_VERSION" ];then
+		error_handler 242
+	fi
+	# this corrects a stupid mistake I made
+	rm -f *-sgfxi.log # was creating log files in /usr/local/bin
+	# test to see if any dm is running, we'll shutdown all wm later though
+	if [ -n "$DISPLAY" -a "$B_SKIP_X_TEST" != 'true' ];then
+		error_handler 250
+	fi
+	case $SYSTEM_BASE in
+		ubuntu)
+			# we need to confirm that restricted repos are enabled before continuing
+			if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
+				update_to_nonfree_sources
+			fi
+			;;
+	esac
+}
+
+check_set_distro()
+{
 	local lsbData=''
 	# these tests will be improved over time, but are ok for now
 	local isEtch=$( grep -is '^4.' $EDV )
@@ -1588,58 +1634,8 @@ basic_startup_tests()
 			;;
 		debian)
 			SYSTEM_BASE='debian' # debian not using elr file yet
-			;;
-		ubuntu)
-			SYSTEM_BASE='ubuntu'
-			FG_DISTRIB=$DISTRIB_CODENAME
-			;;
-		*)
-			## basic system requirements for this script to run, first so user doesn't
-			## have to be root or out of x to get basic failure information
-			# make sure that it's a debian based system
-			if [ "$SYSTEM_BASE" != 'debian' ];then
-				error_handler 252
-			fi
-			;;
-	esac
-
-	# make sure Xorg is installed
-	if [ -z "$( which Xorg )" ];then
-		error_handler 244
-	fi
-	# make sure xorg.conf exists, with xorg > 1.4 exception to handle null xorg.conf
-	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" ];then
-		error_handler 249
-	fi
-	# double check only 2.6 series kernels
-	if [ "$KERNEL_BASE" != '2.6' ];then
-		error_handler 243
-	fi
-
-	## basic execute requirements
-	cd $SCRIPT_HOME
-	check_root
-	cleanup_temp_files
-
-	# this allows users to update in x, for example, to see latest drivers
-	if [ "$B_FORCE_UPDATE" == 'true' ];then
-		check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD" 'default server'
-	fi
-
-	# only support current systems, xorg >= 7.1/1.x
-	if [ -z "$X_VERSION" ];then
-		error_handler 242
-	fi
-	# this corrects a stupid mistake I made
-	rm -f *-sgfxi.log # was creating log files in /usr/local/bin
-	# test to see if any dm is running, we'll shutdown all wm later though
-	if [ -n "$DISPLAY" -a "$B_SKIP_X_TEST" != 'true' ];then
-		error_handler 250
-	fi
-	# set system type. This test will never be perfect, but it's a good approximation
-	# mepis has lsb release but antix would be different.
-	case $SYSTEM_BASE in
-		debian)
+			# set system type. This test will never be perfect, but it's a good approximation
+			# mepis has lsb release but antix would be different.
 			if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
 				if [ -n "$isEtch" ];then
 					DISTRIB_CODENAME='etch'
@@ -1657,9 +1653,15 @@ basic_startup_tests()
 			fi
 			;;
 		ubuntu)
-			# we need to confirm that restricted repos are enabled before continuing
-			if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
-				update_to_nonfree_sources
+			SYSTEM_BASE='ubuntu'
+			FG_DISTRIB=$DISTRIB_CODENAME
+			;;
+		*)
+			## basic system requirements for this script to run, first so user doesn't
+			## have to be root or out of x to get basic failure information
+			# make sure that it's a debian based system
+			if [ "$SYSTEM_BASE" != 'debian' ];then
+				error_handler 252
 			fi
 			;;
 	esac
@@ -4155,7 +4157,7 @@ show_options()
 		echo "${W}While you can run this script in X, we recommend you run it in terminal.${N}"
 		echo $LINE
 	fi
-	echo "Script Requirements: Debian based systems. Ubuntu support tested and working."
+	echo "Script Requirements: Debian/Ubuntu based systems. Arch under development."
 	echo "Xorg version required: 7.1/1.1 or greater - Your X version: $xVersion"
 	echo "Linux Kernel required: 2.6.18 or greater - Your kernel: $(uname -r)"
 	echo $LINE
@@ -4187,13 +4189,13 @@ show_options()
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
 	echo "-f Install direct fglrx with FGLRX binary run package, without creating deb files (ATI Only)."
 	echo "   Deprecated. Because of constant deb builder failures, the direct install method is now default."
-	echo "-F Build Debian/Ubuntu debs for fglrx with FGLRX binary run package, then install them (ATI Only)."
+	echo "-F Build Debian/Ubuntu (only) debs for fglrx with FGLRX binary run package, then install them (ATI Only)."
 	echo "   Because of constant deb builder failures, the direct install method is recommended and default for $SCRIPT_NAME."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
 	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: sgfxi -K 2.6.25-2"
-	echo "   $SCRIPT_NAME will double check that the kernel exists."
+	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu only)."
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
 	echo "   n to show current nvidia support status; f to show current fglrx support status."
 	echo "-n Automatically installs correct native xorg nv, intel, or ati driver for your system."
@@ -4210,7 +4212,7 @@ show_options()
 	echo "-r Remove mode lines from xorg.conf"
 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
 	echo "-R Skips self updating feature. No restart."
-	echo "-s Installs Distro packaged nVidia/fglrx drivers. ATI/nVidia cards only."
+	echo "-s Installs Distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (Debian/Ubuntu only)."
 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
@@ -4424,21 +4426,25 @@ get_options()
 					10)
 						cd $SCRIPT_HOME
 						check_root
+						check_set_distro
 						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_DEV" 'dev server'
 						;;
 					11)
 						cd $SCRIPT_HOME
 						check_root
+						check_set_distro
 						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_BRANCH_1" 'svn: branch one server'
 						;;
 					12)
 						cd $SCRIPT_HOME
 						check_root
+						check_set_distro
 						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_BRANCH_2" 'svn: branch two server'
 						;;
 					http*)
 						cd $SCRIPT_HOME
 						check_root
+						check_set_distro
 						check_update_script "$SCRIPT_NAME" "$OPTARG" 'alt server'
 						;;
 					20)
@@ -4451,16 +4457,19 @@ get_options()
 					30)
 						cd $SCRIPT_HOME
 						check_root
+						check_set_distro
 						check_update_script "dm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
 						exit 0
 						;;
 					31)
 						cd $SCRIPT_HOME
 						check_root
+						check_set_distro
 						check_update_script "sm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
 						exit 0
 						;;
-					*)	error_handler 178 "$OPTARG"
+					*)	
+						error_handler 178 "$OPTARG"
 						;;
 				esac
 				START_OPTIONS="$START_OPTIONS -! $OPTARG"
