@@ -2,9 +2,9 @@
 ########################################################################
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
-####  Experimental Ubuntu support in progress.
-####  version: 4.9.5
-####  Date: November 27 2009
+####  New: Ubuntu support in progress.
+####  version: 4.9.70
+####  Date: November 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -74,9 +74,9 @@ NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alph
 APT_TYPE='apt-get'
 CARD='' # card type: fglrx or nvidia
 DISTRIB_CODENAME=''
-DISTRIB_ID='Debian'
+DISTRIB_ID=''
 DISTRIB_RELEASE=''
-SYSTEM_BASE='Debian'
+SYSTEM_BASE=''
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
@@ -244,6 +244,7 @@ B_COMPOSITE='' # default false
 EAA='/etc/apt/apt.conf'
 EAS='/etc/apt/sources.list'
 EXXC='/etc/X11/xorg.conf'
+EAR='/etc/arch-release'
 EDV='/etc/debian_version'
 ELR='/etc/lsb-release'
 SCRIPT_HOME='/usr/local/bin'
@@ -1259,9 +1260,13 @@ detect_card_version()
 					LEGACY_LEVEL=1
 					# buntu doesn't have 71xxx drivers in package pool since they don't support
 					# new xorg
-					if [ "$SYSTEM_BASE" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
-						error_handler 217 # if card in this list exit
-					fi
+					case $SYSTEM_BASE in
+						ubuntu)
+							if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
+								error_handler 217 # if card in this list exit
+							fi
+							;;
+					esac
 					;;
 				0110|0111|0112|0113|0170|0171|0172|0173|0174|0175|0176|0177|0178|0179|017a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-2' 'driver' )
@@ -1498,28 +1503,32 @@ test_install_kernel_version()
 check_kernel_headers()
 {
 	eval $LOGUS
-	local headerName="linux-headers-$KERNEL_VERSION"
-	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
-	local headerInstalled=$( check_package_status "$headerName" 'i' )
-	# want to make sure it's available, and not merely referenced
-	local headerAvailable=$( check_package_status "$headerName" 'c' )
-	local headerFile="$( ls /usr/src/kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
-
-	log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
-
-	# first try direct apt install, then dpkg from smxi downloads, then give up
-	if [ -n "$headerPresent" ];then
-		: # do nothing, it's there
-	elif [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
-		echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
-		install_package "$headerName"
-	elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFile" ];then
-		echo "${S}Installing missing kernel header package ${C}$headerName${S}"
-		echo "using your archived header package: ${C}$headerFile${N}"
-		dpkg -i $headerFile || error_handler 223 "$headerFile"
-	elif [ -z "$headerInstalled" -a -z "$headerAvailable" ];then
-		error_handler 224 "$headerName"
-	fi
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			local headerName="linux-headers-$KERNEL_VERSION"
+			local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
+			local headerInstalled=$( check_package_status "$headerName" 'i' )
+			# want to make sure it's available, and not merely referenced
+			local headerAvailable=$( check_package_status "$headerName" 'c' )
+			local headerFile="$( ls /usr/src/kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
+		
+			log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
+		
+			# first try direct apt install, then dpkg from smxi downloads, then give up
+			if [ -n "$headerPresent" ];then
+				: # do nothing, it's there
+			elif [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
+				echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
+				install_package "$headerName"
+			elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFile" ];then
+				echo "${S}Installing missing kernel header package ${C}$headerName${S}"
+				echo "using your archived header package: ${C}$headerFile${N}"
+				dpkg -i $headerFile || error_handler 223 "$headerFile"
+			elif [ -z "$headerInstalled" -a -z "$headerAvailable" ];then
+				error_handler 224 "$headerName"
+			fi
+			;;
+	esac
 	eval $LOGUE
 }
 
@@ -1551,29 +1560,49 @@ basic_startup_tests()
 	local isStableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(stable|etch|lenny)"' $EAA )
 	local isTestingDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(testing|squeeze)"' $EAA )
 	local isUnstableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(sid|unstable)"' $EAA )
-# 
-	## basic system requirements for this script to run, first so user doesn't
-	## have to be root or out of x to get basic failure information
-	# make sure that it's a debian based system
-	if [ ! -f "$EDV" ];then
-		error_handler 252
-	fi
+	
 	# ideally all distros would use lsb-release, but sadly they don't. 
 	if [ -f $ELR ];then
 		lsbData="$( cat $ELR )"
-		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbData" | cut -d '=' -f 2 )
-		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbData" | cut -d '=' -f 2 )
-		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbData" | cut -d '=' -f 2 )
+		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
 	fi
-	# check ubuntu, could use DISTRIB_ID but older ones might not have that
-	if [  "$DISTRIB_ID" == 'Ubuntu' -o "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
-		# removing ubuntu exit test for now
-# 		if [ "$B_TESTING_1" != 'true' ];then
-# 			error_handler 248
-# 		fi
-		FG_DISTRIB=$DISTRIB_CODENAME
-		SYSTEM_BASE='Ubuntu'
+	## basic system requirements for this script to run, first so user doesn't
+	## have to be root or out of x to get basic failure information
+	# make sure that it's a debian based system
+	if [ -f "$EDV" ];then
+		SYSTEM_BASE='debian' # debian not using elr file yet
+		DISTRIB_ID='debian'
 	fi
+	if [ -f "$EAR" ];then
+		DISTRIB_ID='arch'
+	fi
+	if [ "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
+		DISTRIB_ID='ubuntu'
+	fi
+	case $DISTRIB_ID in
+		arch)
+			SYSTEM_BASE='arch'
+			SCRIPT_HOME='/usr/bin'
+			;;
+		debian)
+			SYSTEM_BASE='debian' # debian not using elr file yet
+			;;
+		ubuntu)
+			SYSTEM_BASE='ubuntu'
+			FG_DISTRIB=$DISTRIB_CODENAME
+			;;
+		*)
+			## basic system requirements for this script to run, first so user doesn't
+			## have to be root or out of x to get basic failure information
+			# make sure that it's a debian based system
+			if [ "$SYSTEM_BASE" != 'debian' ];then
+				error_handler 252
+			fi
+			;;
+	esac
+
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
 		error_handler 244
@@ -1609,42 +1638,47 @@ basic_startup_tests()
 	fi
 	# set system type. This test will never be perfect, but it's a good approximation
 	# mepis has lsb release but antix would be different.
-	if [ "$SYSTEM_BASE" == 'Debian' ];then
-		if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
-			if [ -n "$isEtch" ];then
-				DISTRIB_CODENAME='etch'
-				FG_DISTRIB='etch'
+	case $SYSTEM_BASE in
+		debian)
+			if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
+				if [ -n "$isEtch" ];then
+					DISTRIB_CODENAME='etch'
+					FG_DISTRIB='etch'
+				else
+					DISTRIB_CODENAME='stable'
+					FG_DISTRIB='lenny' # note: 'stable' breaks the installer
+				fi
+			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
+				DISTRIB_CODENAME='testing'
+				FG_DISTRIB='testing'
 			else
-				DISTRIB_CODENAME='stable'
-				FG_DISTRIB='lenny' # note: 'stable' breaks the installer
+				DISTRIB_CODENAME='sid'
+				FG_DISTRIB='sid'
 			fi
-		elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
-			DISTRIB_CODENAME='testing'
-			FG_DISTRIB='testing'
-		else
-			DISTRIB_CODENAME='sid'
-			FG_DISTRIB='sid'
-		fi
-	fi
-	# we need to confirm that restricted repos are enabled before continuing
-	if [ "$SYSTEM_BASE" == 'Ubuntu' -a "$B_USE_DISTRO_DRIVER" == 'true' ];then
-		update_to_nonfree_sources
-	fi
+			;;
+		ubuntu)
+			# we need to confirm that restricted repos are enabled before continuing
+			if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
+				update_to_nonfree_sources
+			fi
+			;;
+	esac
 }
 
 check_install_tools()
 {
 	eval $LOGPS
 	# nvidia and fglrx tools check_package_status
-	# if [ ! -x /usr/bin/module-assistant ];then
-	if [ -z "$( check_package_status 'module-assistant' 'i' )" -a -n "$( check_package_status 'module-assistant' 'c' )" ];then
-		install_package 'module-assistant'
-	fi
-	# if [ ! -d /usr/share/build-essential ];then
-	if [ -z "$( check_package_status 'build-essential' 'i' )" -a -n "$( check_package_status 'build-essential' 'c' )" ];then
-		install_package 'build-essential'
-	fi
-	# if [ -z "$( which logrotate )" ];then
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			if [ -z "$( check_package_status 'module-assistant' 'i' )" -a -n "$( check_package_status 'module-assistant' 'c' )" ];then
+				install_package 'module-assistant'
+			fi
+			if [ -z "$( check_package_status 'build-essential' 'i' )" -a -n "$( check_package_status 'build-essential' 'c' )" ];then
+				install_package 'build-essential'
+			fi
+			;;
+	esac
 	if [ -z "$( check_package_status 'logrotate' 'i' )" -a -n "$( check_package_status 'logrotate' 'c' )" ];then
 		install_package 'logrotate'
 	fi
@@ -1659,9 +1693,13 @@ check_install_tools()
 		:
 	# fglrx tools and tests
 	elif [ "$CARD" == $FGLRX ];then
-		if [ -z "$( check_package_status 'debhelper' 'i' )" -a -n "$( check_package_status 'debhelper' 'c' )" ];then
-			install_package 'debhelper'
-		fi
+		case $SYSTEM_BASE in
+			debian|ubuntu)
+				if [ -z "$( check_package_status 'debhelper' 'i' )" -a -n "$( check_package_status 'debhelper' 'c' )" ];then
+					install_package 'debhelper'
+				fi
+				;;
+		esac
 		if [ -z "$( check_package_status 'libstdc++5' 'i' )" -a -n "$( check_package_status 'libstdc++5' 'c' )" ];then
 			install_package 'libstdc++5'
 		fi
@@ -1691,47 +1729,59 @@ check_apt_aptitude()
 	eval $LOGUS
 	local opt='' managers='apt-get aptitude quit'
 	local aptPref=$( get_set_prefs 'get' 'apt-type' | cut -d '=' -f 2 | egrep '^(apt-get|aptitude)$' )
-
-	if [ -f /var/log/aptitude ];then
-		if [ -z "$aptPref" ];then
-			if [ "$SYSTEM_BASE" != 'Ubuntu' ];then
-				echo ${S}$LINE
-				echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
-				echo "Please pick your preferred package manager before you continue, or exit now."
-				echo
-				echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
-				echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
-				echo $LINE${N}
-	
-				select opt in $managers
-				do
-					case $opt in
-						apt-get|aptitude)
-							APT_TYPE=$opt
-							log_function_data "Selected package manager: $opt"
-							get_set_prefs 'set' "apt-type=$opt"
-							;;
-						quit)
-							echo "${S}Ok, figure it out and try again later...${N}"
-							exit 0
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			if [ -f /var/log/aptitude ];then
+				if [ -z "$aptPref" ];then
+					case $SYSTEM_BASE in
+						ubuntu)
+							APT_TYPE='aptitude'
 							;;
 						*)
-							echo "${E}You have to pick one before you can continue!${N}"
-							ask_apt_aptitude
+							echo ${S}$LINE
+							echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
+							echo "Please pick your preferred package manager before you continue, or exit now."
+							echo
+							echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
+							echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
+							echo $LINE${N}
+				
+							select opt in $managers
+							do
+								case $opt in
+									apt-get|aptitude)
+										APT_TYPE=$opt
+										log_function_data "Selected package manager: $opt"
+										get_set_prefs 'set' "apt-type=$opt"
+										;;
+									quit)
+										echo "${S}Ok, figure it out and try again later...${N}"
+										exit 0
+										;;
+									*)
+										echo "${E}You have to pick one before you can continue!${N}"
+										ask_apt_aptitude
+										;;
+								esac
+								break
+							done
 							;;
 					esac
-					break
-				done
-			else
-				APT_TYPE='aptitude'
+				else # set apt type
+					APT_TYPE=$aptPref
+				fi
+				case $APT_TYPE in
+					aptitude)
+						WITHOUT_RECOMMENDS='--without-recommends'
+						;;
+				esac
 			fi
-		else # set apt type
-			APT_TYPE=$aptPref
-		fi
-		if [ "$APT_TYPE" == 'aptitude' ];then
-			WITHOUT_RECOMMENDS='--without-recommends'
-		fi
-	fi
+			;;
+		arch)
+			APT_TYPE='pacman'
+			;;
+	esac
+	
 	eval $LOGUE
 }
 
@@ -1748,48 +1798,90 @@ check_package_status()
 		i)	statusType='Installed:'
 			;;
 	esac
-
-	LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( apt-cache policy $1 2>/dev/null | grep -i "$statusType" | cut -d ':' -f 2-4 | cut -d ' ' -f2 | grep -iv '\(none\)' )
+	case $APT_TYPE in
+		apt-get|aptitude)
+			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( apt-cache policy $1 2>/dev/null | grep -i "$statusType" | cut -d ':' -f 2-4 | cut -d ' ' -f2 | grep -iv '\(none\)' )
+			;;
+		pacman)
+			case $statusType in
+				c)
+					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( pacman -Si "$1" 2>/dev/null | grep -i '^Version:' | awk '{print $2}'  )
+					;;
+				i)
+					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( pacman -Q "$1" 2>/dev/null | awk '{print $2}'  )
+					;;
+			esac
+			;;
+	esac
 
 	echo $packageVersion
 	log_function_data "Package Version: $packageVersion"
 	eval $LOGUE
 }
 
-# arg: $1 - package name; $2 - /experimental/unstable/testing/stable; $3 - --reinstall
+# arg: $1 - package name; $2 - /experimental/unstable/testing/stable; $3 - reinstall
 # optional args. Note that if you use 3, you have to set 2 by '' if blank.
 install_package()
 {
 	eval $LOGUS
-	local distroVersion='' optionalArgs='' doYes='-y'
-	local useUntrusted='--allow-unauthenticated' install='install'
+	local distroVersion='' optionalArgs='' 
+	local useUntrusted='' install=''
 	local packageInstalled=$( check_package_status "$1" 'i' )
+	local update='' install='' doYes='' useUntrusted=''
+	
+	case $APT_TYPE in
+		aptitude)
+			doYes=''
+			install='install'
+			update='update'
+			if [ "$DISTRIB_CODENAME" == 'etch' ];then
+			useUntrusted='' # etch aptitude doesn't support this
+			else
+				useUntrusted='--allow-untrusted'
+			fi
+			;;
+		apt-get)
+			doYes='-y'
+			install='install'
+			update='update'
+			useUntrusted='--allow-unauthenticated'
+			;;
+		pacman)
+			doYes=''
+			update='-Py'
+			install='-S'
+			useUntrusted=''
+			;;
+	esac
 
 	if [ "$UPDATED" != 'true' ];then
-		$APT_TYPE update && UPDATED='true'
+		$APT_TYPE $update && UPDATED='true'
 	fi
-	if [ "$APT_TYPE" == 'aptitude' ];then
-		if [ "$DISTRIB_CODENAME" == 'etch' ];then
-			useUntrusted='' # etch aptitude doesn't support this
-		else
-			useUntrusted='--allow-untrusted'
-		fi
-		doYes=''
-	fi
+
 	# this will force install of sid to get rid of experimental if required
-	if [ -n "$2" ];then
-		distroVersion="/$2" #  --force-yesrequird to avoid apt downgrade error
-	fi
-	# only do --reinstall if arg is set and package is installed
+	case $SYSTEM_BASE in
+		debian)
+			if [ -n "$2" ];then
+				distroVersion="/$2" #  --force-yesrequird to avoid apt downgrade error
+			fi
+			;;
+	esac
+	# only do reinstall if arg is set and package is installed
 	case "$3" in
-		--reinstall)
+		reinstall)
 			if [ -n "$packageInstalled" ];then
-				if [ "$APT_TYPE" == 'aptitude' ];then
-					optionalArgs=''
-					install='reinstall'
-				else
-					optionalArgs=$3
-				fi
+				case $APT_TYPE in
+					aptitude)
+						optionalArgs=''
+						install='reinstall'
+						;;
+					apt-get)
+						optionalArgs=$3
+						;;
+					pacman)
+						optionalArgs=''
+						;;
+				esac
 			fi
 			;;
 		*)
@@ -1802,11 +1894,38 @@ install_package()
 	eval $LOGUE
 }
 
-# install_package nano '' --reinstall
+# args: $1 - package to test for; $2 - excludes from list
+list_installed_packages()
+{
+	eval $LOGUS
+	local packageList=''
+	
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			packageList=$( dpkg -l | awk '{print $2}' | grep -i "$1" | grep -Ev "$2" )
+			;;
+		pacman)
+			packageList=$( pacman -Q | awk '{print $1}' | grep -i "$1" | grep -Ev "$2" )
+			;;
+	esac
+	log_function_data "packageList: $packageList"
+	echo $packageList
+	eval $LOGUE
+}
+
+# install_package nano '' 'reinstall'
 remove_package()
 {
 	eval $LOGUS
-	local response='' package=''
+	local response='' package='' purge=''
+	case $APT_TYPE in
+		aptitude|apt-get)
+			purge='purge'
+			;;
+		pacman)
+			purge='-R'
+			;;
+	esac
 
 	echo ${M}$LINE
 	echo "You will need to remove the following package(s): ${C}$1"
@@ -1816,7 +1935,7 @@ remove_package()
 	do
 		if [ -n "$( check_package_status  "$package" 'i' )" ];then
 			echo "${S}Removing ${C}$package${S}...${N}"
-			$APT_TYPE purge $package || error_handler 190 "$package"
+			$APT_TYPE $purge $package || error_handler 190 "$package"
 		else
 			echo "${S}The package ${C}$package${S} is not installed, continuing...${N}"
 		fi
@@ -1830,11 +1949,18 @@ hold_package()
 {
 	eval $LOGUS
 	# first set for aptitude syntax
-	if [ "$APT_TYPE" == 'aptitude' ];then
-		$APT_TYPE hold $1
-	fi
-	# then set hold into dpkg
-	echo $1 hold | dpkg --set-selections
+	case $APT_TYPE in
+		aptitude|apt-get)
+			if [ "$APT_TYPE" == 'aptitude' ];then
+				$APT_TYPE hold $1
+			fi
+			# then set hold into dpkg
+			echo $1 hold | dpkg --set-selections
+			;;
+		pacman)
+			:
+			;;
+	esac
 	eval $LOGUE
 }
 
@@ -1848,41 +1974,44 @@ update_to_nonfree_sources()
 	local aptProx=''
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
 
-	if [ "$SYSTEM_BASE" == 'Debian' ];then
-		# loop through possible files to update
-		for i in $eas $easdl $eassl
-		do
-			if [ -f "$i" ];then
-				counter=$( egrep -c 'deb.*debian\.org.*(contrib|non-free)' $i )
-				isFree=$(( $counter + $isFree ))
-			fi
-		done
-	
-		if [ "$isFree" -eq 0 ];then
+	case $SYSTEM_BASE in
+		debian)
+			# loop through possible files to update
 			for i in $eas $easdl $eassl
 			do
 				if [ -f "$i" ];then
-					# I'm going to assume if the user has proxy stuff set up, they know what
-					# they are doing here.
-					aptProx=$( egrep -si '^[[:space:]]*deb.*:9999/' $i )
-					if [ -z "$aptProx" ];then
-						echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
-						sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
-						# the second test requires the results of the first to work
-						# note that spaces are required for this to work more reliably for most patterns
-						sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
-					fi
+					counter=$( egrep -c 'deb.*debian\.org.*(contrib|non-free)' $i )
+					isFree=$(( $counter + $isFree ))
 				fi
 			done
-			$APT_TYPE update && UPDATED='true' # need to refresh
-		fi
-	elif [ "$SYSTEM_BASE" == 'Ubuntu' ];then
-		# just to make sure, want to get out fast
-		ubRestricted=$( grep -siE '^[[:space:]]*deb[[:space:]].*ubuntu.*restricted' $eas $eas.d/*.list )
-		if [ -z "$ubRestricted" ];then
-			error_handler 216
-		fi
-	fi
+		
+			if [ "$isFree" -eq 0 ];then
+				for i in $eas $easdl $eassl
+				do
+					if [ -f "$i" ];then
+						# I'm going to assume if the user has proxy stuff set up, they know what
+						# they are doing here.
+						aptProx=$( egrep -si '^[[:space:]]*deb.*:9999/' $i )
+						if [ -z "$aptProx" ];then
+							echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
+							sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
+							# the second test requires the results of the first to work
+							# note that spaces are required for this to work more reliably for most patterns
+							sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
+						fi
+					fi
+				done
+				$APT_TYPE update && UPDATED='true' # need to refresh
+			fi
+			;;
+		ubuntu)
+			# just to make sure, want to get out fast
+			ubRestricted=$( grep -siE '^[[:space:]]*deb[[:space:]].*ubuntu.*restricted' $eas $eas.d/*.list )
+			if [ -z "$ubRestricted" ];then
+				error_handler 216
+			fi
+			;;
+	esac
 	eval $LOGPE
 }
 
@@ -2245,16 +2374,16 @@ install_native_driver()
 		preinstall_cleanup
 		# this is required to do radeon xorg driver
 		native_driver_install_keep
-		install_package 'xserver-xorg-core' '' '--reinstall'
+		install_package 'xserver-xorg-core' '' 'reinstall'
 		if [ "$CARD" == "$FGLRX" ];then
-			install_package 'libgl1-mesa-glx' '' '--reinstall'
+			install_package 'libgl1-mesa-glx' '' 'reinstall'
 		fi
 
 		if [ "$CARD" == "$FGLRX" -a "$B_EXPERIMENTAL" == 'true' ];then
 			echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
 			native_driver_experimental "$driver"
 		else
-			install_package $driver '' '--reinstall'
+			install_package $driver '' 'reinstall'
 		fi
 
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
@@ -2645,7 +2774,19 @@ prep_install()
 {
 	eval $LOGPS
 	local gccVersion=$( egrep -io 'gcc[[:space:]]*version[[:space:]]*[4-6]\.[0-9]{1,2}' /proc/version | egrep -o '[4-6]\.[0-9]{1,2}' )
-	local ubgv="/usr/bin/gcc-$gccVersion"
+	local gccPackage="gcc-$gccVersion"
+	local ubgv="/usr/bin/$gccPackage" libMesaGlx=''
+	
+	case $SYSTEM_BASE in
+		arch)
+			gccVersion='gcc'
+			libMesaGlx='libgl'
+			ubgv='/usr/bin/gcc'
+			;;
+		debian|ubuntu)
+			libMesaGlx='libgl1-mesa-glx'
+			;;
+	esac
 
 	# We now need to do active detection of fglrx-install directory name due to
 	# silly random directory naming schema ati just started with 8.35.5
@@ -2657,14 +2798,14 @@ prep_install()
 		$FGLRX)
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
 			if [ "$B_SKIP_FUNCTION" != 'true' ];then
-				install_package 'libgl1-mesa-glx' '' '--reinstall'
+				install_package "$libMesaGlx" '' 'reinstall'
 			fi
 			;;
 	esac
 
 	echo "${S}Preparing driver install...${N}"
 
-	if [ -f /etc/debian_version -a ! -f /etc/sidux-version ];then
+	if [ -f $EDV -a ! -f /etc/sidux-version ];then
 		m-a -i prepare
 	fi
 
@@ -2674,8 +2815,8 @@ prep_install()
 		export CC=$ubgv
 	else
 		# going to try to update gcc to kernel version first before error exit.
-		if [ -n "$( check_package_status "gcc-$gccVersion" 'c' )" ];then
-			install_package "gcc-$gccVersion"
+		if [ -n "$( check_package_status "$gccPackage" 'c' )" ];then
+			install_package "$gccPackage"
 			# this may not be needed, we'll see how it goes.
 # 			if [ "$( check_package_status "g++-$gccVersion" 'c' )" ];then
 # 				install_package "g++-$gccVersion"
@@ -2733,26 +2874,44 @@ preinstall_cleanup()
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
-	oldNvidia=$( dpkg -l | awk '{print $2}' | grep 'nvidia' | grep -Ev '(modalias|libvdpau)' )
+	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
 	if [ -n "$oldNvidia" ];then
-		dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
+		case $SYSTEM_BASE in
+			debian|ubuntu)
+				dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
+				;;
+			arch)
+				package_remover "$oldNvidia"
+				;;
+		esac
 	fi
 
 	## FGLRX removal...
 	# this is for manually installed amdccle removal
 	rm -f /usr/local/bin/amdccle
 
-	oldFglrx=$( dpkg -l | awk '{print $2}' | grep 'fglrx' | grep -v 'modalias' )
+	oldFglrx=$( list_installed_packages 'fglrx' 'modalias' )
 	if [ -n "$oldFglrx" ];then
-		dpkg --purge $oldFglrx  1>> $LOG_FILE 2>> $LOG_FILE
+		case $SYSTEM_BASE in
+			debian|ubuntu)
+				dpkg --purge $oldFglrx  1>> $LOG_FILE 2>> $LOG_FILE
+				;;
+			arch)
+				package_remover "$oldFglrx"
+				;;
+		esac
 	fi
 
 	# this is present in some installs, debian etch default for instance
-	GL='/usr/X11R6/lib/libGL.so.1.2'
-	for package in $( dpkg-divert --list | grep "diversion of $GL" | cut -d ' ' -f 7 | grep -v -e fglrx-driver -e xorg-driver-fglrx )
-	do
-		dpkg-divert --package $package --remove $GL  1>> $LOG_FILE 2>> $LOG_FILE
-	done
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			GL='/usr/X11R6/lib/libGL.so.1.2'
+			for package in $( dpkg-divert --list | grep "diversion of $GL" | cut -d ' ' -f 7 | grep -v -e fglrx-driver -e xorg-driver-fglrx )
+			do
+				dpkg-divert --package $package --remove $GL  1>> $LOG_FILE 2>> $LOG_FILE
+			done
+			;;
+	esac
 	# then confirm that it's truly not installed in case of manual direct install
 	if [ -f "$fglrxUninstaller" ];then
 		bash $fglrxUninstaller
@@ -2818,8 +2977,17 @@ run_driver_installer()
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
 			# note that lenny can be assumed to not need, this, so wait til squeeze stable
-			if [ "$BITS" == '64' ] && [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' -o "$SYSTEM_BASE" == 'Ubuntu' ];then
-				installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+			if [ "$BITS" == '64' ];then
+				case $SYSTEM_BASE in
+					debian)
+						if [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' ];then
+							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+						fi
+						;;
+					ubuntu)
+						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+						;;
+				esac
 			fi
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
 			./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
@@ -2909,94 +3077,102 @@ install_distro_drivers()
 
 	case $CARD in
 		$NVIDIA)
-			if [ "$DISRIB_ID" == 'Debian' ];then
-				case $LEGACY_LEVEL in
-					1)	# nvidiaGlx='nvidia-glx-legacy'
-						# nvidiaSource='nvidia-kernel-legacy-source'
-						# if the two lines below don't work, comment them and uncomment the ones above
-						nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
-						nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
-						;;
-					2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
-						nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
-						;;
-					3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
-						nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
-						;;
-					*)	nvidiaGlx='nvidia-glx'
-						nvidiaSource='nvidia-kernel-source'
-						;;
-				esac
-				# start the install
-				if [ "$LEGACY_LEVEL" -ne 0 ];then
-					echo "${S}Installing ${C}$DEBIAN_NVIDIA${S} components...${N}"
-					install_package 'nvidia-kernel-common'
-					install_package 'nvidia-settings'
-					install_package "$nvidiaSource"
-					echo "${S}Creating  ${C}$DEBIAN_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
-					# m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i $nvidiaSource
-					m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_NVIDIA
-					m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_NVIDIA
-					m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_NVIDIA
-					m-a build -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_NVIDIA
-					m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_NVIDIA
-	
-					#m-a prepare && m-a qa-i nvidia
-					#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
-					echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
-					install_package "$nvidiaGlx"
-	
-					if [ -z "$( grep '^nvidia' /etc/modules )" ];then
-						echo 'nvidia' >> /etc/modules
+			case $SYSTEM_BASE in
+				debian)
+					case $LEGACY_LEVEL in
+						1)	# nvidiaGlx='nvidia-glx-legacy'
+							# nvidiaSource='nvidia-kernel-legacy-source'
+							# if the two lines below don't work, comment them and uncomment the ones above
+							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
+							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
+							;;
+						2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
+							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
+							;;
+						3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
+							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
+							;;
+						*)	nvidiaGlx='nvidia-glx'
+							nvidiaSource='nvidia-kernel-source'
+							;;
+					esac
+					# start the install
+					if [ "$LEGACY_LEVEL" -ne 0 ];then
+						echo "${S}Installing ${C}$DEBIAN_NVIDIA${S} components...${N}"
+						install_package 'nvidia-kernel-common'
+						install_package 'nvidia-settings'
+						install_package "$nvidiaSource"
+						echo "${S}Creating  ${C}$DEBIAN_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
+						# m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i $nvidiaSource
+						m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_NVIDIA
+						m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_NVIDIA
+						m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_NVIDIA
+						m-a build -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_NVIDIA
+						m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_NVIDIA
+		
+						#m-a prepare && m-a qa-i nvidia
+						#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
+						echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
+						install_package "$nvidiaGlx"
+		
+						if [ -z "$( grep '^nvidia' /etc/modules )" ];then
+							echo 'nvidia' >> /etc/modules
+						fi
 					fi
-				fi
-			elif [ "$SYSTEM_BASE" == 'Ubuntu' ];then
-				# dependencies handle the rest of this
-				case $LEGACY_LEVEL in
-					1)	:
-						# this has already been error handled.
-						;;
-					2)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_2"
-						nvidiaModal="nvidia-$NV_UB_LEGACY_2-modaliases"
-						;;
-					3)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_3"
-						nvidiaModal="nvidia-$NV_UB_LEGACY_3-modaliases"
-						;;
-					*)	nvidiaGlx="nvidia-glx-$NV_UB_CURRENT"
-						nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
-						;;
-				esac
-				echo "${S}Installing ${C}$UBUNTU_NVIDIA${S} components...${N}"
-				install_package "$nvidiaModal"
-				install_package "$nvidiaGlx"
-			else
-				error_handler 176
-			fi
+					;;
+				ubuntu)
+					# dependencies handle the rest of this
+					case $LEGACY_LEVEL in
+						1)	:
+							# this has already been error handled.
+							;;
+						2)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_2"
+							nvidiaModal="nvidia-$NV_UB_LEGACY_2-modaliases"
+							;;
+						3)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_3"
+							nvidiaModal="nvidia-$NV_UB_LEGACY_3-modaliases"
+							;;
+						*)	nvidiaGlx="nvidia-glx-$NV_UB_CURRENT"
+							nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
+							;;
+					esac
+					echo "${S}Installing ${C}$UBUNTU_NVIDIA${S} components...${N}"
+					install_package "$nvidiaModal"
+					install_package "$nvidiaGlx"
+					;;
+				*)
+					error_handler 176
+					;;
+			esac
 			;;
 		$FGLRX)
-			if [ "$DISRIB_ID" == 'Debian' ];then
-				echo "${S}Installing ${C}$DEBIAN_FGLRX${S} components...${N}"
-				install_package 'fglrx-driver'
-				install_package 'fglrx-control'
-				# install_package 'fglrx-amdcccle'
-				install_package 'fglrx-kernel-src'
-				echo "${S}Creating  ${C}$DEBIAN_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
-	
-				# damentz suggestion to make sure old module is used
-				# m-a a-i -f fglrx-kernel-src
-				# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i fglrx
-				m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_FGLRX
-				m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_FGLRX
-				m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_FGLRX
-				m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_FGLRX
-				m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_FGLRX
-			elif [ "$SYSTEM_BASE" == 'Ubuntu' ];then
-				echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
-				install_package 'fglrx-modaliases'
-				install_package 'xorg-driver-fglrx'
-			else
-				error_handler 176
-			fi
+			case $SYSTEM_BASE in
+				debian)
+					echo "${S}Installing ${C}$DEBIAN_FGLRX${S} components...${N}"
+					install_package 'fglrx-driver'
+					install_package 'fglrx-control'
+					# install_package 'fglrx-amdcccle'
+					install_package 'fglrx-kernel-src'
+					echo "${S}Creating  ${C}$DEBIAN_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
+		
+					# damentz suggestion to make sure old module is used
+					# m-a a-i -f fglrx-kernel-src
+					# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i fglrx
+					m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_FGLRX
+					m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_FGLRX
+					m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_FGLRX
+					m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_FGLRX
+					m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_FGLRX
+					;;
+				ubuntu)
+					echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
+					install_package 'fglrx-modaliases'
+					install_package 'xorg-driver-fglrx'
+					;;
+				*)
+					error_handler 176
+					;;
+			esac
 			;;
 	esac
 	eval $LOGPE
@@ -3047,24 +3223,30 @@ install_fglrx_debs()
 		local fgKernelSrc="$fgKsc$DRIVER_DEFAULT-1_*.deb"
 		local fgAlias='' libAmdXv=''
 		
-		if [ "$SYSTEM_BASE" == 'Ubuntu' ];then
-			fgDri='xorg-driver-fglrx_'
-			fgKsc='fglrx-kernel-source_'
-			fgKsrc='fglrx-kernel-source'
-			fgDriver="$fgDri*.deb"
-			fgAmdcccle="$fgAmd*.deb"
-			fgKernelSrc="$fgKsc*.deb"
-			libAmdXv='libamdxvb*.deb'
-			fgAlias='fglrx-modaliases_*.deb'
-		fi
+		case $SYSTEM_BASE in
+			ubuntu)
+				fgDri='xorg-driver-fglrx_'
+				fgKsc='fglrx-kernel-source_'
+				fgKsrc='fglrx-kernel-source'
+				fgDriver="$fgDri*.deb"
+				fgAmdcccle="$fgAmd*.deb"
+				fgKernelSrc="$fgKsc*.deb"
+				libAmdXv='libamdxvb*.deb'
+				fgAlias='fglrx-modaliases_*.deb'
+				;;
+		esac
 		
 		local availableDebs=$( ls *fglrx*.deb )
 		local usunf='/usr/sbin/unfreeze-rc.d' 
 		local frozen=0 forceIt=''
 		
-		if [ "$SYSTEM_BASE" == 'Ubuntu' ] && [ -z "$( check_package_status 'dkms' 'i' )" -a -n "$( check_package_status 'dkms' 'c' )" ];then
-			install_package 'dkms'
-		fi
+		case $SYSTEM_BASE in
+			ubuntu)
+				if [ -z "$( check_package_status 'dkms' 'i' )" -a -n "$( check_package_status 'dkms' 'c' )" ];then
+					install_package 'dkms'
+				fi
+				;;
+		esac
 
 		# this is slightly excessive, but may handle a case where extra debs exist
 		# due to weird user action. Also protects against new ati randomness.
@@ -3117,43 +3299,46 @@ install_fglrx_debs()
 		dpkg -i $forceIt $fgDriver 2>> $LOG_FILE || error_handler 195 $fgDriver
  		dpkg -i $forceIt $fgAmdcccle 2>> $LOG_FILE || error_handler 195 $fgAmdcccle
  		
- 		if [ "$SYSTEM_BASE" == 'Ubuntu' ];then
- 			if [ -n "$libAmdXv" ];then
- 				dpkg -i $forceIt $libAmdXv 2>> $LOG_FILE || error_handler 195 $libAmdXv
- 			else
- 				echo "${E}ERROR: Missing ${C}$libAmdXv${E} but continuing...${N}"
- 			fi
- 			if [ -n "$fgAlias" ];then
- 				dpkg -i $forceIt $fgAlias 2>> $LOG_FILE || error_handler 195 $libAmdXv
- 			else
- 				echo "${E}ERROR: Missing ${C}$fgAlias${E} but continuing...${N}"
- 			fi
- 		fi
-		if [ "$SYSTEM_BASE" != 'Ubuntu' ];then
-			log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
-			CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
-			log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
-			m-a install -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
-		else
-			# note: note with dkms
+ 		case $SYSTEM_BASE in
+ 			ubuntu)
+				if [ -n "$libAmdXv" ];then
+					dpkg -i $forceIt $libAmdXv 2>> $LOG_FILE || error_handler 195 $libAmdXv
+				else
+					echo "${E}ERROR: Missing ${C}$libAmdXv${E} but continuing...${N}"
+				fi
+				if [ -n "$fgAlias" ];then
+					dpkg -i $forceIt $fgAlias 2>> $LOG_FILE || error_handler 195 $libAmdXv
+				else
+					echo "${E}ERROR: Missing ${C}$fgAlias${E} but continuing...${N}"
+				fi
+				;;
+ 			debian)
+				log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
+				CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
+				log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
+				m-a install -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
+				
+				# note: note with dkms
 			:
 # 			log_function_data "Done installing debs created, now to: m-a build fglrx:"
 # 			CC=$CC m-a build fglrx-kernel 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 fglrx-kernel
 # 			log_function_data "Now to: m-a install fglrx:"
 # 			m-a install fglrx-kernel 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 fglrx-kernel
-		fi
+				;;
+		esac
 
 		# restore freeze state
 		if [ "$frozen" -eq 1 -a -x $usunf ];then
 			$usunf
 		fi
+		case $SYSTEM_BASE in
+			debian)
+				# put packages on hold fglrx-amdcccle, fglrx-driver, fglrx module
+				echo "${S}Placing ATI packages on hold to avoid dist-upgrade issues with Debian fglrx drivers...${N}"
+				hold_package 'fglrx-amdcccle'
+				;;
+		esac
 
-		if [ "$SYSTEM_BASE" != 'Ubuntu' ];then
-			# put packages on hold fglrx-amdcccle, fglrx-driver, fglrx module
-			echo "${S}Placing ATI packages on hold to avoid dist-upgrade issues with Debian fglrx drivers...${N}"
-			hold_package 'fglrx-amdcccle'
-			hold_package 'fglrx-driver'
-		fi
 		eval $LOGPE
 	fi
 }
@@ -3183,9 +3368,11 @@ final_install_steps()
 			rm -rf /usr/src/modules/fglrx
 			rm -rf /tmp/fglrx* fglrx*
 			# note, since ubuntu uses dkms we don't want to purge the kernel source
-			if [ "$SYSTEM_BASE" != 'Ubuntu' ];then
-				dpkg --purge fglrx-kernel-src 1>> $LOG_FILE 2>> $LOG_FILE
-			fi
+			case $SYSTEM_BASE in
+				debian)
+					dpkg --purge fglrx-kernel-src 1>> $LOG_FILE 2>> $LOG_FILE
+					;;
+			esac
 			# test for, then remove if present
 			for fgModule in $fgModules
 			do
@@ -3315,7 +3502,7 @@ start_x_question()
 			install-ia32libs)
 				if [ "$BITS" == '64' ];then
 					echo "${S}Installing the package ${C}$ia32libs${S} now...${N}"
-					install_package $ia32libs '' '--reinstall'
+					install_package $ia32libs '' 'reinstall'
 					log_function_data "Final Step: Installed: $ia32libs"
 				else
 					echo "${E}The package ${C}$ia32libs${E} is only available for ${C}64 bit${E} systems.${N}"
@@ -3329,7 +3516,7 @@ start_x_question()
 					echo "${S}Installing packages ${C}$fgGlx${S} now...${N}"
 					for package in $fgGlx
 					do
-						install_package $package '' '--reinstall'
+						install_package $package '' 'reinstall'
 					done
 
 					log_function_data "Final Step: Installed: $fgGlx"
@@ -3968,7 +4155,7 @@ show_options()
 		echo "${W}While you can run this script in X, we recommend you run it in terminal.${N}"
 		echo $LINE
 	fi
-	echo "Script Requirements: Debian based systems. Ubuntu support experimental."
+	echo "Script Requirements: Debian based systems. Ubuntu support tested and working."
 	echo "Xorg version required: 7.1/1.1 or greater - Your X version: $xVersion"
 	echo "Linux Kernel required: 2.6.18 or greater - Your kernel: $(uname -r)"
 	echo $LINE
