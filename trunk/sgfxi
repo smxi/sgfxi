@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.81
+####  version: 4.9.82
 ####  Date: November 28 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1631,6 +1631,7 @@ check_set_distro()
 	fi
 	case $DISTRIB_ID in
 		arch)
+			APT_TYPE='pacman'
 			SYSTEM_BASE='arch'
 			SCRIPT_HOME='/usr/bin'
 			;;
@@ -1780,9 +1781,6 @@ check_apt_aptitude()
 						;;
 				esac
 			fi
-			;;
-		arch)
-			APT_TYPE='pacman'
 			;;
 	esac
 	
