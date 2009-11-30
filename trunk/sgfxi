@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.86
-####  Date: November 29 2009
+####  version: 4.9.87
+####  Date: November 30 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -3024,7 +3024,7 @@ run_driver_installer()
 			./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
 			# reverting the patched stuff before anything else happens
 			apply_module_patch post
-			install_libvdpau
+# 			install_libvdpau
 			;;
 		$FGLRX)
 			distroId=$SYSTEM_BASE
