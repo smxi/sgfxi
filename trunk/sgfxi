@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.90
+####  version: 4.9.91
 ####  Date: November 30 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1687,6 +1687,11 @@ check_install_tools()
 				install_package 'build-essential'
 			fi
 			;;
+# 		arch)
+# 			if [ -n "$( check_package_status 'gcc' 'c' )" ];then
+# 				install_package 'gcc'
+# 			fi
+# 			;;
 	esac
 	if [ -z "$( check_package_status 'logrotate' 'i' )" -a -n "$( check_package_status 'logrotate' 'c' )" ];then
 		install_package 'logrotate'
@@ -4591,13 +4596,17 @@ if [ "$B_PRINT_VER" != 'true' ];then
 		if [ "$B_SKIP_FUNCTION" != 'true' ];then
 			create_x_conf
 		fi
-		select_card
+		# I'm assuming that if user skips config their setup is the way they want
+		if [ "$B_SKIP_CONFIG" != 'true' ];then
+			select_card
+		fi
 	fi
 	print_information
 fi
 
 ## this is separate so card can get set first for native installer
 set_card
+
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	detect_card_version
 fi
