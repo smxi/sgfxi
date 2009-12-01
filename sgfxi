@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.89
+####  version: 4.9.90
 ####  Date: November 30 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -3073,7 +3073,8 @@ install_libvdpau()
 	
 	case $SYSTEM_BASE in
 		arch)
-			libVdPau='libvdpau'
+# 			libVdPau='libvdpau'
+			libVdPau=''
 			;;
 		# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=558369
 		# note: until the sid break for nvidia-libvdpau1/nvidia-libvdpau1-driver is fixed...
