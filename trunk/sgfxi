@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.91
+####  version: 4.9.92
 ####  Date: November 30 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -1124,14 +1124,21 @@ select_card()
 	echo "${S}The script detected more than one video card in your system:"
 	echo "${C}$cardData"
 	echo
-	echo "${M}If you want to preserve your current xorg.conf, for example if you use dual"
-	echo "card setup, and your system is working fine with the driver you are installing,"
-	echo "please restart sgfxi with extra -C option and it will not change xorg.conf."
-	echo
-	echo "${S}sgfxi will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desirable,"
-	echo "but for rare cases of dual card, dual monitor setups, you may want to start with -C "
-	echo
-	echo "If you proceed without -C, a copy of your current xorg.conf will be made here: ${C}$timeStampXorg"
+	if [ "$B_SKIP_CONFIG" != 'true' ];then
+		echo "${M}If you want to preserve your current ${C}xorg.conf${M}, for example if you use dual"
+		echo "card setup, and your system is working fine with the driver you are installing,"
+		echo "please restart ${C}$SCRIPT_NAME${M} with extra ${C}-C${M} option and it will not change xorg.conf."
+		echo
+		echo "${C}$SCRIPT_NAME${S} will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desirable,"
+		echo "but for rare cases of dual card, dual monitor setups, you may want to start with ${C}-C${S} (exit here to do so) "
+		echo
+		
+		echo "If you proceed without ${C}-C${S}, a copy of your current ${C}xorg.conf${S} will be made here: ${C}$timeStampXorg"
+	else
+		echo "${S}Because you started with ${C}-C${S} option, ${C}$SCRIPT_NAME${S} will NOT change your ${C}xorg.conf${S} here"
+		echo "but will simply set which card to use for the automatic driver selection. Just pick the card"
+		echo "you want ${C}$SCRIPT_NAME${S} to use as the main card and ${C}$SCRIPT_NAME${S} will continue to installing the proper driver."
+	fi
 	echo
 	echo "${S}Please select which card you want to install a driver for now to proceed:"
 	echo ${M}$LINE${N}
@@ -1150,6 +1157,7 @@ select_card()
 					echo "${S}You have elected to install drivers for this video card:"
 					echo "${C}$card${N}"
 					# override the global values and handle this explicitly
+					# note that we need to do this whether or not -C is used
 					CARD_DATA=$singleCardId
 
 					if [ "$B_SKIP_CONFIG" != 'true' ];then
@@ -4596,10 +4604,7 @@ if [ "$B_PRINT_VER" != 'true' ];then
 		if [ "$B_SKIP_FUNCTION" != 'true' ];then
 			create_x_conf
 		fi
-		# I'm assuming that if user skips config their setup is the way they want
-		if [ "$B_SKIP_CONFIG" != 'true' ];then
-			select_card
-		fi
+		select_card
 	fi
 	print_information
 fi
