@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.92
-####  Date: November 30 2009
+####  version: 4.9.93
+####  Date: December 3 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -797,7 +797,7 @@ set_test_data()
 		rm -f sgfxi.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati post x2000 card
+		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -1604,6 +1604,7 @@ check_set_distro()
 {
 	local lsbData=''
 	# these tests will be improved over time, but are ok for now
+	# note that ubuntus use $EDV as well, showing eg: sid/squeeze
 	local isEtch=$( grep -is '^4.' $EDV )
 	local isLenny=$( grep -is '^5.' $EDV )
 	local isSqueeze=$( egrep -is '^(squeeze|6\.)' $EDV )
@@ -1628,16 +1629,18 @@ check_set_distro()
 	## basic system requirements for this script to run, first so user doesn't
 	## have to be root or out of x to get basic failure information
 	# make sure that it's a debian based system
-	if [ -f "$EDV" ];then
+	if [ -f "$EAR" ];then
+		DISTRIB_ID='arch'
+	# note that mint has file /etc/debian_version so we need to be careful here
+	elif [ "$( cat /etc/issue | grep -Esi -c '(buntu)' )" -gt 0 ];then
+		DISTRIB_ID='ubuntu'
+	elif [ "$( cat /etc/issue | grep -Esi -c '(mint)' )" -gt 0 ];then
+		: # note: MintLinux will be correctly id'd
+	elif [ -f "$EDV" ];then
 		SYSTEM_BASE='debian' # debian not using elr file yet
 		DISTRIB_ID='debian'
 	fi
-	if [ -f "$EAR" ];then
-		DISTRIB_ID='arch'
-	fi
-	if [ "$( cat /etc/issue | grep -i -c 'buntu' )" -gt 0 ];then
-		DISTRIB_ID='ubuntu'
-	fi
+
 	case $DISTRIB_ID in
 		arch)
 			APT_TYPE='pacman'
@@ -1664,6 +1667,16 @@ check_set_distro()
 				DISTRIB_CODENAME='sid'
 				FG_DISTRIB='sid'
 			fi
+			X_NAME='X'
+			;;
+		linuxmint)
+			SYSTEM_BASE='ubuntu'
+			# need to double check here for fglrx deb builder
+			case $DISTRIB_RELEASE in
+				8)
+					FG_DISTRIB='karmic'
+					;;
+			esac
 			X_NAME='X'
 			;;
 		ubuntu)
