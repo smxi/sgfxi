@@ -1670,6 +1670,7 @@ check_set_distro()
 			X_NAME='X'
 			;;
 		linuxmint)
+			APT_TYPE='apt-get'
 			SYSTEM_BASE='ubuntu'
 			# need to double check here for fglrx deb builder
 			case $DISTRIB_RELEASE in
@@ -1769,53 +1770,58 @@ check_apt_aptitude()
 	eval $LOGUS
 	local opt='' managers='apt-get aptitude quit'
 	local aptPref=$( get_set_prefs 'get' 'apt-type' | cut -d '=' -f 2 | egrep '^(apt-get|aptitude)$' )
-	case $SYSTEM_BASE in
-		debian|ubuntu)
-			if [ -f /var/log/aptitude ];then
-				if [ -z "$aptPref" ];then
-					case $SYSTEM_BASE in
-						ubuntu)
-							APT_TYPE='aptitude'
-							;;
-						*)
-							echo ${S}$LINE
-							echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
-							echo "Please pick your preferred package manager before you continue, or exit now."
-							echo
-							echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
-							echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
-							echo $LINE${N}
-				
-							select opt in $managers
-							do
-								case $opt in
-									apt-get|aptitude)
-										APT_TYPE=$opt
-										log_function_data "Selected package manager: $opt"
-										get_set_prefs 'set' "apt-type=$opt"
-										;;
-									quit)
-										echo "${S}Ok, figure it out and try again later...${N}"
-										exit 0
-										;;
-									*)
-										echo "${E}You have to pick one before you can continue!${N}"
-										ask_apt_aptitude
-										;;
-								esac
-								break
-							done
-							;;
-					esac
-				else # set apt type
-					APT_TYPE=$aptPref
-				fi
-				case $APT_TYPE in
-					aptitude)
-						WITHOUT_RECOMMENDS='--without-recommends'
-						;;
-				esac
-			fi
+	
+	# always override first of all
+	if [ -n "$aptPref" ];then
+		APT_TYPE=$aptPref
+	else
+		if [ -f /var/log/aptitude ];then
+			case $SYSTEM_BASE in
+				debian)
+					echo ${S}$LINE
+					echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
+					echo "Please pick your preferred package manager before you continue, or exit now."
+					echo
+					echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
+					echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
+					echo $LINE${N}
+		
+					select opt in $managers
+					do
+						case $opt in
+							apt-get|aptitude)
+								APT_TYPE=$opt
+								log_function_data "Selected package manager: $opt"
+								get_set_prefs 'set' "apt-type=$opt"
+								;;
+							quit)
+								echo "${S}Ok, figure it out and try again later...${N}"
+								exit 0
+								;;
+							*)
+								echo "${E}You have to pick one before you can continue!${N}"
+								ask_apt_aptitude
+								;;
+						esac
+						break
+					done
+					;;
+				ubuntu)
+					# going to ignore linuxmint's apt wrapper method
+					if [ "$DISTRIB_ID" == 'ubuntu' ];then
+						APT_TYPE='aptitude'
+						log_function_data "Ubuntu hardset to aptitude. If not ubuntu then error."
+					else
+						log_function_data "Derived Ubuntu using apt-get - need more information."
+					fi
+					;;
+			esac
+		fi
+	fi
+	
+	case $APT_TYPE in
+		aptitude)
+			WITHOUT_RECOMMENDS='--without-recommends'
 			;;
 	esac
 	
@@ -4635,6 +4641,10 @@ if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	detect_card_version
 fi
 
+if [ "$B_PRINT_VER" != 'true' -a -z "$PACKAGE_MANAGER" -a "$B_SM_INSTALL" != 'true' -a "$B_AUTORUN" != 'true' ];then
+	check_apt_aptitude
+fi
+
 ## This has to run after card version detection to log that data
 ## don't log the first start if restart/print output happens
 if [ "$B_PRINT_VER" != 'true' ];then
@@ -4649,9 +4659,7 @@ if [ "$B_PRINT_VER" != 'true' -a "$B_SKIP_FUNCTION" != 'true' ];then
 	fi
 	create_x_conf
 fi
-if [ "$B_PRINT_VER" != 'true' -a -z "$PACKAGE_MANAGER" -a "$B_SM_INSTALL" != 'true' -a "$B_AUTORUN" != 'true' ];then
-	check_apt_aptitude
-fi
+
 if [ "$B_NATIVE_DRIVER" == 'true' ];then
 	install_native_driver
 fi
