@@ -1808,11 +1808,11 @@ check_apt_aptitude()
 					;;
 				ubuntu)
 					# going to ignore linuxmint's apt wrapper method
-					if [ "$DISTRIB_ID" == 'ubuntu' ];then
+					if [ -z "$( type -P apt )" ];then
 						APT_TYPE='aptitude'
 						log_function_data "Ubuntu hardset to aptitude. If not ubuntu then error."
 					else
-						log_function_data "Derived Ubuntu using apt-get - need more information."
+						log_function_data "Derived Ubuntu using apt wrapper - default to apt-get."
 					fi
 					;;
 			esac
