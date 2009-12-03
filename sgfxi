@@ -210,7 +210,8 @@ FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
 FG_OTHERS='9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
-FG_DISTRIB=''
+FG_DISTRIB_ID=''
+FG_DISTRIB_CODENAME=''
 DRIVER_INSTALL=''
 DRIVER_DEFAULT=''
 DRIVER_OVERRIDE=''
@@ -1649,45 +1650,48 @@ check_set_distro()
 			X_NAME='Xorg'
 			;;
 		debian)
+			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
 			# set system type. This test will never be perfect, but it's a good approximation
 			# mepis has lsb release but antix would be different.
 			if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
 				if [ -n "$isEtch" ];then
 					DISTRIB_CODENAME='etch'
-					FG_DISTRIB='etch'
+					FG_DISTRIB_CODENAME='etch'
 				else
 					DISTRIB_CODENAME='stable'
-					FG_DISTRIB='lenny' # note: 'stable' breaks the installer
+					FG_DISTRIB_CODENAME='lenny' # note: 'stable' breaks the installer
 				fi
 			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
 				DISTRIB_CODENAME='testing'
-				FG_DISTRIB='testing'
+				FG_DISTRIB_CODENAME='testing'
 			else
 				DISTRIB_CODENAME='sid'
-				FG_DISTRIB='sid'
+				FG_DISTRIB_CODENAME='sid'
 			fi
 			X_NAME='X'
 			;;
 		linuxmint)
 			APT_TYPE='apt-get'
+			FG_DISTRIB_ID='Ubuntu'
 			SYSTEM_BASE='ubuntu'
 			# need to double check here for fglrx deb builder
 			case $DISTRIB_RELEASE in
-				6)	FG_DISTRIB='intrepid'
+				6)	FG_DISTRIB_CODENAME='intrepid'
 					;;
-				7)	FG_DISTRIB='jaunty'
+				7)	FG_DISTRIB_CODENAME='jaunty'
 					;;
-				8)	FG_DISTRIB='karmic'
+				8)	FG_DISTRIB_CODENAME='karmic'
 					;;
-				9)	FG_DISTRIB='lucid'
+				9)	FG_DISTRIB_CODENAME='lucid'
 					;;
 			esac
 			X_NAME='X'
 			;;
 		ubuntu)
+			FG_DISTRIB_ID='Ubuntu'
 			SYSTEM_BASE='ubuntu'
-			FG_DISTRIB=$DISTRIB_CODENAME
+			FG_DISTRIB_CODENAME=$DISTRIB_CODENAME
 			X_NAME='X'
 			;;
 		*)
@@ -2298,7 +2302,8 @@ create_log()
 	echo "DISTRIB_CODENAME: $DISTRIB_CODENAME" >> $LOG_FILE
 	echo "DISTRIB_ID: $DISTRIB_ID" >> $LOG_FILE
 	echo "DISTRIB_RELEASE: $DISTRIB_RELEASE" >> $LOG_FILE
-	echo "FG_DISTRIB: $FG_DISTRIB" >> $LOG_FILE
+	echo "FG_DISTRIB_CODENAME: $FG_DISTRIB_CODENAME" >> $LOG_FILE
+	echo "FG_DISTRIB_ID: $FG_DISTRIB_ID" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
 	# it's important to log these in case there's some issue or bug in the values
@@ -3064,8 +3069,8 @@ run_driver_installer()
 			install_libvdpau
 			;;
 		$FGLRX)
-			distroId=$SYSTEM_BASE
-			distroCodeName=$FG_DISTRIB
+			distroId=$FG_DISTRIB_ID
+			distroCodeName=$FG_DISTRIB_CODENAME
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
@@ -3374,7 +3379,7 @@ install_fglrx_debs()
 			error_handler 186 $fgAmd
 		fi
 
-# 		if [ "$FG_DISTRIB" != 'unstable' ];then
+# 		if [ "$DISTRIB_CODENAME" != 'unstable' ];then
 # 			forceIt='--force-overwrite'
 # 		fi
 		if [ "$B_TESTING_1" == 'true' ];then
