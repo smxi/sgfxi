@@ -3443,6 +3443,10 @@ install_fglrx_debs()
 				hold_package 'fglrx-control'
 				hold_package 'fglrx-driver'
 				;;
+			ubuntu)
+				echo "${S}Placing ATI packages on hold to avoid upgrade issues with $DISTRIB_ID fglrx drivers...${N}"
+				hold_package 'xorg-driver-fglrx'
+				;;
 		esac
 
 		eval $LOGPE
