@@ -1673,8 +1673,13 @@ check_set_distro()
 			SYSTEM_BASE='ubuntu'
 			# need to double check here for fglrx deb builder
 			case $DISTRIB_RELEASE in
-				8)
-					FG_DISTRIB='karmic'
+				6)	FG_DISTRIB='intrepid'
+					;;
+				7)	FG_DISTRIB='jaunty'
+					;;
+				8)	FG_DISTRIB='karmic'
+					;;
+				9)	FG_DISTRIB='lucid'
 					;;
 			esac
 			X_NAME='X'
@@ -3424,7 +3429,8 @@ install_fglrx_debs()
 			debian)
 				# put packages on hold fglrx-amdcccle, fglrx-driver, fglrx module
 				echo "${S}Placing ATI packages on hold to avoid dist-upgrade issues with Debian fglrx drivers...${N}"
-				hold_package 'fglrx-amdcccle'
+				hold_package 'fglrx-control'
+				hold_package 'fglrx-driver'
 				;;
 		esac
 
