@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.93
-####  Date: December 3 2009
+####  version: 4.9.94
+####  Date: December 4 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -79,6 +79,7 @@ DISTRIB_CODENAME=''
 DISTRIB_ID=''
 DISTRIB_RELEASE=''
 SYSTEM_BASE=''
+SYSTEM_CODENAME=''
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
@@ -428,7 +429,7 @@ driver_support_tests()
 					esac
 					;;
 				$NVIDIA)
-# 					if [ "$DRIVER_DEFAULT" == "$DEBIAN_NVIDIA" -a "$DISTRIB_CODENAME" == 'testing' ];then
+# 					if [ "$DRIVER_DEFAULT" == "$DEBIAN_NVIDIA" -a "$SYSTEM_CODENAME" == 'testing' ];then
 # 						print_information_continue 'standard' "Your system appears to be Debian Testing based.\nThe $DEBIAN_NVIDIA driver cannot build on Debian Testing because of a missing package.\nIf your system is Sid based, continue, otherwise exit now."
 # 					else
 						# test for >= xorg 1.5 support, using a blacklist now of previous
@@ -816,7 +817,8 @@ set_test_data()
 # 		IS_XEN=''
 # 		# check for specific system base tests, can be:
 # 		# 'sid' 'testing' 'stable' 'etch'
-# 		DISTRIB_CODENAME='testing'
+#		SYSTEM_BASE='debian'
+# 		SYSTEM_CODENAME='testing'
 # leave this at first character or errors in updater tools will occur
 :
 	fi
@@ -1603,49 +1605,63 @@ basic_startup_tests()
 
 check_set_distro()
 {
-	local lsbData=''
-	# these tests will be improved over time, but are ok for now
-	# note that ubuntus use $EDV as well, showing eg: sid/squeeze
-	local isEtch=$( grep -is '^4.' $EDV )
-	local isLenny=$( grep -is '^5.' $EDV )
-	local isSqueeze=$( egrep -is '^(squeeze|6\.)' $EDV )
+	local lsbData='' debianVersion='' debianDefault='' 
+	local stableSources='' testingSources='' sidSources=''
+	local etcIssue=$( cat /etc/issue 2>/dev/null )
 
-	# first tests sources
-	local isStable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$NON_DEBIAN_PATTERN" | egrep -icw '(stable|lenny|etch)' )
-	local isTesting=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$NON_DEBIAN_PATTERN" | egrep -icw '(squeeze|testing)' )
-	local isUnstable=$( egrep -siw '^[[:space:]]*deb' $EAS $EAS.d/*.list | egrep -iv "$NON_DEBIAN_PATTERN" | egrep -icw '(sid|unstable)' )
-
-	# then test conf for default version
-	local isStableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(stable|etch|lenny)"' $EAA )
-	local isTestingDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(testing|squeeze)"' $EAA )
-	local isUnstableDefault=$( egrep -si 'APT::Default-Release[[:space:]]"(sid|unstable)"' $EAA )
+	## basic system requirements for this script to run, first so user doesn't
+	## have to be root or out of x to get basic failure information
+	# make sure that it's a debian/arch/ubuntu based system
+	# note that mint/ubuntu have file /etc/debian_version so we need to be careful here
+	if [ -n "$etcIssue" -a -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
+		DISTRIB_ID='ubuntu'
+	# mint test
+	elif [ -n "$etcIssue" -a -n "$( grep -si 'mint' <<< $etcIssue )" ];then
+		DISTRIB_ID='linuxmint'
+	# debian defaults
+	elif [ -f "$EDV" ];then
+		DISTRIB_ID='debian'
+		# test apt.conf for default version information, this will override everything else
+		if [ -n "$( grep -Esi 'APT::Default-Release[[:space:]]+"(stable|etch|lenny)"' $EAA )" ];then
+			debianDefault='stable'
+		elif [ -n "$( grep -Esi 'APT::Default-Release[[:space:]]+"(testing|squeeze)"' $EAA )" ];then
+			debianDefault='testing'
+		elif [ -n "$( grep -Esi 'APT::Default-Release[[:space:]]+"(unstable|sid)"' $EAA )" ];then
+			debianDefault='sid'
+		fi
+		# then test /etc/debian_version which will override for stable
+		if [ -n "$( grep -Eis '^(squeeze|6\.)' $EDV )" ];then
+			debianVersion='squeeze'
+		elif [ -n "$( grep -is '^5.' $EDV )" ];then
+			debianVersion='lenny'
+		elif [ -n "$( grep -is '^4.' $EDV )" ];then
+			debianVersion='etch'
+		fi
+		# then test apt sources themselves
+		local stableSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '([[:space:]]stable|\stable|lenny|etch)' )
+		local testingSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(squeeze|testing)' )
+		local sidSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
+	
+	# arch tests
+	elif [ -f "$EAR" ] || [ -n "$etcIssue" -a -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
+		DISTRIB_ID='arch'
+	else
+		error_handler 252
+	fi
 	
 	# ideally all distros would use lsb-release, but sadly they don't. 
-	if [ -f $ELR ];then
+	if [ -s $ELR ];then
 		lsbData="$( cat $ELR )"
 		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
 		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
 		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
 	fi
-	## basic system requirements for this script to run, first so user doesn't
-	## have to be root or out of x to get basic failure information
-	# make sure that it's a debian based system
-	if [ -f "$EAR" ];then
-		DISTRIB_ID='arch'
-	# note that mint has file /etc/debian_version so we need to be careful here
-	elif [ "$( cat /etc/issue | grep -Esi -c '(buntu)' )" -gt 0 ];then
-		DISTRIB_ID='ubuntu'
-	elif [ "$( cat /etc/issue | grep -Esi -c '(mint)' )" -gt 0 ];then
-		: # note: MintLinux will be correctly id'd
-	elif [ -f "$EDV" ];then
-		SYSTEM_BASE='debian' # debian not using elr file yet
-		DISTRIB_ID='debian'
-	fi
-
+	
 	case $DISTRIB_ID in
 		arch)
 			APT_TYPE='pacman'
 			SYSTEM_BASE='arch'
+			SYSTEM_CODENAME='arch'
 			SCRIPT_HOME='/usr/bin'
 			X_NAME='Xorg'
 			;;
@@ -1654,20 +1670,24 @@ check_set_distro()
 			SYSTEM_BASE='debian' # debian not using elr file yet
 			# set system type. This test will never be perfect, but it's a good approximation
 			# mepis has lsb release but antix would be different.
-			if [ -n "$isEtch" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0 -a "$isTesting" -eq 0 ];then
-				if [ -n "$isEtch" ];then
+			if [ "$debianDefault" == 'stable' ] || [ "$debianVersion" == 'etch' -o "$debianVersion" == 'lenny' ] || [ "$stableSources" -gt 0 -a "$sidSources" -eq 0 -a "$testingSources" -eq 0 ];then
+				if [ "$debianVersion" == 'etch' ];then
 					DISTRIB_CODENAME='etch'
 					FG_DISTRIB_CODENAME='etch'
+					SYSTEM_CODENAME='etch'
 				else
 					DISTRIB_CODENAME='stable'
 					FG_DISTRIB_CODENAME='lenny' # note: 'stable' breaks the installer
+					SYSTEM_CODENAME='stable'
 				fi
-			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isSqueeze" -o "$isTesting" -gt 0 ];then
+			elif [ "$debianDefault" == 'testing' -o "$debianVersion" == 'squeeze' ] || [ "$sidSources" -eq 0 -a "$testingSources" -gt 0 ];then
 				DISTRIB_CODENAME='testing'
-				FG_DISTRIB_CODENAME='testing'
+				FG_DISTRIB_CODENAME='sid'
+				SYSTEM_CODENAME='testing'
 			else
 				DISTRIB_CODENAME='sid'
 				FG_DISTRIB_CODENAME='sid'
+				SYSTEM_CODENAME='sid'
 			fi
 			X_NAME='X'
 			;;
@@ -1678,20 +1698,25 @@ check_set_distro()
 			# need to double check here for fglrx deb builder
 			case $DISTRIB_RELEASE in
 				6)	FG_DISTRIB_CODENAME='intrepid'
+					SYSTEM_CODENAME='intrepid'
 					;;
 				7)	FG_DISTRIB_CODENAME='jaunty'
+					SYSTEM_CODENAME='jaunty'
 					;;
 				8)	FG_DISTRIB_CODENAME='karmic'
+					SYSTEM_CODENAME='karmic'
 					;;
 				9)	FG_DISTRIB_CODENAME='lucid'
+					SYSTEM_CODENAME='lucid'
 					;;
 			esac
 			X_NAME='X'
 			;;
 		ubuntu)
 			FG_DISTRIB_ID='Ubuntu'
-			SYSTEM_BASE='ubuntu'
 			FG_DISTRIB_CODENAME=$DISTRIB_CODENAME
+			SYSTEM_BASE='ubuntu'
+			SYSTEM_CODENAME=$DISTRIB_CODENAME
 			X_NAME='X'
 			;;
 		*)
@@ -1881,8 +1906,8 @@ install_package()
 			doYes=''
 			install='install'
 			update='update'
-			if [ "$DISTRIB_CODENAME" == 'etch' ];then
-			useUntrusted='' # etch aptitude doesn't support this
+			if [ "$SYSTEM_CODENAME" == 'etch' ];then
+				useUntrusted='' # etch aptitude doesn't support this
 			else
 				useUntrusted='--allow-untrusted'
 			fi
@@ -2299,6 +2324,7 @@ create_log()
 	echo "$SCRIPT_NAME script version: $sgfxiVersion" >> $LOG_FILE
 	echo "$SCRIPT_NAME start options: $START_OPTIONS" >> $LOG_FILE
 	echo "SYSTEM_BASE: $SYSTEM_BASE" >> $LOG_FILE
+	echo "SYSTEM_CODENAME: $SYSTEM_CODENAME" >> $LOG_FILE
 	echo "DISTRIB_CODENAME: $DISTRIB_CODENAME" >> $LOG_FILE
 	echo "DISTRIB_ID: $DISTRIB_ID" >> $LOG_FILE
 	echo "DISTRIB_RELEASE: $DISTRIB_RELEASE" >> $LOG_FILE
@@ -3066,7 +3092,7 @@ run_driver_installer()
 			if [ "$BITS" == '64' ];then
 				case $SYSTEM_BASE in
 					debian)
-						if [ "$DISTRIB_CODENAME" == 'sid' -o "$DISTRIB_CODENAME" == 'testing' ];then
+						if [ "$SYSTEM_CODENAME" == 'sid' -o "$SYSTEM_CODENAME" == 'testing' ];then
 							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
 						fi
 						;;
@@ -3393,7 +3419,7 @@ install_fglrx_debs()
 			error_handler 186 $fgAmd
 		fi
 
-# 		if [ "$DISTRIB_CODENAME" != 'unstable' ];then
+# 		if [ "$SYSTEM_CODENAME" != 'unstable' ];then
 # 			forceIt='--force-overwrite'
 # 		fi
 		if [ "$B_TESTING_1" == 'true' ];then
