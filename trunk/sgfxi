@@ -1639,9 +1639,9 @@ check_set_distro()
 			debianVersion='etch'
 		fi
 		# then test apt sources themselves
-		local stableSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '([[:space:]]stable|/stable|lenny|etch)' )
-		local testingSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(squeeze|testing)' )
-		local sidSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
+		stableSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '([[:space:]]stable|/stable|lenny|etch)' )
+		testingSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(squeeze|testing)' )
+		sidSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
 	
 	# arch tests
 	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
