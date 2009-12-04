@@ -3076,6 +3076,9 @@ run_driver_installer()
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 			else
+				if [ -d /var/lib/dkms/fglrx ];then
+					rm -rf /var/lib/dkms/fglrx 
+				fi
 				echo ${M}$LINE
 				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
 				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
@@ -3479,17 +3482,17 @@ final_install_steps()
 			rm -rf /usr/src/modules/fglrx
 			rm -rf /tmp/fglrx* fglrx*
 			# note, since ubuntu uses dkms we don't want to purge the kernel source
+			modprobe fglrx
 			case $SYSTEM_BASE in
 				arch)
 					fgModules='radeon drm'
-					modprobe fglrx
 					;;
 				debian)
 					dpkg --purge fglrx-kernel-src 1>> $LOG_FILE 2>> $LOG_FILE
-					fgModules='radeon drm fglrx'
+					fgModules='radeon drm'
 					;;
 				ubuntu)
-					fgModules='radeon drm fglrx'
+					fgModules='radeon drm'
 					;;
 			esac
 			# test for, then remove if present
