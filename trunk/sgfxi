@@ -1650,6 +1650,7 @@ check_set_distro()
 	fi
 	
 	# ideally all distros would use lsb-release, but sadly they don't. 
+	# Note: mepis will override above debian.
 	if [ -s $ELR ];then
 		lsbData="$( cat $ELR )"
 		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
@@ -1665,7 +1666,7 @@ check_set_distro()
 			SCRIPT_HOME='/usr/bin'
 			X_NAME='Xorg'
 			;;
-		debian)
+		debian|mepis)
 			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
 			# set system type. This test will never be perfect, but it's a good approximation
