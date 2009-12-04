@@ -1669,12 +1669,16 @@ check_set_distro()
 		debian)
 			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
+			# just for logging purposes, set these if found
+			if [ -z "$DISTRIB_ID" ];then
+				if [ -f /etc/sidux-version ];then
+					DISTRIB_ID='sidux'
+				elif [ -f /etc/antix-version ];then
+					DISTRIB_ID='antix'
+				fi
+			fi
 			# set system type. This test will never be perfect, but it's a good approximation
-			# mepis has lsb release but antix would be different.
-			if [ "$DISTRIB_ID" == 'mepis' -a "$DISTRIB_CODENAME" == 'lenny' ];then
-				FG_DISTRIB_CODENAME='lenny' 
-				SYSTEM_CODENAME='stable'
-			elif [ "$debianDefault" == 'stable' ] || [ "$debianVersion" == 'etch' -o "$debianVersion" == 'lenny' ] || [ "$stableSources" -gt 0 -a "$sidSources" -eq 0 -a "$testingSources" -eq 0 ];then
+			if [ "$debianDefault" == 'stable' ] || [ "$debianVersion" == 'etch' -o "$debianVersion" == 'lenny' ] || [ "$stableSources" -gt 0 -a "$sidSources" -eq 0 -a "$testingSources" -eq 0 ];then
 				if [ "$debianVersion" == 'etch' ];then
 					FG_DISTRIB_CODENAME='etch'
 					SYSTEM_CODENAME='etch'
