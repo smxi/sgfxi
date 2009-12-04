@@ -1613,10 +1613,10 @@ check_set_distro()
 	## have to be root or out of x to get basic failure information
 	# make sure that it's a debian/arch/ubuntu based system
 	# note that mint/ubuntu have file /etc/debian_version so we need to be careful here
-	if [ -n "$etcIssue" -a -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
+	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
 		DISTRIB_ID='ubuntu'
 	# mint test
-	elif [ -n "$etcIssue" -a -n "$( grep -si 'mint' <<< $etcIssue )" ];then
+	elif [ -n "$( grep -si 'mint' <<< $etcIssue )" ];then
 		DISTRIB_ID='linuxmint'
 	# debian defaults
 	elif [ -f "$EDV" ];then
@@ -1643,7 +1643,7 @@ check_set_distro()
 		local sidSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
 	
 	# arch tests
-	elif [ -f "$EAR" ] || [ -n "$etcIssue" -a -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
+	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
 		DISTRIB_ID='arch'
 	else
 		error_handler 252
