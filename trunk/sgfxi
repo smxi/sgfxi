@@ -2408,8 +2408,6 @@ install_native_driver()
 			# note: use default ati here and only override to radeon for native override
 			$FGLRX)
 				xorgDriver=$xorgAti
-				clean_fglrx_dkms
-				rmmod fglrx
 				;;
 			$INTEL)
 				xorgDriver=$xorgIntel
@@ -2977,7 +2975,7 @@ preinstall_cleanup()
 				;;
 		esac
 	fi
-
+	
 	# this is present in some installs, debian etch default for instance
 	case $SYSTEM_BASE in
 		debian|ubuntu)
@@ -2992,14 +2990,20 @@ preinstall_cleanup()
 	if [ -f "$fglrxUninstaller" ];then
 		bash $fglrxUninstaller
 	fi
+	clean_fglrx_dkms
+	if [ -n "$( lsmod | grep fglrx )" ];then
+		rmmod fglrx 1>> $LOG_FILE 2>> $LOG_FILE
+	fi
 
 	eval $LOGPE
 }
+
+# this should in theory all be gone but not necessarily in fact
 clean_fglrx_dkms()
 {
 	if [ -d /var/lib/dkms/fglrx ];then
 		log_function_data "fglrx dkms directories found and deleted"
-		rm -rf /var/lib/dkms/fglrx 
+		rm -rf /var/lib/dkms/fglrx 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 }
 
