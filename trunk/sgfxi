@@ -1680,7 +1680,7 @@ check_set_distro()
 					FG_DISTRIB_CODENAME='lenny' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='stable'
 				fi
-			elif [ "$debianDefault" == 'testing' -o "$debianVersion" == 'squeeze' ] || [ "$sidSources" -eq 0 -a "$testingSources" -gt 0 ];then
+			elif [ "$debianDefault" == 'testing' ] || [ "$debianVersion" == 'squeeze' -a "$sidSources" -eq 0 -a "$testingSources" -gt 0 ];then
 				DISTRIB_CODENAME='testing'
 				FG_DISTRIB_CODENAME='sid'
 				SYSTEM_CODENAME='testing'
