@@ -2408,6 +2408,8 @@ install_native_driver()
 			# note: use default ati here and only override to radeon for native override
 			$FGLRX)
 				xorgDriver=$xorgAti
+				clean_fglrx_dkms
+				rmmod fglrx
 				;;
 			$INTEL)
 				xorgDriver=$xorgIntel
@@ -2993,6 +2995,13 @@ preinstall_cleanup()
 
 	eval $LOGPE
 }
+clean_fglrx_dkms()
+{
+	if [ -d /var/lib/dkms/fglrx ];then
+		log_function_data "fglrx dkms directories found and deleted"
+		rm -rf /var/lib/dkms/fglrx 
+	fi
+}
 
 # arg: $1 - pre/post Undoing the patches in case the xen stuff is needed later
 # as of 2.6.25-2, debian kernels are compiled with xen, which breaks nvidia currently
@@ -3076,9 +3085,7 @@ run_driver_installer()
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 			else
-				if [ -d /var/lib/dkms/fglrx ];then
-					rm -rf /var/lib/dkms/fglrx 
-				fi
+				clean_fglrx_dkms
 				echo ${M}$LINE
 				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
 				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
