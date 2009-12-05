@@ -897,7 +897,7 @@ error_handler()
 			errorData="No supported $CARD card found!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
 			;;
 		252)
-			errorData="This does not appear to be a Debian/Ubuntu/Arch based system!"
+			errorData="This does not appear to be a Debian/Ubuntu/Arch based system! If you know that it is\nand received this error, please let the maintainer know and he'll try to correct the\ndistro identification failure. Post on the script forums: http://techpatterns.com/forums/forum-33.html\nwith your system information, including the contents of these files, if present:\n/etc/issue\n/etc/debian_version\n/etc/lsb-release"
 			;;
 		251)
 			errorData="You must be logged in as root to run this script."
