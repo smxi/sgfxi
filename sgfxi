@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.95
-####  Date: December 4 2009
+####  version: 4.9.96
+####  Date: December 5 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1603,14 +1603,14 @@ basic_startup_tests()
 	esac
 }
 
+## basic system requirements for this script to run, first so user doesn't
+## have to be root or out of x to get basic failure information
 check_set_distro()
 {
 	local lsbData='' debianVersion='' debianDefault='' workingId=''
 	local stableSources='' testingSources='' sidSources=''
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 
-	## basic system requirements for this script to run, first so user doesn't
-	## have to be root or out of x to get basic failure information
 	# make sure that it's a debian/arch/ubuntu based system
 	# note that mint/ubuntu have file /etc/debian_version so we need to be careful here
 	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
@@ -1669,14 +1669,7 @@ check_set_distro()
 		debian)
 			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
-			# just for logging purposes, set these if found
-			if [ -z "$DISTRIB_ID" ];then
-				if [ -f /etc/sidux-version ];then
-					DISTRIB_ID='sidux'
-				elif [ -f /etc/antix-version ];then
-					DISTRIB_ID='antix'
-				fi
-			fi
+			
 			# set system type. This test will never be perfect, but it's a good approximation
 			if [ "$debianDefault" == 'stable' ] || [ "$debianVersion" == 'etch' -o "$debianVersion" == 'lenny' ] || [ "$stableSources" -gt 0 -a "$sidSources" -eq 0 -a "$testingSources" -eq 0 ];then
 				if [ "$debianVersion" == 'etch' ];then
@@ -1694,6 +1687,14 @@ check_set_distro()
 				SYSTEM_CODENAME='sid'
 			fi
 			X_NAME='X'
+			# just for logging purposes, set these if found
+			if [ -z "$DISTRIB_ID" ];then
+				if [ -f /etc/sidux-version ];then
+					DISTRIB_ID='sidux'
+				elif [ -f /etc/antix-version ];then
+					DISTRIB_ID='antix'
+				fi
+			fi
 			;;
 		linuxmint)
 			APT_TYPE='apt-get'
@@ -1730,6 +1731,13 @@ check_set_distro()
 			error_handler 252
 			;;
 	esac
+	if [ -z "$DISTRIB_ID" ];then
+		DISTRIB_ID=$SYSTEM_BASE
+	fi
+	if [ -z "$DISTRIB_CODENAME" ];then
+		DISTRIB_CODENAME=$SYSTEM_CODENAME
+	fi
+	SIS=$DISTRIB_ID-$DISTRIB_CODENAME-$BITS
 }
 
 check_install_tools()
@@ -2118,7 +2126,7 @@ check_update_script()
 			if [ "$B_FORCE_UPDATE" == 'true' -o "$4" == 'repeat' ];then
 				uArgs='ufr'
 			fi
-			ua="$ua.$uArgs"
+			ua="$ua.$uArgs.$SIS"
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
 			wget $ua -q -O$fileNameTemp $downloadUrl$1 || error_handler 198 $1
 
@@ -2133,8 +2141,17 @@ check_update_script()
 					./$1 -R$START_OPTIONS
 				else
 					print_information
-					echo "${C}$SCRIPT_NAME${S} was successfully updated. Please start the script again"
-					echo "to access the latest features and drivers. Exiting now.${N}"
+					echo "${C}$SCRIPT_NAME${S} was successfully updated. Please start the script again to access"
+					echo "the latest features and drivers. Remember that ${C}$SCRIPT_NAME${S} always updates itself"
+					echo "automatically when it starts so usually ${C}-U${S} is not required."
+					echo
+					echo "To see the latest drivers or support features, use the ${C}-L${S} option. You can"
+					echo "run this option in X, and you don't need to be root to use it. Features:"
+					echo "Show all currently supported drivers: ${C}$SCRIPT_NAME -L d${S}"
+					echo "Show current nVidia support status: ${C}$SCRIPT_NAME -L n${S}"
+					echo "Show current ATI/Fglrx support status: ${C}$SCRIPT_NAME -L f${S}"
+					echo
+					echo "Exiting now.${N}"
 				fi
 				exit 0
 			else
@@ -2191,7 +2208,7 @@ apply_patch_file()
 	local patchFile=$1
 	local patchDirectory="$INSTALL_WORKING_DIR$INSTALL_DIRECTORY/"
 	## this can be changed to branches with -! 20 or -! 21
-	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SCRIPT_NAME.patches.$patchFile"
+	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SCRIPT_NAME-data.patches.$patchFile"
 
 	cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY # first change to the correct directory
 	log_function_data "Patch File Dir: $INSTALL_WORKING_DIR$INSTALL_DIRECTORY"
@@ -4240,7 +4257,7 @@ update_xorg()
 # args: $1 - d (driver); f (fglrx data); n (nvidia data)
 show_extra_data()
 {
-	local fullUrl='' ua='-U s-tools/sgfxi' uaFull='' dataFull='' dataType=''
+	local fullUrl='' ua='-U s-tools/sgfxi-data' uaFull='' dataFull='' dataType=''
 	case $1 in
 		d)
 			fullUrl='http://smxi.org/sg/data/sg-drivers'
