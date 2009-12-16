@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.97
-####  Date: December 12 2009
+####  version: 4.9.98
+####  Date: December 15 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -3083,7 +3083,7 @@ apply_module_patch()
 run_driver_installer()
 {
 	eval $LOGPS
-	local installError='' installerArgs='' nothing=''
+	local installError=0 installerArgs='' nothing=''
 	local xModPath='/usr/lib/xorg/modules'
 	local xLibPath='/usr/lib'
 	local installer='nvidia-installer'
@@ -3151,12 +3151,13 @@ run_driver_installer()
 	# 			export XVERSION=$X_VERSION
 	# 			export XTYPE='X.Org'
 	# 		fi
-
-			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
+			# note: there's a bug in fglrx that apparently will show no error return on failure
+			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE
+			installError="$?"
 			;;
 	esac
 
-	if [ -n "$installError" ];then
+	if [ "$installError" -gt 0 ];then
 		error_handler 245 $installError
 	fi
 	case $CARD in
