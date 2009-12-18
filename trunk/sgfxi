@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.98
-####  Date: December 15 2009
+####  version: 4.9.99
+####  Date: December 18 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -183,7 +183,7 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA"
-# stable primary: 190.42
+# stable primary: 190.53 190.42
 # stable primary: 185.18.36 185.18.31 185.18.29 185.18.14 180.60 180.51 180.44
 # stable legacy 1: 71.86.11 71.86.09 71.86.06
 # stable legacy 2: 96.43.14 96.43.13 96.43.11
@@ -204,12 +204,12 @@ NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='9-11:9-10:9-3'
-FG_DEFAULT='9-11'
+FG_VERSIONS='9-12:9-11:9-3'
+FG_DEFAULT='9-12'
 
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
-FG_OTHERS='9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
+FG_OTHERS='9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
 FG_DISTRIB_CODENAME=''
@@ -400,7 +400,7 @@ driver_support_tests()
 										;;
 									30)
 										case $DRIVER_DEFAULT in
-											9-8|9-9|9-10|9-11)
+											9-8|9-9|9-1[0-2]|10-[0-9]|10-1[0-2])
 												: # not yet
 												;;
 											*)
@@ -410,7 +410,7 @@ driver_support_tests()
 										;;
 									31|32)
 										case $DRIVER_DEFAULT in
-											9-10|9-11)
+											9-1[0-2]|10-[0-9]|10-1[0-2])
 												: # not yet
 												;;
 											*)
