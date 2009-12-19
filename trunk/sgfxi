@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.9.99
-####  Date: December 18 2009
+####  version: 4.10.00
+####  Date: December 19 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -763,6 +763,14 @@ run_patches()
 							fi
 							;;
 						esac
+					;;
+				32)
+					case $DRIVER_DEFAULT in
+						9-11|9-12)
+							patchFile='FGLRX-2.6.32-9-11.diff'
+							apply_patch_file $patchFile
+							;;
+					esac
 					;;
 			esac
 			;;
