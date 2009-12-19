@@ -1,0 +1,15 @@
+## Generated from mepis user feedback
+
+diff -Nru common/lib/modules/fglrx/build_mod/kcl_io.c
+--- common/lib/modules/fglrx/build_mod-orig/kcl_io.c	2009-12-16 01:21:53.000000000 +0200
++++ common/lib/modules/fglrx/build_mod/kcl_io.c	2009-12-17 14:33:21.000000000 +0200
+@@ -35,7 +35,8 @@
+  * - not declared in the corresponding header
+  *
+  */
+-
++
++#include <linux/signal.h>
+ #include <linux/version.h>
+ #include <linux/autoconf.h>
+ #include <linux/poll.h>
