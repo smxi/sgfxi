@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.01
+####  version: 4.10.02
 ####  Date: December 19 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -344,87 +344,86 @@ driver_support_tests()
 							esac
 							;;
 					esac
-
+					# handle no sidux kernel support first for < 2.6.32
+					# fglrx is working on all Debian/Liquorix kernels
+					# for testing/debugging set this re:
+					# http://techpatterns.com/docs/sgfxi-set-test-data.htm
 					case $KERNEL_THIRD in
-						# handle no sidux kernel support first
-						2[5-9]|3[0-9])
-							# for testing/debugging set this re:
-							# http://techpatterns.com/docs/sgfxi-set-test-data.htm
-							if [ -n "$IS_SIDUX_KERNEL" -a "$B_TESTING_3" != 'true' ];then
+						2[5-9]|3[0-1])
+							if [ -n "$IS_SIDUX_KERNEL" ];then
 								error_handler 229
-							#fglrx is working on Debian kernels, so users who want up to date
-							#system will need to use debian kernels + fglrx
-							else
-								# handle libdrm > 2.3 version errors first
-								case $DRIVER_DEFAULT in
-									8-[4-9]|8-1[0-2]|9-1|9.2|9-[3-5])
-										misc_fixes 'drm-2-x-test'
-										;;
-								esac
-								case $KERNEL_THIRD in
-									26)
-										case $DRIVER_DEFAULT in
-											8-4|8-5)
-												error_handler 234 $KERNEL_THIRD
-												;;
-										esac
-										;;
-									27)
-										case $DRIVER_DEFAULT in
-											8-4|8-5|8-6|8-7|8-8|8-9)
-												error_handler 234 $KERNEL_THIRD
-												;;
-											*)
-												: # not yet
-												;;
-										esac
-										;;
-									28)
-										case $DRIVER_DEFAULT in
-											8-4|8-5|8-6|8-7|8-8|8-9)
-												error_handler 234 $KERNEL_THIRD
-												;;
-											*)
-												: # not yet
-												;;
-										esac
-										;;
-									29)
-										case $DRIVER_DEFAULT in
-											9.2|9-[3-9]|9-1[0-2])
-												: # not yet
-												;;
-											*)
-												error_handler 234 $KERNEL_THIRD
-												;;
-										esac
-										;;
-									30)
-										case $DRIVER_DEFAULT in
-											9-8|9-9|9-1[0-2]|10-[0-9]|10-1[0-2])
-												: # not yet
-												;;
-											*)
-												error_handler 234 $KERNEL_THIRD
-												;;
-										esac
-										;;
-									31|32)
-										case $DRIVER_DEFAULT in
-											9-1[0-2]|10-[0-9]|10-1[0-2])
-												: # not yet
-												;;
-											*)
-												error_handler 234 $KERNEL_THIRD
-												;;
-										esac
-										;;
-									3[3-9])
-										if [ "$B_TESTING_1" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
-										;;
-								esac
+							fi
+							;;
+					esac
+
+					# handle libdrm > 2.3 version errors first
+					case $DRIVER_DEFAULT in
+						8-[4-9]|8-1[0-2]|9-1|9.2|9-[3-5])
+							misc_fixes 'drm-2-x-test'
+							;;
+					esac
+					# now the main support tests...
+					case $KERNEL_THIRD in
+						26)
+							case $DRIVER_DEFAULT in
+								8-4|8-5)
+									error_handler 234 $KERNEL_THIRD
+									;;
+							esac
+							;;
+						27)
+							case $DRIVER_DEFAULT in
+								8-4|8-5|8-6|8-7|8-8|8-9)
+									error_handler 234 $KERNEL_THIRD
+									;;
+								*)
+									: # not yet
+									;;
+							esac
+							;;
+						28)
+							case $DRIVER_DEFAULT in
+								8-4|8-5|8-6|8-7|8-8|8-9)
+									error_handler 234 $KERNEL_THIRD
+									;;
+								*)
+									: # not yet
+									;;
+							esac
+							;;
+						29)
+							case $DRIVER_DEFAULT in
+								9.2|9-[3-9]|9-1[0-2])
+									: # not yet
+									;;
+								*)
+									error_handler 234 $KERNEL_THIRD
+									;;
+							esac
+							;;
+						30)
+							case $DRIVER_DEFAULT in
+								9-8|9-9|9-1[0-2]|10-[0-9]|10-1[0-2])
+									: # not yet
+									;;
+								*)
+									error_handler 234 $KERNEL_THIRD
+									;;
+							esac
+							;;
+						31|32)
+							case $DRIVER_DEFAULT in
+								9-1[0-2]|10-[0-9]|10-1[0-2])
+									: # not yet
+									;;
+								*)
+									error_handler 234 $KERNEL_THIRD
+									;;
+							esac
+							;;
+						3[3-9])
+							if [ "$B_TESTING_1" != 'true' ];then
+								error_handler 234 $KERNEL_THIRD
 							fi
 							;;
 					esac
