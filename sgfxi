@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.00
+####  version: 4.10.01
 ####  Date: December 19 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
@@ -124,6 +124,7 @@ B_USE_DISTRO_DRIVER=''
 B_SKIP_FUNCTION=''
 B_TESTING_1=''
 B_TESTING_2=''
+B_TESTING_3=''
 
 ARCH=''
 # kernel variables strings are now evaluated in kernel_string_info().
@@ -349,7 +350,7 @@ driver_support_tests()
 						2[5-9]|3[0-9])
 							# for testing/debugging set this re:
 							# http://techpatterns.com/docs/sgfxi-set-test-data.htm
-							if [ -n "$IS_SIDUX_KERNEL" ];then
+							if [ -n "$IS_SIDUX_KERNEL" -a "$B_TESTING_3" != 'true' ];then
 								error_handler 229
 							#fglrx is working on Debian kernels, so users who want up to date
 							#system will need to use debian kernels + fglrx
@@ -4422,6 +4423,7 @@ show_options()
 		echo "-! 3 - Sets flag B_SKIP_FUNCTION='true' to turn off some functions."
 		echo "-! 4 - Sets flags B_TESTING_1='true' and B_TESTING_2='true'."
 		echo "-! 5 - Sets flags B_TESTING_1='true' and B_SKIP_FUNCTION='true'."
+		echo "-! 6 - Sets flag B_TESTING_3='true' to trigger testing condition 3."
 		echo "-! 10 - Triggers an update from the primary dev download server."
 		echo "-! 11 - Triggers an update from svn branch one - if present, of course."
 		echo "-! 12 - Triggers an update from svn branch two - if present, of course."
@@ -4611,6 +4613,8 @@ get_options()
 						;;
 					5)	B_TESTING_1='true'
 						B_SKIP_FUNCTION='true'
+						;;
+					6)	B_TESTING_3='true'
 						;;
 					10)
 						cd $SCRIPT_HOME
