@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.02
-####  Date: December 19 2009
+####  version: 4.10.03
+####  Date: December 20 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -1754,6 +1754,13 @@ check_install_tools()
 	# nvidia and fglrx tools check_package_status
 	case $SYSTEM_BASE in
 		debian|ubuntu)
+			# this covers the case of first install, no apt update yet, which
+			# makes the following  c tests all fail. This will never be true from
+			# sm fired sessions since smxi always updates first.
+			if [ -z "$( check_dpkg_update )" ];then
+				check_apt_aptitude
+				update_package_manager 'update'
+			fi
 			if [ -z "$( check_package_status 'module-assistant' 'i' )" -a -n "$( check_package_status 'module-assistant' 'c' )" ];then
 				install_package 'module-assistant'
 			fi
@@ -1806,6 +1813,22 @@ check_install_tools()
 		depmod $KERNEL_VERSION -a
 	fi
 	eval $LOGPE
+}
+
+# if null, this will trigger a first run update, maybe in the future can also
+# add time of last update tests, we'll see.
+check_dpkg_update()
+{
+	eval $LOGUS
+	local dpkguf='/var/cache/apt/pkgcache.bin'
+	local dpkgUpdate=''
+
+	if [ -f $dpkguf ];then
+		dpkgUpdate=$( ls -l --time-style=+%Y-%m-%d-%H:%M $dpkguf | egrep -o "20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}" )
+	fi
+	log_function_data "dpkgUpdate: $dpkgUpdate"
+	echo "$dpkgUpdate"
+	eval $LOGUE
 }
 
 ### -------------------------------------------------------------------
@@ -1943,10 +1966,8 @@ install_package()
 			useUntrusted=''
 			;;
 	esac
-
-	if [ "$UPDATED" != 'true' ];then
-		$APT_TYPE $update && UPDATED='true'
-	fi
+	
+	update_package_manager "$update"
 
 	# this will force install of sid to get rid of experimental if required
 	case $SYSTEM_BASE in
@@ -1982,6 +2003,14 @@ install_package()
 	echo "${S}Updating required package ${C}$1${S} now...${N}"
 	$APT_TYPE $install $useUntrusted $WITHOUT_RECOMMENDS $doYes $optionalArgs $1$distroVersion || error_handler 200 $1
 	eval $LOGUE
+}
+
+# args: $1 - update type / name
+update_package_manager()
+{
+	if [ "$UPDATED" != 'true' ];then
+		$APT_TYPE $1 && UPDATED='true'
+	fi
 }
 
 # args: $1 - package to test for; $2 - excludes from list
