@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.04
-####  Date: December 20 2009
+####  version: 4.10.05
+####  Date: December 21 2009
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2009
 ####  Code contributions copyright: Latino 2008
@@ -911,7 +911,7 @@ error_handler()
 			errorData="You must be logged in as root to run this script."
 			;;
 		250)
-			errorData="You must be out of X/Desktop (like KDE, Gnome, Flux, LXDE etc) to run this graphics installer."
+			errorData="You must be out of X/Desktop (like KDE, Gnome, Flux, LXDE etc) to run this feature."
 			;;
 		249)
 			errorData="Your system does not have the correct version of X, $EXXC"
@@ -3902,6 +3902,9 @@ move_x_conf()
 	local x_full_bu="$EXXC-full-$( date +%Y-%m-%d-%H:%M:%S )"
 	
 	if [ -n "$( which $X_NAME )" ];then
+		if [ "$( x_is_running )" -eq 0 ];then
+			start_stop_x 'stop'
+		fi
 		if [ -f $EXXC ];then
 			echo "${M}Moving ${C}$EXXC${M} to ${C}$x_full_bu${M}...${N}"
 			mv -f $EXXC $x_full_bu
@@ -3925,6 +3928,7 @@ create_x_conf()
 	
 	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
+		
 		echo $LINE
 		if [ "$B_MOVE_X_CONF" == 'true' ];then
 			echo "${S}Now it's time to make your new replacement ${C}$EXXC${S} file. "
@@ -3942,6 +3946,11 @@ create_x_conf()
 			case $opt in
 				yes-create-xorg-conf-file)
 					echo "${S}Ok, creating your new ${C}$EXXC${S} file now...${N}"
+					# X has already been stopped in this case ideally from move, but 
+					# checking again to make sure. X command cannot be run with X running
+					if [ "$( x_is_running )" -eq 0 ];then
+						start_stop_x 'stop'
+					fi
 					$X_NAME -configure
 					echo "${S}Moving newly created ${C}xorg.conf${S} to ${C}$EXXC${S} now...${N}"
 					mv -f /root/xorg.conf.new $EXXC
@@ -4617,9 +4626,13 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -X'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -X - Skip the test for X/KDE. Only use if you know what you are doing!\n"
 				;;
-			z)	B_MOVE_X_CONF='true'
-				START_OPTIONS=$START_OPTIONS' -z'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -z - Backup and recreate xorg.conf using the command: X -configure\nOnly use if you know what you are doing!\n"
+			z)	if [ -z "$DISPLAY" ];then
+					B_MOVE_X_CONF='true'
+					START_OPTIONS=$START_OPTIONS' -z'
+					START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -z - Backup and recreate xorg.conf using the command: X -configure\nOnly use if you know what you are doing!\n"
+				else
+					error_handler 250
+				fi
 				;;
 			Z) B_SKIP_CONNECT='true'
 				START_OPTIONS=$START_OPTIONS' -Z'
