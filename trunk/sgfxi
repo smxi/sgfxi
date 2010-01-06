@@ -3,10 +3,10 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.06
-####  Date: December 23 2009
+####  version: 4.10.07
+####  Date: January 5 2010
 ########################################################################
-####  Copyright (C) Harald Hope 2007-2009
+####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  This program is free software; you can redistribute it and/or modify it under
@@ -104,6 +104,7 @@ B_FGLRX_DIRECT='true' # raising the white flag of surrender...
 B_FORCE_UPDATE=''
 B_MOVE_X_CONF=''
 B_NATIVE_DRIVER=''
+B_DEFAULT_NATIVE_DRIVER=''
 B_NO_XVMC=''
 B_PRINT_VER='' # utilities for smxi
 B_REMOVE_MODELINES=''
@@ -1218,22 +1219,27 @@ set_card()
 		10de|12d2)
 			CARD=$NVIDIA
 			foundCard='true'
+			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		1002)
 			CARD=$FGLRX
 			foundCard='true'
+			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		8086)
 			CARD=$INTEL
 			foundCard='true'
+			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		10c8)
 			CARD=$NEOMAGIC
 			foundCard='true'
+			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		121a)
 			CARD=$TDFX
 			foundCard='true'
+			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		*)
 			# this is required to handle unknown card types when forced override is used
@@ -2482,14 +2488,16 @@ install_native_driver()
 		experimentalText=' experimental'
 	fi
 	#
-	if [ "$CARD" == $NVIDIA -o "$CARD" == $FGLRX -o "$CARD" == $INTEL -o -n "$NATIVE_OVERRIDE" ];then
+	if [ "$B_DEFAULT_NATIVE_DRIVER" == 'true' -o -n "$NATIVE_OVERRIDE" ];then
 		eval $LOGPS
-
+		# assign defaults from earlier CARD assignments in -n
+		xorgDriver=$CARD
+		# then do special case handling
 		case $CARD in
 			$NVIDIA)
 				xorgDriver=$xorgNv
 				;;
-			# note: use default ati here and only override to radeon for native override
+			# note: use default ati here and only override to radeon/radeonhd for native override
 			$FGLRX)
 				xorgDriver=$xorgAti
 				;;
@@ -4076,14 +4084,8 @@ update_xorgconf_driver_version()
 			$INTEL)
 				driverName='intel'
 				;;
-			$NEOMAGIC)
-				driverName='neomagic'
-				;;
 			$NVIDIA)
 				driverName='nv'
-				;;
-			$TDFX)
-				driverName='tdfx'
 				;;
 		esac
 
