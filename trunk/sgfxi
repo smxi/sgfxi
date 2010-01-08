@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.10
+####  version: 4.10.11
 ####  Date: January 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -484,7 +484,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.[7-9]|2.[0-9]|7.[5-9]|8.[0-9])
 								case $DRIVER_DEFAULT in
-									195.*)
+									195.*|190.53|173.14.22|96.43.14)
 										: # all other drivers fail to support xorg >= 1.6
 										;;
 									*)
