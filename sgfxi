@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.08
+####  version: 4.10.10
 ####  Date: January 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -147,9 +147,10 @@ fi
 
 # this handles the 1.x syntax used by xorg version in experimental
 # it also handles the totally pointless change in ID text they did with 1.4
-X_VERSION=$( X -version 2>&1 | grep 'X Window System' | grep -Eo '[127]\.[0-9]' )
+# slicing out parts prior to parentheses
+X_VERSION=$( X -version 2>&1 | grep 'X Window System' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]' )
 if [ -z "$X_VERSION" ];then
-	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | grep -Eo '[127]\.[0-9]' )
+	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]' )
 fi
 CC=''
 GL=''
@@ -336,7 +337,7 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
-						1.[7-9]|2.[0-9]|7.[4-9]|8.[0-9])
+						1.[7-9]|2.[0-9]|7.[5-9]|8.[0-9])
 							case $DRIVER_DEFAULT in
 								10-[1-9]|10-1[0-2])
 									: # all other drivers fail to support xorg >= 1.6
@@ -348,7 +349,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.[6]|7.[3])
+						1.[6]|7.[3-4])
 							case $DRIVER_DEFAULT in
 								9-[4-9]|9-1[0-2]|10-[1-9]|10-1[0-2])
 									: # all other drivers fail to support xorg >= 1.6
@@ -481,7 +482,20 @@ driver_support_tests()
 						# note: the legacy 1 doesn't handle new xorgs, this may
 						# be fixed in the future.
 						case $X_VERSION in
-							1.[6-9]|2.[0-9]|7.[4-9])
+							1.[7-9]|2.[0-9]|7.[5-9]|8.[0-9])
+								case $DRIVER_DEFAULT in
+									195.*)
+										: # all other drivers fail to support xorg >= 1.6
+										;;
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
+							1.[6]|7.[3-4])
+# 							1.[6-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
 									71.86.11|71.86.09)
 										if [ "$B_TESTING_3" != 'true' ];then
