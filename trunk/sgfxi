@@ -2415,6 +2415,7 @@ create_log()
 	echo "Video Card Information:$cardString" >> $LOG_FILE
 	echo "Video Card Type: $CARD_BRAND" >> $LOG_FILE
 	echo "Video Card Number: $CARD_NUMBER" >> $LOG_FILE
+	echo "Xorg Version: $X_VERSION" >> $LOG_FILE
 	echo "Installing driver to kernel: $KERNEL_VERSION" >> $LOG_FILE
 	if [ -n "$INSTALL_TO_KERNEL" ];then
 		echo "Running install from Kernel: $(uname -r)" >> $LOG_FILE
