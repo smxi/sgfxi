@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.07
-####  Date: January 5 2010
+####  version: 4.10.08
+####  Date: January 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -147,9 +147,9 @@ fi
 
 # this handles the 1.x syntax used by xorg version in experimental
 # it also handles the totally pointless change in ID text they did with 1.4
-X_VERSION=$( X -version 2>&1 | grep 'X Window System' | egrep -o '(7|1)\.[1-6]' )
+X_VERSION=$( X -version 2>&1 | grep 'X Window System' | grep -Eo '[127]\.[0-9]' )
 if [ -z "$X_VERSION" ];then
-	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | egrep -o '(7|1)\.[1-6]' )
+	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | grep -Eo '[127]\.[0-9]' )
 fi
 CC=''
 GL=''
@@ -326,7 +326,9 @@ driver_support_tests()
 								: # these drivers are fine
 								;;
 							*)
-								error_handler 221
+								if [ "$B_TESTING_3" != 'true' ];then
+									error_handler 221
+								fi
 								;;
 						esac
 					fi
@@ -334,13 +336,27 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
-						1.[6-9]|2.[0-9]|7.[4-9]|8.[0-9])
+						1.[7-9]|2.[0-9]|7.[4-9]|8.[0-9])
+							case $DRIVER_DEFAULT in
+								10-[1-9]|10-1[0-2])
+									: # all other drivers fail to support xorg >= 1.6
+									;;
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
+									;;
+							esac
+							;;
+						1.[6]|7.[3])
 							case $DRIVER_DEFAULT in
 								9-[4-9]|9-1[0-2]|10-[1-9]|10-1[0-2])
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
-									error_handler 226
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
 									;;
 							esac
 							;;
@@ -368,14 +384,18 @@ driver_support_tests()
 						26)
 							case $DRIVER_DEFAULT in
 								8-4|8-5)
-									error_handler 234 $KERNEL_THIRD
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
 									;;
 							esac
 							;;
 						27)
 							case $DRIVER_DEFAULT in
 								8-4|8-5|8-6|8-7|8-8|8-9)
-									error_handler 234 $KERNEL_THIRD
+									if [ "$B_TESTING_1" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
 									;;
 								*)
 									: # not yet
@@ -385,7 +405,9 @@ driver_support_tests()
 						28)
 							case $DRIVER_DEFAULT in
 								8-4|8-5|8-6|8-7|8-8|8-9)
-									error_handler 234 $KERNEL_THIRD
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
 									;;
 								*)
 									: # not yet
@@ -398,7 +420,9 @@ driver_support_tests()
 									: # not yet
 									;;
 								*)
-									error_handler 234 $KERNEL_THIRD
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
 									;;
 							esac
 							;;
@@ -408,7 +432,9 @@ driver_support_tests()
 									: # not yet
 									;;
 								*)
-									error_handler 234 $KERNEL_THIRD
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
 									;;
 							esac
 							;;
@@ -418,12 +444,14 @@ driver_support_tests()
 									: # not yet
 									;;
 								*)
-									error_handler 234 $KERNEL_THIRD
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
 									;;
 							esac
 							;;
 						3[3-9])
-							if [ "$B_TESTING_1" != 'true' ];then
+							if [ "$B_TESTING_3" != 'true' ];then
 								error_handler 234 $KERNEL_THIRD
 							fi
 							;;
@@ -439,7 +467,9 @@ driver_support_tests()
 							1.[5-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
 									173.14.12|169.12|100.14.19|71.86.06)
-										error_handler 226
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
 										;;
 									# 180.*|177.*|173.14.15|96.43.09|71.86.07
 									*)
@@ -454,7 +484,9 @@ driver_support_tests()
 							1.[6-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
 									71.86.11|71.86.09)
-										error_handler 226
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
 										;;
 									*)
 										: ## support should be working, see feedback
@@ -497,7 +529,9 @@ driver_support_tests()
 										: # do nothing
 										;;
 									*)
-										error_handler 234 $KERNEL_THIRD
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 234 $KERNEL_THIRD
+										fi
 										;;
 								esac
 								;;
@@ -507,7 +541,7 @@ driver_support_tests()
 										: # do nothing
 										;;
 									*)
-										if [ "$B_TESTING_1" != 'true' ];then
+										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 234 $KERNEL_THIRD
 										fi
 										;;
@@ -519,7 +553,7 @@ driver_support_tests()
 										: # do nothing
 										;;
 									*)
-										if [ "$B_TESTING_1" != 'true' ];then
+										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 234 $KERNEL_THIRD
 										fi
 										;;
@@ -531,7 +565,7 @@ driver_support_tests()
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_1" != 'true' ];then
+										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 234 $KERNEL_THIRD
 										fi
 										;;
@@ -543,7 +577,7 @@ driver_support_tests()
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_1" != 'true' ];then
+										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 234 $KERNEL_THIRD
 										fi
 										;;
@@ -555,7 +589,7 @@ driver_support_tests()
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_1" != 'true' ];then
+										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 234 $KERNEL_THIRD
 										fi
 										;;
@@ -964,7 +998,7 @@ error_handler()
 			errorData="The driver $DRIVER_DEFAULT requires the 2.6.$errorExtra kernel to run.\nYou are running the $KERNEL_THREE kernel. Please update your kernel now."
 			;;
 		234)
-			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are running the $KERNEL_VERSION kernel. Unable to install your $DRIVER_DEFAULT driver."
+			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are running the $KERNEL_VERSION kernel. Unable to install your $DRIVER_DEFAULT driver.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		233) errorData="Creating the fix: $errorExtra for your $DRIVER_DEFAULT and kernel $KERNEL_VERSION failed."
 			;;
@@ -987,7 +1021,7 @@ error_handler()
 			errorData="The newest $CARD drivers ( >= 177.167 ) no longer support your $CARD GeForce 5xxx card.\nYou must use the $NV_LEGACY_3 driver or lower.\nThat is the default driver when you run this script."
 			;;
 		226)
-			errorData="The driver you selected: $DRIVER_DEFAULT does not support your current Xorg version: $X_VERSION\nIf this is wrong, please let the script maintainer know."
+			errorData="The driver you selected: $DRIVER_DEFAULT does not support your current Xorg version: $X_VERSION\nIf this is wrong, please let the script maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		# this is only for nvidia latest kernel + beta errors
 		225)
@@ -1003,7 +1037,7 @@ error_handler()
 			errorData="The Xorg driver $extraData you are trying to install is not available\nfor your version of $DISTRIB_ID: $DISTRIB_CODENAME"
 			;;
 		221)
-			errorData="AMD/ATI had dropped fglrx non-free driver support for your card type as of driver release 9-4\nOnly cards x2000 or newer are now supported by AMD/ATI for this driver.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know."
+			errorData="AMD/ATI had dropped fglrx non-free driver support for your card type as of driver release 9-4\nOnly cards x2000 or newer are now supported by AMD/ATI for this driver.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		220)
 			errorData="The Driver you are trying to install does not work with libdrm2 version 2.4.x less than 2.4.11.\nYour installed version of libdrm2 is: $errorExtra\n\nIf you are using Debian Sid, you must upgrade your libdrm2 to 2.4.11 or greater."
