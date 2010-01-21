@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.12
+####  version: 4.10.13
 ####  Date: January 21 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -241,12 +241,12 @@ XORG_BACKED_UP=''
 # here we're cutting out both card type and version number for cases with > 1 card
 CARD_COUNT=$( lspci -n | grep -c '0300' )
 #CARD_DATA=$( lspci -n | grep 0300 | cut -d ':' -f 3-4  | cut -d ' ' -f2 )
-CARD_DATA=$( lspci -n | grep '0300' | egrep -io '[a-f0-9]{4}:[a-f0-9]{4}' )
+CARD_DATA=$( lspci -n | grep '0300' | grep -Eio '[a-f0-9]{4}:[a-f0-9]{4}' )
 CARD_NUMBER=''
 CARD_BRAND=''
 # this is reset for multiple gfx cards in select_card()
 # " around CARD_DATA is mandatory for avoiding new grep issue
-BUS_ID=$( lspci -n | grep "$CARD_DATA" | egrep -io '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' | sed 's/\./:/')
+BUS_ID=$( lspci -n | grep "$CARD_DATA" | grep -Eio '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' | sed 's/\./:/')
 
 B_COMPOSITE='' # default false
 # RENDER_ACCEL='true' # default use, true
@@ -1174,7 +1174,7 @@ error_handler()
 select_card()
 {
 #cardData=$(echo "00:0d.0 VGA compatible controller [0300]: nVidia Corporation GeForce 6100 nForce 405 [10de:03d1] (rev a2)
-#02:00.0 VGA compatible controller [0300]: nVidia Corporation G71 [GeForce 7300 G S] [10de:01df] (rev a1)"  | egrep 'VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
+#02:00.0 VGA compatible controller [0300]: nVidia Corporation G71 [GeForce 7300 G S] [10de:01df] (rev a1)"  | grep -E 'VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
 #tester="00:0d.0 0300: 10de:03d1 (rev a2)
 #02:00.0 0300: 10de:01df (rev a1) "
 
@@ -1216,7 +1216,7 @@ select_card()
 					echo "${S}Exiting script now.${N}"
 					exit 0
 				else
-					singleCardId=$( echo $card | egrep -o -i '[a-z0-9]{4}:[a-z0-9]{4}' )
+					singleCardId=$( echo $card | grep -Eo -i '[a-z0-9]{4}:[a-z0-9]{4}' )
 					echo "${S}You have elected to install drivers for this video card:"
 					echo "${C}$card${N}"
 					# override the global values and handle this explicitly
@@ -1231,7 +1231,7 @@ select_card()
 						XORG_BACKED_UP='true'
 						# set correct bus id as last step, note you have to check for . in PCI string:
 						# like this: O1:00.0 and change it to O1:00:0
-						BUS_ID=$( lspci -n | grep "$CARD_DATA" | egrep -io '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' | sed 's/\./:/')
+						BUS_ID=$( lspci -n | grep "$CARD_DATA" | grep -Eio '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' | sed 's/\./:/')
 
 						# handle explicit assignment of busid to avoid errors
 						echo "${S}Updating ${C}xorg.conf${S} to use the card with this BusID: ${C}$BUS_ID${N}"
@@ -1324,7 +1324,7 @@ detect_card_version()
 			CARD_NUMBER=$cardNumber
 			# do some card specific tests to determine generic classes
 			isQuad=$( lspci | grep 'VGA' | grep -i -o 'quadro' )
-			is8xxx=$( lspci | grep 'VGA' | egrep -o '8[0-9]{3}' )
+			is8xxx=$( lspci | grep 'VGA' | grep -Eo '8[0-9]{3}' )
 			case $cardNumber in
 				# http://listing.driveragent.com/pci/10de/?q=94c3 # later series
 				# http://listing.driveragent.com/pci/12d2/?q=94c3 # full legacy
@@ -1630,7 +1630,7 @@ basic_startup_tests()
 		error_handler 244
 	fi
 	# make sure xorg.conf exists, with xorg > 1.4 exception to handle null xorg.conf
-	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" ];then
+	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" ];then
 		error_handler 249
 	fi
 	# double check only 2.6 series kernels
@@ -1882,7 +1882,7 @@ check_dpkg_update()
 	local sizeWorking=0
 
 	if [ -f $dpkguf ];then
-		# dpkgUpdate=$( ls -l --time-style=+%Y-%m-%d-%H:%M $dpkguf | egrep -o "20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}" )
+		# dpkgUpdate=$( ls -l --time-style=+%Y-%m-%d-%H:%M $dpkguf | grep -Eo "20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}" )
 		sizeWorking=$( du -B M $dpkguf | grep -Eo '^[0-9]+' )
 	fi
 	log_function_data "sizeWorking: $sizeWorking"
@@ -1898,7 +1898,7 @@ check_apt_aptitude()
 {
 	eval $LOGUS
 	local opt='' managers='apt-get aptitude quit'
-	local aptPref=$( get_set_prefs 'get' 'apt-type' | cut -d '=' -f 2 | egrep '^(apt-get|aptitude)$' )
+	local aptPref=$( get_set_prefs 'get' 'apt-type' | cut -d '=' -f 2 | grep -E '^(apt-get|aptitude)$' )
 	
 	# always override first of all
 	if [ -n "$aptPref" ];then
@@ -2158,7 +2158,7 @@ update_to_nonfree_sources()
 			for i in $eas $easdl $eassl
 			do
 				if [ -f "$i" ];then
-					counter=$( egrep -c 'deb.*debian\.org.*(contrib|non-free)' $i )
+					counter=$( grep -Ec 'deb.*debian\.org.*(contrib|non-free)' $i )
 					isFree=$(( $counter + $isFree ))
 				fi
 			done
@@ -2169,7 +2169,7 @@ update_to_nonfree_sources()
 					if [ -f "$i" ];then
 						# I'm going to assume if the user has proxy stuff set up, they know what
 						# they are doing here.
-						aptProx=$( egrep -si '^[[:space:]]*deb.*:9999/' $i )
+						aptProx=$( grep -Esi '^[[:space:]]*deb.*:9999/' $i )
 						if [ -z "$aptProx" ];then
 							echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
 							sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
@@ -2205,7 +2205,7 @@ check_update_script()
 	local isGood='' downloadUrl=$2 extraText='' uArgs='up' ua="-U s-tools/$SCRIPT_NAME"
 	local origXorg='/etc/X11/xorg-conf-orig-sg'
 
-	if [ -n "$( egrep '(dev|svn|alt)' <<< $3 )" ];then
+	if [ -n "$( grep -E '(dev|svn|alt)' <<< $3 )" ];then
 		extraText="${C}$3:\n$2${S}"
 	else
 		extraText="${C}$3${S}"
@@ -2333,18 +2333,18 @@ apply_patch_file()
 
 print_information()
 {
-	local scriptVersion=$( egrep -o -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
-	local scriptDate=$( egrep -o -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
-	#local cardInfo=$( lspci | gawk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2%'  )
+	local scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
+	local scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
+	#local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2%'  )
 	local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\s|nVidia\s|Intel\s)(Technologies\sInc\s|Corporation\s|Unknown\sdevice){1,2}(.*)%\1\3%g' )
 	local cardRam='' cardVendor='' busId=''
 
 	# we need the real busid, not the xorg one
-	busId=$( lspci -n | grep "$CARD_DATA" | egrep -io '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' )
+	busId=$( lspci -n | grep "$CARD_DATA" | grep -Eio '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' )
 
 	if [ -n "$busId" ];then
-		cardRam=$( lspci -v -s $busId 2>/dev/null | egrep '.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]' | sed -r 's/.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]/\1/' )
-		cardVendor=$( lspci -v -s $busId 2>/dev/null | egrep '.*Subsystem:[[:space:]]*(.*)' | sed -r 's/.*Subsystem:[[:space:]]*(.*)/\1/' | sed 's/[dD]evice.*$//g' | sed 's/[uU]nknown//g' )
+		cardRam=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]' | sed -r 's/.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]/\1/' )
+		cardVendor=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Subsystem:[[:space:]]*(.*)' | sed -r 's/.*Subsystem:[[:space:]]*(.*)/\1/' | sed 's/[dD]evice.*$//g' | sed 's/[uU]nknown//g' )
 	fi
 	echo ${M}$LINE
 	echo " ${M}$SCRIPT_NAME${S} :: version: ${C}$scriptVersion${S} :: last updated: ${C}$scriptDate"
@@ -2988,7 +2988,7 @@ download_extract_driver()
 prep_install()
 {
 	eval $LOGPS
-	local gccVersion=$( egrep -io 'gcc[[:space:]]*version[[:space:]]*[4-6]\.[0-9]{1,2}' /proc/version | egrep -o '[4-6]\.[0-9]{1,2}' )
+	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-6]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-6]\.[0-9]{1,2}' )
 	local gccPackage="gcc-$gccVersion" 
 	local ubgv="/usr/bin/$gccPackage" libMesaGlx=''
 	
@@ -3245,7 +3245,7 @@ run_driver_installer()
 			fi
 
 			# tell fglrx installer correct x version
-	# 		if [ -n "$( echo $X_VERSION | egrep '[1-2]\.[4-9]' )" ]
+	# 		if [ -n "$( echo $X_VERSION | grep -E '[1-2]\.[4-9]' )" ]
 	# 		then
 	# 			export XVERSION=$X_VERSION
 	# 			export XTYPE='X.Org'
@@ -3849,7 +3849,7 @@ start_stop_x()
 	# setting the default will handle cases like default 2 while still handling 3/5
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
-	local defaultRunlevel=$( grep -s ':initdefault:' /etc/inittab | egrep -o '[0-5]' )
+	local defaultRunlevel=$( grep -s ':initdefault:' /etc/inittab | grep -Eo '[0-5]' )
 	local serviceControl='/etc/init.d/'
 	local noHup='nohup' xActionString='' finalXKill=''
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
@@ -3986,7 +3986,7 @@ create_x_conf()
 	
 	local repeat='' opt='' options=''
 	
-	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | egrep '[1-2]\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
+	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
 		
 		echo $LINE
@@ -4050,7 +4050,7 @@ create_section_device()
 {
 	eval $LOGUS
 	# if this section is not present, create it
-	if [ "$( egrep -sic 'Section[ \t]*"Device"' $EXXC )" -eq 0 ];then
+	if [ "$( grep -Esic 'Section[ \t]*"Device"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
 		echo -e 'Section "Device"' >> $EXXC
 		echo -e '\tIdentifier "Card0"' >> $EXXC
@@ -4072,14 +4072,14 @@ create_driver_entry()
 {
 	eval $LOGUS
 	# since this is set in the above function, it must exist, but I'll check to make sure
-	local deviceLineNu=$( egrep -isn 'Section[[:space:]]*"Device"' $EXXC | cut -d ':' -f 1 )
+	local deviceLineNu=$( grep -Eisn 'Section[[:space:]]*"Device"' $EXXC | cut -d ':' -f 1 )
 
 	# echo deviceLineNu: $deviceLineNu
 	# make sure it's numeric, and that only one device section number was returned (space)
-	if [ -n "$( egrep '^[0-9]+$' <<< $deviceLineNu )" ];then
+	if [ -n "$( grep -E '^[0-9]+$' <<< $deviceLineNu )" ];then
 		# this is a trick to only grep within a block delimited by start/EndSection
-		local isDriver=$( sed -n ''$deviceLineNu',/EndSection/ p' $EXXC | egrep -i 'Driver[[:space:]]*".*"' )
-		local isBusId=$( sed -n ''$deviceLineNu',/EndSection/ p' $EXXC | egrep -i 'BusID[[:space:]]*".*"' )
+		local isDriver=$( sed -n ''$deviceLineNu',/EndSection/ p' $EXXC | grep -Ei 'Driver[[:space:]]*".*"' )
+		local isBusId=$( sed -n ''$deviceLineNu',/EndSection/ p' $EXXC | grep -Ei 'BusID[[:space:]]*".*"' )
 
 		# echo isBusId: $isBusId
 		# echo isDriver: $isDriver
@@ -4587,7 +4587,7 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -F'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX Debian/Ubuntu deb package builder install. Not reliable, but try if you want.\n       Builds debs from downloaded fglrx run file.\n"
 				;;
-			j)	if [ -n "$( egrep '^[0-3]$' <<< $OPTARG )" ];then
+			j)	if [ -n "$( grep -E '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
 					START_OPTIONS=$START_OPTIONS" -j $OPTARG"
 					# no reason to reset the colors if they are default
@@ -4604,7 +4604,7 @@ get_options()
 				test_install_kernel_version
 				START_OPTIONS=$START_OPTIONS" -K $OPTARG"
 				;;
-			L)	if [ -n "$( egrep '^[dfn]$' <<< $OPTARG )" ];then
+			L)	if [ -n "$( grep -E '^[dfn]$' <<< $OPTARG )" ];then
 					show_extra_data "$OPTARG"
 					exit 0
 				else
@@ -4616,7 +4616,7 @@ get_options()
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -n - Auto install of native xorg intel, nvidia, 3dfx, or ati drivers.\n"
 				;;
 			N)
-				if [ -n $( egrep '('$NATIVE_OVERRIDE_SUPPORTED')' <<< $NATIVE_OVERRIDE ) ];then
+				if [ -n $( grep -E '('$NATIVE_OVERRIDE_SUPPORTED')' <<< $NATIVE_OVERRIDE ) ];then
 					NATIVE_OVERRIDE="$OPTARG"
 					B_NATIVE_DRIVER='true'
 					START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -N - Native driver custom install. You have requested to install the xorg driver: $NATIVE_OVERRIDE\n"
@@ -4632,7 +4632,7 @@ get_options()
 			p) B_PRINT_VER='true'
 				START_OPTIONS=$START_OPTIONS' -p'
 				;;
-			P)	if [ -n $( egrep '^(apt-get|aptitude)$' <<< $OPTARG ) ];then
+			P)	if [ -n $( grep -E '^(apt-get|aptitude)$' <<< $OPTARG ) ];then
 					PACKAGE_MANAGER=$OPTARG
 					APT_TYPE=$OPTARG
 					START_OPTIONS=$START_OPTIONS" -P $OPTARG"
