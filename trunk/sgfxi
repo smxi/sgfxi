@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.11
-####  Date: January 8 2010
+####  version: 4.10.12
+####  Date: January 21 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -93,6 +93,9 @@ WITHOUT_RECOMMENDS=''
 X_NAME=''
 
 ## main script boolean switches
+# distro maintainers can turn this to false to stop allowing script auto updates. Only set
+# to false if this script will be packaged and you want to not allow script auto updates
+B_ALLOW_AUTO_UPDATE='true'
 B_AUTORUN=''
 B_BETA_EXISTS=''
 B_DISTRO_FLAG=''
@@ -4791,7 +4794,7 @@ if [ "$B_SKIP_FUNCTION" != 'true' ];then
 fi
 
 ## update everything, restart if not run from smxi
-if [ "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' ];then
+if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' ];then
 	check_update_script $SCRIPT_NAME "$SCRIPT_DOWNLOAD" 'default server'
 fi
 
