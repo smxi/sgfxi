@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.14
+####  version: 4.10.15
 ####  Date: January 21 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -70,6 +70,13 @@
 #### VARIABLES
 ########################################################################
 
+## Distro maintainers: set these variables to meet your needs ##
+# maintainers can turn this to false to stop allowing script auto updates. Only set
+# to false if this script will be packaged and you want to not allow script auto updates
+B_ALLOW_AUTO_UPDATE='true'
+# maintainers change this to script default path please to keep things simple if different
+SCRIPT_HOME='/usr/local/bin'
+
 # script global data
 NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
 
@@ -93,9 +100,6 @@ WITHOUT_RECOMMENDS=''
 X_NAME=''
 
 ## main script boolean switches
-# distro maintainers can turn this to false to stop allowing script auto updates. Only set
-# to false if this script will be packaged and you want to not allow script auto updates
-B_ALLOW_AUTO_UPDATE='true'
 B_AUTORUN=''
 B_BETA_EXISTS=''
 B_DISTRO_FLAG=''
@@ -258,7 +262,7 @@ EXXC='/etc/X11/xorg.conf'
 EAR='/etc/arch-release'
 EDV='/etc/debian_version'
 ELR='/etc/lsb-release'
-SCRIPT_HOME='/usr/local/bin'
+
 INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
@@ -4391,8 +4395,6 @@ show_extra_data()
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
 	case $1 in
 		v)
-			# need to change paths if required
-			check_set_distro
 			dataWorking=$( grep 'sgfxi=' <<< "$dataFull" | cut -d '=' -f 2 )
 			scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' '  -f 2-4 )
 			scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
