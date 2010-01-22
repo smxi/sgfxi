@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.13
+####  version: 4.10.14
 ####  Date: January 21 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -266,6 +266,7 @@ FG_WORKING_DIR='fglrx-install'
 PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
+SCRIPT_DOWNLOAD_VERSION='http://smxi.org/sm/sm-versions'
 SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
 SCRIPT_DOWNLOAD_BRANCH_1='http://sgfxi.googlecode.com/svn/branches/one/'
 SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
@@ -4361,6 +4362,9 @@ update_xorg()
 show_extra_data()
 {
 	local fullUrl='' ua='-U s-tools/sgfxi-data' uaFull='' dataFull='' dataType=''
+	local scriptVersion='' scriptDate='' scriptRemoteVersion='' scriptRemoteDate=''
+	local dataWorking=''
+	
 	case $1 in
 		d)
 			fullUrl='http://smxi.org/sg/data/sg-drivers'
@@ -4377,13 +4381,32 @@ show_extra_data()
 			uaFull="$ua.nvidia-status"
 			dataType='Nvidia Status'
 			;;
+		v)
+			fullUrl='http://smxi.org/sm/sm-versions'
+			uaFull="$ua.version-data"
+			dataType="(latest) $SCRIPT_NAME version information"
+			;;
 	esac
 	echo -n "${S}Retrieving live data... ${N}"
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
+	case $1 in
+		v)
+			dataWorking=$( grep 'sgfxi=' <<< "$dataFull" | cut -d '=' -f 2 )
+			scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' '  -f 2-4 )
+			scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
+			scriptRemoteVersion=$( cut -d ':' -f 1 <<< $dataWorking )
+			scriptRemoteDate=$( cut -d ':' -f 2 <<< $dataWorking )
+			if [ "$scriptVersion" == "$scriptRemoteVersion" ];then
+				dataFull="Remote Version: $scriptRemoteVersion is the same as Local Version: $scriptVersion" 
+			else
+				dataFull="The remote and local script versions are different:\nRemote Version: $scriptRemoteVersion\nRemote Date:    $scriptRemoteDate\n\nLocal Version:  $scriptVersion\nLocal Date:     $scriptDate"
+			fi
+			;;
+	esac
 	if [ -n "$dataFull" ];then
 		echo "${S}Success! Here is the current $dataType:${N}"
 		echo $LINE
-		echo "$dataFull"
+		echo -e "$dataFull"
 	else
 		echo "${W}Failed!!${N}"
 		echo $WLINE
@@ -4480,7 +4503,8 @@ show_options()
 	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: sgfxi -K 2.6.25-2"
 	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu only)."
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
-	echo "   n to show current nvidia support status; f to show current fglrx support status."
+	echo "   n to show current nvidia support status; f to show current fglrx support status;"
+	echo "   v to show current latest local + remote $SCRIPT_NAME svn/server version information."
 	echo "-n Automatically installs correct native xorg nv, intel, or ati driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
 	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf"
@@ -4604,7 +4628,7 @@ get_options()
 				test_install_kernel_version
 				START_OPTIONS=$START_OPTIONS" -K $OPTARG"
 				;;
-			L)	if [ -n "$( grep -E '^[dfn]$' <<< $OPTARG )" ];then
+			L)	if [ -n "$( grep -E '^[dfnv]$' <<< $OPTARG )" ];then
 					show_extra_data "$OPTARG"
 					exit 0
 				else
