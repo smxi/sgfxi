@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.15
-####  Date: January 21 2010
+####  version: 4.10.16
+####  Date: January 22 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -126,6 +126,7 @@ B_SM_INSTALL='' # utilities for smxi
 B_TRIPLE_BUFFER=''
 B_TWINVIEW=''
 B_USE_BETA=''
+B_USE_DIRECT_KERNEL_HEADER=''
 B_USE_DISTRO_DRIVER=''
 
 ## debugger/testing boolean switches
@@ -262,6 +263,7 @@ EXXC='/etc/X11/xorg.conf'
 EAR='/etc/arch-release'
 EDV='/etc/debian_version'
 ELR='/etc/lsb-release'
+KERNEL_HEADER_DIRECT='/usr/include/linux/kernel.h'
 
 INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
@@ -303,6 +305,12 @@ if [ "$LOGIN_PID" == '' ];then
 	LOGIN_PID=$( ps | grep ' su' )
 fi
 LOGIN_PID=$( echo $LOGIN_PID | grep -o "[0-9]*" )
+
+# do some distro specific tweaks here too. Don't do this if
+# distro maintainers have set package defaults above.
+if [ -f "$EAR" -a "$B_ALLOW_AUTO_UPDATE" == 'true' ];then
+	SCRIPT_HOME='/usr/bin'
+fi
 
 # allow user set globals to override script globals
 if [ -f $SM_VALUES ];then
@@ -1587,10 +1595,11 @@ test_install_kernel_version()
 check_kernel_headers()
 {
 	eval $LOGUS
+	local headerName="linux-headers-$KERNEL_VERSION"
+	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
 	case $SYSTEM_BASE in
 		debian|ubuntu)
-			local headerName="linux-headers-$KERNEL_VERSION"
-			local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
+			
 			local headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
@@ -1610,6 +1619,12 @@ check_kernel_headers()
 				dpkg -i $headerFile || error_handler 223 "$headerFile"
 			elif [ -z "$headerInstalled" -a -z "$headerAvailable" ];then
 				error_handler 224 "$headerName"
+			fi
+			;;
+		# fresh arch installs do not have the kernel header in /usr/src
+		arch)
+			if [ -z "$headerPresent" -a -f $KERNEL_HEADER_DIRECT ];then
+				B_USE_DIRECT_KERNEL_HEADER='true'
 			fi
 			;;
 	esac
@@ -3225,6 +3240,10 @@ run_driver_installer()
 				esac
 			fi
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
+			# fresh arch installs may have the single file but no headers in /usr/src
+			if [ "$B_USE_DIRECT_KERNEL_HEADER" == 'true' ];then
+				installerArgs="$installerArgs --kernel-source-path=$KERNEL_HEADER_DIRECT"
+			fi
 			./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
 			# reverting the patched stuff before anything else happens
 			apply_module_patch post
@@ -4395,10 +4414,10 @@ show_extra_data()
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
 	case $1 in
 		v)
-			# don't need to run this if distro maintainer has set path
-			if [ "$B_ALLOW_AUTO_UPDATE" == 'true' ];then
-				check_set_distro
-			fi
+# 			# don't need to run this if distro maintainer has set path
+# 			if [ "$B_ALLOW_AUTO_UPDATE" == 'true' ];then
+# 				check_set_distro
+# 			fi
 			dataWorking=$( grep 'sgfxi=' <<< "$dataFull" | cut -d '=' -f 2 )
 			
 			if [ -f $SCRIPT_HOME/$SCRIPT_NAME ];then
