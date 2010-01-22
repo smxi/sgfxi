@@ -4395,7 +4395,10 @@ show_extra_data()
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
 	case $1 in
 		v)
-			check_set_distro
+			# don't need to run this if distro maintainer has set path
+			if [ "$B_ALLOW_AUTO_UPDATE" == 'true' ];then
+				check_set_distro
+			fi
 			dataWorking=$( grep 'sgfxi=' <<< "$dataFull" | cut -d '=' -f 2 )
 			
 			if [ -f $SCRIPT_HOME/$SCRIPT_NAME ];then
