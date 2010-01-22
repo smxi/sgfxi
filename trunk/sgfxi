@@ -4391,6 +4391,8 @@ show_extra_data()
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
 	case $1 in
 		v)
+			# need to change paths if required
+			check_set_distro
 			dataWorking=$( grep 'sgfxi=' <<< "$dataFull" | cut -d '=' -f 2 )
 			scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' '  -f 2-4 )
 			scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
