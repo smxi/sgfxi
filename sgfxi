@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.18
-####  Date: January 22 2010
+####  version: 4.10.19
+####  Date: January 23 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1599,7 +1599,6 @@ check_kernel_headers()
 	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
 	case $SYSTEM_BASE in
 		debian|ubuntu)
-			
 			local headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
@@ -1621,12 +1620,13 @@ check_kernel_headers()
 				error_handler 224 "$headerName"
 			fi
 			;;
-		# fresh arch installs do not have the kernel header in /usr/src
-		arch)
-			if [ -z "$headerPresent" -a "$B_TESTING_3" != 'true' ];then
-				error_handler 224 "$headerName"
-			fi
-			;;
+		# fresh arch installs do not have the kernel header in /usr/src but this test
+		# is highly erratic, arch is not using consistent methods, requires more testing
+# 		arch)
+# 			if [ -z "$headerPresent" -a "$B_TESTING_3" != 'true' ];then
+# 				error_handler 224 "$headerName"
+# 			fi
+# 			;;
 	esac
 	eval $LOGUE
 }
