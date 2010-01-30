@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.21
+####  version: 4.10.23
 ####  Date: January 30 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -772,6 +772,22 @@ run_patches()
 							;;
 					esac
 					;;
+				32|33)
+					if [ "$B_TESTING_3" == 'true' ];then
+						case $DRIVER_DEFAULT in
+							195.*)
+								#arch linux provided
+								patchFile='NVIDIA-195-2.6.33.diff'
+								apply_patch_file $patchFile
+								;;
+							190.5[0-9])
+								#arch linux provided
+								patchFile='NVIDIA-190.53-2.6.33.diff'
+								apply_patch_file $patchFile
+								;;
+						esac
+					fi
+					;;
 			esac
 			;;
 		$FGLRX)
@@ -884,7 +900,7 @@ set_test_data()
 		IS_SIDUX_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
-		KERNEL_THIRD=30
+		KERNEL_THIRD=32
 # 		# values: '' or 'true'
 # 		IS_XEN=''
 # 		# check for specific system base tests, can be:
