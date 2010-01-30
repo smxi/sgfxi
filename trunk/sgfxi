@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.20
-####  Date: January 27 2010
+####  version: 4.10.21
+####  Date: January 30 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -176,7 +176,7 @@ DISPLAY_MANAGER=$( basename $DISPLAY_MANAGER 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='190.53:173.14.22:96.43.14:71.86.11'
+NV_VERSIONS='190.53:173.14.25:96.43.16:71.86.13'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -526,9 +526,8 @@ driver_support_tests()
 						esac
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
-						
 						case $DRIVER_DEFAULT in
-							195.30|195.22|190.53|190.42|185.18.14|180.60|173.14.2[02]|96.43.1[134]|71.86.11|71.86.09)
+							195.30|195.22|190.53|190.42|185.18.14|180.60|173.14.2[025]|96.43.1[1346]|71.86.1[13]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
