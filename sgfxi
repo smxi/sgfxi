@@ -2283,7 +2283,7 @@ check_update_script()
 					echo "Show current ATI/Fglrx support status: ${C}$SCRIPT_NAME -L f${S}"
 					echo "Show current local/remote ${C}$SCRIPT_NAME${S} versions: ${C}$SCRIPT_NAME -L v${S}"
 					print_hec
-					echo "Update completed. Exiting now.${N}"
+					echo "${S}Update completed. Exiting now.${N}"
 				fi
 				exit 0
 			else
