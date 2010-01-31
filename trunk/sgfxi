@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.23
-####  Date: January 30 2010
+####  version: 4.10.24
+####  Date: January 31 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -2281,8 +2281,9 @@ check_update_script()
 					echo "Show all currently supported drivers: ${C}$SCRIPT_NAME -L d${S}"
 					echo "Show current nVidia support status: ${C}$SCRIPT_NAME -L n${S}"
 					echo "Show current ATI/Fglrx support status: ${C}$SCRIPT_NAME -L f${S}"
-					echo
-					echo "Exiting now.${N}"
+					echo "Show current local/remote ${C}$SCRIPT_NAME${S} versions: ${C}$SCRIPT_NAME -L v${S}"
+					print_hec
+					echo "Update completed. Exiting now.${N}"
 				fi
 				exit 0
 			else
@@ -2420,6 +2421,20 @@ print_information_continue()
 		fi
 	fi
 	eval $LOGUE
+}
+
+# this is the hit enter to continue blurb...
+print_hec()
+{
+	local response=''
+
+	if [ "$AUTORUN" != 'true' ];then
+		echo $LINE
+		# halt the script so people can read the advice
+		echo "${Q}Please hit ${C}enter${Q} to continue${N}"
+		echo $LINE
+		read response
+	fi
 }
 
 ### -------------------------------------------------------------------
