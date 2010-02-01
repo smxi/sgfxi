@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.24
-####  Date: January 31 2010
+####  version: 4.10.25
+####  Date: February 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1846,14 +1846,6 @@ check_install_tools()
 	# nvidia and fglrx tools check_package_status
 	case $SYSTEM_BASE in
 		debian|ubuntu)
-			# this covers the case of first install, no apt update yet, which
-			# makes the following  c tests all fail. This will never be true from
-			# sm fired sessions since smxi always updates first. Or updates
-			# if apt cache file is less than 5mB
-			if [ "$( check_dpkg_update )" -lt 5 ];then
-				check_apt_aptitude
-				update_package_manager 'update'
-			fi
 			if [ -z "$( check_package_status 'module-assistant' 'i' )" -a -n "$( check_package_status 'module-assistant' 'c' )" ];then
 				install_package 'module-assistant'
 			fi
@@ -1915,13 +1907,24 @@ check_dpkg_update()
 	eval $LOGUS
 	local dpkguf='/var/cache/apt/pkgcache.bin'
 	local sizeWorking=0
+	
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			# this covers the case of first install, no apt update yet, which
+			# makes the following  c tests all fail. This will never be true from
+			# sm fired sessions since smxi always updates first. Or updates
+			# if apt cache file is less than 5mB
+			if [ -f $dpkguf ];then
+				# dpkgUpdate=$( ls -l --time-style=+%Y-%m-%d-%H:%M $dpkguf | grep -Eo "20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}" )
+				sizeWorking=$( du -B M $dpkguf | grep -Eo '^[0-9]+' )
+			fi
+			log_function_data "sizeWorking: $sizeWorking"
+			if [ "$sizeWorking" -lt 4 ];then
+				update_package_manager 'update'
+			fi
+			;;
+	esac
 
-	if [ -f $dpkguf ];then
-		# dpkgUpdate=$( ls -l --time-style=+%Y-%m-%d-%H:%M $dpkguf | grep -Eo "20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}" )
-		sizeWorking=$( du -B M $dpkguf | grep -Eo '^[0-9]+' )
-	fi
-	log_function_data "sizeWorking: $sizeWorking"
-	echo "$sizeWorking"
 	eval $LOGUE
 }
 
@@ -4908,6 +4911,7 @@ if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	detect_card_version
 fi
 
+# this needs to go before logging starts so we know what the package manager is
 if [ "$B_PRINT_VER" != 'true' -a -z "$PACKAGE_MANAGER" -a "$B_SM_INSTALL" != 'true' -a "$B_AUTORUN" != 'true' ];then
 	check_apt_aptitude
 fi
@@ -4925,6 +4929,12 @@ if [ "$B_PRINT_VER" != 'true' -a "$B_SKIP_FUNCTION" != 'true' ];then
 		move_x_conf
 	fi
 	create_x_conf
+fi
+
+# we'll need to force an initial update on fresh apt type installs for header
+# checks and other package checks.
+if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_PRINT_VER" != 'true' -a "$B_SM_INSTALL" != 'true' ];then
+	check_dpkg_update
 fi
 
 if [ "$B_NATIVE_DRIVER" == 'true' ];then
