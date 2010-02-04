@@ -527,7 +527,7 @@ driver_support_tests()
 						# set alternate download location if required, nvidia is using this
 						# now for all beta driver releases. Stable drivers are using http
 						case $DRIVER_DEFAULT in
-							195.36.03:195.30|190.53|190.42|185.18.14|180.60|173.14.2[025]|96.43.1[1346]|71.86.1[13]|71.86.09)
+							195.36.03|195.30|190.53|190.42|185.18.14|180.60|173.14.2[025]|96.43.1[1346]|71.86.1[13]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
