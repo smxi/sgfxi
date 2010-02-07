@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.27
-####  Date: February 3 2010
+####  version: 4.10.28
+####  Date: February 7 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -355,7 +355,7 @@ driver_support_tests()
 					case $X_VERSION in
 						1.[7-9]|2.[0-9]|7.[5-9]|8.[0-9])
 							case $DRIVER_DEFAULT in
-								10-[1-9]|10-1[0-2])
+								10-[3-9]|10-1[0-2])
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -4167,6 +4167,7 @@ create_driver_entry()
 pcibusid_hex_to_dec()
 {
 	eval $LOGUS
+
 	local pt1=$( cut -d ':' -f 1 <<< $BUS_ID )
 	local pt2=$( cut -d ':' -f 2 <<< $BUS_ID )
 	local pt3=$( cut -d ':' -f 3 <<< $BUS_ID )
