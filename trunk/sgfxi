@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.29
+####  version: 4.10.30
 ####  Date: February 9 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4225,13 +4225,18 @@ check_extensions()
 		$FGLRX)
 			#stateOn='Enable' # check into enable/disable syntax for fglrx/ati/radeon here
 			#stateOff='Disable'
-			compState=$stateOff
 			rendState=$stateOff
+			compState=$stateOff
 			# this stuff needs to be Disabled explicitly, no comments for fglrx only.
 			if [ "$B_NATIVE_DRIVER" != 'true' ];then
 				rendComment='#'
 				compComment=''
 				#aiglxString='\n\tOption\t"AIGLX"\t"'$stateOff'"'
+				if [ "$B_COMPOSITE" == 'true' ];then
+					compState=$stateOn
+				else
+					compState=$stateOff
+				fi
 			fi
 			;;
 		$NVIDIA|$INTEL)
@@ -4245,8 +4250,7 @@ check_extensions()
 	esac
 
 	# clear out all previous extension stuff: note: fglrx composite, aiglx, render: off
-	perl -pi -e 's/^[\s]*#*[\s]*Option\s*"B_COMPOSITE".*\n?//;
-	s/^[\s]*#*[\s]*Option\s*"Composite".*\n?//;
+	perl -pi -e 's/^[\s]*#*[\s]*Option\s*"Composite".*\n?//;
 	s/^[\s]*#*[\s]*Option\s*"RENDER".*\n?//;
 	s/^[\s]*#*[\s]*Option\s*"Render".*\n?//;
 	s/^[\s]*#*[\s]*Option\s*"AIGLX".*\n?//;
@@ -4553,7 +4557,7 @@ show_options()
 	echo "   with low graphics memory (64 mB or less). Default is disabled/off."
 	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta driver (nVidia cards only)."
 	echo "   If no beta driver is available, the current stable driver for your card type is used."
-	echo "-c Use composite mode. For things like Beryl/Compiz (nVidia cards only)."
+	echo "-c Use composite mode. For things like Beryl/Compiz (nVidia/new ATI cards only)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
 	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
 # 	echo "-d Remove IgnoreDisplayDevices, allow TV for example (nVidia cards only)."
