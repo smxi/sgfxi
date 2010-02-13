@@ -1,0 +1,78 @@
+Index: usr/src/nv/conftest.sh
+===================================================================
+--- usr/src/nv/conftest.sh	 
++++ usr/src/nv/conftest.sh	2010-01-14 06:15:40.000000000 +0530
+@@ -33,14 +33,14 @@
+     # CONFIG_XEN and CONFIG_PARAVIRT are present, text_xen() treats
+     # the kernel as a stand-alone kernel.
+     #
+-    FILE="linux/autoconf.h"
++    FILE="generated/autoconf.h"
+ 
+     if [ -f $HEADERS/$FILE -o -f $OUTPUT/include/$FILE ]; then
+         #
+         # We are looking at a configured source tree; verify
+         # that it's not a Xen kernel.
+         #
+-        echo "#include <linux/autoconf.h>
++        echo "#include <generated/autoconf.h>
+         #if defined(CONFIG_XEN) && !defined(CONFIG_PARAVIRT)
+         #error CONFIG_XEN defined!
+         #endif
+@@ -110,7 +110,7 @@
+     fi
+ }
+ 
+-CONFTEST_PREAMBLE="#include <linux/autoconf.h>
++CONFTEST_PREAMBLE="#include <generated/autoconf.h>
+     #if defined(CONFIG_XEN) && \
+         defined(CONFIG_XEN_INTERFACE_VERSION) &&  !defined(__XEN_INTERFACE_VERSION__)
+     #define __XEN_INTERFACE_VERSION__ CONFIG_XEN_INTERFACE_VERSION
+@@ -1305,10 +1305,10 @@
+         RET=1
+         FILE=""
+ 
+-        if [ -f $HEADERS/linux/utsrelease.h ]; then
+-            FILE="$HEADERS/linux/utsrelease.h"
+-        elif [ -f $OUTPUT/include/linux/utsrelease.h ]; then
+-            FILE="$OUTPUT/include/linux/utsrelease.h"
++        if [ -f $HEADERS/generated/utsrelease.h ]; then
++            FILE="$HEADERS/generated/utsrelease.h"
++        elif [ -f $OUTPUT/include/generated/utsrelease.h ]; then
++            FILE="$OUTPUT/include/generated/utsrelease.h"
+         elif [ -f $HEADERS/linux/version.h ]; then
+             FILE="$HEADERS/linux/version.h"
+         elif [ -f $OUTPUT/include/linux/version.h ]; then
+@@ -1365,7 +1365,7 @@
+         #
+         RET=1
+         VERBOSE=$7
+-        FILE="linux/autoconf.h"
++        FILE="generated/autoconf.h"
+ 
+         if [ -f $HEADERS/$FILE -o -f $OUTPUT/include/$FILE ]; then
+             #
+@@ -1419,7 +1419,7 @@
+         #
+         RET=1
+         VERBOSE=$7
+-        FILE="linux/autoconf.h"
++        FILE="generated/autoconf.h"
+ 
+         if [ -f $HEADERS/$FILE -o -f $OUTPUT/include/$FILE ]; then
+             #
+Index: usr/src/nv/nvacpi.c
+===================================================================
+--- usr/src/nv/nvacpi.c	
++++ usr/src/nv/nvacpi.c	2010-01-14 06:09:00.000000000 +0530
+@@ -48,6 +48,10 @@
+ };
+ #endif
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 33)
++#define acpi_walk_namespace(a,b,c,d,e,f) acpi_walk_namespace(a,b,c,d,e,f,NULL)
++#endif
++
+ static struct acpi_driver *nv_acpi_driver;
+ static acpi_handle nvif_handle = NULL;
+ static acpi_handle dsm_handle  = NULL;
