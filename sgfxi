@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.70
+####  version: 4.10.71
 ####  Date: February 15 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -85,6 +85,7 @@ CARD='' # card type: fglrx or nvidia
 DISTRIB_CODENAME=''
 DISTRIB_ID=''
 DISTRIB_RELEASE=''
+FED_KERNEL_PAE=''
 SYSTEM_BASE=''
 SYSTEM_CODENAME=''
 NATIVE_OVERRIDE=''
@@ -1627,6 +1628,9 @@ kernel_string_info()
 	KERNEL_BASE=$( echo $KERNEL_VERSION | cut -d '.' -f 1-2 ) # like: 2.6
 	KERNEL_THREE=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 1-3 ) # like: 2.6.19
 	KERNEL_THIRD=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 3 ) # like: 19, for math use
+	if [ -n "$( grep -is "PAE" <<< $KERNEL_VERSION )" ];then
+		FED_KERNEL_PAE='-PAE'
+	fi
 }
 
 # The best test I've found so far to check whether the kernel exists or not:
@@ -3641,8 +3645,8 @@ post_installer_steps()
 install_distro_drivers()
 {
 	eval $LOGPS
-	local nvidiaGlx='' nvidiaSource='' nvidiaModal='' kernelPae=''
-	local akmodNvidia='' drvNvidia1='' drvNvidia2=''
+	local nvidiaGlx='' nvidiaSource='' nvidiaModal=''
+	local akmodNvidia='' drvNvidia1='' drvNvidia2='' kernelDev=''
 
 	clean_up_fglrx_junk
 
@@ -3694,22 +3698,25 @@ install_distro_drivers()
 					# kmod-nvidia-PAE xorg-x11-drv-nvidia-libs.i586 xorg-x11-drv-nvidia-libs.x86_64
 					# akmod-nvidia-173xx xorg-x11-drv-nvidia-173xx-libs.i586 xorg-x11-drv-nvidia-173xx-libs.x86_64
 					# akmod-nvidia-96xx xorg-x11-drv-nvidia-96xx-libs
-					if [ -n "$( grep -is "PAE" <<< $KERNEL_VERSION )" ];then
-						kernelPae='-PAE'
+					
+					# install headers 
+					kernelDev="$kernel$FED_KERNEL_PAE-devel"
+					if [ -z "$( check_package_status "$kernelDev" 'i' )" ];then
+						install_package "$kernelDev"
 					fi
 					case $LEGACY_LEVEL in
 						1)	:
 							# this has already been error handled.
 							;;
-						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2$kernelPae"
+						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2$FED_KERNEL_PAE"
 							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.i586"
 							drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.x86_64"
 							;;
-						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3$kernelPae"
+						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3$FED_KERNEL_PAE"
 							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.i586"
 							drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.x86_64"
 							;;
-						*)	akmodNvidia="akmod-nvidia$kernelPae"
+						*)	akmodNvidia="akmod-nvidia$FED_KERNEL_PAE"
 							drvNvidia1="xorg-x11-drv-nvidia-libs.i586"
 							drvNvidia2="xorg-x11-drv-nvidia-libs.x86_64"
 							;;
