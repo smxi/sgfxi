@@ -756,12 +756,12 @@ run_patches()
 					if [ -n "$( misc_fixes nvidia-generated-patch )" -o "$B_TESTING_3" == 'true' ];then
 						case $DRIVER_DEFAULT in
 							195.*)
-								#arch linux provided
+								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
 								patchFile='NVIDIA-195-2.6.33.diff'
 								apply_patch_file $patchFile
 								;;
 							190.5[0-9])
-								#arch linux provided
+								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
 								patchFile='NVIDIA-190.53-2.6.33.diff'
 								apply_patch_file $patchFile
 								;;
