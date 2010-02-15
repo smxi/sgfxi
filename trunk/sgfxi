@@ -3347,9 +3347,8 @@ preinstall_cleanup()
 	if [ -f "$fglrxUninstaller" ];then
 		bash $fglrxUninstaller
 	fi
-	clean_dkms
 	remove_module 'fglrx'
-
+	clean_dkms 
 	eval $LOGPE
 }
 
@@ -3439,6 +3438,7 @@ add_module()
 }
 
 # this should in theory all be gone but not necessarily in fact
+# note that fglrx isn't working well here at all...
 clean_dkms()
 {
 	if [ -d /var/lib/dkms/fglrx ];then
@@ -3540,7 +3540,6 @@ run_driver_installer()
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 			else
-				clean_dkms
 				echo ${M}$LINE
 				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
 				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
