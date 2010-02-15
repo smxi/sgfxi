@@ -1678,6 +1678,15 @@ check_kernel_headers()
 				error_handler 224 "$headerName"
 			fi
 			;;
+		fedora)
+			local kernelDevel=''
+			# install headers from -devel package, this is not a clean method in terms 
+			# of guaranteeing correct headers, score 1 debian method that is clear and logical
+			kernelDevel="kernel$FED_KERNEL_PAE-devel"
+			if [ -z "$( check_package_status "$kernelDevel" 'i' )" ];then
+				install_package "$kernelDevel"
+			fi
+			;;
 		# fresh arch installs do not have the kernel header in /usr/src but this test
 		# is highly erratic, arch is not using consistent methods, requires more testing
 # 		arch)
@@ -3646,7 +3655,7 @@ install_distro_drivers()
 {
 	eval $LOGPS
 	local nvidiaGlx='' nvidiaSource='' nvidiaModal=''
-	local akmodNvidia='' drvNvidia1='' drvNvidia2='' kernelDev=''
+	local akmodNvidia='' drvNvidia1='' drvNvidia2='' 
 
 	clean_up_fglrx_junk
 
@@ -3698,12 +3707,6 @@ install_distro_drivers()
 					# kmod-nvidia-PAE xorg-x11-drv-nvidia-libs.i586 xorg-x11-drv-nvidia-libs.x86_64
 					# akmod-nvidia-173xx xorg-x11-drv-nvidia-173xx-libs.i586 xorg-x11-drv-nvidia-173xx-libs.x86_64
 					# akmod-nvidia-96xx xorg-x11-drv-nvidia-96xx-libs
-					
-					# install headers 
-					kernelDev="$kernel$FED_KERNEL_PAE-devel"
-					if [ -z "$( check_package_status "$kernelDev" 'i' )" ];then
-						install_package "$kernelDev"
-					fi
 					case $LEGACY_LEVEL in
 						1)	:
 							# this has already been error handled.
