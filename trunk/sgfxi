@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.71
+####  version: 4.10.72
 ####  Date: February 15 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1855,8 +1855,8 @@ check_set_distro()
 			FG_DISTRIB_CODENAME=''
 			SYSTEM_BASE='fedora'
 			if [ -f "$EFR" ];then
-				DISTRIB_CODENAME=$( sed -i -r 's/Fedora.*\((.*)\)/\1/i' $EFR )
-				SYSTEM_CODENAME=$( sed -i -r 's/Fedora.*[[:space:]]([0-9]+)[[:space:]]\(.*\)/\1/i' $EFR )
+				DISTRIB_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*\((.*)\)/\1/i' )
+				SYSTEM_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*[[:space:]]([0-9]+)[[:space:]]\(.*\)/\1/i' )
 			fi
 			X_NAME='X'
 			;;
