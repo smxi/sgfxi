@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.32
-####  Date: February 14 2010
+####  version: 4.10.70
+####  Date: February 15 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -209,6 +209,9 @@ NV_DEBIAN_LEGACY_3='173xx'
 NV_UB_CURRENT='185'
 NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
+
+NV_FED_LEGACY_2='-96xx'
+NV_FED_LEGACY_3='-173xx'
 # set dynamically in fixes, line 529 or so
 NVIDIA_DOWNLOAD_SITE='' 
 
@@ -261,6 +264,7 @@ EAS='/etc/apt/sources.list'
 EXXC='/etc/X11/xorg.conf'
 EAR='/etc/arch-release'
 EDV='/etc/debian_version'
+EFR='/etc/fedora-release'
 ELR='/etc/lsb-release'
 KERNEL_HEADER_DIRECT='/usr/include/linux/kernel.h'
 
@@ -279,6 +283,8 @@ SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
 
 DEBIAN_FGLRX='debian-fglrx'
 DEBIAN_NVIDIA='debian-nvidia'
+FEDORA_FGLRX='fedora-fglrx'
+FEDORA_NVIDIA='fedora-nvidia'
 UBUNTU_FGLRX='ubuntu-fglrx'
 UBUNTU_NVIDIA='ubuntu-nvidia'
 
@@ -1616,8 +1622,8 @@ kernel_string_info()
 		KERNEL_VERSION=$( uname -r ) # full kernel name
 	fi
 
-	IS_SIDUX_KERNEL=$( echo $KERNEL_VERSION | grep -e "[\.|-]slh\(64\)\?[\.|-]" )
-	IS_XEN=$( grep -i 'CONFIG_XEN=y' /boot/config-$KERNEL_VERSION )
+	IS_SIDUX_KERNEL=$( echo $KERNEL_VERSION | grep -E "[\.|-]slh\(64\)\?[\.|-]" )
+	IS_XEN=$( grep -si 'CONFIG_XEN=y' /boot/config-$KERNEL_VERSION )
 	KERNEL_BASE=$( echo $KERNEL_VERSION | cut -d '.' -f 1-2 ) # like: 2.6
 	KERNEL_THREE=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 1-3 ) # like: 2.6.19
 	KERNEL_THIRD=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 3 ) # like: 19, for math use
@@ -1743,7 +1749,7 @@ check_set_distro()
 	local lsbData='' debianVersion='' debianDefault='' workingId=''
 	local stableSources='' testingSources='' sidSources=''
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
-
+	
 	# make sure that it's a debian/arch/ubuntu based system
 	# note that mint/ubuntu have file /etc/debian_version so we need to be careful here
 	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
@@ -1775,10 +1781,11 @@ check_set_distro()
 		stableSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '([[:space:]]stable|/stable|lenny|etch)' )
 		testingSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(squeeze|testing)' )
 		sidSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
-	
 	# arch tests
 	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
 		workingId='arch'
+	elif [ -f "$EFR" ] || [ -n "$( grep -si '^fedora' <<< $etcIssue  )" ];then
+		workingId='fedora'
 	else
 		error_handler 252
 	fi
@@ -1828,6 +1835,17 @@ check_set_distro()
 					DISTRIB_ID='antix'
 				fi
 			fi
+			;;
+		fedora)
+			APT_TYPE='yum'
+			FG_DISTRIB_ID='Fedora'
+			FG_DISTRIB_CODENAME=''
+			SYSTEM_BASE='fedora'
+			if [ -f "$EFR" ];then
+				DISTRIB_CODENAME=$( sed -i -r 's/Fedora.*\((.*)\)/\1/i' $EFR )
+				SYSTEM_CODENAME=$( sed -i -r 's/Fedora.*[[:space:]]([0-9]+)[[:space:]]\(.*\)/\1/i' $EFR )
+			fi
+			X_NAME='X'
 			;;
 		linuxmint)
 			APT_TYPE='apt-get'
@@ -1991,36 +2009,8 @@ compare_numbers()
 ## DEBUGGER
 # compare_numbers 195 195.53 ;exit
 
-# if null, this will trigger a first run update, maybe in the future can also
-# add time of last update tests, we'll see. For now returns size in MB for tests
-check_dpkg_update()
-{
-	eval $LOGUS
-	local dpkguf='/var/cache/apt/pkgcache.bin'
-	local sizeWorking=0
-	
-	case $SYSTEM_BASE in
-		debian|ubuntu)
-			# this covers the case of first install, no apt update yet, which
-			# makes the following  c tests all fail. This will never be true from
-			# sm fired sessions since smxi always updates first. Or updates
-			# if apt cache file is less than 5mB
-			if [ -f $dpkguf ];then
-				# dpkgUpdate=$( ls -l --time-style=+%Y-%m-%d-%H:%M $dpkguf | grep -Eo "20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}" )
-				sizeWorking=$( du -B M $dpkguf | grep -Eo '^[0-9]+' )
-			fi
-			log_function_data "sizeWorking: $sizeWorking"
-			if [ "$sizeWorking" -lt 4 ];then
-				update_package_manager 'update'
-			fi
-			;;
-	esac
-
-	eval $LOGUE
-}
-
 ### -------------------------------------------------------------------
-### apt tools
+### package manager tools
 ### -------------------------------------------------------------------
 
 check_apt_aptitude()
@@ -2113,6 +2103,16 @@ check_package_status()
 					;;
 			esac
 			;;
+		yum)
+			case $2 in
+				c)
+					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( yum list available "$1"  2>/dev/null )
+					;;
+				i)
+				LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( rpm -qa 2>/dev/null | grep "$1"  )
+					;;
+			esac
+			;;
 	esac
 
 	echo $packageVersion
@@ -2153,9 +2153,16 @@ install_package()
 			install='-S'
 			useUntrusted=''
 			;;
+		yum)
+			doYes='' # note: -y is used, but for debugging we'll wait to add that.
+			update=''
+			install='install'
+			useUntrusted='' # check later
+			;;
 	esac
-	
-	update_package_manager "$update"
+	if [ -n "$update" ];then # seems yum has no update repo data command?
+		update_package_manager "$update"
+	fi
 
 	# this will force install of sid to get rid of experimental if required
 	case $SYSTEM_BASE in
@@ -2178,6 +2185,9 @@ install_package()
 						optionalArgs=' --reinstall '
 						;;
 					pacman)
+						optionalArgs=''
+						;;
+					yum)
 						optionalArgs=''
 						;;
 				esac
@@ -2207,12 +2217,15 @@ list_installed_packages()
 	eval $LOGUS
 	local packageList=''
 	
-	case $SYSTEM_BASE in
-		debian|ubuntu)
+	case $APT_TYPE in
+		apt-get|aptitude)
 			packageList=$( dpkg -l | awk '{print $2}' | grep -i "$1" | grep -Ev "$2" )
 			;;
 		pacman)
 			packageList=$( pacman -Q | awk '{print $1}' | grep -i "$1" | grep -Ev "$2" )
+			;;
+		yum)
+			packageList=$( rpm -qa | awk '{print $1}' | grep -i "$1" | grep -Ev "$2" )
 			;;
 	esac
 	log_function_data "packageList: $packageList"
@@ -2220,7 +2233,7 @@ list_installed_packages()
 	eval $LOGUE
 }
 
-# install_package nano '' 'reinstall'
+# $1 - package(s) to remove; $2 - no-loop: remove all at once
 remove_package()
 {
 	eval $LOGUS
@@ -2232,21 +2245,29 @@ remove_package()
 		pacman)
 			purge='-R'
 			;;
+		yum)
+			purge='erase'
+			;;
 	esac
 
 	echo ${M}$LINE
 	echo "You will need to remove the following package(s): ${C}$1"
 	echo "${M}in order to proceed with your ${C}$2${M} driver install${N}"
 	echo $LINE
-	for package in $1
-	do
-		if [ -n "$( check_package_status  "$package" 'i' )" ];then
-			echo "${S}Removing ${C}$package${S}...${N}"
-			$APT_TYPE $purge $package || error_handler 190 "$package"
-		else
-			echo "${S}The package ${C}$package${S} is not installed, continuing...${N}"
-		fi
-	done
+	if [ "$2" == 'no-loop' ];then
+		echo "${S}Removing ${C}$1${S}...${N}"
+		$APT_TYPE $purge $1 || error_handler 190 "$package"
+	else
+		for package in $1
+		do
+			if [ -n "$( check_package_status  "$package" 'i' )" ];then
+				echo "${S}Removing ${C}$package${S}...${N}"
+				$APT_TYPE $purge $package || error_handler 190 "$package"
+			else
+				echo "${S}The package ${C}$package${S} is not installed, continuing...${N}"
+			fi
+		done
+	fi
  	echo "${S}Package(s) removed successfully, continuing with driver install.${N}"
  	eval $LOGUE
 }
@@ -2265,6 +2286,9 @@ hold_package()
 			echo $1 hold | dpkg --set-selections
 			;;
 		pacman)
+			:
+			;;
+		yum)
 			:
 			;;
 	esac
@@ -2318,9 +2342,41 @@ update_to_nonfree_sources()
 				error_handler 216
 			fi
 			;;
+		fedora)
+			: # there are tests here for their non free driver repos but that will be added later
+			;;
 	esac
 	eval $LOGPE
 }
+
+# if null, this will trigger a first run update, maybe in the future can also
+# add time of last update tests, we'll see. For now returns size in MB for tests
+check_dpkg_update()
+{
+	eval $LOGUS
+	local dpkguf='/var/cache/apt/pkgcache.bin'
+	local sizeWorking=0
+	
+	case $SYSTEM_BASE in
+		debian|ubuntu)
+			# this covers the case of first install, no apt update yet, which
+			# makes the following  c tests all fail. This will never be true from
+			# sm fired sessions since smxi always updates first. Or updates
+			# if apt cache file is less than 5mB
+			if [ -f $dpkguf ];then
+				# dpkgUpdate=$( ls -l --time-style=+%Y-%m-%d-%H:%M $dpkguf | grep -Eo "20[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}:[0-9]{2}" )
+				sizeWorking=$( du -B M $dpkguf | grep -Eo '^[0-9]+' )
+			fi
+			log_function_data "sizeWorking: $sizeWorking"
+			if [ "$sizeWorking" -lt 4 ];then
+				update_package_manager 'update'
+			fi
+			;;
+	esac
+
+	eval $LOGUE
+}
+
 
 ### -------------------------------------------------------------------
 ### script updating / patch file install tools
@@ -2731,7 +2787,8 @@ install_native_driver()
 		if [ -n "$xorgCore" ];then
 			install_package "$xorgCore" '' 'reinstall'
 		fi
-		if [ "$CARD" == "$FGLRX" ];then
+		# need an override for this
+		if [ "$CARD" == "$FGLRX" -a "$B_TESTING_3" != 'true' ];then
 			install_package "$libMesaGlx" '' 'reinstall'
 		fi
 
@@ -3167,7 +3224,7 @@ prep_install()
 			;;
 		$FGLRX)
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
-			if [ "$B_SKIP_FUNCTION" != 'true' ];then
+			if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_TESTING_3" != 'true' ];then
 				install_package "$libMesaGlx" '' 'reinstall'
 			fi
 			;;
@@ -3193,7 +3250,9 @@ prep_install()
 # 			fi
 			export CC=$ubgv
 		else
-			error_handler 230 "$ubgv"
+			if [ "$SYSTEM_BASE" != 'fedora' ];then #for fedora dev only
+				error_handler 230 "$ubgv"
+			fi
 		fi
 	fi
 	eval $LOGPE
@@ -3215,9 +3274,9 @@ preinstall_cleanup()
 	# double check, clean up anything left after uninstaller runs
 	rm -f /usr/src/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	rm -rf /usr/src/modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-
-	if [ -n "$( lsmod | grep '^nvidia' )" ];then
-		rmmod nvidia 1>> $LOG_FILE 2>> $LOG_FILE
+	remove_module 'nvidia'
+	if [ "$B_NATIVE_DRIVER" != 'true' ];then
+		remove_module 'nouveau'
 	fi
 	rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.*o 1>> $LOG_FILE 2>> $LOG_FILE
 	rm -f /lib/modules/$KERNEL_VERSION/volatile/nvidia.*o >/dev/null 1>> $LOG_FILE 2>> $LOG_FILE
@@ -3246,28 +3305,30 @@ preinstall_cleanup()
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
 	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
 	if [ -n "$oldNvidia" ];then
-		case $SYSTEM_BASE in
-			debian|ubuntu)
+		case $APT_TYPE in
+			apt-get|aptitude)
 				dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
 				;;
-			arch)
-				package_remover "$oldNvidia"
+			pacman|yum)
+				remove_package "$oldNvidia" 'no-loop'
 				;;
 		esac
 	fi
 
 	## FGLRX removal...
 	# this is for manually installed amdccle removal
-	rm -f /usr/local/bin/amdccle
+	if [ -f /usr/local/bin/amdccle ];then
+		rm -f /usr/local/bin/amdccle
+	fi
 
 	oldFglrx=$( list_installed_packages 'fglrx' 'modalias' )
 	if [ -n "$oldFglrx" ];then
-		case $SYSTEM_BASE in
-			debian|ubuntu)
-				dpkg --purge $oldFglrx  1>> $LOG_FILE 2>> $LOG_FILE
+		case $APT_TYPE in
+			apt-get|aptitude)
+				dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE
 				;;
-			arch)
-				package_remover "$oldFglrx"
+			pacman|yum)
+				remove_package "$oldFglrx" 'no-loop'
 				;;
 		esac
 	fi
@@ -3286,20 +3347,107 @@ preinstall_cleanup()
 	if [ -f "$fglrxUninstaller" ];then
 		bash $fglrxUninstaller
 	fi
-	clean_fglrx_dkms
-	if [ -n "$( lsmod | grep fglrx )" ];then
-		rmmod fglrx 1>> $LOG_FILE 2>> $LOG_FILE
-	fi
+	clean_dkms
+	remove_module 'fglrx'
 
 	eval $LOGPE
 }
 
+# note: for 
+# args: $1 - which module; for nouveau used, post nvidia install with no errors
+# use: $2 - nvidia-post - clean grub/module files of nouveau blacklists
+remove_module()
+{
+	local grub1='/boot/grub/menu.lst'
+	local grub2='/boot/grub/grub.cfg'
+	local emod='/etc/modules' 
+	local embc='/etc/modprobe.d/blacklist.conf'
+	local emd='/etc/modprobe.d/'
+	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
+	local blacklistNouveau='false'
+	
+	if [ -n "$( lsmod | grep "^$1" )" ];then
+		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE
+		if [ "$?" -ne 0 ];then
+			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
+			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
+		fi
+	fi
+	# need to see what this is doing elsewhere
+# 	case $SYSTEM_BASE in
+# 		debian|ubuntu)
+			perl -pi -e "s/^[[:space:]]*$1.*\n?//" $emod
+# 			;;
+# 	esac
+	if [ "$1" == 'nvidia' ];then
+		case $SYSTEM_BASE in
+			fedora)
+				if [ -f "$grub1" -a ! -f "$grub2" -a -z "$( grep -Eis '^[[:space:]]*kernel.*nouveau.modeset=0' $grub1 )" ];then
+					blacklistNouveau='true'
+				fi
+				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd )" ];then
+					blacklistNouveau='true'
+				fi
+				if [ ! -f "$emdbc" -a -d /etc/modprobe.d -a "$blacklistNouveau" == 'true' ];then
+					echo 'blacklist nouveau' > $emdbc
+					echo "${M}Since ${C}nouveau${M} was running in the kernel, you will need to reboot before"
+					echo "your ${C}$CARD${M} install is completed, and you may need to reboot if it errors out,"
+					echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
+					print_hec
+				fi
+				;;
+		esac
+	fi
+}
+
+# args: $1 - module to add or process
+# do some extra processing here for nouveau
+add_module()
+{
+	local grub1='/boot/grub/menu.lst'
+	local grub2='/boot/grub/grub.cfg'
+	local embc='/etc/modprobe.d/blacklist.conf'
+	local emd='/etc/modprobe.d/'
+	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
+	
+	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
+	if [ "$?" -ne 0 ];then
+		echo "${M}Error adding ${C}$1${M} module after installation."
+		echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
+	else
+		if [ -z "$( grep "^$1" /etc/modules )" ];then
+			echo "$1" >> /etc/modules
+		fi
+	fi
+	case $1 in
+		nouveau)
+			case $SYSTEM_BASE in
+				fedora)
+					if [ -f "$grub1" -a ! -f "$grub2" -n "$( grep -Eis '^[[:space:]]kernel.*nouveau.modeset=0' $grub1 )" ];then
+						sed -i 's|nouveau.modeset=0||i' $bgml
+					fi
+					if [ -f "$emdbc" -a -n "$( grep -Esi '^blacklist[[:space:]]+nouveau' $emdbc )" ];then
+						rm -f $emdbc
+					fi
+					if [ -f "$embc" -a -n "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc )" ];then
+						sed -i 's|blacklist[[:space:]]nouveau||i' $embc
+					fi
+					;;
+			esac
+			;;
+	esac
+}
+
 # this should in theory all be gone but not necessarily in fact
-clean_fglrx_dkms()
+clean_dkms()
 {
 	if [ -d /var/lib/dkms/fglrx ];then
 		log_function_data "fglrx dkms directories found and deleted"
 		rm -rf /var/lib/dkms/fglrx 1>> $LOG_FILE 2>> $LOG_FILE
+	fi
+	if [ -d /var/lib/dkms/nvidia ];then
+		log_function_data "nvidia dkms directories found and deleted"
+		rm -rf /var/lib/dkms/nvidia 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 }
 
@@ -3381,6 +3529,8 @@ run_driver_installer()
 			# reverting the patched stuff before anything else happens
 			apply_module_patch post
 			install_libvdpau
+			# only do a final removal of nouveau if the install succeeded
+			remove_module 'nouveau' 
 			;;
 		$FGLRX)
 			distroId=$FG_DISTRIB_ID
@@ -3492,7 +3642,8 @@ post_installer_steps()
 install_distro_drivers()
 {
 	eval $LOGPS
-	local nvidiaGlx='' nvidiaSource='' nvidiaModal=''
+	local nvidiaGlx='' nvidiaSource='' nvidiaModal='' kernelPae=''
+	local akmodNvidia='' drvNvidia1='' drvNvidia2=''
 
 	clean_up_fglrx_junk
 
@@ -3535,11 +3686,39 @@ install_distro_drivers()
 						#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
 						echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
 						install_package "$nvidiaGlx"
-		
-						if [ -z "$( grep '^nvidia' /etc/modules )" ];then
-							echo 'nvidia' >> /etc/modules
-						fi
+						add_module 'nvidia'
 					fi
+					;;
+				fedora)
+					# dependencies handle the rest of this
+					# kmod-nvidia xorg-x11-drv-nvidia-libs.i586 xorg-x11-drv-nvidia-libs.x86_64
+					# kmod-nvidia-PAE xorg-x11-drv-nvidia-libs.i586 xorg-x11-drv-nvidia-libs.x86_64
+					# akmod-nvidia-173xx xorg-x11-drv-nvidia-173xx-libs.i586 xorg-x11-drv-nvidia-173xx-libs.x86_64
+					# akmod-nvidia-96xx xorg-x11-drv-nvidia-96xx-libs
+					if [ -n "$( grep -is "PAE" <<< $KERNEL_VERSION )" ];then
+						kernelPae='-PAE'
+					fi
+					case $LEGACY_LEVEL in
+						1)	:
+							# this has already been error handled.
+							;;
+						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2$kernelPae"
+							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.i586"
+							drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.x86_64"
+							;;
+						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3$kernelPae"
+							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.i586"
+							drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.x86_64"
+							;;
+						*)	akmodNvidia="akmod-nvidia$kernelPae"
+							drvNvidia1="xorg-x11-drv-nvidia-libs.i586"
+							drvNvidia2="xorg-x11-drv-nvidia-libs.x86_64"
+							;;
+					esac
+					echo "${S}Installing ${C}$FEDORA_NVIDIA${S} components...${N}"
+					install_package "$akmodNvidia $drvNvidia1 $drvNvidia2"
+					# only do a final removal of nouveau if the install succeeded
+					remove_module 'nouveau'
 					;;
 				ubuntu)
 					# dependencies handle the rest of this
@@ -3774,10 +3953,11 @@ install_fglrx_debs()
 ### Finalizing steps
 ### -------------------------------------------------------------------
 
+# this only runs for non free driver installs, so no need to check for xorg stuff
 final_install_steps()
 {
 	eval $LOGPS
-	local emod='/etc/modules' fgModules='' fgModule=''
+	local fgModules='' fgModule=''
 
 	echo "${S}Finalizing install...${N}"
 	process_xvmc
@@ -3789,13 +3969,14 @@ final_install_steps()
 			mkdir -p /etc/udev/rules.d
 			rm -f /etc/udev/nvidia.rules /etc/udev/rules.d/nvidia.rules
 			ldconfig # Configure Dynamic Linker Run Time Bindings.
+			remove_module 'nouveau'
 			;;
 		$FGLRX)
 			##  clean up install parts
 			rm -rf /usr/src/modules/fglrx
 			rm -rf /tmp/fglrx* fglrx*
+			add_module 'fglrx'
 			# note, since ubuntu uses dkms we don't want to purge the kernel source
-			modprobe fglrx
 			case $SYSTEM_BASE in
 				arch)
 					fgModules='radeon drm'
@@ -3811,17 +3992,8 @@ final_install_steps()
 			# test for, then remove if present
 			for fgModule in $fgModules
 			do
-				if [ -n "$( lsmod | cut -d ' ' -f 1 | grep "$fgModule" )" ];then
-					rmmod $fgModule 1>> $LOG_FILE 2>> $LOG_FILE
-				fi
+				remove_module "$fgModule"
 			done
-			# need to see what this is doing elsewhere
-			case $SYSTEM_BASE in
-				debian|ubuntu)
-					perl -pi -e 's/^[\s]*radeon/#radeon/' $emod
-					perl -pi -e 's/^[\s]*fglrx/#fglrx/' $emod
-					;;
-			esac
 			;;
 	esac
 
