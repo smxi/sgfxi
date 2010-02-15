@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.31
-####  Date: February 13 2010
+####  version: 4.10.32
+####  Date: February 14 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -196,10 +196,10 @@ NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 NV_TESTING="$NV_VERSIONS_BETA:195.30"
 # stable primary: 190.53 190.42
 # stable primary: 185.18.36 185.18.31 185.18.29 185.18.14 180.60 180.51 180.44
-# stable legacy 1: 71.86.11 71.86.09 71.86.06
-# stable legacy 2: 96.43.14 96.43.13 96.43.11
-# stable legacy 3: 173.14.22 173.14.20 173.14.18 173.14.12
-NV_OTHERS='185.18.36:185.18.14:180.60:180.44:177.82:173.14.20:173.14.18:173.14.12:169.12:100.14.19:96.43.13:96.43.11:71.86.09:71.86.06'
+# stable legacy 1: 71.86.13 71.86.11 71.86.09 71.86.06
+# stable legacy 2: 96.43.16 96.43.14 96.43.13 96.43.11
+# stable legacy 3: 173.14.25 173.14.22 173.14.20 173.14.18 173.14.12
+NV_OTHERS='190.42:185.18.36:180.60:177.82:173.14.22:169.12:100.14.19:96.43.14:71.86.11:71.86.09'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -209,9 +209,8 @@ NV_DEBIAN_LEGACY_3='173xx'
 NV_UB_CURRENT='185'
 NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
-
-# default download site for nvidia, take out http://us.download if problems
-NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
+# set dynamically in fixes, line 529 or so
+NVIDIA_DOWNLOAD_SITE='' 
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
@@ -269,6 +268,7 @@ INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
 # file and patch urls
+NV_LIVE_DRIVERS='http://people.freedesktop.org/~aplattner/nvidia-versions'
 PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
@@ -483,7 +483,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.[5-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
-									173.14.12|169.12|100.14.19|71.86.06)
+									169.12|100.14.19)
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 226
 										fi
@@ -523,10 +523,15 @@ driver_support_tests()
 								esac
 								;;
 						esac
-						# set alternate download location if required, nvidia is using this
-						# now for all beta driver releases. Stable drivers are using http
+						# white list of known http downloads, otherwise use ftp, this will be required
+						# for any future drivers auto detected beta drivers anyway.
+						# driver=71.86.13;wget --spider http://download.nvidia.com/XFree86/Linux-x86/$driver/NVIDIA-Linux-x86-$driver-pkg0.run 
+						# default download site for nvidia, return http://us.download if problems
 						case $DRIVER_DEFAULT in
-							195.36.03|195.30|190.53|190.42|185.18.14|180.60|173.14.2[025]|96.43.1[1346]|71.86.1[13]|71.86.09)
+							195.36.03|190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[13]|71.86.09)
+								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
+								;;
+							*)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
@@ -577,7 +582,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -589,7 +594,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|180.*|177.*|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -601,7 +606,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|180.44|173.14.2*|173.14.18|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -670,10 +675,6 @@ run_patches()
 							patchFile='NVIDIA_kernel-96.43.05-2290218.diff'
 							apply_patch_file $patchFile
 							;;
-						71.86.04)
-							patchFile='NVIDIA_kernel-71.86.04-2305230.diff'
-							apply_patch_file $patchFile
-							;;
 					esac
 					;;
 				26)
@@ -705,18 +706,6 @@ run_patches()
 							patchFile='NVIDIA_kernel-177.13-2627763.diff'
 							apply_patch_file $patchFile
 							;;
-						173.14.12)
-							# patch file source:
-							# http://www.nvnews.net/vbulletin/showthread.php?t=120884
-							patchFile='NVIDIA-173.14.12-2.6.27.patch'
-							apply_patch_file $patchFile
-							;;
-						71.86.06)
-							# patch file source:
-							# http://www.nvnews.net/vbulletin/showthread.php?t=120971
-							patchFile='NVIDIA-71.86.06-2.6.27.patch'
-							apply_patch_file $patchFile
-							;;
 						# patch url: http://www.nvnews.net/vbulletin/showthread.php?t=112452
 						100.14.19)
 							patchFile='NVIDIA-100.14.19-kernel-2.6.27-compat.patch'
@@ -740,19 +729,10 @@ run_patches()
 					;;
 				30)
 					case $DRIVER_DEFAULT in
-						96.43.11|71.86.09)
+						71.86.09)
 							# post 1:  http://www.nvnews.net/vbulletin/showthread.php?t=133990
 							# alt: http://www.nvnews.net/vbulletin/showthread.php?p=1984486
 							patchFile='NVIDIA_96.43.11-2.6.30.diff'
-							apply_patch_file $patchFile
-							;;
-						173.14.18)
-							patchFile='NVIDIA_173.18.14-2.6.30.diff'
-							apply_patch_file $patchFile
-							;;
-						180.44)
-							# http://www.nvnews.net/vbulletin/showthread.php?p=1984486
-							patchFile='NVIDIA_180.44-2.6.30.diff'
 							apply_patch_file $patchFile
 							;;
 						185.18.*)
@@ -1344,6 +1324,8 @@ detect_card_version()
 	cardNumber=$( echo $CARD_DATA | cut -d ':' -f2 )
 	case $cardBrand in
 		10de|12d2)
+			# these will also assign dynamic betas to $NV_TESTING prior to sending it
+			# to the master DRIVER_TESTING for support tests right after
 			DRIVER_DEFAULT=$( assign_standard_or_beta_driver 'default' 'driver' )
 			B_BETA_EXISTS=$( assign_standard_or_beta_driver 'default' 'set-exists' )
 			DRIVER_TESTING=$NV_TESTING
@@ -1483,7 +1465,42 @@ detect_card_version()
 # args: $1 - default/legacy-[1-3]; $2 - set-exists/driver
 assign_standard_or_beta_driver()
 {
-	local betaDriver='' stableDriver=''
+	local betaDriver='' stableDriver='' liveBetas=''
+	local betaCurrent='' beta173='' beta96='' beta71=''
+	
+	# only run this the first time it's called
+	if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
+		liveBetas=$( get_live_nvidia_betas )
+		betaCurrent=$( cut -d ':' -f 1 <<< "$liveBetas" )
+		beta173=$( cut -d ':' -f 2 <<< "$liveBetas" )
+		beta96=$( cut -d ':' -f 3 <<< "$liveBetas" )
+		beta71=$( cut -d ':' -f 4 <<< "$liveBetas" )
+		## assign live defaults if required
+		if [ -n "$betaCurrent" ];then
+			if [ -z "$NV_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $NV_DEFAULT_BETA )" -eq 0 ];then
+				NV_DEFAULT_BETA=$betaCurrent
+				NV_TESTING="$NV_TESTING:$betaCurrent"
+			fi
+		fi
+		if [ -n "$beta173" ];then
+			if [ -z "$NV_LEGACY_BETA_3" -o "$( compare_numbers $beta173 $NV_LEGACY_BETA_3 )" -eq 0 ];then
+				NV_LEGACY_BETA_3=$beta173
+				NV_TESTING="$NV_TESTING:$beta173"
+			fi
+		fi
+		if [ -n "$beta96" ];then
+			if [ -z "$NV_LEGACY_BETA_2" -o "$( compare_numbers $beta96 $NV_LEGACY_BETA_2 )" -eq 0 ];then
+				NV_LEGACY_BETA_2=$beta96
+				NV_TESTING="$NV_TESTING:$beta96"
+			fi
+		fi
+		if [ -n "$beta71" ];then
+			if [ -z "$NV_LEGACY_BETA_1" -o "$( compare_numbers $beta71 $NV_LEGACY_BETA_1 )" -eq 0 ];then
+				NV_LEGACY_BETA_1=$beta71
+				NV_TESTING="$NV_TESTING:$beta71"
+			fi
+		fi
+	fi
 
 	case $1 in
 		default)
@@ -1515,6 +1532,22 @@ assign_standard_or_beta_driver()
 			echo 'true'
 		fi
 	fi
+}
+
+get_live_nvidia_betas()
+{
+	local driverList='' betaCurrent='' beta173='' beta96='' beta71=''
+	
+	# get data
+	driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
+	# get beta drivers
+	betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
+	beta173=$( awk '/^173.*beta/ {print $3}' <<< "$driverList" )
+	beta96=$( awk '/^96.*beta/ {print $3}' <<< "$driverList" )
+	beta71=$( awk '/^71.*beta/ {print $3}' <<< "$driverList" )
+	driverList="$betaCurrent:$beta173:$beta96:$beta71"
+	# return processed betas
+	echo $driverList
 }
 
 ### -------------------------------------------------------------------
@@ -1899,6 +1932,64 @@ check_install_tools()
 	fi
 	eval $LOGPE
 }
+
+# compare 2 dot [5.34.6] or 1/0 dot [3.45, 3] version numbers
+# return codes: 0 - $1 > $2; 1 - $1 == $2; 2 - $1 < $2
+# note: this also works for one dot, like 3.4, and for 0 dot, like 3
+# note: this function will always be sent . type numbers, and it handles any
+# localization re decimal indicators internally, otherwise it's too much of a pain.
+compare_numbers()
+{
+	eval $LOGUS
+	## DEBUGGER
+	# echo $1 $2
+	# first we need to determine what the base system is using for decimal indicator
+	local returnValue=''
+	local decimalType=$( echo 1 | awk '{total = 1 / 2; print total}' | egrep -o '(\.|,)' )
+
+	# next we'll get the raw data and transate it if required
+	local numOne=$( cut -d '.' -f 1-2 <<< $1 | tr '.' $decimalType )
+	local subOne=$( cut -d '.' -f 3 <<< $1 )
+	if [ -z "$subOne" ];then
+		subOne=0
+	fi
+	local numTwo=$( cut -d '.' -f 1-2 <<< $2 | tr '.' $decimalType )
+	local subTwo=$( cut -d '.' -f 3 <<< $2 )
+	if [ -z "$subTwo" ];then
+		subTwo=0
+	fi
+	local test1=$( echo $numOne $numTwo | awk '{if ( $1 > $2 ) print 0;else print 1}' )
+	local test2=$( echo $numOne $numTwo | awk '{if ( $1 == $2 ) print 0;else print 1}' )
+	local test3=$( echo $subOne $subTwo | awk '{if ( $1 > $2 ) print 0;else print 1}' )
+	local test4=$( echo $subOne $subTwo | awk '{if ( $1 == $2 ) print 0;else print 1}' )
+# 	 echo -e "test1 $test1\ntest2 $test2\ntest3 $test3\ntest4 $test4"
+
+	# first case, x > y, and not equal
+	if [ "$test1" -eq 0 ];then
+		returnValue=0
+	# second case, x = y
+	elif [ "$test2" -eq 0 ];then # only when x = y, 3.2 = 3.2
+		# sub number a > b
+		if [ "$test3" -eq 0 ];then
+			returnValue=0
+		# sub number a = b
+		elif [ "$test4" -eq 0 ];then
+			returnValue=1
+		# sub number a < b
+		else
+			returnValue=2
+		fi
+	# if the x is less than y
+	else
+		returnValue=2
+	fi
+
+	echo $returnValue
+	log_function_data "returnValue: $returnValue"
+	eval $LOGUE
+}
+## DEBUGGER
+# compare_numbers 195 195.53 ;exit
 
 # if null, this will trigger a first run update, maybe in the future can also
 # add time of last update tests, we'll see. For now returns size in MB for tests
