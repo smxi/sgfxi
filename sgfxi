@@ -4657,6 +4657,7 @@ show_options()
 	echo "   with low graphics memory (64 mB or less). Default is disabled/off."
 	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta driver (nVidia cards only)."
 	echo "   If no beta driver is available, the current stable driver for your card type is used."
+	echo "   (Also checks nvidia for live latest beta information, and replaces script defaults with newer if present)"
 	echo "-c Use composite mode. For things like Beryl/Compiz (nVidia/new ATI cards only)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
 	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
