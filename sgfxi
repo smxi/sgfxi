@@ -1722,6 +1722,8 @@ check_root()
 
 basic_startup_tests()
 {
+	local wgetPath=$( type -p wget )
+	
 	check_set_distro
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
@@ -1740,6 +1742,10 @@ basic_startup_tests()
 	cd $SCRIPT_HOME
 	check_root
 	cleanup_temp_files
+		
+	if [ -z "$wgetPath" -a -n "$( check_package_status 'wget' 'c' )" ];then
+		install_package 'wget'
+	fi
 
 	# this allows users to update in x, for example, to see latest drivers
 	if [ "$B_FORCE_UPDATE" == 'true' ];then
@@ -1922,7 +1928,6 @@ check_install_tools()
 	local fakerootPath=$( type -p fakeroot )
 	local logrotatePath=$( type -p logrotate )
 	local patchPath=$( type -p patch )
-	local wgetPath=$( type -p wget )
 	
 	# nvidia and fglrx tools check_package_status
 	case $SYSTEM_BASE in
@@ -1949,9 +1954,7 @@ check_install_tools()
 	if [ -z "$fakerootPath" -a -n "$( check_package_status 'fakeroot' 'c' )" ];then
 		install_package 'fakeroot'
 	fi
-	if [ -z "$wgetPath" -a -n "$( check_package_status 'wget' 'c' )" ];then
-		install_package 'wget'
-	fi
+	# note wget test needs to be in first main test function
 
 	if [ "$CARD" == $NVIDIA ];then
 		:
@@ -1974,7 +1977,6 @@ check_install_tools()
 				fi
 				;;
 		esac
-		
 	fi
 
 	if [ -f /etc/modutils/1alsa ];then
