@@ -1952,7 +1952,7 @@ check_install_tools()
 		fi
 		# presence of this package will break fglrx install
 		if [ -n "$( check_package_status 'dpkg-cross' 'i' )" ];then
-			remove_package 'dpkg-cross' $CARD
+			remove_package 'dpkg-cross' "$CARD"
 		fi
 	fi
 
@@ -2246,11 +2246,11 @@ list_installed_packages()
 	eval $LOGUE
 }
 
-# $1 - package(s) to remove; $2 - no-loop: remove all at once
+# $1 - package(s) to remove; $2 - extra information; $3 - no-loop: remove all at once
 remove_package()
 {
 	eval $LOGUS
-	local response='' package='' purge=''
+	local response='' package='' purge='' extraInfo="$2"
 	case $APT_TYPE in
 		aptitude|apt-get)
 			purge='purge'
@@ -2262,12 +2262,16 @@ remove_package()
 			purge='erase'
 			;;
 	esac
+	
+	if [ -n "$extraInfo" ];then
+		extraInfo=" $extraInfo"
+	fi
 
 	echo ${M}$LINE
 	echo "You will need to remove the following package(s): ${C}$1"
-	echo "${M}in order to proceed with your ${C}$2${M} driver install${N}"
+	echo "${M}in order to proceed with your${C}$extraInfo${M} driver install${N}"
 	echo $LINE
-	if [ "$2" == 'no-loop' ];then
+	if [ "$3" == 'no-loop' ];then
 		echo "${S}Removing ${C}$1${S}...${N}"
 		$APT_TYPE $purge $1 || error_handler 190 "$1"
 	else
@@ -2930,7 +2934,7 @@ prep_native_driver()
 			;;
 	esac
 	eval $LOGUE
-	remove_package "$packageList" $xxva
+	remove_package "$packageList" "$xxva"
 }
 
 ### -------------------------------------------------------------------
@@ -3323,7 +3327,7 @@ preinstall_cleanup()
 				dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
 				;;
 			pacman|yum)
-				remove_package "$oldNvidia" 'no-loop'
+				remove_package "$oldNvidia" '' 'no-loop'
 				;;
 		esac
 	fi
@@ -3341,7 +3345,7 @@ preinstall_cleanup()
 				dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE
 				;;
 			pacman|yum)
-				remove_package "$oldFglrx" 'no-loop'
+				remove_package "$oldFglrx" '' 'no-loop'
 				;;
 		esac
 	fi
