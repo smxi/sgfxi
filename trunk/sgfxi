@@ -1918,9 +1918,12 @@ check_set_distro()
 check_install_tools()
 {
 	eval $LOGPS
+	
+	local fakerootPath=$( type -p fakeroot )
 	local logrotatePath=$( type -p logrotate )
 	local patchPath=$( type -p patch )
-	local fakerootPath=$( type -p fakeroot )
+	local wgetPath=$( type -p wget )
+	
 	# nvidia and fglrx tools check_package_status
 	case $SYSTEM_BASE in
 		debian|ubuntu)
@@ -1945,6 +1948,9 @@ check_install_tools()
 	fi
 	if [ -z "$fakerootPath" -a -n "$( check_package_status 'fakeroot' 'c' )" ];then
 		install_package 'fakeroot'
+	fi
+	if [ -z "$wgetPath" -a -n "$( check_package_status 'wget' 'c' )" ];then
+		install_package 'wget'
 	fi
 
 	if [ "$CARD" == $NVIDIA ];then
