@@ -1684,12 +1684,18 @@ check_kernel_headers()
 			;;
 		fedora)
 			# fedora 12 headers: /usr/src/kernels/$(uname -r)
+			local kernelDevel='' develPresent=''
 			headerName="kernel-headers-$KERNEL_VERSION"
 			headerPresent="$( ls /usr/src/kernels/$KERNEL_VERSION/ 2>/dev/null )"
 			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# if [ -z "$headerPresent" -a -z "$headerInstalled" ];then
 			if [ -z "$headerInstalled" ];then
 				install_package "$headerName"
+			fi
+			kernelDevel="kernel$FED_KERNEL_PAE-devel-$KERNEL_VERSION"
+			develPresent=$( check_package_status "$kernelDevel" 'i' )
+			if [ -z "$develPresent" ];then
+				install_package "$kernelDevel"
 			fi
 			;;
 		# fresh arch installs do not have the kernel header in /usr/src but this test
@@ -3220,14 +3226,13 @@ prep_install()
 {
 	eval $LOGPS
 	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-6]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-6]\.[0-9]{1,2}' )
-	local gccPackage="gcc-$gccVersion" 
-	local ubgv="/usr/bin/$gccPackage" libMesaGlx=''
-	
+	local gccPackage="gcc-$gccVersion"  
+	local libMesaGlx='' ubgv='' updateGcc='false'
+
 	case $SYSTEM_BASE in
 		arch)
 			gccVersion='gcc'
 			libMesaGlx='libgl'
-			ubgv='/usr/bin/gcc'
 			;;
 		debian)
 			libMesaGlx='libgl1-mesa-glx'
@@ -3235,8 +3240,15 @@ prep_install()
 		ubuntu)
 			libMesaGlx='libgl1-mesa-glx'
 			;;
+		fedora)
+			gccPackage='gcc'
+			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
+				updateGcc='true'
+			fi
+			;;
 	esac
-
+	ubgv="/usr/bin/$gccPackage"
+	
 	# We now need to do active detection of fglrx-install directory name due to
 	# silly random directory naming schema ati just started with 8.35.5
 	# Note: you can set --extract $FG_WORKING_DIR to hard code this name
@@ -3716,7 +3728,7 @@ install_distro_drivers()
 					# kmod-nvidia-PAE xorg-x11-drv-nvidia-libs.i586 xorg-x11-drv-nvidia-libs.x86_64
 					# akmod-nvidia-173xx xorg-x11-drv-nvidia-173xx-libs.i586 xorg-x11-drv-nvidia-173xx-libs.x86_64
 					# akmod-nvidia-96xx xorg-x11-drv-nvidia-96xx-libs
-					local archExt='i686' archExt64='x86_64' kernelDevel='' develPresent=''
+					local archExt='i686' archExt64='x86_64' 
 					if [ "$BITS" == '64' ];then
 						archExt=$archExt64
 					fi
@@ -3743,12 +3755,7 @@ install_distro_drivers()
 							fi
 							;;
 					esac
-					kernelDevel="kernel$FED_KERNEL_PAE-devel-$KERNEL_VERSION"
-					develPresent=$( check_package_status "$kernelDevel" 'i' )
-		
-					if [ -z "$develPresent" ];then
-						install_package "$kernelDevel"
-					fi
+					
 					echo "${S}Installing ${C}$FEDORA_NVIDIA${S} components...${N}"
 					install_package "$akmodNvidia $drvNvidia1 $drvNvidia2"
 					# only do a final removal of nouveau if the install succeeded
