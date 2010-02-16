@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.73
-####  Date: February 15 2010
+####  version: 4.10.74
+####  Date: February 16 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1918,6 +1918,9 @@ check_set_distro()
 check_install_tools()
 {
 	eval $LOGPS
+	local logrotatePath=$( type -p logrotate )
+	local patchPath=$( type -p patch )
+	local fakerootPath=$( type -p fakeroot )
 	# nvidia and fglrx tools check_package_status
 	case $SYSTEM_BASE in
 		debian|ubuntu)
@@ -1934,13 +1937,13 @@ check_install_tools()
 # 			fi
 # 			;;
 	esac
-	if [ -z "$( check_package_status 'logrotate' 'i' )" -a -n "$( check_package_status 'logrotate' 'c' )" ];then
+	if [ -z "$logrotatePath" -a -n "$( check_package_status 'logrotate' 'c' )" ];then
 		install_package 'logrotate'
 	fi
-	if [ -z "$( check_package_status 'patch' 'i' )" -a -n "$( check_package_status 'patch' 'c' )" ];then
+	if [ -z "$patchPath" -a -n "$( check_package_status 'patch' 'c' )" ];then
 		install_package 'patch'
 	fi
-	if [ -z "$( check_package_status 'fakeroot' 'i' )" -a -n "$( check_package_status 'fakeroot' 'c' )" ];then
+	if [ -z "$fakerootPath" -a -n "$( check_package_status 'fakeroot' 'c' )" ];then
 		install_package 'fakeroot'
 	fi
 
@@ -1953,18 +1956,19 @@ check_install_tools()
 				if [ -z "$( check_package_status 'debhelper' 'i' )" -a -n "$( check_package_status 'debhelper' 'c' )" ];then
 					install_package 'debhelper'
 				fi
+				# presence of this package will break fglrx install
+				if [ -n "$( check_package_status 'dpkg-cross' 'i' )" ];then
+					remove_package 'dpkg-cross' "$CARD"
+				fi
+				if [ -z "$( check_package_status 'libstdc++5' 'i' )" -a -n "$( check_package_status 'libstdc++5' 'c' )" ];then
+					install_package 'libstdc++5'
+				fi
+				if [ -z "$( check_package_status 'libstdc++6' 'i' )" -a -n "$( check_package_status 'libstdc++6' 'c' )" ];then
+					install_package 'libstdc++6'
+				fi
 				;;
 		esac
-		if [ -z "$( check_package_status 'libstdc++5' 'i' )" -a -n "$( check_package_status 'libstdc++5' 'c' )" ];then
-			install_package 'libstdc++5'
-		fi
-		if [ -z "$( check_package_status 'libstdc++6' 'i' )" -a -n "$( check_package_status 'libstdc++6' 'c' )" ];then
-			install_package 'libstdc++6'
-		fi
-		# presence of this package will break fglrx install
-		if [ -n "$( check_package_status 'dpkg-cross' 'i' )" ];then
-			remove_package 'dpkg-cross' "$CARD"
-		fi
+		
 	fi
 
 	if [ -f /etc/modutils/1alsa ];then
@@ -2184,7 +2188,7 @@ install_package()
 			useUntrusted='' # check later
 			;;
 	esac
-	if [ -n "$update" ];then # seems yum has no update repo data command?
+	if [ -n "$update" ];then # yum has no update repo data command, it does it automatically
 		update_package_manager "$update"
 	fi
 
@@ -3309,7 +3313,7 @@ preinstall_cleanup()
 	rm -f /usr/src/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	rm -rf /usr/src/modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	remove_module 'nvidia'
-	if [ "$B_NATIVE_DRIVER" != 'true' ];then
+	if [ "$B_NATIVE_DRIVER" != 'true' -a "$CARD" == "$NVIDIA" ];then
 		remove_module 'nouveau'
 	fi
 	rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.*o 1>> $LOG_FILE 2>> $LOG_FILE
@@ -3400,10 +3404,14 @@ remove_module()
 	local blacklistNouveau='false'
 	
 	if [ -n "$( lsmod | grep "^$1" )" ];then
+		echo -n "${S}Removing module${C} $1${S}......${N}"
 		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE
 		if [ "$?" -ne 0 ];then
+			echo "FAILED"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
 			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
+		else
+			echo "removed"
 		fi
 	fi
 	# need to see what this is doing elsewhere
@@ -3443,11 +3451,14 @@ add_module()
 	local emd='/etc/modprobe.d/'
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
 	
+	echo -n "${S}Adding module${C} $1${S}......${N}"
 	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
 	if [ "$?" -ne 0 ];then
+		echo "FAILED"
 		echo "${M}Error adding ${C}$1${M} module after installation."
 		echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
 	else
+		echo "added"
 		if [ -z "$( grep "^$1" /etc/modules )" ];then
 			echo "$1" >> /etc/modules
 		fi
