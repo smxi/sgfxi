@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.72
+####  version: 4.10.73
 ####  Date: February 15 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3711,21 +3711,31 @@ install_distro_drivers()
 					# kmod-nvidia-PAE xorg-x11-drv-nvidia-libs.i586 xorg-x11-drv-nvidia-libs.x86_64
 					# akmod-nvidia-173xx xorg-x11-drv-nvidia-173xx-libs.i586 xorg-x11-drv-nvidia-173xx-libs.x86_64
 					# akmod-nvidia-96xx xorg-x11-drv-nvidia-96xx-libs
+					local archExt='i686' archExt64='x86_64'
+					if [ "$BITS" == '64' ];then
+						archExt=$archExt64
+					fi
 					case $LEGACY_LEVEL in
 						1)	:
 							# this has already been error handled.
 							;;
 						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2$FED_KERNEL_PAE"
-							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.i586"
-							drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.x86_64"
+							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt"
+							if [ "$BITS" == '64' ];then
+								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt64"
+							fi
 							;;
 						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3$FED_KERNEL_PAE"
-							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.i586"
-							drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.x86_64"
+							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt"
+							if [ "$BITS" == '64' ];then
+								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt64"
+							fi
 							;;
 						*)	akmodNvidia="akmod-nvidia$FED_KERNEL_PAE"
-							drvNvidia1="xorg-x11-drv-nvidia-libs.i586"
-							drvNvidia2="xorg-x11-drv-nvidia-libs.x86_64"
+							drvNvidia1="xorg-x11-drv-nvidia-libs.$archExt"
+							if [ "$BITS" == '64' ];then
+								drvNvidia2="xorg-x11-drv-nvidia-libs.$archExt64"
+							fi
 							;;
 					esac
 					echo "${S}Installing ${C}$FEDORA_NVIDIA${S} components...${N}"
