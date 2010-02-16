@@ -2269,7 +2269,7 @@ remove_package()
 	echo $LINE
 	if [ "$2" == 'no-loop' ];then
 		echo "${S}Removing ${C}$1${S}...${N}"
-		$APT_TYPE $purge $1 || error_handler 190 "$package"
+		$APT_TYPE $purge $1 || error_handler 190 "$1"
 	else
 		for package in $1
 		do
