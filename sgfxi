@@ -2130,10 +2130,10 @@ check_package_status()
 		yum)
 			case $2 in
 				c)
-					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( yum list "$1"  2>/dev/null | grep -is "$1" )
+					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( yum list "$1" 2>/dev/null | grep -Esvi '(presto|packagekit|packages)'| awk '{print $2}' )
 					;;
 				i)
-				LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( rpm -qa 2>/dev/null | grep -svi '(presto|packagekit)' | grep -is "$1"  )
+				LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( rpm -qa 2>/dev/null | grep -Esvi '(presto|packagekit|packages)' | grep -is "$1"   )
 					;;
 			esac
 			;;
