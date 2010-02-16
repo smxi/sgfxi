@@ -1653,11 +1653,15 @@ test_install_kernel_version()
 check_kernel_headers()
 {
 	eval $LOGUS
-	local headerName="linux-headers-$KERNEL_VERSION"
-	local headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
+	local headerName=''
+	local headerPresent=''
+	local headerInstalled=''
+	
 	case $SYSTEM_BASE in
 		debian|ubuntu)
-			local headerInstalled=$( check_package_status "$headerName" 'i' )
+			headerName="linux-headers-$KERNEL_VERSION"
+			headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
+			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
 			local headerFile="$( ls /usr/src/kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
@@ -1679,12 +1683,13 @@ check_kernel_headers()
 			fi
 			;;
 		fedora)
-			local kernelDevel=''
-			# install headers from -devel package, this is not a clean method in terms 
-			# of guaranteeing correct headers, score 1 debian method that is clear and logical
-			kernelDevel="kernel$FED_KERNEL_PAE-devel"
-			if [ -z "$( check_package_status "$kernelDevel" 'i' )" ];then
-				install_package "$kernelDevel"
+			# fedora 12 headers: /usr/src/kernels/$(uname -r)
+			headerName="kernel$FED_KERNEL_PAE-devel-$KERNEL_VERSION"
+			headerPresent="$( ls /usr/src/kernels/$KERNEL_VERSION/ 2>/dev/null )"
+			headerInstalled=$( check_package_status "$headerName" 'i' )
+
+			if [ -z "$headerPresent" -a -z "$headerInstalled" ];then
+				install_package "$headerName"
 			fi
 			;;
 		# fresh arch installs do not have the kernel header in /usr/src but this test
