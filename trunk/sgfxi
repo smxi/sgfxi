@@ -1684,11 +1684,11 @@ check_kernel_headers()
 			;;
 		fedora)
 			# fedora 12 headers: /usr/src/kernels/$(uname -r)
-			headerName="kernel$FED_KERNEL_PAE-devel-$KERNEL_VERSION"
+			headerName="kernel-headers-$KERNEL_VERSION"
 			headerPresent="$( ls /usr/src/kernels/$KERNEL_VERSION/ 2>/dev/null )"
 			headerInstalled=$( check_package_status "$headerName" 'i' )
-
-			if [ -z "$headerPresent" -a -z "$headerInstalled" ];then
+			# if [ -z "$headerPresent" -a -z "$headerInstalled" ];then
+			if [ -z "$headerInstalled" ];then
 				install_package "$headerName"
 			fi
 			;;
@@ -2127,7 +2127,7 @@ check_package_status()
 					LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( yum list available "$1"  2>/dev/null )
 					;;
 				i)
-				LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( rpm -qa 2>/dev/null | grep "$1"  )
+				LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( rpm -qa 2>/dev/null | grep -svi '(presto|packagekit)' | grep "$1"  )
 					;;
 			esac
 			;;
@@ -3716,7 +3716,7 @@ install_distro_drivers()
 					# kmod-nvidia-PAE xorg-x11-drv-nvidia-libs.i586 xorg-x11-drv-nvidia-libs.x86_64
 					# akmod-nvidia-173xx xorg-x11-drv-nvidia-173xx-libs.i586 xorg-x11-drv-nvidia-173xx-libs.x86_64
 					# akmod-nvidia-96xx xorg-x11-drv-nvidia-96xx-libs
-					local archExt='i686' archExt64='x86_64'
+					local archExt='i686' archExt64='x86_64' kernelDevel='' develPresent=''
 					if [ "$BITS" == '64' ];then
 						archExt=$archExt64
 					fi
@@ -3743,6 +3743,12 @@ install_distro_drivers()
 							fi
 							;;
 					esac
+					kernelDevel="kernel$FED_KERNEL_PAE-devel-$KERNEL_VERSION"
+					develPresent=$( check_package_status "$kernelDevel" 'i' )
+		
+					if [ -z "$develPresent" ];then
+						install_package "$kernelDevel"
+					fi
 					echo "${S}Installing ${C}$FEDORA_NVIDIA${S} components...${N}"
 					install_package "$akmodNvidia $drvNvidia1 $drvNvidia2"
 					# only do a final removal of nouveau if the install succeeded
@@ -3771,7 +3777,7 @@ install_distro_drivers()
 				*)
 					error_handler 176
 					;;
-			esac
+			esac 
 			;;
 		$FGLRX)
 			case $SYSTEM_BASE in
