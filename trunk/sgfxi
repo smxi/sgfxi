@@ -3420,7 +3420,7 @@ remove_module()
 		echo -n "${S}Removing module${C} $1${S}......${N}"
 		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE
 		if [ "$?" -ne 0 ];then
-			echo "FAILED"
+			echo "${W}FAILED${N}"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
 			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
 		else
@@ -3475,7 +3475,7 @@ add_module()
 	echo -n "${S}Adding module${C} $1${S}......${N}"
 	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
 	if [ "$?" -ne 0 ];then
-		echo "FAILED"
+		echo "${W}FAILED${N}"
 		echo "${M}Error adding ${C}$1${M} module after installation."
 		echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
 	else
