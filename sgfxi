@@ -1687,7 +1687,9 @@ check_kernel_headers()
 			local kernelDevel='' develPresent=''
 			headerName="kernel-headers-$KERNEL_VERSION"
 			headerPresent="$( ls /usr/src/kernels/$KERNEL_VERSION/ 2>/dev/null )"
-			headerInstalled=$( check_package_status "$headerName" 'i' )
+			# rpm is reporting two names here I think, we'll see, if it's got the
+			# kernel name in it, we'll call it installed.
+			headerInstalled=$( check_package_status "$headerName" 'i' | grep $KERNEL_VERSION )
 			# if [ -z "$headerPresent" -a -z "$headerInstalled" ];then
 			if [ -z "$headerInstalled" ];then
 				install_package "$headerName"
@@ -3403,6 +3405,7 @@ preinstall_cleanup()
 # use: $2 - nvidia-post - clean grub/module files of nouveau blacklists
 remove_module()
 {
+	eval $LOGPS
 	local grub1='/boot/grub/menu.lst'
 	local grub2='/boot/grub/grub.cfg'
 	local emod='/etc/modules' 
@@ -3410,6 +3413,7 @@ remove_module()
 	local emd='/etc/modprobe.d/'
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
 	local blacklistNouveau='false'
+	local outcome='failed'
 	
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}......${N}"
@@ -3420,6 +3424,7 @@ remove_module()
 			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
 		else
 			echo "removed"
+			outcome='removed'
 		fi
 	fi
 	# need to see what this is doing elsewhere
@@ -3447,17 +3452,21 @@ remove_module()
 				;;
 		esac
 	fi
+	log_function_data "operation outcome: $outcome"
+	eval $LOGPE
 }
 
 # args: $1 - module to add or process
 # do some extra processing here for nouveau
 add_module()
 {
+	eval $LOGPS
 	local grub1='/boot/grub/menu.lst'
 	local grub2='/boot/grub/grub.cfg'
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
+	local outcome='failed'
 	
 	echo -n "${S}Adding module${C} $1${S}......${N}"
 	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
@@ -3466,10 +3475,11 @@ add_module()
 		echo "${M}Error adding ${C}$1${M} module after installation."
 		echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
 	else
-		echo "added"
 		if [ -z "$( grep "^$1" /etc/modules )" ];then
 			echo "$1" >> /etc/modules
 		fi
+		echo "added"
+		outcome='added'
 	fi
 	case $1 in
 		nouveau)
@@ -3488,12 +3498,15 @@ add_module()
 			esac
 			;;
 	esac
+	log_function_data "operation outcome: $outcome"
+	eval $LOGPE
 }
 
 # this should in theory all be gone but not necessarily in fact
 # note that fglrx isn't working well here at all...
 clean_dkms()
 {
+	eval $LOGPS
 	if [ -d /var/lib/dkms/fglrx ];then
 		log_function_data "fglrx dkms directories found and deleted"
 		rm -rf /var/lib/dkms/fglrx 1>> $LOG_FILE 2>> $LOG_FILE
@@ -3502,6 +3515,7 @@ clean_dkms()
 		log_function_data "nvidia dkms directories found and deleted"
 		rm -rf /var/lib/dkms/nvidia 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
+	eval $LOGPE
 }
 
 # arg: $1 - pre/post Undoing the patches in case the xen stuff is needed later
