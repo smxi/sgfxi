@@ -2386,7 +2386,7 @@ update_to_nonfree_sources()
 			fi
 			;;
 		fedora)
-			yumList=$( yum repolist )
+			yumList="$( yum repolist )"
 			yumFreeRepo=$( grep  -Eis '^rpmfusion-free.*enabled' <<< "$yumList" )
 			yumNonFreeRepo=$( grep  -Eis '^rpmfusion-nonfree.*enabled' <<< "$yumList" )
 			echo -n "${S}Checking for ${C}rpmfusion free${S} repos.... ${N}"
