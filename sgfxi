@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.74
-####  Date: February 16 2010
+####  version: 4.10.75
+####  Date: February 17 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -2346,6 +2346,7 @@ update_to_nonfree_sources()
 	local eassl='/etc/apt/sources.list.d/sidux.list'
 	local aptProx=''
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
+	local yumFreeRepo='' yumNonFreeRepo=''
 
 	case $SYSTEM_BASE in
 		debian)
@@ -2385,6 +2386,22 @@ update_to_nonfree_sources()
 			fi
 			;;
 		fedora)
+			yumFreeRepo=$( yum repolist | grep  -Eis '^rpmfusion-free.*enabled' )
+			yumNonFreeRepo=$( yum repolist | grep  -Eis '^rpmfusion-nonfree.*enabled' )
+			echo -n "${S}Checking for ${C}rpmfusion free${S} repos.... ${N}"
+			if [ -z "$yumFreeRepo" ];then
+				echo "${S}Adding${N}"
+				rpm -Uvh http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
+			else
+				echo "${S}Present${N}"
+			fi
+			echo -n "${S}Checking for ${C}rpmfusion non-free${S} repos.... ${N}"
+			if [ -z "$yumNonFreeRepo" ];then
+				echo "${S}Adding${N}"
+				rpm -Uvh http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
+			else
+				echo "${S}Present${N}"
+			fi
 			: # there are tests here for their non free driver repos but that will be added later
 			;;
 	esac
