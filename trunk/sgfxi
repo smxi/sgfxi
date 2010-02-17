@@ -2403,7 +2403,6 @@ update_to_nonfree_sources()
 			else
 				echo "${S}Present${N}"
 			fi
-			: # there are tests here for their non free driver repos but that will be added later
 			;;
 	esac
 	eval $LOGPE
