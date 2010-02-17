@@ -2346,7 +2346,7 @@ update_to_nonfree_sources()
 	local eassl='/etc/apt/sources.list.d/sidux.list'
 	local aptProx=''
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
-	local yumFreeRepo='' yumNonFreeRepo=''
+	local yumFreeRepo='' yumNonFreeRepo='' yumList=''
 
 	case $SYSTEM_BASE in
 		debian)
@@ -2386,8 +2386,9 @@ update_to_nonfree_sources()
 			fi
 			;;
 		fedora)
-			yumFreeRepo=$( yum repolist | grep  -Eis '^rpmfusion-free.*enabled' )
-			yumNonFreeRepo=$( yum repolist | grep  -Eis '^rpmfusion-nonfree.*enabled' )
+			yumList=$( yum repolist )
+			yumFreeRepo=$( grep  -Eis '^rpmfusion-free.*enabled' <<< "$yumList" )
+			yumNonFreeRepo=$( grep  -Eis '^rpmfusion-nonfree.*enabled' <<< "$yumList" )
 			echo -n "${S}Checking for ${C}rpmfusion free${S} repos.... ${N}"
 			if [ -z "$yumFreeRepo" ];then
 				echo "${S}Adding${N}"
