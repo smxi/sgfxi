@@ -3417,14 +3417,14 @@ remove_module()
 	local case1='false' case2='false'
 	
 	if [ -n "$( lsmod | grep "^$1" )" ];then
-		echo -n "${S}Removing module${C} $1${S}......${N}"
+		echo -n "${S}Removing module${C} $1${S}...... ${N}"
 		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE
 		if [ "$?" -ne 0 ];then
 			echo "${W}FAILED${N}"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
 			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
 		else
-			echo "removed"
+			echo "${S}Removed${N}"
 			outcome='removed'
 		fi
 	fi
@@ -3472,7 +3472,7 @@ add_module()
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
 	local outcome='failed'
 	
-	echo -n "${S}Adding module${C} $1${S}......${N}"
+	echo -n "${S}Adding module${C} $1${S}...... ${N}"
 	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
 	if [ "$?" -ne 0 ];then
 		echo "${W}FAILED${N}"
@@ -3482,7 +3482,7 @@ add_module()
 		if [ -z "$( grep "^$1" /etc/modules )" ];then
 			echo "$1" >> /etc/modules
 		fi
-		echo "added"
+		echo "${S}Added${N}"
 		outcome='added'
 	fi
 	case $1 in
