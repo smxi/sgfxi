@@ -3436,10 +3436,7 @@ remove_module()
 	if [ "$1" == 'nvidia' ];then
 		case $SYSTEM_BASE in
 			fedora)
-				if [ -f "$grub1" -a ! -f "$grub2" -a -z "$( grep -Eis '^[[:space:]]*kernel.*nouveau.modeset=0' $grub1 )" ];then
-					blacklistNouveau='true'
-				fi
-				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd )" ];then
+				if [ -f "$grub1" -a ! -f "$grub2" -a -z "$( grep -Eis '^[[:space:]]*kernel.*nouveau.modeset=0' $grub1 )" ] && [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd )" ];then
 					blacklistNouveau='true'
 				fi
 				if [ ! -f "$emdbc" -a -d /etc/modprobe.d -a "$blacklistNouveau" == 'true' ];then
