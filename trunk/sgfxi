@@ -2386,22 +2386,24 @@ update_to_nonfree_sources()
 			fi
 			;;
 		fedora)
-			yumList="$( yum repolist )"
-			yumFreeRepo=$( grep  -Eis '^rpmfusion-free.*enabled' <<< "$yumList" )
-			yumNonFreeRepo=$( grep  -Eis '^rpmfusion-nonfree.*enabled' <<< "$yumList" )
-			echo -n "${S}Checking for ${C}rpmfusion free${S} repos.... ${N}"
-			if [ -z "$yumFreeRepo" ];then
-				echo "${S}Adding${N}"
-				rpm -Uvh http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
-			else
-				echo "${S}Present${N}"
-			fi
-			echo -n "${S}Checking for ${C}rpmfusion non-free${S} repos.... ${N}"
-			if [ -z "$yumNonFreeRepo" ];then
-				echo "${S}Adding${N}"
-				rpm -Uvh http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
-			else
-				echo "${S}Present${N}"
+			if [ "$B_NATIVE_DRIVER" != 'true' -a "$B_USE_DISTRO_DRIVER" != 'true' ];then
+				yumList="$( yum repolist )"
+				yumFreeRepo=$( grep  -Eis '^rpmfusion-free.*enabled' <<< "$yumList" )
+				yumNonFreeRepo=$( grep  -Eis '^rpmfusion-nonfree.*enabled' <<< "$yumList" )
+				echo -n "${S}Checking for ${C}rpmfusion free${S} repos.... ${N}"
+				if [ -z "$yumFreeRepo" ];then
+					echo "${S}Adding${N}"
+					rpm -Uvh http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
+				else
+					echo "${S}Present${N}"
+				fi
+				echo -n "${S}Checking for ${C}rpmfusion non-free${S} repos.... ${N}"
+				if [ -z "$yumNonFreeRepo" ];then
+					echo "${S}Adding${N}"
+					rpm -Uvh http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
+				else
+					echo "${S}Present${N}"
+				fi
 			fi
 			;;
 	esac
