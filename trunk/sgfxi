@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.78
+####  version: 4.10.79
 ####  Date: February 17 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -285,6 +285,8 @@ SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
 
 DEBIAN_FGLRX='debian-fglrx'
 DEBIAN_NVIDIA='debian-nvidia'
+DISTRO_FGLRX=''
+DISTRO_NVIDIA=''
 FEDORA_FGLRX='fedora-fglrx'
 FEDORA_NVIDIA='fedora-nvidia'
 UBUNTU_FGLRX='ubuntu-fglrx'
@@ -483,8 +485,8 @@ driver_support_tests()
 					esac
 					;;
 				$NVIDIA)
-# 					if [ "$DRIVER_DEFAULT" == "$DEBIAN_NVIDIA" -a "$SYSTEM_CODENAME" == 'testing' ];then
-# 						print_information_continue 'standard' "Your system appears to be Debian Testing based.\nThe $DEBIAN_NVIDIA driver cannot build on Debian Testing because of a missing package.\nIf your system is Sid based, continue, otherwise exit now."
+# 					if [ "$DRIVER_DEFAULT" == "$DISTRO_NVIDIA" -a "$SYSTEM_CODENAME" == 'testing' ];then
+# 						print_information_continue 'standard' "Your system appears to be Debian Testing based.\nThe $DISTRO_NVIDIA driver cannot build on Debian Testing because of a missing package.\nIf your system is Sid based, continue, otherwise exit now."
 # 					else
 						# test for >= xorg 1.5 support, using a blacklist now of previous
 						# drivers rather than whitelisting
@@ -556,7 +558,7 @@ driver_support_tests()
 								;;
 						esac
 						# basic version handling and support tests, unless otherwise reported,
-						# $DEBIAN_NVIDIA will be supported by default
+						# $DISTRO_NVIDIA will be supported by default
 						case $KERNEL_THIRD in
 							24) # going to try just 2.6.24 links, see if any issues appear
 								# this doesn't work on debian kernels
@@ -566,7 +568,7 @@ driver_support_tests()
 								;;
 							26)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -578,7 +580,7 @@ driver_support_tests()
 								;;
 							27)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -590,7 +592,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -602,7 +604,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -614,7 +616,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|173.14.2*|96.43.1[134]|71.86.11|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -626,7 +628,7 @@ driver_support_tests()
 								;;
 							31|32)
 								case $DRIVER_DEFAULT in
-									195.*|190.*|185.*|173.14.2*|96.43.1[34]|71.86.11|$DEBIAN_NVIDIA)
+									195.*|190.*|185.*|173.14.2*|96.43.1[34]|71.86.11|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -1843,9 +1845,11 @@ check_set_distro()
 			X_NAME='Xorg'
 			;;
 		debian)
+			DISTRO_FGLRX=$DEBIAN_FGLRX
+			DISTRO_NVIDIA=$DEBIAN_NVIDIA
 			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
-			
+
 			# set system type. This test will never be perfect, but it's a good approximation
 			if [ "$debianDefault" == 'stable' ] || [ "$debianVersion" == 'etch' -o "$debianVersion" == 'lenny' ] || [ "$stableSources" -gt 0 -a "$sidSources" -eq 0 -a "$testingSources" -eq 0 ];then
 				if [ "$debianVersion" == 'etch' ];then
@@ -1874,6 +1878,8 @@ check_set_distro()
 			;;
 		fedora)
 			APT_TYPE='yum'
+			DISTRO_FGLRX=$FEDORA_FGLRX
+			DISTRO_NVIDIA=$FEDORA_NVIDIA
 			FG_DISTRIB_ID='Fedora'
 			FG_DISTRIB_CODENAME=''
 			SYSTEM_BASE='fedora'
@@ -1885,6 +1891,8 @@ check_set_distro()
 			;;
 		linuxmint)
 			APT_TYPE='apt-get'
+			DISTRO_FGLRX=$UBUNTU_FGLRX
+			DISTRO_NVIDIA=$UBUNTU_NVIDIA
 			FG_DISTRIB_ID='Ubuntu'
 			SYSTEM_BASE='ubuntu'
 			# need to double check here for fglrx deb builder
@@ -1905,6 +1913,8 @@ check_set_distro()
 			X_NAME='X'
 			;;
 		ubuntu)
+			DISTRO_FGLRX=$UBUNTU_FGLRX
+			DISTRO_NVIDIA=$UBUNTU_NVIDIA
 			FG_DISTRIB_ID='Ubuntu'
 			FG_DISTRIB_CODENAME=$DISTRIB_CODENAME
 			SYSTEM_BASE='ubuntu'
@@ -3060,7 +3070,7 @@ set_version()
 		else
 			# note: because sometimes I'm turning off fglrx run install due to failure
 			# that leaves only debian fglrx to install
-			echo $DEBIAN_FGLRX
+			echo $DISTRO_FGLRX
 		fi
 		exit 0
 	fi
@@ -3078,10 +3088,10 @@ set_version()
 	else
 		case $CARD in
 			$FGLRX)
-				DRIVER_DEFAULT=$DEBIAN_FGLRX
+				DRIVER_DEFAULT=$DISTRO_FGLRX
 				;;
 			$NVIDIA)
-				DRIVER_DEFAULT=$DEBIAN_NVIDIA
+				DRIVER_DEFAULT=$DISTRO_NVIDIA
 				;;
 		esac
 	fi
@@ -3782,17 +3792,17 @@ install_distro_drivers()
 					esac
 					# start the install
 					if [ "$LEGACY_LEVEL" -ne 0 ];then
-						echo "${S}Installing ${C}$DEBIAN_NVIDIA${S} components...${N}"
+						echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
 						install_package 'nvidia-kernel-common'
 						install_package 'nvidia-settings'
 						install_package "$nvidiaSource"
-						echo "${S}Creating  ${C}$DEBIAN_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
+						echo "${S}Creating  ${C}$DISTRO_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
 						# m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i $nvidiaSource
-						m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_NVIDIA
-						m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_NVIDIA
-						m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_NVIDIA
-						m-a build -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_NVIDIA
-						m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_NVIDIA
+						m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_NVIDIA
+						m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_NVIDIA
+						m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_NVIDIA
+						m-a build -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_NVIDIA
+						m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_NVIDIA
 		
 						#m-a prepare && m-a qa-i nvidia
 						#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
@@ -3868,21 +3878,21 @@ install_distro_drivers()
 		$FGLRX)
 			case $SYSTEM_BASE in
 				debian)
-					echo "${S}Installing ${C}$DEBIAN_FGLRX${S} components...${N}"
+					echo "${S}Installing ${C}$DISTRO_FGLRX${S} components...${N}"
 					install_package 'fglrx-driver'
 					install_package 'fglrx-control'
 					# install_package 'fglrx-amdcccle'
 					install_package 'fglrx-kernel-src'
-					echo "${S}Creating  ${C}$DEBIAN_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
+					echo "${S}Creating  ${C}$DISTRO_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
 		
 					# damentz suggestion to make sure old module is used
 					# m-a a-i -f fglrx-kernel-src
 					# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i fglrx
-					m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DEBIAN_FGLRX
-					m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DEBIAN_FGLRX
-					m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DEBIAN_FGLRX
-					m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DEBIAN_FGLRX
-					m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DEBIAN_FGLRX
+					m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_FGLRX
+					m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_FGLRX
+					m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_FGLRX
+					m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_FGLRX
+					m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_FGLRX
 					;;
 				ubuntu)
 					echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
@@ -4899,7 +4909,7 @@ show_options()
 	local fgTesting='' nvTesting='' testingText='' fgDebianSid=''
 
 	if [ "$B_DISTRO_FLAG" == 'true' ];then
-		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently broken in Debian (works in Ubuntu). Script will default to: '$DEBIAN_FGLRX${N}'"'
+		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently broken in Debian (works in Ubuntu). Script will default to: '$DISTRO_FGLRX${N}'"'
 	else
 		fgDebianSid='echo -e "fglrx:  default: '$fgDefault'		supported-drivers: '$fgVersions'"'
 	fi
