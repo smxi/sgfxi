@@ -3430,6 +3430,7 @@ remove_module()
 	eval $LOGPS
 	local grub1='/boot/grub/menu.lst'
 	local grub2='/boot/grub/grub.cfg'
+	local grub1fed='/boot/grub/grub.conf'
 	local emod='/etc/modules' 
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
@@ -3461,13 +3462,13 @@ remove_module()
 	if [ "$1" == 'nvidia' ];then
 		case $SYSTEM_BASE in
 			fedora)
-				if [ -f "$grub1" -a ! -f "$grub2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1 )" ];then
-					if [ -f "$grub1" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1 )" ];then
-						sed -i '/root=/s|$| rdblacklist=nouveau|' $grub1
+				if [ -f "$grub1fed" -a ! -f "$grub2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
+					if [ -f "$grub1fed" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1fed )" ];then
+						sed -i '/root=/s|$| rdblacklist=nouveau|' $grub1fed
 						
 					fi
-					if [ -f "$grub1" -a -z "$( grep -si 'vmalloc=' $grub1 )" ];then
-						sed -i '/root=/s|$| vmalloc=256m|' $grub1
+					if [ -f "$grub1fed" -a -z "$( grep -si 'vmalloc=' $grub1fed )" ];then
+						sed -i '/root=/s|$| vmalloc=256m|' $grub1fed
 					fi
 					showMessage1='true'
 				fi
