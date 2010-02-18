@@ -3577,7 +3577,7 @@ add_module()
 		nouveau)
 			case $SYSTEM_BASE in
 				fedora)
-					if [ -f "$grub1fed" -a ! -f "$grub2" -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
+					if [ -f "$grub1fed" -a ! -f "$grub2" -a -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
 						echo -n "${S}Removing ${C}$grub1fed nouveau blacklist${S} items..... ${N}"
 						sed -i 's|[[:space:]]nouveau.modeset=0||i' $grub1fed
 						sed -i 's|[[:space:]]rdblacklist=nouveau||i' $grub1fed
