@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.77
+####  version: 4.10.78
 ####  Date: February 17 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -219,12 +219,12 @@ NVIDIA_DOWNLOAD_SITE=''
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='10-1:9-12:9-3'
-FG_DEFAULT='10-1'
+FG_VERSIONS='10-2:10-1:9-3'
+FG_DEFAULT='10-2'
 
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
-FG_OTHERS='9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
+FG_OTHERS='9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
 FG_DISTRIB_CODENAME=''
@@ -3444,7 +3444,12 @@ remove_module()
 	local blacklistNouveau='false'
 	local outcome='failed' 
 	local showMessage1='false'
-	
+# 	nouveau               538256  2 
+# 	ttm                    34264  1 nouveau
+# 	drm_kms_helper         22700  1 nouveau
+# 	drm                   136056  4 nouveau,ttm,drm_kms_helper
+# 	i2c_algo_bit            4820  1 nouveau
+# 	i2c_core               23352  5 videodev,i2c_nforce2,nouveau,drm,i2c_algo_bit
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}...... ${N}"
 		modprobe -rf $1 1>> $LOG_FILE 2>> $LOG_FILE ## needs -f to force it
