@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.80
+####  version: 4.10.81
 ####  Date: February 17 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -109,6 +109,7 @@ B_EXPERIMENTAL=''
 B_EXTRA_EXPERIMENTAL=''
 B_FGLRX_DEB_BUILDER=''
 B_FGLRX_DIRECT='true' # raising the white flag of surrender...
+B_FORCE_REBOOT=''
 B_FORCE_UPDATE=''
 B_MOVE_X_CONF=''
 B_NATIVE_DRIVER=''
@@ -2355,53 +2356,54 @@ hold_package()
 update_to_nonfree_sources()
 {
 	eval $LOGPS
+	
 	local isFree=0 i='' counter=0
 	local eas='/etc/apt/sources.list'
 	local easdl='/etc/apt/sources.list.d/debian.list'
 	local eassl='/etc/apt/sources.list.d/sidux.list'
-	local aptProx=''
+	local aptProx='' 
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
-	local yumFreeRepo='' yumNonFreeRepo='' yumList=''
-
-	case $SYSTEM_BASE in
-		debian)
-			# loop through possible files to update
-			for i in $eas $easdl $eassl
-			do
-				if [ -f "$i" ];then
-					counter=$( grep -Ec 'deb.*debian\.org.*(contrib|non-free)' $i )
-					isFree=$(( $counter + $isFree ))
-				fi
-			done
-		
-			if [ "$isFree" -eq 0 ];then
+	local yumFreeRepo='' yumNonFreeRepo='' yumList='' repoAdded=''
+	
+	if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
+		case $SYSTEM_BASE in
+			debian)
+				# loop through possible files to update
 				for i in $eas $easdl $eassl
 				do
 					if [ -f "$i" ];then
-						# I'm going to assume if the user has proxy stuff set up, they know what
-						# they are doing here.
-						aptProx=$( grep -Esi '^[[:space:]]*deb.*:9999/' $i )
-						if [ -z "$aptProx" ];then
-							echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
-							sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
-							# the second test requires the results of the first to work
-							# note that spaces are required for this to work more reliably for most patterns
-							sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
-						fi
+						counter=$( grep -Ec 'deb.*debian\.org.*(contrib|non-free)' $i )
+						isFree=$(( $counter + $isFree ))
 					fi
 				done
-				$APT_TYPE update && UPDATED='true' # need to refresh
-			fi
-			;;
-		ubuntu)
-			# just to make sure, want to get out fast
-			ubRestricted=$( grep -siE '^[[:space:]]*deb[[:space:]].*ubuntu.*restricted' $eas $eas.d/*.list )
-			if [ -z "$ubRestricted" ];then
-				error_handler 216
-			fi
-			;;
-		fedora)
-			if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
+			
+				if [ "$isFree" -eq 0 ];then
+					for i in $eas $easdl $eassl
+					do
+						if [ -f "$i" ];then
+							# I'm going to assume if the user has proxy stuff set up, they know what
+							# they are doing here.
+							aptProx=$( grep -Esi '^[[:space:]]*deb.*:9999/' $i )
+							if [ -z "$aptProx" ];then
+								echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
+								sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
+								# the second test requires the results of the first to work
+								# note that spaces are required for this to work more reliably for most patterns
+								sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
+							fi
+						fi
+					done
+					$APT_TYPE update && UPDATED='true' # need to refresh
+				fi
+				;;
+			ubuntu)
+				# just to make sure, want to get out fast
+				ubRestricted=$( grep -siE '^[[:space:]]*deb[[:space:]].*ubuntu.*restricted' $eas $eas.d/*.list )
+				if [ -z "$ubRestricted" ];then
+					error_handler 216
+				fi
+				;;
+			fedora)
 				yumList="$( yum repolist )"
 				yumFreeRepo=$( grep  -Eis '^rpmfusion-free.*enabled' <<< "$yumList" )
 				yumNonFreeRepo=$( grep  -Eis '^rpmfusion-nonfree.*enabled' <<< "$yumList" )
@@ -2409,6 +2411,7 @@ update_to_nonfree_sources()
 				if [ -z "$yumFreeRepo" ];then
 					echo "${S}Adding${N}"
 					rpm -Uvh http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
+					repoAdded='true'
 				else
 					echo "${S}Present${N}"
 				fi
@@ -2416,12 +2419,18 @@ update_to_nonfree_sources()
 				if [ -z "$yumNonFreeRepo" ];then
 					echo "${S}Adding${N}"
 					rpm -Uvh http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
+					repoAdded='true'
 				else
 					echo "${S}Present${N}"
 				fi
-			fi
-			;;
-	esac
+				if [ "$repoAdded" == 'true' ];then
+					echo "${S}Please note that you will be asked during the distro driver install to accept the"
+					echo "repo ${C}GPG keys${S} for the repos you just added. Make sure to enter ${C}y${S} for this question.${N}"
+					print_hec
+				fi
+				;;
+		esac
+	fi
 	eval $LOGPE
 }
 
@@ -2886,7 +2895,14 @@ install_native_driver()
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		update_xorg
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
-
+		
+		if [ "$NATIVE_OVERRIDE" == 'nouveau' ];then
+			case $SYSTEM_BASE in
+				fedora)
+					add_module "$NATIVE_OVERRIDE"
+					;;
+			esac
+		fi
 		eval $LOGPE
 		## and finish it up
 		x_start_stop_master start
@@ -3453,7 +3469,7 @@ remove_module()
 	local emd='/etc/modprobe.d/'
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
 	local blacklistNouveau='false'
-	local outcome='failed' 
+	local outcome='unset' 
 	local showMessage1='false'
 # 	nouveau               538256  2 
 # 	ttm                    34264  1 nouveau
@@ -3463,45 +3479,62 @@ remove_module()
 # 	i2c_core               23352  5 videodev,i2c_nforce2,nouveau,drm,i2c_algo_bit
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}...... ${N}"
-		modprobe -rf $1 1>> $LOG_FILE 2>> $LOG_FILE ## needs -f to force it
+		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE ## needs -f to force it
 		if [ "$?" -ne 0 ];then
 			echo "${W}FAILED${N}"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
 			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
+			outcome='failed' 
 		else
+			# working that if removal fails, module should not be removed, this might not be
+			# correct though. Especially not for future nouveau, radeonhd, 
+			if [ -f "$emod" ];then
+				perl -pi -e "s/^[[:space:]]*$1.*\n?//" $emod
+			fi
 			echo "${S}Removed${N}"
 			outcome='removed'
 		fi
 	fi
-	# need to see what this is doing elsewhere
-# 	case $SYSTEM_BASE in
-# 		debian|ubuntu)
-		if [ -f "$emod" ];then
-			perl -pi -e "s/^[[:space:]]*$1.*\n?//" $emod
-		fi
-# 			;;
-# 	esac
-	if [ "$1" == 'nouveau' ];then
+
+	if [ "$1" == 'nouveau' -a "$outcome" == 'failed' ];then
 		case $SYSTEM_BASE in
 			fedora)
 				if [ -f "$grub1fed" -a ! -f "$grub2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
 					if [ -f "$grub1fed" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1fed )" ];then
+						echo -n "${S}Adding ${C}$grub1fed nouveau blacklist${S} items..... ${N}"
 						sed -i '/ root=/s|$| rdblacklist=nouveau|' $grub1fed
+						log_function_data "file updated to add nouveau blacklist: $grub1fed"
+						echo "${S}Added${N}"
 					fi
 					if [ -f "$grub1fed" -a -z "$( grep -si 'vmalloc=' $grub1fed )" ];then
+						echo -n "${S}Adding ${C}$grub1fed vmalloc=256m${S} item..... ${N}"
 						sed -i '/ root=/s|$| vmalloc=256m|' $grub1fed
+						log_function_data "file updated to add vmalloc=256m: $grub1fed"
+						echo "${S}Added${N}"
 					fi
 					showMessage1='true'
+				fi
+				# also make system bootable to init 3 easily with grub, otherwise you can
+				# literally not be able to access tty OR desktop in some cases
+				if [ -f "$grub1fed" -a ! -f "$grub2" -a -z "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $grub1fed )" ];then
+					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$grub1fed${S}..... ${N}"
+					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $grub1fed
+					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $grub1fed
+					log_function_data "file updated to restore grub timeout/unhide menu: $grub1fed"
+					echo "${S}Modified${N}"
 				fi
 				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/* )" ];then
 					blacklistNouveau='true'
 				fi
 				if [ ! -f "$emdbc" -a -d "$emd" -a "$blacklistNouveau" == 'true' ];then
+					echo -n "${S}Creating ${C}$emdbc nouveau blacklist${S} item..... ${N}"
 					echo 'blacklist nouveau' > $emdbc
+					log_function_data "file updated to add nouveau blacklist: $emdbc"
+					echo "${S}Created${N}"
 					showMessage1='true'
 				fi
 				if [ "$showMessage1" == 'true' ];then
-					echo "${M}Since ${C}nouveau${M} was running in the kernel, you will need to reboot before"
+					echo "${M}Since ${C}nouveau${M} is running in the kernel, you will need to reboot before"
 					echo "your ${C}$CARD${M} install is completed, and you may need to reboot if it errors out,"
 					echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
 					print_hec
@@ -3519,11 +3552,12 @@ add_module()
 {
 	eval $LOGPS
 	local grub1='/boot/grub/menu.lst'
+	local grub1fed='/boot/grub/grub.conf'
 	local grub2='/boot/grub/grub.cfg'
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
-	local outcome='failed'
+	local outcome='unset' showMessage=''
 	
 	echo -n "${S}Adding module${C} $1${S}...... ${N}"
 	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
@@ -3531,6 +3565,7 @@ add_module()
 		echo "${W}FAILED${N}"
 		echo "${M}Error adding ${C}$1${M} module after installation."
 		echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
+		outcome='failed'
 	else
 		if [ -z "$( grep "^$1" /etc/modules )" ];then
 			echo "$1" >> /etc/modules
@@ -3542,14 +3577,35 @@ add_module()
 		nouveau)
 			case $SYSTEM_BASE in
 				fedora)
-					if [ -f "$grub1" -a ! -f "$grub2" -n "$( grep -Eis '^[[:space:]]kernel.*nouveau.modeset=0' $grub1 )" ];then
-						sed -i 's|nouveau.modeset=0||i' $bgml
+					if [ -f "$grub1fed" -a ! -f "$grub2" -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
+						echo -n "${S}Removing ${C}$grub1fed nouveau blacklist${S} items..... ${N}"
+						sed -i 's|[[:space:]]nouveau.modeset=0||i' $grub1fed
+						sed -i 's|[[:space:]]rdblacklist=nouveau||i' $grub1fed
+						log_function_data "file updated to remove nouveau blacklist: $grub1fed"
+						echo "${S}Removed${N}"
+						showMessage='true'
 					fi
 					if [ -f "$emdbc" -a -n "$( grep -Esi '^blacklist[[:space:]]+nouveau' $emdbc )" ];then
+						echo -n "${S}Removing ${C}$emdbc nouveau blacklist${S} items..... ${N}"
 						rm -f $emdbc
+						log_function_data "file removed to remove nouveau blacklist: $emdbc"
+						echo "${S}Removed${N}"
+						showMessage='true'
 					fi
 					if [ -f "$embc" -a -n "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc )" ];then
+						echo -n "${S}Removing ${C}$embc nouveau blacklist${S} items..... ${N}"
 						sed -i 's|blacklist[[:space:]]nouveau||i' $embc
+						log_function_data "file updated to remove nouveau blacklist: $embc"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ "$showMessage" == 'true' ];then
+						echo "${M}Since ${C}nouveau${M} module has been added to the kernel, and ${C}nouveau${M} was"
+						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
+						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
+						B_FORCE_REBOOT='true'
+						
+						print_hec
 					fi
 					;;
 			esac
@@ -4227,9 +4283,9 @@ start_x_question()
 	fgGlxOpt=''
 	fgGlxAlert=''
 	fgGlxInstall=''
-	if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ];then
+	if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ] || [ "$B_FORCE_REBOOT" == 'true' ];then
 		startXReboot='reboot-now'
-		startXRebootText='You must reboot before you can continue into your desktop.'
+		startXRebootText='You must reboot before you can start your desktop.'
 	fi
 
 	echo ${M}$LINE
@@ -4479,6 +4535,12 @@ create_x_conf()
 					$X_NAME -configure
 					echo "${S}Moving newly created ${C}xorg.conf${S} to ${C}$EXXC${S} now...${N}"
 					mv -f /root/xorg.conf.new $EXXC
+					# this handles the case where nouveau was running, sgfxi was started, 
+					# no xorg.conf was found, and the X -configure command defaults to nv
+					if [ -n "$( lsmod | grep '^nouveau' )" ];then
+						NATIVE_OVERRIDE='nouveau'
+						update_xorgconf_driver_version
+					fi
 					if [ -f $EXXC ];then
 						echo "${S}Ok, all done, continuing...${N}"
 						log_function_data "xorg xorg.conf file generated"
