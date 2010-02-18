@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.76
+####  version: 4.10.77
 ####  Date: February 17 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3453,19 +3453,20 @@ remove_module()
 	# need to see what this is doing elsewhere
 # 	case $SYSTEM_BASE in
 # 		debian|ubuntu)
+		if [ -f "$emod" ];then
 			perl -pi -e "s/^[[:space:]]*$1.*\n?//" $emod
+		fi
 # 			;;
 # 	esac
 	if [ "$1" == 'nvidia' ];then
 		case $SYSTEM_BASE in
 			fedora)
 				if [ -f "$grub1" -a ! -f "$grub2" -a -z "$( grep -Eis '^[[:space:]]*kernel.*nouveau.modeset=0' $grub1 )" ];then
-					case1='true'
+					if [ -f "$grub1" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1 )" ];then
+						sed -i '/root=/s|$| rdblacklist=nouveau|' $grub1
+					fi
 				fi
-				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd )" ];then
-					case2='true'
-				fi
-				if [ "$case1" == 'true' -a "$case2" == 'true' ];then
+				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/* )" ];then
 					blacklistNouveau='true'
 				fi
 				if [ ! -f "$emdbc" -a -d /etc/modprobe.d -a "$blacklistNouveau" == 'true' ];then
