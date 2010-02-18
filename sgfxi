@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.75
+####  version: 4.10.76
 ####  Date: February 17 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1684,17 +1684,20 @@ check_kernel_headers()
 			;;
 		fedora)
 			# fedora 12 headers: /usr/src/kernels/$(uname -r)
-			local kernelDevel='' develPresent=''
-			headerName="kernel-headers-$KERNEL_VERSION"
+			# kernel-PAE-devel-2.6.31.5-127.fc12.i686.rpm
+			local kernelDevel='' develPresent='' kernelWorking=''
+			# need to slice off .PAE from working kernel name/headers name
+			kernelWorking=$( sed -r 's/\.PAE//' <<< -$KERNEL_VERSION )
+			headerName="kernel-headers-$kernelWorking"
 			headerPresent="$( ls /usr/src/kernels/$KERNEL_VERSION/ 2>/dev/null )"
 			# rpm is reporting two names here I think, we'll see, if it's got the
 			# kernel name in it, we'll call it installed.
-			headerInstalled=$( check_package_status "$headerName" 'i' | grep $KERNEL_VERSION )
+			headerInstalled=$( check_package_status "$headerName" 'i' | grep $kernelWorking )
 			# if [ -z "$headerPresent" -a -z "$headerInstalled" ];then
 			if [ -z "$headerInstalled" ];then
 				install_package "$headerName"
 			fi
-			kernelDevel="kernel$FED_KERNEL_PAE-devel-$KERNEL_VERSION"
+			kernelDevel="kernel$FED_KERNEL_PAE-devel-$kernelWorking"
 			develPresent=$( check_package_status "$kernelDevel" 'i' )
 			if [ -z "$develPresent" ];then
 				install_package "$kernelDevel"
