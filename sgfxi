@@ -211,6 +211,7 @@ NV_UB_CURRENT='185'
 NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
 
+NV_FED_CURRENT="-$NV_DEFAULT" # note this will be out of sync until repo catches up, needs tests
 NV_FED_LEGACY_2='-96xx'
 NV_FED_LEGACY_3='-173xx'
 # set dynamically in fixes, line 529 or so
@@ -2798,6 +2799,11 @@ install_native_driver()
 				NATIVE_OVERRIDE=$xorgAti
 			fi
 			;;
+		fedora)
+			xorgBase='xorg-x11-drv-'
+			xorgCore='xorg-x11-server-Xorg'
+			libMesaGlx='libMesaGlx=' # I think, check this: yum list *mesa*
+			;;
 	esac
 
 	if [ "$B_EXPERIMENTAL" == 'true' ];then
@@ -3804,19 +3810,19 @@ install_distro_drivers()
 						1)	:
 							# this has already been error handled.
 							;;
-						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2$FED_KERNEL_PAE"
+						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2"
 							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt"
 							if [ "$BITS" == '64' ];then
 								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt64"
 							fi
 							;;
-						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3$FED_KERNEL_PAE"
+						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3"
 							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt"
 							if [ "$BITS" == '64' ];then
 								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt64"
 							fi
 							;;
-						*)	akmodNvidia="akmod-nvidia$FED_KERNEL_PAE"
+						*)	akmodNvidia="akmod-nvidia$NV_FED_CURRENT"
 							drvNvidia1="xorg-x11-drv-nvidia-libs.$archExt"
 							if [ "$BITS" == '64' ];then
 								drvNvidia2="xorg-x11-drv-nvidia-libs.$archExt64"
