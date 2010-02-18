@@ -1687,8 +1687,8 @@ check_kernel_headers()
 			# kernel-PAE-devel-2.6.31.5-127.fc12.i686.rpm
 			local kernelDevel='' develPresent='' kernelWorking=''
 			# need to slice off .PAE from working kernel name/headers name
-			kernelWorking=$( sed -r 's/\.PAE//' <<< -$KERNEL_VERSION )
-			headerName="kernel-headers-$kernelWorking"
+			kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_VERSION )
+			headerName="kernel-headers-$kernelWorking"KERNEL_VERS
 			headerPresent="$( ls /usr/src/kernels/$KERNEL_VERSION/ 2>/dev/null )"
 			# rpm is reporting two names here I think, we'll see, if it's got the
 			# kernel name in it, we'll call it installed.
