@@ -3822,7 +3822,7 @@ install_distro_drivers()
 								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt64"
 							fi
 							;;
-						*)	akmodNvidia="akmod-nvidia$NV_FED_CURRENT"
+						*)	akmodNvidia="akmod-nvidia"
 							drvNvidia1="xorg-x11-drv-nvidia-libs.$archExt"
 							if [ "$BITS" == '64' ];then
 								drvNvidia2="xorg-x11-drv-nvidia-libs.$archExt64"
