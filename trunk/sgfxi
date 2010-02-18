@@ -547,7 +547,7 @@ driver_support_tests()
 						esac
 						# handle change to legacy 5xxx level cards
 						case $DRIVER_DEFAULT in
-							173.*.*|169.12|100.*.*|96.*.*|71.*.*)
+							173.*.*|169.12|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
 								:
 								;;
 							# 180.11|180.08|180.06|177.82|177.80
