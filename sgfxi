@@ -3436,12 +3436,12 @@ remove_module()
 	local emd='/etc/modprobe.d/'
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
 	local blacklistNouveau='false'
-	local outcome='failed'
+	local outcome='failed' 
 	local showMessage1='false'
 	
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}...... ${N}"
-		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE
+		modprobe -rf $1 1>> $LOG_FILE 2>> $LOG_FILE ## needs -f to force it
 		if [ "$?" -ne 0 ];then
 			echo "${W}FAILED${N}"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
@@ -3464,10 +3464,10 @@ remove_module()
 			fedora)
 				if [ -f "$grub1fed" -a ! -f "$grub2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
 					if [ -f "$grub1fed" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1fed )" ];then
-						sed -i '/root=/s|$| rdblacklist=nouveau|' $grub1fed
+						sed -i '/[[:space:]root=/s|$| rdblacklist=nouveau|' $grub1fed
 					fi
 					if [ -f "$grub1fed" -a -z "$( grep -si 'vmalloc=' $grub1fed )" ];then
-						sed -i '/root=/s|$| vmalloc=256m|' $grub1fed
+						sed -i '/[[:space:]root=/s|$| vmalloc=256m|' $grub1fed
 					fi
 					showMessage1='true'
 				fi
