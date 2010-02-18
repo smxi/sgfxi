@@ -3465,6 +3465,9 @@ remove_module()
 					if [ -f "$grub1" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1 )" ];then
 						sed -i '/root=/s|$| rdblacklist=nouveau|' $grub1
 					fi
+					if [ -f "$grub1" -a -z "$( grep -si 'vmalloc=' $grub1 )" ];then
+						sed -i '/root=/s|$| vmalloc=256m|' $grub1
+					fi
 				fi
 				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/* )" ];then
 					blacklistNouveau='true'
