@@ -3436,7 +3436,7 @@ remove_module()
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
 	local blacklistNouveau='false'
 	local outcome='failed'
-	local case1='false' case2='false'
+	local showMessage1='false'
 	
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}...... ${N}"
@@ -3461,19 +3461,24 @@ remove_module()
 	if [ "$1" == 'nvidia' ];then
 		case $SYSTEM_BASE in
 			fedora)
-				if [ -f "$grub1" -a ! -f "$grub2" -a -z "$( grep -Eis '^[[:space:]]*kernel.*nouveau.modeset=0' $grub1 )" ];then
+				if [ -f "$grub1" -a ! -f "$grub2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1 )" ];then
 					if [ -f "$grub1" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1 )" ];then
 						sed -i '/root=/s|$| rdblacklist=nouveau|' $grub1
+						
 					fi
 					if [ -f "$grub1" -a -z "$( grep -si 'vmalloc=' $grub1 )" ];then
 						sed -i '/root=/s|$| vmalloc=256m|' $grub1
 					fi
+					showMessage1='true'
 				fi
 				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/* )" ];then
 					blacklistNouveau='true'
 				fi
-				if [ ! -f "$emdbc" -a -d /etc/modprobe.d -a "$blacklistNouveau" == 'true' ];then
+				if [ ! -f "$emdbc" -a -d "$emd" -a "$blacklistNouveau" == 'true' ];then
 					echo 'blacklist nouveau' > $emdbc
+					showMessage1='true'
+				fi
+				if [ "$showMessage1" == 'true' ];then
 					echo "${M}Since ${C}nouveau${M} was running in the kernel, you will need to reboot before"
 					echo "your ${C}$CARD${M} install is completed, and you may need to reboot if it errors out,"
 					echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
