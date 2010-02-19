@@ -3542,7 +3542,7 @@ remove_module()
 					showMessage1='true'
 				fi
 				if [ "$showMessage1" == 'true' ];then
-					update_initramfs 'remove-nouveau'
+# 					update_initramfs 'remove-nouveau'
 					reboot_now_question 'nouveau' 'nvidia'
 				fi
 				;;
@@ -3680,7 +3680,7 @@ add_module()
 						showMessage='true'
 					fi
 					if [ "$showMessage" == 'true' ];then
-						update_initramfs 'add-nouveau'
+# 						update_initramfs 'add-nouveau'
 						echo "${M}Since ${C}nouveau${M} module has been added to the kernel, and ${C}nouveau${M} was"
 						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
 						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
