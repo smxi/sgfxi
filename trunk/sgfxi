@@ -4473,7 +4473,7 @@ start_stop_x()
 		do
 			if [ -x /etc/init.d/$dman ];then
 				dmanCommand="$serviceControl$dman"
-			elif [ "$serviceControl" == '' -a -n "$( type -P $dman )" ];then
+			elif [ "$serviceControl" == '' -a -n "$( type -P $dman )" -a "$1" == 'start' ];then
 				dmanCommand=$( type -P $dman )
 			else
 				dmanCommand=''
@@ -4496,7 +4496,7 @@ start_stop_x()
 	else
 		if [ -x /etc/init.d/$DISPLAY_MANAGER ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER"
-		elif [ "$serviceControl" == '' -a -n "$( type -P $DISPLAY_MANAGER )" ];then
+		elif [ "$serviceControl" == '' -a -n "$( type -P $DISPLAY_MANAGER )" -a "$1" == 'start' ];then
 			dmanCommand=$( type -P $DISPLAY_MANAGER )
 		else
 			dmanCommand=''
