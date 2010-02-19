@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.85
+####  version: 4.10.86
 ####  Date: February 19 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3514,12 +3514,7 @@ remove_module()
 	local blacklistNouveau='false'
 	local outcome='unset' 
 	local showMessage1='false'
-# 	nouveau               538256  2 
-# 	ttm                    34264  1 nouveau
-# 	drm_kms_helper         22700  1 nouveau
-# 	drm                   136056  4 nouveau,ttm,drm_kms_helper
-# 	i2c_algo_bit            4820  1 nouveau
-# 	i2c_core               23352  5 videodev,i2c_nforce2,nouveau,drm,i2c_algo_bit
+
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}...... ${N}"
 		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE ## needs -f to force it
@@ -3577,9 +3572,14 @@ remove_module()
 					showMessage1='true'
 				fi
 				if [ "$showMessage1" == 'true' ];then
-					if [ "$B_TESTING_6" == 'true' ];then
+# 					if [ "$B_TESTING_6" == 'true' ];then
 						update_initramfs 'remove-nouveau'
-					fi
+# 					fi
+					# note: we don't want nouveau to try to restart on reboot, so we're changing
+					# xorg.conf to use vesa here.
+					NATIVE_OVERRIDE='vesa'
+					echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
+					update_xorgconf_driver_version
 					reboot_now_question 'nouveau' 'nvidia'
 				fi
 				;;
@@ -3596,22 +3596,29 @@ reboot_now_question()
 	local opt='' options=''
 	
 	echo $LINE
-	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to reboot before"
-	echo "your ${C}$CARD${M} install is completed, and you may need to reboot if it errors out,"
+	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
+	echo "your ${C}$CARD${M} install is completed, and you may need to reboot again if it errors out,"
 	echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
+	echo
+	echo "${S}For best results, select the ${C}shutdown${S} option, let the computer sit for a minute, then restart it."
 	echo $LINE
 	echo "${M}Remember, to install ${C}$2${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
-	echo "after you have rebooted (use init ${C}3${M} to start, or use ${C}3${M} at grub)"
+	echo "after you have restarted (use init ${C}3${M} to start, or use ${C}3${M} at grub)"
 	echo $LINE
-	echo "${C}1 - yes-reboot${M} - Reboot.${N}"
-	echo "${C}2 - quit${M} - Exit script, do other things (then reboot to install nvidia).${N}"
+	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
+	echo "${C}2 - reboot${S} - Reboot. This may not let some data unload from your memory.${N}"
+	echo "${C}3 - quit${S} - Exit script, do other things (then restart system to install nvidia).${N}"
 	echo $LINE
-	options="yes-reboot quit"
+	options="shutdown reboot quit"
 	select opt in $options
 	do
 		case $opt in
-			yes-reboot)
-				echo "${S}rebooting now...${N}"
+			halt)
+				echo "${S}Shutting down now...${N}"
+				exit 0
+				;;
+			reboot)
+				echo "${S}Rebooting now...${N}"
 				reboot
 				;;
 			quit)
@@ -3717,9 +3724,9 @@ add_module()
 						showMessage='true'
 					fi
 					if [ "$showMessage" == 'true' ];then
-						if [ "$B_TESTING_6" == 'true' ];then
+# 						if [ "$B_TESTING_6" == 'true' ];then
 							update_initramfs 'add-nouveau'
-						fi
+# 						fi
 						echo "${M}Since ${C}nouveau${M} module has been added to the kernel, and ${C}nouveau${M} was"
 						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
 						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
