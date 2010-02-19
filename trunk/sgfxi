@@ -4472,7 +4472,7 @@ start_stop_x()
 		for dman in $displayManagers
 		do
 			if [ -x /etc/init.d/$dman ];then
-				dmanCommand="$serviceControl$dman"
+				dmanCommand="$serviceControl$dman $1"
 			elif [ "$serviceControl" == '' -a -n "$( type -P $dman )" -a "$1" == 'start' ];then
 				dmanCommand=$( type -P $dman )
 			else
@@ -4482,7 +4482,7 @@ start_stop_x()
 			if [ -n "$dmanCommand" ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
 				echo "${S}Attempting to ${C}$1${S} display manager $dman now... ${N}"
-				xActionString="$noHup $dmanCommand $1 2>/dev/null && success='true'"
+				xActionString="$noHup $dmanCommand 2>/dev/null && success='true'"
 				eval $xActionString
 				if [ -z "$noHup" ];then
 					if [ "$success" == 'true' ];then
@@ -4495,7 +4495,7 @@ start_stop_x()
 		done
 	else
 		if [ -x /etc/init.d/$DISPLAY_MANAGER ];then
-			dmanCommand="$serviceControl$DISPLAY_MANAGER"
+			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
 		elif [ "$serviceControl" == '' -a -n "$( type -P $DISPLAY_MANAGER )" -a "$1" == 'start' ];then
 			dmanCommand=$( type -P $DISPLAY_MANAGER )
 		else
@@ -4506,7 +4506,7 @@ start_stop_x()
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
 			echo "${S}Attempting to ${C}$1${S} default display manager $DISPLAY_MANAGER now... ${N}"
-			xActionString="$noHup $dmanCommand $1 && success='true'"
+			xActionString="$noHup $dmanCommand && success='true'"
 			eval $xActionString
 			if [ -z "$noHup" ];then
 				if [ "$success" == 'true' ];then
