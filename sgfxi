@@ -3791,7 +3791,7 @@ run_driver_installer()
 			apply_module_patch post
 			install_libvdpau
 			# only do a final removal of nouveau if the install succeeded
-			remove_module 'nouveau' 
+# 			remove_module 'nouveau' 
 			;;
 		$FGLRX)
 			distroId=$FG_DISTRIB_ID
@@ -3986,7 +3986,7 @@ install_distro_drivers()
 					echo "${S}Installing ${C}$FEDORA_NVIDIA${S} components...${N}"
 					install_package "$akmodNvidia $drvNvidia1 $drvNvidia2"
 					# only do a final removal of nouveau if the install succeeded
-					remove_module 'nouveau'
+# 					remove_module 'nouveau'
 					
 					if [ -x /usr/sbin/akmods ];then
 						echo "${S}Forcing initial module build of ${C}$akmodNvidia${S} kernel module...${N}"
@@ -4242,7 +4242,7 @@ final_install_steps()
 			mkdir -p /etc/udev/rules.d
 			rm -f /etc/udev/nvidia.rules /etc/udev/rules.d/nvidia.rules
 			ldconfig # Configure Dynamic Linker Run Time Bindings.
-			remove_module 'nouveau'
+# 			remove_module 'nouveau'
 			;;
 		$FGLRX)
 			##  clean up install parts
