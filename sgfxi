@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.84
+####  version: 4.10.85
 ####  Date: February 19 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -51,11 +51,15 @@
 ########################################################################
 ####  TESTING FLAGS
 ####  sgfxi supports advanced testing triggers to do various things, using -! <arg>
-####  -! 1 - triggers default B_TESTING_1='true' to trigger some test or other
-####  -! 2 - triggers default B_TESTING_2='true' to trigger some test or other
-####  -! 3 - triggers default B_SKIP_FUNCTION='true' to turn off some functions
+####  -! 1 - triggers default B_TESTING_1='true' - triggers testing data function
+####  -! 2 - triggers default B_TESTING_2='true' - triggers post test exit
+####  -! 3 - triggers default B_SKIP_FUNCTION='true' to turn off functions for script testing
 ####  -! 4 - triggers B_TESTING_1='true' and B_TESTING_2='true'
-####  -! 5 - triggers B_TESTING_1='true' and B_SKIP_FUNCTION='true'
+####  -! 5 - triggers B_TESTING_1='true', B_TESTING_2='true', and B_SKIP_FUNCTION='true'
+####  -! 6 - triggers B_TESTING_3='true' - overrides xorg/kernel support tests
+####  -! 7 - triggers B_TESTING_5='true' - triggers advanced, beta tests for general script
+####  -! 8 - triggers B_TESTING_4='true' - overrides patch tests
+####  -! 9 - triggers B_TESTING_6='true' - triggers new distro development tests
 ####  -! 10 - triggers an update from the primary dev download server
 ####  -! 11 - triggers an update from svn branch one - if present, of course
 ####  -! 12 - triggers an update from svn branch two - if present, of course
@@ -133,10 +137,12 @@ B_USE_DISTRO_DRIVER=''
 
 ## debugger/testing boolean switches
 B_SKIP_FUNCTION=''
-B_TESTING_1=''
-B_TESTING_2=''
-B_TESTING_3=''
-B_TESTING_4=''
+B_TESTING_1='' # triggers testing function
+B_TESTING_2='' # triggers post driver extract/patch exit
+B_TESTING_3='' # overrides testing cases xorg/kernel for driver support
+B_TESTING_4='' # triggers advanced general development testing cases
+B_TESTING_5='' # overrides patch tests
+B_TESTING_6='' # triggers new distro development tests
 
 ARCH=''
 # kernel variables strings are now evaluated in kernel_string_info().
@@ -422,7 +428,7 @@ driver_support_tests()
 						27)
 							case $DRIVER_DEFAULT in
 								8-4|8-5|8-6|8-7|8-8|8-9)
-									if [ "$B_TESTING_1" != 'true' ];then
+									if [ "$B_TESTING_" != 'true' ];then
 										error_handler 234 $KERNEL_THIRD
 									fi
 									;;
@@ -656,7 +662,7 @@ driver_support_tests()
 }
 
 # these patch calls used to be in lib files but this is cleaner/simpler long term
-run_patches()
+run_driver_patches()
 {
 	eval $LOGPS
 	local patchFile=''
@@ -765,7 +771,7 @@ run_patches()
 					;;
 				32|33)
 					# test if the /generated directory exists, if it does, then use patch.
-					if [ -n "$( misc_fixes nvidia-generated-patch )" -o "$B_TESTING_3" == 'true' ];then
+					if [ -n "$( misc_fixes nvidia-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
 						case $DRIVER_DEFAULT in
 							195.*)
 								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
@@ -829,7 +835,7 @@ run_patches()
 				30)
 					case $DRIVER_DEFAULT in
 						9-6)
-							if [ "$B_TESTING_1" == 'true' ];then
+							if [ "$B_TESTING_3" == 'true' ];then
 								patchFile='FGLRX-2.6.30-9-6.diff'
 								apply_patch_file $patchFile
 							fi
@@ -849,7 +855,7 @@ run_patches()
 	esac
 
 	# this is for dev testing of patches or fixes
-	if [ "$B_TESTING_1" == 'true' ];then
+	if [ "$B_TESTING_4" == 'true' ];then
 		: # doing nothing for now
 	fi
 	eval $LOGPE
@@ -1683,7 +1689,7 @@ check_kernel_headers()
 				echo "${S}Installing missing kernel header package ${C}$headerName${S}"
 				echo "using your archived header package: ${C}$headerFile${N}"
 				dpkg -i $headerFile || error_handler 223 "$headerFile"
-			elif [ -z "$headerInstalled" -a -z "$headerAvailable" -a "$B_TESTING_4" != 'true' ];then
+			elif [ -z "$headerInstalled" -a -z "$headerAvailable" -a "$B_TESTING_5" != 'true' ];then
 				error_handler 224 "$headerName"
 			fi
 			;;
@@ -1711,7 +1717,7 @@ check_kernel_headers()
 		# fresh arch installs do not have the kernel header in /usr/src but this test
 		# is highly erratic, arch is not using consistent methods, requires more testing
 # 		arch)
-# 			if [ -z "$headerPresent" -a "$B_TESTING_4" != 'true' ];then
+# 			if [ -z "$headerPresent" -a "$B_TESTING_6" != 'true' ];then
 # 				error_handler 224 "$headerName"
 # 			fi
 # 			;;
@@ -1732,8 +1738,6 @@ check_root()
 
 basic_startup_tests()
 {
-	local wgetPath=$( type -p wget )
-	
 	check_set_distro
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
@@ -1752,12 +1756,7 @@ basic_startup_tests()
 	cd $SCRIPT_HOME
 	check_root
 	cleanup_temp_files
-		
-	if [ -z "$wgetPath" ];then
-		if [ -n "$( check_package_status 'wget' 'c' )" ];then
-			install_package 'wget'
-		fi
-	fi
+	check_script_depends
 
 	# this allows users to update in x, for example, to see latest drivers
 	if [ "$B_FORCE_UPDATE" == 'true' ];then
@@ -1941,22 +1940,56 @@ check_set_distro()
 	SIS=$DISTRIB_ID-$DISTRIB_CODENAME-$BITS
 }
 
-check_install_tools()
+check_run_package_tools()
+{
+	eval $LOGPS
+	local patchPath=$( type -p patch )
+	
+	if [ -z "$patchPath" ];then
+		if [ -n "$( check_package_status 'patch' 'c' )" ];then
+			install_package 'patch'
+		fi
+	fi
+	eval $LOGPE
+}
+
+check_script_depends()
+{
+	eval $LOGPS
+	local wgetPath=$( type -p wget )
+	local logrotatePath=$( type -p logrotate )
+	
+	if [ -z "$wgetPath" ];then
+		if [ -n "$( check_package_status 'wget' 'c' )" ];then
+			install_package 'wget'
+		fi
+	fi
+	if [ -z "$logrotatePath" ];then
+		if [ -n "$( check_package_status 'logrotate' 'c' )" ];then
+			install_package 'logrotate'
+		fi
+	fi
+	eval $LOGPE
+}
+
+check_driver_install_tools()
 {
 	eval $LOGPS
 	
 	local fakerootPath=$( type -p fakeroot )
-	local logrotatePath=$( type -p logrotate )
-	local patchPath=$( type -p patch )
 	
 	# nvidia and fglrx tools check_package_status
 	case $SYSTEM_BASE in
 		debian|ubuntu)
-			if [ -z "$( check_package_status 'module-assistant' 'i' )" -a -n "$( check_package_status 'module-assistant' 'c' )" ];then
-				install_package 'module-assistant'
+			if [ -z "$( check_package_status 'module-assistant' 'i' )" ];then
+				if [ -n "$( check_package_status 'module-assistant' 'c' )" ];then
+					install_package 'module-assistant'
+				fi
 			fi
-			if [ -z "$( check_package_status 'build-essential' 'i' )" -a -n "$( check_package_status 'build-essential' 'c' )" ];then
-				install_package 'build-essential'
+			if [ -z "$( check_package_status 'build-essential' 'i' )" ];then
+				if [ -n "$( check_package_status 'build-essential' 'c' )" ];then
+					install_package 'build-essential'
+				fi
 			fi
 			;;
 # 		arch)
@@ -1965,16 +1998,7 @@ check_install_tools()
 # 			fi
 # 			;;
 	esac
-	if [ -z "$logrotatePath" ];then
-		if [ -n "$( check_package_status 'logrotate' 'c' )" ];then
-			install_package 'logrotate'
-		fi
-	fi
-	if [ -z "$patchPath" ];then
-		if [ -n "$( check_package_status 'patch' 'c' )" ];then
-			install_package 'patch'
-		fi
-	fi
+	
 	if [ -z "$fakerootPath" ];then
 		if [ -n "$( check_package_status 'fakeroot' 'c' )" ];then
 			install_package 'fakeroot'
@@ -1988,28 +2012,29 @@ check_install_tools()
 	elif [ "$CARD" == $FGLRX ];then
 		case $SYSTEM_BASE in
 			debian|ubuntu)
-				if [ -z "$( check_package_status 'debhelper' 'i' )" -a -n "$( check_package_status 'debhelper' 'c' )" ];then
-					install_package 'debhelper'
+				if [ -z "$( check_package_status 'debhelper' 'i' )" ];then
+					if [ -n "$( check_package_status 'debhelper' 'c' )" ];then
+						install_package 'debhelper'
+					fi
 				fi
 				# presence of this package will break fglrx install
 				if [ -n "$( check_package_status 'dpkg-cross' 'i' )" ];then
 					remove_package 'dpkg-cross' "$CARD"
 				fi
-				if [ -z "$( check_package_status 'libstdc++5' 'i' )" -a -n "$( check_package_status 'libstdc++5' 'c' )" ];then
-					install_package 'libstdc++5'
+				if [ -z "$( check_package_status 'libstdc++5' 'i' )" ];then
+					if [ -n "$( check_package_status 'libstdc++5' 'c' )" ];then
+						install_package 'libstdc++5'
+					fi
 				fi
-				if [ -z "$( check_package_status 'libstdc++6' 'i' )" -a -n "$( check_package_status 'libstdc++6' 'c' )" ];then
-					install_package 'libstdc++6'
+				if [ -z "$( check_package_status 'libstdc++6' 'i' )" ];then
+					if [ -n "$( check_package_status 'libstdc++6' 'c' )" ];then
+						install_package 'libstdc++6'
+					fi
 				fi
 				;;
 		esac
 	fi
 
-	if [ -f /etc/modutils/1alsa ];then
-		mv /lib/modules/extra/alsa /lib/modules/$KERNEL_VERSION/
-		rm -f /etc/modutils/1alsa
-		depmod $KERNEL_VERSION -a
-	fi
 	eval $LOGPE
 }
 
@@ -2189,7 +2214,7 @@ install_package()
 	eval $LOGUS
 	local distroVersion='' optionalArgs='' 
 	local useUntrusted='' install=''
-	local packageInstalled=$( check_package_status "$1" 'i' )
+	local packageInstalled=''
 	local update='' install='' doYes='' useUntrusted=''
 	
 	case $APT_TYPE in
@@ -2237,6 +2262,7 @@ install_package()
 	# only do reinstall if arg is set and package is installed
 	case "$3" in
 		reinstall)
+			packageInstalled=$( check_package_status "$1" 'i' )
 			if [ -n "$packageInstalled" ];then
 				case $APT_TYPE in
 					aptitude)
@@ -2445,7 +2471,7 @@ update_to_nonfree_sources()
 
 # if null, this will trigger a first run update, maybe in the future can also
 # add time of last update tests, we'll see. For now returns size in MB for tests
-check_dpkg_update()
+check_package_manager_updated()
 {
 	eval $LOGUS
 	local dpkguf='/var/cache/apt/pkgcache.bin'
@@ -2887,7 +2913,7 @@ install_native_driver()
 			install_package "$xorgCore" '' 'reinstall'
 		fi
 		# need an override for this
-		if [ "$CARD" == "$FGLRX" -a "$B_TESTING_4" != 'true' ];then
+		if [ "$CARD" == "$FGLRX" -a "$B_TESTING_5" != 'true' ];then
 			install_package "$libMesaGlx" '' 'reinstall'
 		fi
 
@@ -2934,7 +2960,7 @@ native_driver_install_keep()
 		if [ -z "$( check_package_status "$ldrm" 'i' )" ];then
 			install_package $ldrm
 		fi
-		if [ -n "$( which deborphan )" ];then
+		if [ -n "$( type -P deborphan )" ];then
 			# doing one at a time because if one is already on keep,
 			# trying to add both will fail
 			deborphan --add-keep $lgmd > /dev/null
@@ -3055,7 +3081,7 @@ set_cpu_data()
 }
 
 ## test if the driver to be installed is in the list of supported drivers
-## advanced tests occur in driver_support_tests, patches set in run_patches
+## advanced tests occur in driver_support_tests, patches set in run_driver_patches
 check_supported_driver()
 {
 	eval $LOGUS
@@ -3077,7 +3103,7 @@ check_supported_driver()
 	eval $LOGUE
 }
 
-set_version()
+set_driver_install_version()
 {
 	eval $LOGPS
 	local response='' printDriver='' newKernelText='' betaDriverText=''
@@ -3292,7 +3318,7 @@ download_extract_driver()
 			;;
 	esac
 
-	if [ "$errorTemp" -gt 0 -a "$B_SKIP_FUNCTION" != 'true' ];then
+	if [ "$errorTemp" -gt 0 -a "$B_TESTING_2" != 'true' ];then
 		rm -f $runPackage
 		error_handler 196 $runPackage
 	fi
@@ -3336,7 +3362,7 @@ prep_install()
 			;;
 		$FGLRX)
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
-			if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_TESTING_4" != 'true' ];then
+			if [ "$B_TESTING_5" != 'true' ];then
 				install_package "$libMesaGlx" '' 'reinstall'
 			fi
 			;;
@@ -3380,6 +3406,14 @@ preinstall_cleanup()
 	# this is not set as a path if native driver install
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
 		cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY
+	fi
+	# some legacy cleanup gunk, this can probably be dumped
+	if [ -f /etc/modutils/1alsa ];then
+		mv /lib/modules/extra/alsa /lib/modules/$KERNEL_VERSION/
+		rm -f /etc/modutils/1alsa
+		if [ -n "$( type -p depmod )" ];then
+			depmod $KERNEL_VERSION -a
+		fi
 	fi
 
 	## NVIDIA removal...
@@ -3543,7 +3577,7 @@ remove_module()
 					showMessage1='true'
 				fi
 				if [ "$showMessage1" == 'true' ];then
-					if [ "$B_TESTING_4" == 'true' ];then
+					if [ "$B_TESTING_6" == 'true' ];then
 						update_initramfs 'remove-nouveau'
 					fi
 					reboot_now_question 'nouveau' 'nvidia'
@@ -3683,7 +3717,7 @@ add_module()
 						showMessage='true'
 					fi
 					if [ "$showMessage" == 'true' ];then
-						if [ "$B_TESTING_4" == 'true' ];then
+						if [ "$B_TESTING_6" == 'true' ];then
 							update_initramfs 'add-nouveau'
 						fi
 						echo "${M}Since ${C}nouveau${M} module has been added to the kernel, and ${C}nouveau${M} was"
@@ -3856,9 +3890,11 @@ install_libvdpau()
 # 			;;
 	esac
 	
-	if [ "$B_SKIP_FUNCTION" != 'true' -a -n "$libVdPau" -a "$LEGACY_LEVEL" -gt 3 ];then
-		if [ -n "$( check_package_status "$libVdPau" 'c' )" -a -z "$( check_package_status "$libVdPau" 'i' )" ];then
-			install_package "$libVdPau"
+	if [ "$B_TESTING_5" != 'true' -a -n "$libVdPau" -a "$LEGACY_LEVEL" -gt 3 ];then
+		if [ -z "$( check_package_status "$libVdPau" 'i' )" ];then
+			if [ -n "$( check_package_status "$libVdPau" 'c' )" ];then
+				install_package "$libVdPau"
+			fi
 		fi
 	fi
 }
@@ -3890,8 +3926,10 @@ post_installer_steps()
 			rm -f fglrx-installer_*.changes
 			case $SYSTEM_BASE in
 				arch)
-					if [ -z "$( check_package_status 'mesa' 'i' )" -a -n "$( check_package_status 'mesa' 'c' )" ];then
-						install_package 'mesa'
+					if [ -z "$( check_package_status 'mesa' 'i' )" ];then
+						if [ -n "$( check_package_status 'mesa' 'c' )" ];then
+							install_package 'mesa'
+						fi
 					fi
 					;;
 			esac
@@ -4120,8 +4158,10 @@ install_fglrx_debs()
 		
 		case $SYSTEM_BASE in
 			ubuntu)
-				if [ -z "$( check_package_status 'dkms' 'i' )" -a -n "$( check_package_status 'dkms' 'c' )" ];then
-					install_package 'dkms'
+				if [ -z "$( check_package_status 'dkms' 'i' )" ];then
+					if [ -n "$( check_package_status 'dkms' 'c' )" ];then
+						install_package 'dkms'
+					fi
 				fi
 				;;
 		esac
@@ -4155,7 +4195,7 @@ install_fglrx_debs()
 # 		if [ "$SYSTEM_CODENAME" != 'unstable' ];then
 # 			forceIt='--force-overwrite'
 # 		fi
-		if [ "$B_TESTING_1" == 'true' ];then
+		if [ "$B_TESTING_5" == 'true' ];then
 			forceIt='--force-all'
 		fi
 
@@ -4649,7 +4689,7 @@ create_x_conf()
 					mv -f /root/xorg.conf.new $EXXC
 					# this handles the case where nouveau was running, sgfxi was started, 
 					# no xorg.conf was found, and the X -configure command defaults to nv
-					if [ -n "$( lsmod | grep '^nouveau' )" ];then
+					if [ "$B_TESTING_5" == 'true' -a -n "$( lsmod | grep '^nouveau' )" ];then
 						NATIVE_OVERRIDE='nouveau'
 						update_xorgconf_driver_version
 					fi
@@ -5189,13 +5229,15 @@ show_options()
 	if [ "$1" == 'full' ];then
 		echo ""
 		echo "Developer and Testing Options (Advanced):"
-		echo "-! 1 - Sets flag B_TESTING_1='true' to trigger testing condition 1."
-		echo "-! 2 - Sets flag B_TESTING_2='true' to trigger testing condition 2."
-		echo "-! 3 - Sets flag B_SKIP_FUNCTION='true' to turn off some functions."
+		echo "-! 1 - Sets flag B_TESTING_1='true' - sets testing function data active."
+		echo "-! 2 - Sets flag B_TESTING_2='true' - triggers exit after run package download/extract."
+		echo "-! 3 - Sets flag B_SKIP_FUNCTION='true' to turn off functions for script testing."
 		echo "-! 4 - Sets flags B_TESTING_1='true' and B_TESTING_2='true'."
-		echo "-! 5 - Sets flags B_TESTING_1='true' and B_SKIP_FUNCTION='true'."
-		echo "-! 6 - Sets flag B_TESTING_3='true' - overrides initial support / patching tests."
-		echo "-! 7 - Sets flag B_TESTING_4='true' - activates beta/advanced development features for debugging."
+		echo "-! 5 - Sets flags B_TESTING_1, B_TESTING_2, and B_SKIP_FUNCTION ='true'."
+		echo "-! 6 - Sets flag B_TESTING_3='true' - overrides initial driver xorg/kernel support tests."
+		echo "-! 7 - Sets flag B_TESTING_4='true' - overrides patch controls."
+		echo "-! 8 - Sets flag B_TESTING_5='true' - activates beta/advanced development features for debugging."
+		echo "-! 9 - Sets flag B_TESTING_6='true' - triggers experimental new distro support methods."
 		echo "-! 10 - Triggers an update from the primary dev download server."
 		echo "-! 11 - Triggers an update from svn branch one - if present, of course."
 		echo "-! 12 - Triggers an update from svn branch two - if present, of course."
@@ -5388,11 +5430,16 @@ get_options()
 						B_TESTING_2='true'
 						;;
 					5)	B_TESTING_1='true'
+						B_TESTING_2='true'
 						B_SKIP_FUNCTION='true'
 						;;
 					6)	B_TESTING_3='true'
 						;;
 					7)	B_TESTING_4='true'
+						;;
+					8)	B_TESTING_5='true'
+						;;
+					9)	B_TESTING_6='true'
 						;;
 					10)
 						cd $SCRIPT_HOME
@@ -5524,7 +5571,7 @@ fi
 # we'll need to force an initial update on fresh apt type installs for header
 # checks and other package checks.
 if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_PRINT_VER" != 'true' -a "$B_SM_INSTALL" != 'true' ];then
-	check_dpkg_update
+	check_package_manager_updated
 fi
 
 if [ "$B_NATIVE_DRIVER" == 'true' ];then
@@ -5536,22 +5583,28 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	set_cpu_data
 fi
 # needs to be out to give print version
-set_version
+set_driver_install_version
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
 	check_kernel_headers
 fi
 
 if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
+	check_run_package_tools
 	set_download_info # also triggers the download / extract function
-	# must be after set_version for output of data to smxi
+	# this is going to run either the fglrx or nvidia patch library file function
+	# must be after set_driver_install_version for output of data to smxi
 	# note this must occur before binary driver install
+	run_driver_patches
+	if [ "$B_TESTING_2" == 'true' ];then
+		exit 0 # this is just to test up to download/extract point
+	fi
 fi
 
 x_start_stop_master stop
 
 if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_PRINT_VER" != 'true' -a "$B_NATIVE_DRIVER" != 'true' ];then
-	check_install_tools
+	check_driver_install_tools
 fi
 prep_install
 # for testing/debugging and alt driver/card download testing,
@@ -5560,13 +5613,8 @@ if [ "$B_SKIP_FUNCTION" != 'true' ];then
 	preinstall_cleanup
 fi
 
-## this is going to run either the fglrx or nvidia patch library file function
 ## both have same function name, so no detection is required, we did it already
 if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
-	run_patches
-	if [ "$B_SKIP_FUNCTION" == 'true' ];then
-		exit # this is just to test up to download/extract point
-	fi
 	run_driver_installer
 	post_installer_steps
 	if [ "$B_FGLRX_DEB_BUILDER" == 'true' ];then
