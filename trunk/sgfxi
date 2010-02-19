@@ -1752,8 +1752,10 @@ basic_startup_tests()
 	check_root
 	cleanup_temp_files
 		
-	if [ -z "$wgetPath" -a -n "$( check_package_status 'wget' 'c' )" ];then
-		install_package 'wget'
+	if [ -z "$wgetPath" ];then
+		if [ -n "$( check_package_status 'wget' 'c' )" ];then
+			install_package 'wget'
+		fi
 	fi
 
 	# this allows users to update in x, for example, to see latest drivers
@@ -1962,14 +1964,20 @@ check_install_tools()
 # 			fi
 # 			;;
 	esac
-	if [ -z "$logrotatePath" -a -n "$( check_package_status 'logrotate' 'c' )" ];then
-		install_package 'logrotate'
+	if [ -z "$logrotatePath" ];then
+		if [ -n "$( check_package_status 'logrotate' 'c' )" ];then
+			install_package 'logrotate'
+		fi
 	fi
-	if [ -z "$patchPath" -a -n "$( check_package_status 'patch' 'c' )" ];then
-		install_package 'patch'
+	if [ -z "$patchPath" ];then
+		if [ -n "$( check_package_status 'patch' 'c' )" ];then
+			install_package 'patch'
+		fi
 	fi
-	if [ -z "$fakerootPath" -a -n "$( check_package_status 'fakeroot' 'c' )" ];then
-		install_package 'fakeroot'
+	if [ -z "$fakerootPath" ];then
+		if [ -n "$( check_package_status 'fakeroot' 'c' )" ];then
+			install_package 'fakeroot'
+		fi
 	fi
 	# note wget test needs to be in first main test function
 
@@ -3672,6 +3680,7 @@ add_module()
 						showMessage='true'
 					fi
 					if [ "$showMessage" == 'true' ];then
+						update_initramfs 'add-nouveau'
 						echo "${M}Since ${C}nouveau${M} module has been added to the kernel, and ${C}nouveau${M} was"
 						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
 						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
