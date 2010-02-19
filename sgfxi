@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.81
+####  version: 4.10.82
 ####  Date: February 17 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3534,10 +3534,8 @@ remove_module()
 					showMessage1='true'
 				fi
 				if [ "$showMessage1" == 'true' ];then
-					echo "${M}Since ${C}nouveau${M} is running in the kernel, you will need to reboot before"
-					echo "your ${C}$CARD${M} install is completed, and you may need to reboot if it errors out,"
-					echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
-					print_hec
+					update_initramfs 'remove-nouveau'
+					reboot_now_question 'nouveau' 'nvidia'
 				fi
 				;;
 		esac
@@ -3545,6 +3543,80 @@ remove_module()
 	log_function_data "operation outcome: $outcome"
 	eval $LOGPE
 }
+
+# args: $1 - module; $2 - driver
+reboot_now_question()
+{
+	eval $LOGPS
+	local opt='' options=''
+	
+	echo $LINE
+	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to reboot before"
+	echo "your ${C}$CARD${M} install is completed, and you may need to reboot if it errors out,"
+	echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
+	echo $LINE
+	echo "${M}Remember, to install ${C}$2${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
+	echo "after you have rebooted (use init ${C}3${M} to start, or use ${C}3${M} at grub)"
+	echo $LINE
+	echo "${C}1 - yes-reboot${M} - Reboot.${N}"
+	echo "${C}2 - quit${M} - Exit script, do other things (then reboot to install nvidia).${N}"
+	echo $LINE
+	options="yes-reboot quit"
+	select opt in $options
+	do
+		case $opt in
+			yes-reboot)
+				echo "${S}rebooting now...${N}"
+				reboot
+				;;
+			quit)
+				echo "${S}Ok, remember you need to reboot before the $1 changes are live.${N}"
+				exit 0 # need to exit with 100 to not trigger pid root kill in smxi
+				;;
+			*)
+				echo "${W}Please select one of the options in the list, thank you.${N}"
+				repeat='true'
+				;;
+		esac
+		break
+	done
+	eval $LOGPE
+	if [ "$repeat" == 'true' ];then
+		reboot_now_question
+	fi
+}
+
+# 1 - add-nouveau/remove-nouveau
+update_initramfs()
+{
+	eval $LOGPS
+	local storedNouveau="/boot/initramfs-$KERNEL_VERSION-nouveau.img"
+	local startingInitram="/boot/initramfs-$KERNEL_VERSION.img"
+	case $SYSTEM_BASE in
+		fedora)
+			case $1 in
+				remove-nouveau)
+					if [ -n "$( type -p dracut )" ];then
+						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}nouveau${S} now...${N}"
+						mv -f $startingInitram $storedNouveau
+						dracut $startingInitram $KERNEL_VERSION
+					fi
+					;;
+				add-nouveau)
+					if [ -f "$storedNouveau" ];then
+						echo "${S}Restoring ${C}initramfs${S} with ${C}nouveau${S} now...${N}"
+						mv -f $storedNouveau $startingInitram 
+					elif [ -n "$( type -p dracut )" ];then
+						echo "${S}Building ${C}initramfs${S} with ${C}nouveau${S} now...${N}"
+						dracut $startingInitram $KERNEL_VERSION
+					fi
+					;;
+			esac
+			;;
+	esac
+	eval $LOGPE
+}
+
 
 # args: $1 - module to add or process
 # do some extra processing here for nouveau
@@ -4372,7 +4444,7 @@ start_stop_x()
 	# they will read it, so we'll always use this as default to respect user changes
 	local defaultRunlevel=$( grep -s ':initdefault:' /etc/inittab | grep -Eo '[0-5]' )
 	local serviceControl='/etc/init.d/'
-	local noHup='nohup' xActionString='' finalXKill=''
+	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
 	fi
@@ -4380,15 +4452,28 @@ start_stop_x()
 	if [ -n "$( type -P service )" ];then
 		serviceControl='service '
 	fi
+	case $SYSTEM_BASE in
+		fedora) 
+			serviceControl='' # no /etc/init.d, it's in /usr/sbin
+			;;
+	esac
 
 	## restart x if this is not being run by smxi
 	if [ -z "$DISPLAY_MANAGER" ];then
 		for dman in $displayManagers
 		do
 			if [ -x /etc/init.d/$dman ];then
+				dmanCommand="$serviceControl$dman"
+			elif [ "$serviceControl" == '' -a -n "$( type -P $dman )" ];then
+				dmanCommand=$( type -P $dman )
+			else
+				dmanCommand=''
+			fi
+			
+			if [ -n "$dmanCommand" ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
 				echo "${S}Attempting to ${C}$1${S} display manager $dman now... ${N}"
-				xActionString="$noHup ${serviceControl}$dman $1 2>/dev/null && success='true'"
+				xActionString="$noHup $dmanCommand $1 2>/dev/null && success='true'"
 				eval $xActionString
 				if [ -z "$noHup" ];then
 					if [ "$success" == 'true' ];then
@@ -4401,11 +4486,18 @@ start_stop_x()
 		done
 	else
 		if [ -x /etc/init.d/$DISPLAY_MANAGER ];then
+			dmanCommand="$serviceControl$DISPLAY_MANAGER"
+		elif [ "$serviceControl" == '' -a -n "$( type -P $DISPLAY_MANAGER )" ];then
+			dmanCommand=$( type -P $DISPLAY_MANAGER )
+		else
+			dmanCommand=''
+		fi
+		if [ -n "$dmanCommand" ];then
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
 			echo "${S}Attempting to ${C}$1${S} default display manager $DISPLAY_MANAGER now... ${N}"
-			xActionString="$noHup ${serviceControl}$DISPLAY_MANAGER $1 && success='true'"
+			xActionString="$noHup $dmanCommand $1 && success='true'"
 			eval $xActionString
 			if [ -z "$noHup" ];then
 				if [ "$success" == 'true' ];then
