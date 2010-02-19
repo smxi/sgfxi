@@ -3516,7 +3516,7 @@ remove_module()
 				fi
 				# also make system bootable to init 3 easily with grub, otherwise you can
 				# literally not be able to access tty OR desktop in some cases
-				if [ -f "$grub1fed" -a ! -f "$grub2" -a -z "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $grub1fed )" ];then
+				if [ -f "$grub1fed" -a ! -f "$grub2" -a -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $grub1fed )" ];then
 					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$grub1fed${S}..... ${N}"
 					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $grub1fed
 					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $grub1fed
