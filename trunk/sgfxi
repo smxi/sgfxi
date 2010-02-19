@@ -3566,7 +3566,7 @@ remove_module()
 					log_function_data "file updated to restore grub timeout/unhide menu: $grub1fed"
 					echo "${S}Modified${N}"
 				fi
-				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/* )" ];then
+				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/*.conf )" ];then
 					blacklistNouveau='true'
 				fi
 				if [ ! -f "$emdbc" -a -d "$emd" -a "$blacklistNouveau" == 'true' ];then
