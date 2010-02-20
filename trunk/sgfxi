@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.86
-####  Date: February 19 2010
+####  version: 4.10.87
+####  Date: February 20 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -322,7 +322,7 @@ LOGIN_PID=$( ps | grep ' login' )
 if [ "$LOGIN_PID" == '' ];then
 	LOGIN_PID=$( ps | grep ' su' )
 fi
-LOGIN_PID=$( echo $LOGIN_PID | grep -o "[0-9]*" )
+LOGIN_PID=$( awk '{print $1}' <<< $LOGIN_PID | grep -Eo "^[0-9]+$" )
 
 # do some distro specific tweaks here too. Don't do this if
 # distro maintainers have set package defaults above.
