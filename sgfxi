@@ -4506,7 +4506,8 @@ start_stop_x()
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
 	local defaultRunlevel=$( grep -s ':initdefault:' /etc/inittab | grep -Eo '[0-5]' )
-	local serviceControl='/etc/init.d/'
+	# default, this prevents errors when these don't exist in for ex. fedora
+	local serviceControl='/etc/init.d/' startPath='/etc/init.d/'
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
@@ -4518,6 +4519,7 @@ start_stop_x()
 	case $SYSTEM_BASE in
 		arch)
 			serviceControl='/etc/rc.d/'
+			startPath='/etc/rc.d/'
 			;;
 		fedora) 
 			serviceControl='' # no /etc/init.d, it's in /usr/sbin
@@ -4528,7 +4530,7 @@ start_stop_x()
 	if [ -z "$DISPLAY_MANAGER" ];then
 		for dman in $displayManagers
 		do
-			if [ -x /etc/init.d/$dman ];then
+			if [ -x $startPath$dman  ];then
 				dmanCommand="$serviceControl$dman $1"
 			elif [ "$serviceControl" == '' -a -n "$( type -P $dman )" -a "$1" == 'start' ];then
 				dmanCommand=''
@@ -4554,7 +4556,7 @@ start_stop_x()
 			fi
 		done
 	else
-		if [ -x /etc/init.d/$DISPLAY_MANAGER ];then
+		if [ -x $startPath$DISPLAY_MANAGER ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
 		elif [ "$serviceControl" == '' -a -n "$( type -P $DISPLAY_MANAGER )" -a "$1" == 'start' ];then
 			dmanCommand=''
