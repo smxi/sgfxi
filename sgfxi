@@ -1720,7 +1720,11 @@ check_kernel_headers()
 			headerName="kernel26-headers"
 			headerPresent=$( check_package_status "$headerName" 'i' )
 			if [ -z "$headerPresent" -a "$B_TESTING_6" == 'true' ];then
-				error_handler 224 "$headerName"
+				if [ -n "$( check_package_status "$headerName" 'c' )" ];then
+					install_package "$headerName"
+				else
+					error_handler 224 "$headerName"
+				fi
 			fi
 			;;
 	esac
