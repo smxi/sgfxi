@@ -1716,11 +1716,13 @@ check_kernel_headers()
 			;;
 		# fresh arch installs do not have the kernel header in /usr/src but this test
 		# is highly erratic, arch is not using consistent methods, requires more testing
-# 		arch)
-# 			if [ -z "$headerPresent" -a "$B_TESTING_6" != 'true' ];then
-# 				error_handler 224 "$headerName"
-# 			fi
-# 			;;
+		arch)
+			headerName="kernel26-headers"
+			headerPresent=$( check_package_status "$headerName" 'i' )
+			if [ -z "$headerPresent" -a "$B_TESTING_6" == 'true' ];then
+				error_handler 224 "$headerName"
+			fi
+			;;
 	esac
 	eval $LOGUE
 }
