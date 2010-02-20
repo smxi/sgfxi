@@ -4516,6 +4516,9 @@ start_stop_x()
 		serviceControl='service '
 	fi
 	case $SYSTEM_BASE in
+		arch)
+			serviceControl='/etc/rc.d/'
+			;;
 		fedora) 
 			serviceControl='' # no /etc/init.d, it's in /usr/sbin
 			;;
