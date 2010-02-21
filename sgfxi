@@ -1949,13 +1949,20 @@ check_set_distro()
 check_run_package_tools()
 {
 	eval $LOGPS
+	local makePath=$( type -p make )
 	local patchPath=$( type -p patch )
 	
+	if [ -z "$makePath" ];then
+		if [ -n "$( check_package_status 'make' 'c' )" ];then
+			install_package 'make'
+		fi
+	fi
 	if [ -z "$patchPath" ];then
 		if [ -n "$( check_package_status 'patch' 'c' )" ];then
 			install_package 'patch'
 		fi
 	fi
+	
 	eval $LOGPE
 }
 
