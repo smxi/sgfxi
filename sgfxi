@@ -1999,8 +1999,10 @@ check_driver_install_tools()
 			fi
 			;;
 # 		arch)
-# 			if [ -n "$( check_package_status 'gcc' 'c' )" ];then
-# 				install_package 'gcc'
+# 			if [ -z "$( check_package_status 'gcc' 'i' )" ];then
+# 				if [ -n "$( check_package_status 'gcc' 'c' )" ];then
+# 					install_package 'gcc'
+# 				fi
 # 			fi
 # 			;;
 	esac
@@ -3342,7 +3344,11 @@ prep_install()
 	case $SYSTEM_BASE in
 		arch)
 			gccVersion='gcc'
+			gccPackage='gcc'
 			libMesaGlx='libgl'
+			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
+				updateGcc='true'
+			fi
 			;;
 		debian)
 			libMesaGlx='libgl1-mesa-glx'
