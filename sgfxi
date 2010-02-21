@@ -3678,7 +3678,7 @@ reboot_now_question()
 	select opt in $options
 	do
 		case $opt in
-			halt)
+			shutdown)
 				echo "${S}Shutting down now...${N}"
 				exit 0
 				;;
