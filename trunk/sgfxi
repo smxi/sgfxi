@@ -3366,6 +3366,7 @@ prep_install()
 			gccVersion='gcc'
 			gccPackage='gcc'
 			libMesaGlx='libgl'
+			# -n "$gccVersion" -a 
 			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
 				updateGcc='true'
 			fi
@@ -4010,7 +4011,8 @@ install_distro_drivers()
 					esac
 					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
 					install_package "$nvidiaGlx"
-					install_package "$nvidiaUtils"
+					# conflicts with libgl and removes it
+# 					install_package "$nvidiaUtils"
 					;;
 				debian)
 					case $LEGACY_LEVEL in
