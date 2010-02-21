@@ -2311,7 +2311,11 @@ install_package()
 			fi
 			;;
 		*)
-			:
+			case $APT_TYPE in
+				pacman)
+					optionalArgs=$3
+					;;
+			esac
 			;;
 	esac
 	# then install the package with all options
@@ -3489,7 +3493,7 @@ preinstall_cleanup()
 			arch)
 				if [ -z "$( check_package_status 'libgl' 'i' )" ];then
 					if [ -n "$( check_package_status 'libgl' 'c' )" ];then
-						install_package 'libgl'
+						install_package 'libgl' '' '--nodeps'
 					fi
 				fi
 				;;
