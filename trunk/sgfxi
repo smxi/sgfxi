@@ -3481,8 +3481,19 @@ preinstall_cleanup()
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
+	
 	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
 	if [ -n "$oldNvidia" ];then
+		case $SYSTEM_BASE in
+			# libgl will break the removal of nvidia, odd packaging decision, so need to reinstall it.
+			arch)
+				if [ -z "$( check_package_status 'libgl' 'i' )" ];then
+					if [ -n "$( check_package_status 'libgl' 'c' )" ];then
+						install_package 'libgl'
+					fi
+				fi
+				;;
+		esac
 		case $APT_TYPE in
 			apt-get|aptitude)
 				dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
@@ -3858,15 +3869,7 @@ run_driver_installer()
 						;;
 				esac
 			fi
-			case $SYSTEM_BASE in
-				arch)
-					if [ -z "$( check_package_status 'libgl' 'i' )" ];then
-						if [ -n "$( check_package_status 'libgl' 'c' )" ];then
-							install_package 'libgl'
-						fi
-					fi
-					;;
-			esac
+			
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
 			# fresh arch installs may have the single file but no headers in /usr/src
 			# note that this didn't work even though the target file existed
