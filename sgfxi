@@ -3363,7 +3363,6 @@ prep_install()
 
 	case $SYSTEM_BASE in
 		arch)
-			gccVersion='gcc'
 			gccPackage='gcc'
 			libMesaGlx='libgl'
 			# -n "$gccVersion" -a 
