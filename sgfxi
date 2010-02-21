@@ -3858,6 +3858,15 @@ run_driver_installer()
 						;;
 				esac
 			fi
+			case $SYSTEM_BASE in
+				arch)
+					if [ -z "$( check_package_status 'libgl' 'i' )" ];then
+						if [ -n "$( check_package_status 'libgl' 'c' )" ];then
+							install_package 'libgl'
+						fi
+					fi
+					;;
+			esac
 			installerArgs="$installerArgs -k $KERNEL_VERSION"
 			# fresh arch installs may have the single file but no headers in /usr/src
 			# note that this didn't work even though the target file existed
