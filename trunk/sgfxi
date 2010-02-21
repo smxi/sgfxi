@@ -4574,7 +4574,7 @@ start_stop_x()
 	# setting the default will handle cases like default 2 while still handling 3/5
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
-	local defaultRunlevel=$( grep -s ':initdefault:' /etc/inittab | grep -Eo '[0-5]' )
+	local defaultRunlevel=$( grep -Es '^id.*:initdefault:' /etc/inittab | grep -Eo '[0-5]' )
 	# default, this prevents errors when these don't exist in for ex. fedora
 	local serviceControl='/etc/init.d/' startPath='/etc/init.d/'
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
@@ -4594,7 +4594,7 @@ start_stop_x()
 			serviceControl='' # no /etc/init.d, it's in /usr/sbin
 			;;
 	esac
-
+	log_function_data "default runlevel: $defaultRunlevel"
 	## restart x if this is not being run by smxi
 	if [ -z "$DISPLAY_MANAGER" ];then
 		for dman in $displayManagers
