@@ -2965,7 +2965,7 @@ install_native_driver()
 		
 		if [ "$NATIVE_OVERRIDE" == 'nouveau' ];then
 			case $SYSTEM_BASE in
-				fedora)
+				arch|fedora)
 					add_module "$NATIVE_OVERRIDE"
 					;;
 			esac
@@ -3456,10 +3456,8 @@ preinstall_cleanup()
 	# double check, clean up anything left after uninstaller runs
 	rm -f /usr/src/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	rm -rf /usr/src/modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-	remove_module 'nvidia'
-	if [ "$B_NATIVE_DRIVER" != 'true' -a "$CARD" == "$NVIDIA" ];then
-		remove_module 'nouveau'
-	fi
+	
+	
 	rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.*o 1>> $LOG_FILE 2>> $LOG_FILE
 	rm -f /lib/modules/$KERNEL_VERSION/volatile/nvidia.*o >/dev/null 1>> $LOG_FILE 2>> $LOG_FILE
 	# this is legacy stuff, not currently present
@@ -3485,7 +3483,6 @@ preinstall_cleanup()
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
-	
 	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
 	if [ -n "$oldNvidia" ];then
 		case $SYSTEM_BASE in
@@ -3512,7 +3509,10 @@ preinstall_cleanup()
 				;;
 		esac
 	fi
-
+	remove_module 'nvidia'
+	if [ "$B_NATIVE_DRIVER" != 'true' -a "$CARD" == "$NVIDIA" ];then
+		remove_module 'nouveau'
+	fi
 	## FGLRX removal...
 	# this is for manually installed amdccle removal
 	if [ -f /usr/local/bin/amdccle ];then
