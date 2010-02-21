@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.87
+####  version: 4.10.88
 ####  Date: February 20 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1666,7 +1666,7 @@ check_kernel_headers()
 	eval $LOGUS
 	local headerName=''
 	local headerPresent=''
-	local headerInstalled=''
+	local headerInstalled='' testKernel=''
 	
 	case $SYSTEM_BASE in
 		debian|ubuntu)
@@ -1718,12 +1718,21 @@ check_kernel_headers()
 		# is highly erratic, arch is not using consistent methods, requires more testing
 		arch)
 			headerName="kernel26-headers"
-			headerPresent=$( check_package_status "$headerName" 'i' )
-			if [ -z "$headerPresent" -a "$B_TESTING_6" == 'true' ];then
-				if [ -n "$( check_package_status "$headerName" 'c' )" ];then
-					install_package "$headerName"
-				else
+			headerPresent="$( ls /lib/modules/$KERNEL_VERSION/build/ 2>/dev/null )"
+			testKernel=$( grep -Esi '^2\.6\.[0-9]{2}-ARCH$' <<< $KERNEL_VERSION )
+			# 2.6.32-ARCH
+			if [ -z "$headerPresent" ];then
+				# if it's a custom kernel, no package available so die
+				if [ -n "$testKernel" ];then 
 					error_handler 224 "$headerName"
+				# otherwise let's test for the default, and install it if its missing
+				else
+					headerInstalled=$( check_package_status "$headerName" 'i' )
+					if [ -n "$( check_package_status "$headerName" 'c' )" ];then
+						install_package "$headerName"
+					else
+						error_handler 224 "$headerName"
+					fi
 				fi
 			fi
 			;;
