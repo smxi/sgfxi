@@ -3587,7 +3587,15 @@ remove_module()
 	fi
 
 	if [ "$1" == 'nouveau' -a "$outcome" == 'failed' ];then
+		B_FORCE_REBOOT='true'
 		case $SYSTEM_BASE in
+			arch)
+				echo $LINE
+				echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
+				echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
+				echo "This is because its not possible to remove ${C}nouveau${S} from a running system.${N}"
+				print_hec
+				;;
 			fedora)
 				if [ -f "$grub1fed" -a ! -f "$grub2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
 					if [ -f "$grub1fed" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1fed )" ];then
