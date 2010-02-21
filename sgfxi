@@ -2948,7 +2948,7 @@ install_native_driver()
 		if [ "$CARD" == "$FGLRX" -a "$B_TESTING_5" != 'true' ];then
 			install_package "$libMesaGlx" '' 'reinstall'
 		fi
-
+		
 		if [ "$CARD" == "$FGLRX" -a "$B_EXPERIMENTAL" == 'true' ];then
 			echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
 			native_driver_experimental "$driver"
@@ -2958,7 +2958,9 @@ install_native_driver()
 				eval $extraAtiPackage1
 			fi
 		fi
-
+		if [ "$( x_is_running )" -ne 0 -a "$NATIVE_OVERRIDE" == 'nouveau' ];then
+			x_start_stop_master stop
+		fi
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		update_xorg
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
