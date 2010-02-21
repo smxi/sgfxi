@@ -3491,7 +3491,7 @@ preinstall_cleanup()
 		case $SYSTEM_BASE in
 			# libgl will break the removal of nvidia, odd packaging decision, so need to reinstall it.
 			arch)
-				if [ -z "$( check_package_status 'libgl' 'i' )" ];then
+				if [ "$B_USE_DISTRO_DRIVER" != 'true' -a -z "$( check_package_status 'libgl' 'i' )" ];then
 					if [ -n "$( check_package_status 'libgl' 'c' )" ];then
 						install_package 'libgl' '' '--nodeps'
 						# redo list because nvidia-utils is removed
