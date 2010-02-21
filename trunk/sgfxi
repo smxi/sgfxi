@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.88
+####  version: 4.10.89
 ####  Date: February 20 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -214,11 +214,15 @@ NV_OTHERS='190.42:185.18.36:180.60:177.82:173.14.22:169.12:100.14.19:96.43.14:71
 NV_DEBIAN_LEGACY_1='71xx'
 NV_DEBIAN_LEGACY_2='96xx'
 NV_DEBIAN_LEGACY_3='173xx'
-
+# arch linux
+NV_AR_CURRENT=''
+NV_AR_LEGACY_3='173xx'
+NV_AR_LEGACY_2='96xx'
+# ubuntu 
 NV_UB_CURRENT='185'
 NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
-
+# fedora
 NV_FED_CURRENT="-$NV_DEFAULT" # note this will be out of sync until repo catches up, needs tests
 NV_FED_LEGACY_2='-96xx'
 NV_FED_LEGACY_3='-173xx'
@@ -3980,7 +3984,7 @@ post_installer_steps()
 install_distro_drivers()
 {
 	eval $LOGPS
-	local nvidiaGlx='' nvidiaSource='' nvidiaModal=''
+	local nvidiaGlx='' nvidiaSource='' nvidiaModal='' nvidiaUtils=''
 	local akmodNvidia='' drvNvidia1='' drvNvidia2='' 
 
 	clean_up_fglrx_junk
@@ -3988,6 +3992,26 @@ install_distro_drivers()
 	case $CARD in
 		$NVIDIA)
 			case $SYSTEM_BASE in
+				arch)
+					# dependencies handle the rest of this
+					case $LEGACY_LEVEL in
+						1)	:
+							# this has already been error handled.
+							;;
+						2)	nvidiaGlx="nvidia-$NV_AR_LEGACY_2"
+							nvidiaUtils="nvidia-$NV_AR_LEGACY_2-utils"
+							;;
+						3)	nvidiaGlx="nvidia-$NV_AR_LEGACY_3"
+							nvidiaUtils="nvidia-$NV_AR_LEGACY_3-utils"
+							;;
+						*)	nvidiaGlx="nvidia"
+							nvidiaUtils="nvidia-utils"
+							;;
+					esac
+					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
+					install_package "$nvidiaGlx"
+					install_package "$nvidiaUtils"
+					;;
 				debian)
 					case $LEGACY_LEVEL in
 						1)	# nvidiaGlx='nvidia-glx-legacy'
@@ -4061,7 +4085,7 @@ install_distro_drivers()
 							;;
 					esac
 					
-					echo "${S}Installing ${C}$FEDORA_NVIDIA${S} components...${N}"
+					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
 					install_package "$akmodNvidia $drvNvidia1 $drvNvidia2"
 					# only do a final removal of nouveau if the install succeeded
 # 					remove_module 'nouveau'
@@ -4087,7 +4111,7 @@ install_distro_drivers()
 							nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
 							;;
 					esac
-					echo "${S}Installing ${C}$UBUNTU_NVIDIA${S} components...${N}"
+					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
 					install_package "$nvidiaModal"
 					install_package "$nvidiaGlx"
 					;;
