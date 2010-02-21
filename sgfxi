@@ -2958,9 +2958,7 @@ install_native_driver()
 				eval $extraAtiPackage1
 			fi
 		fi
-		if [ "$( x_is_running )" -ne 0 -a "$NATIVE_OVERRIDE" == 'nouveau' ];then
-			x_start_stop_master stop
-		fi
+
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		update_xorg
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
@@ -2971,7 +2969,12 @@ install_native_driver()
 					add_module "$NATIVE_OVERRIDE"
 					;;
 			esac
+			B_FORCE_REBOOT='true'
+			echo $LINE
+			echo "${M}Note: the ${C}Xorg nouveau${M} driver requires a ${C}reboot${M} to become active."
+			echo "${C}$SCRIPT_NAME${S} will now let you do that.${N}"
 		fi
+
 		eval $LOGPE
 		## and finish it up
 		x_start_stop_master start
