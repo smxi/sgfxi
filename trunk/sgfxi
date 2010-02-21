@@ -3494,6 +3494,8 @@ preinstall_cleanup()
 				if [ -z "$( check_package_status 'libgl' 'i' )" ];then
 					if [ -n "$( check_package_status 'libgl' 'c' )" ];then
 						install_package 'libgl' '' '--nodeps'
+						# redo list because nvidia-utils is removed
+						oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
 					fi
 				fi
 				;;
