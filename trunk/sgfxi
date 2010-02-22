@@ -4595,7 +4595,7 @@ start_stop_x()
 	# default, this prevents errors when these don't exist in for ex. fedora
 	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' skipXKill=''
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
-	local gdmCommand='' skipLoop=''
+	local gdmCommand='' skipLoop='' dManager=$DISPLAY_MANAGER
 	
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
@@ -4616,12 +4616,13 @@ start_stop_x()
 			skipXKill='true' # STARTS X when you KILL X...
 			case $1 in
 				start)
-					gdmCommand='/usr/sbin/gdm-restart' 
+					success='true' # go straight to init 5 start up
 					;;
 				stop)
-					gdmCommand='/usr/sbin/gdm-stop'
+					gdmCommand='init 3'
 					;;
 			esac
+			dManager='gdm'
 			;;
 	esac
 	log_function_data "default runlevel: $defaultRunlevel"
@@ -4653,12 +4654,6 @@ start_stop_x()
 	else
 		if [ -x $startPath$DISPLAY_MANAGER ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
-		# fedora special case
-		elif [ "$serviceControl" == '' -a -x "$gdmCommand" ];then
-				dmanCommand=$gdmCommand
-				if [ "$1" == 'start' ];then
-					success='true'
-				fi
 		else
 			dmanCommand=''
 		fi
@@ -4666,14 +4661,14 @@ start_stop_x()
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
-			echo "${S}Attempting to ${C}$1${S} default display manager ${C}$DISPLAY_MANAGER${S} now... ${N}"
+			echo "${S}Attempting to ${C}$1${S} default display manager ${C}$dManager${S} now... ${N}"
 			xActionString="$noHup $dmanCommand && success='true'"
 			eval $xActionString
 			if [ -z "$noHup" ];then
 				if [ "$success" == 'true' ];then
 					echo "${S}Display manager ${C}$1${S} successful.${N}"
 				else
-					echo "${W}Display manager ${C}$1${S} failed.${N}"
+					echo "${W}Display manager ${C}$1${W} failed.${N}"
 				fi
 			fi
 		fi
