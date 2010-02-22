@@ -4652,7 +4652,7 @@ start_stop_x()
 			fi
 		done
 	else
-		if [ -x $startPath$DISPLAY_MANAGER ];then
+		if [ -x $startPath$DISPLAY_MANAGER -a -n "$DISPLAY_MANAGER" ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
 		else
 			dmanCommand=''
