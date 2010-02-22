@@ -178,8 +178,9 @@ NEOMAGIC='neomagic'
 NVIDIA='nvidia'
 TDFX='tdfx'
 
+# this path only exists on debian type distros I believe, but this will be null for others
 DISPLAY_MANAGER=$( cat /etc/X11/default-display-manager 2>/dev/null )
-DISPLAY_MANAGER=$( basename $DISPLAY_MANAGER 2>/dev/null )
+DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 
 # Position matters: 1-latest; 2-middle; 3-older; 4-oldest
 VERSIONS=''
@@ -4594,7 +4595,7 @@ start_stop_x()
 	# default, this prevents errors when these don't exist in for ex. fedora
 	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' skipXKill=''
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
-	local gdmCommand=''
+	local gdmCommand='' skipLoop=''
 	
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
@@ -4611,6 +4612,7 @@ start_stop_x()
 			;;
 		fedora) 
 			serviceControl='' # no /etc/init.d, it's in /usr/sbin
+			skipLoop='true'
 			skipXKill='true' # STARTS X when you KILL X...
 			case $1 in
 				start)
@@ -4624,25 +4626,19 @@ start_stop_x()
 	esac
 	log_function_data "default runlevel: $defaultRunlevel"
 	## restart x if this is not being run by smxi
-	if [ -z "$DISPLAY_MANAGER" ];then
+	if [ -z "$DISPLAY_MANAGER" -a "$skipLoop" != 'true' ];then
 		for dman in $displayManagers
 		do
 			# arch, debian, ubuntu
 			if [ -x $startPath$dman  ];then
 				dmanCommand="$serviceControl$dman $1"
-			# fedora
-			elif [ "$serviceControl" == '' -a -x "$gdmCommand" ];then
-				dmanCommand=$gdmCommand
-				if [ "$1" == 'start' ];then
-					success='true'
-				fi
 			else
 				dmanCommand=''
 			fi
 			
 			if [ -n "$dmanCommand" ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
-				echo "${S}Attempting to ${C}$1${S} display manager $dman now... ${N}"
+				echo "${S}Attempting to ${C}$1${S} display manager ${C}$dman${S} now... ${N}"
 				xActionString="$noHup $dmanCommand 2>/dev/null && success='true'"
 				eval $xActionString
 				if [ -z "$noHup" ];then
@@ -4657,6 +4653,7 @@ start_stop_x()
 	else
 		if [ -x $startPath$DISPLAY_MANAGER ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
+		# fedora special case
 		elif [ "$serviceControl" == '' -a -x "$gdmCommand" ];then
 				dmanCommand=$gdmCommand
 				if [ "$1" == 'start' ];then
@@ -4669,7 +4666,7 @@ start_stop_x()
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
 			# nohup is required to make sure dm is fully stopped, and pids removed
-			echo "${S}Attempting to ${C}$1${S} default display manager $DISPLAY_MANAGER now... ${N}"
+			echo "${S}Attempting to ${C}$1${S} default display manager ${C}$DISPLAY_MANAGER${S} now... ${N}"
 			xActionString="$noHup $dmanCommand && success='true'"
 			eval $xActionString
 			if [ -z "$noHup" ];then
