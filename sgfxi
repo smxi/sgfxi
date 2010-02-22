@@ -3515,6 +3515,7 @@ preinstall_cleanup()
 				;;
 		esac
 	fi
+	# this might need more work to not remove if X failed to stop
 	remove_module 'nvidia'
 	if [ "$B_NATIVE_DRIVER" != 'true' -a "$CARD" == "$NVIDIA" ];then
 		remove_module 'nouveau'
@@ -4652,8 +4653,11 @@ start_stop_x()
 			fi
 		done
 	else
+		# have to retest dm for null for fedora here
 		if [ -x $startPath$DISPLAY_MANAGER -a -n "$DISPLAY_MANAGER" ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
+		elif [ -n "$gdmCommand" ];then
+			dmanCommand=$gdmCommand # init 3 for fedora
 		else
 			dmanCommand=''
 		fi
