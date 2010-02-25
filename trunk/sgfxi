@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.91
+####  version: 4.10.92
 ####  Date: February 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -778,11 +778,12 @@ run_driver_patches()
 					# test if the /generated directory exists, if it does, then use patch.
 					if [ -n "$( misc_fixes nvidia-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
 						case $DRIVER_DEFAULT in
-							195.*)
-								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
-								patchFile='NVIDIA-195-2.6.33.diff'
-								apply_patch_file $patchFile
-								;;
+							# this is fixed in newest beta, it does auto testing for /generated/
+# 							195.*)
+# 								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
+# 								patchFile='NVIDIA-195-2.6.33.diff'
+# 								apply_patch_file $patchFile
+# 								;;
 							190.5[0-9])
 								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
 								patchFile='NVIDIA-190.53-2.6.33.diff'
