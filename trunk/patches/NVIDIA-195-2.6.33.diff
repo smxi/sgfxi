@@ -1,6 +1,6 @@
 Index: usr/src/nv/conftest.sh
 ===================================================================
---- usr/src/nv/conftest.sh	 
+--- usr/src/nv/conftest.sh.orig
 +++ usr/src/nv/conftest.sh	2010-01-14 06:15:40.000000000 +0530
 @@ -33,14 +33,14 @@
      # CONFIG_XEN and CONFIG_PARAVIRT are present, text_xen() treats
@@ -63,7 +63,7 @@ Index: usr/src/nv/conftest.sh
              #
 Index: usr/src/nv/nvacpi.c
 ===================================================================
---- usr/src/nv/nvacpi.c	
+--- usr/src/nv/nvacpi.c.orig
 +++ usr/src/nv/nvacpi.c	2010-01-14 06:09:00.000000000 +0530
 @@ -48,6 +48,10 @@
  };

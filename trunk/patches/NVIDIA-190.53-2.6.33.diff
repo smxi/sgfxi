@@ -1,7 +1,8 @@
 Index: usr/src/nv/conftest.sh
 ===================================================================
---- usr/src/nv/conftest.sh	
-+++ usr/src/nv/conftest.sh	2010-01-06 12:10:56.000000000 +0530
+diff -Naurp usr/src/nv/conftest.sh usr/src/nv.b/conftest.sh
+--- usr/src/nv/conftest.sh
++++ usr/src/nv.b/conftest.sh	2010-01-06 12:10:56.000000000 +0530
 @@ -32,14 +32,14 @@
      # CONFIG_XEN and CONFIG_PARAVIRT are present, text_xen() treats
      # the kernel as a stand-alone kernel.
@@ -76,8 +77,9 @@ Index: usr/src/nv/conftest.sh
              #
 Index: usr/src/nv/nvacpi.c
 ===================================================================
---- usr/src/nv/nvacpi.c	
-+++ usr/src/nv/nvacpi.c	2010-01-06 12:10:56.000000000 +0530
+diff -Naurp usr/src/nv/nvacpi.c usr/src/nv.b/nvacpi.c
+--- usr/src/nv/nvacpi.c
++++ usr/src/nv.b/nvacpi.c	2010-01-06 12:10:56.000000000 +0530
 @@ -49,6 +49,10 @@
  };
  #endif
