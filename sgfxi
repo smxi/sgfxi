@@ -784,7 +784,7 @@ run_driver_patches()
 # 								patchFile='NVIDIA-195-2.6.33.diff'
 # 								apply_patch_file $patchFile
 # 								;;
-							190.5[0-9])
+							190.53) # won't be needed for new version, it will be fixed
 								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
 								patchFile='NVIDIA-190.53-2.6.33.diff'
 								apply_patch_file $patchFile
