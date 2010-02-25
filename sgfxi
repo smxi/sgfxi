@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.92
+####  version: 4.10.93
 ####  Date: February 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -2540,8 +2540,8 @@ check_package_manager_updated()
 # $3 - extra message; $4 - repeat, to only retest download failure once
 check_update_script()
 {
-	local fileNameTemp="$( mktemp -p $SCRIPT_HOME/ $1.XXXXXXXXXX )"
-	local isGood='' downloadUrl=$2 extraText='' uArgs='up' ua="-U s-tools/$SCRIPT_NAME"
+	local fileDataTemp='' isGood='' extraText='' 
+	local downloadUrl=$2 uArgs='up' ua="-U s-tools/$SCRIPT_NAME"
 	local origXorg='/etc/X11/xorg-conf-orig-sg'
 
 	if [ -n "$( grep -E '(dev|svn|alt)' <<< $3 )" ];then
@@ -2552,10 +2552,7 @@ check_update_script()
 
 	cd $SCRIPT_HOME # make sure we're in the right place
 
-	if [ -f "$fileNameTemp" ];then
-		rm -f $fileNameTemp # remove the temp file, should never fire, but why not?
-	fi
-	# if newer version, download / replace lib file
+	# download / replace requested file
 	case $1 in
 		$SCRIPT_NAME)
 			if [ "$B_FORCE_UPDATE" == 'true' -o "$4" == 'repeat' ];then
@@ -2563,14 +2560,14 @@ check_update_script()
 			fi
 			ua="$ua.$uArgs.$SIS"
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
-			wget $ua -q -O$fileNameTemp $downloadUrl$1 || error_handler 198 $1
+			fileDataTemp="$( wget $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
 
 			# all smxi files have this string as last line, so if it's there, the file should usually
 			# run fine, except for weird fringe cases where the ascii file is corrupted partially
-			isGood=$( grep '##\*\*EOF\*\*##' $fileNameTemp )
+			isGood=$( grep -si '##\*\*EOF\*\*##' <<< "$fileDataTemp" )
 
 			if [ -n "$isGood" ];then
-				mv -f $fileNameTemp $1
+				echo "$fileDataTemp" > $1
 				chmod 705 $1
 				if [ "$B_FORCE_UPDATE" != 'true' ];then
 					./$1 -R$START_OPTIONS
@@ -2591,9 +2588,6 @@ check_update_script()
 				fi
 				exit 0
 			else
-				# dump the bad file
-				rm -f $fileNameTemp
-
 				if [ "$4" != 'repeat' ];then
 					# let's try this once again to make sure it wasn't just a temp problem
 					echo -e "${E}The file ${C}$1${E} did not download correctly from:\n$2\nRetrying download now...${N}"
@@ -2607,10 +2601,10 @@ check_update_script()
 		# have to worry about rechecking and multi downloads etc
 		*)
 			if [ "$B_SKIP_WGET" != 'true' ];then
-				wget -q -O$1 $downloadUrl$1 || error_handler 198 $2$1
+				fileDataTemp="$( wget -q -O - $downloadUrl$1 )" || error_handler 198 $2$1
 			fi
 			# run fine, except for weird fringe cases where the ascii file is corrupted partially
-			isGood=$( grep '##\*\*EOF\*\*##' $1 )
+			isGood=$( grep '##\*\*EOF\*\*##' <<< "$fileDataTemp" )
 			if [ -n "$isGood" ];then
 				case $1 in
 					*xorg-conf)
@@ -2622,11 +2616,14 @@ check_update_script()
 							echo "${S}Your original ${C}$EXXC${S} has already been backed up to ${C}$origXorg${S}"
 						fi
 						echo "${S}Replacing your ${C}$EXXC${S} with ${C}$1${S} now...${N}"
-						mv -f $1 $EXXC
+						echo  "$fileDataTemp" > $EXXC
+						chmod 604 $EXXC
 						echo "${S}All done with the ${C}$EXXC${S} update."
 						echo "Try running ${C}$SCRIPT_NAME${S} again and see if your driver install works this time.${N}"
 						;;
 					*)
+						echo  "$fileDataTemp" > $1
+						chmod 604 $EXXC
 						source ./$1 # load the library file
 						;;
 				esac
@@ -3445,6 +3442,7 @@ set_install_directory()
 			;;
 	esac
 	cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY
+	log_function_data "Function: set_install_directory - set to: $INSTALL_WORKING_DIR$INSTALL_DIRECTORY"
 }
 
 preinstall_cleanup()
