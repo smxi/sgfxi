@@ -2549,9 +2549,7 @@ check_update_script()
 	else
 		extraText="${C}$3${S}"
 	fi
-
 	cd $SCRIPT_HOME # make sure we're in the right place
-
 	# download / replace requested file
 	case $1 in
 		$SCRIPT_NAME)
@@ -2562,7 +2560,7 @@ check_update_script()
 			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
 			fileDataTemp="$( wget $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
 
-			# all smxi files have this string as last line, so if it's there, the file should usually
+			# all smxi files have this string as last line, if there, the file should usually
 			# run fine, except for weird fringe cases where the ascii file is corrupted partially
 			isGood=$( grep -si '##\*\*EOF\*\*##' <<< "$fileDataTemp" )
 
