@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.95
-####  Date: February 24 2010
+####  version: 4.10.96
+####  Date: February 26 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -82,6 +82,7 @@ B_ALLOW_AUTO_UPDATE='true'
 SCRIPT_HOME='/usr/local/bin'
 SCRIPT_NAME='sgfxi'
 SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads/"
+SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads/'
 
 # script global data
 NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
@@ -1081,7 +1082,7 @@ error_handler()
 			errorData="Your system is missing the required kernel header package: $errorExtra\n and it is not currently available in your repos. Cannot continue.\nPlease either update your kernel and kernel headers,\nor find and install kernel headers for $KERNEL_VERSION\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		223)
-			errorData="The install of the missing deb from your kernel-downloads directory:\n$extraData\nhas failed for unknown reasons. Sorry, we did our best."
+			errorData="The install of the missing deb from your $SM_KERNEL_DOWNLOADS directory:\n$extraData\nhas failed for unknown reasons. Sorry, we did our best."
 			;;
 		222)
 			errorData="The Xorg driver $extraData you are trying to install is not available\nfor your version of $DISTRIB_ID: $DISTRIB_CODENAME"
@@ -1609,7 +1610,7 @@ get_set_prefs()
 }
 
 # handles bug in stub installer that leaves tempfiles uncleaned
-cleanup_temp_files()
+cleanup_update_files()
 {
 	eval $LOGUS
 	local all_files="" slxorg='sgfxi-lib-xorg'
@@ -1624,6 +1625,10 @@ cleanup_temp_files()
 	if [ -f $slxorg ];then
 		rm -f $slxorg # clean up old xorg lib file
 	fi
+	if [ -d "${USRS}kernel-downloads" ];then
+		mv -f ${USRS}kernel-downloads $SM_KERNEL_DOWNLOADS
+	fi
+	
 	eval $LOGUE
 }
 
@@ -1718,7 +1723,7 @@ check_kernel_headers()
 			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
-			local headerFile="$( ls ${USRS}kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
+			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
 		
 			log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
 		
@@ -1813,7 +1818,7 @@ basic_startup_tests()
 	## basic execute requirements
 	cd $SCRIPT_HOME
 	check_root
-	cleanup_temp_files
+	cleanup_update_files
 	check_script_depends
 
 	# this allows users to update in x, for example, to see latest drivers
