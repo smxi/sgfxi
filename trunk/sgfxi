@@ -1636,7 +1636,7 @@ create_data_storage()
 		echo $LINE
 		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
 		mkdir -p $SCRIPT_WORKING_DIR
-		rm ${USRS}nohup.out # sometimes these get left over...
+		rm -f ${USRS}nohup.out &>/dev/null # sometimes these get left over...
 		nvidiaPackages=$( ls ${USRS}NVIDIA-* 2>/dev/null )
 		nvidiaPackages=$nvidiaPackages$( ls ${USRS}nvidia* 2>/dev/null )
 		nvidiaPackages=$( echo $nvidiaPackages )
@@ -1651,7 +1651,7 @@ create_data_storage()
 			mv -f $nvidiaPackages $SCRIPT_WORKING_DIR
 			bMOved='true'
 		fi
-		if [ -n "$nvidiaPackages" ];then
+		if [ -n "$fglrxPackages" ];then
 			echo "${S}Moving all existing ${C}ATI/fglrx${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
 			mv -f $fglrxPackages $SCRIPT_WORKING_DIR
 			bMOved='true'
