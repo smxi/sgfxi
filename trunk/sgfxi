@@ -1625,8 +1625,8 @@ cleanup_update_files()
 	if [ -f $slxorg ];then
 		rm -f $slxorg # clean up old xorg lib file
 	fi
-	if [ -d "${USRS}kernel-downloads" ];then
-		mv -f ${USRS}kernel-downloads $SM_KERNEL_DOWNLOADS
+	if [ ! -d $SM_KERNEL_DOWNLOADS -a -d /usr/src/kernel-downloads ];then
+		mv -f /usr/src/kernel-downloads $SM_KERNEL_DOWNLOADS
 	fi
 	
 	eval $LOGUE
