@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.94
+####  version: 4.10.95
 ####  Date: February 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -80,6 +80,8 @@
 B_ALLOW_AUTO_UPDATE='true'
 # maintainers change this to script default path please to keep things simple if different
 SCRIPT_HOME='/usr/local/bin'
+SCRIPT_NAME='sgfxi'
+SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads/"
 
 # script global data
 NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
@@ -282,8 +284,8 @@ EDV='/etc/debian_version'
 EFR='/etc/fedora-release'
 ELR='/etc/lsb-release'
 KERNEL_HEADER_DIRECT='/usr/include/linux/kernel.h'
+USRS='/usr/src/' 
 
-INSTALL_WORKING_DIR='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
 # file and patch urls
@@ -305,17 +307,16 @@ FEDORA_NVIDIA='fedora-nvidia'
 UBUNTU_FGLRX='ubuntu-fglrx'
 UBUNTU_NVIDIA='ubuntu-nvidia'
 
-LOG_FILE_DIR="/var/log/sgfxi/"
-LOG_FILE='sgfxi.log'
+LOG_FILE_DIR="/var/log/$SCRIPT_NAME/"
+LOG_FILE="$SCRIPT_NAME.log"
 LOGGING_STARTED=''
 LOGPS='log_function_data ps $FUNCNAME "$( echo $@ )"'
 LOGPE='log_function_data pe $FUNCNAME'
 LOGUS='log_function_data us $FUNCNAME "$( echo $@ )"'
 LOGUE='log_function_data ue $FUNCNAME'
 
-SCRIPT_NAME='sgfxi'
 SCRIPT_ROTATE="/etc/logrotate.d/$SCRIPT_NAME"
-SM_VALUES='/usr/local/bin/sgfxi-values'
+SM_VALUES="/usr/local/bin/$SCRIPT_NAME-values"
 
 EXPERIMENTAL_XORG_ATI='xserver-xorg-video-ati_6.6.193-1'
 EXPERIMENTAL_LIBDRM2='libdrm2_2.4.0~git20070625-1'
@@ -884,11 +885,11 @@ set_test_data()
 # 		# note: devs: double check this output to make sure it's your user name
 		username=$( getent passwd 1000|cut -d \: -f1 )
 		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
-		INSTALL_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev/"
+		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev/"
 		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/"
 # 		PATCH_DOWNLOAD='http://smxi.org/sg/'
 		cd $SCRIPT_HOME
-		rm -f sgfxi.log
+		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
 # 		CARD_DATA=1002:9442 # fake ati post x2000 card
@@ -1626,6 +1627,38 @@ cleanup_temp_files()
 	eval $LOGUE
 }
 
+# make the default locations for driver run package files
+create_data_storage()
+{
+	local nvidiaPackages='' fglrxPackages='' bMOved=''
+	# don't run this in case of user set test paths
+	if [ -! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
+		echo $LINE
+		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
+		mkdir -p $SCRIPT_WORKING_DIR
+		nvidiaPackages=$( ls ${USRS}NVIDIA-* )
+		nvidiaPackages=$nvidiaPackages$( ls ${USRS}nvidia* )
+		fglrxPackages=$( ls ${USRS}ati-driver-*  )
+		fglrxPackages=$fglrxPackages$( ls ${USRS}FGLRX-*  )
+		fglrxPackages=$fglrxPackages$( ls ${USRS}fglrx-install*  )
+		if [ -n "$nvidiaPackages" ];then
+			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
+			mv -f $nvidiaPackages $SCRIPT_WORKING_DIR
+			bMOved='true'
+		fi
+		if [ -n "$nvidiaPackages" ];then
+			echo "${S}Moving all existing ${C}ATI/fglrx${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
+			mv -f $fglrxPackages $SCRIPT_WORKING_DIR
+			bMOved='true'
+		fi
+		if [ "$bMoved" == 'true' ];then
+			echo "${S}Please take note of the updated location for the downloaded drivers:"
+			echo "${C}$SCRIPT_WORKING_DIR${N}"
+			print_hec
+		fi
+	fi
+}
+
 ### -------------------------------------------------------------------
 ### kernel data and header testing
 ### -------------------------------------------------------------------
@@ -1677,11 +1710,11 @@ check_kernel_headers()
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			headerName="linux-headers-$KERNEL_VERSION"
-			headerPresent="$( ls /usr/src/$headerName/ 2>/dev/null )"
+			headerPresent="$( ls ${USRS}$headerName/ 2>/dev/null )"
 			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
-			local headerFile="$( ls /usr/src/kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
+			local headerFile="$( ls ${USRS}kernel-downloads/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
 		
 			log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
 		
@@ -1706,7 +1739,7 @@ check_kernel_headers()
 			# need to slice off .PAE from working kernel name/headers name
 			kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_VERSION )
 			headerName="kernel-headers-$kernelWorking"
-			headerPresent="$( ls /usr/src/kernels/$KERNEL_VERSION/ 2>/dev/null )"
+			headerPresent="$( ls ${USRS}kernels/$KERNEL_VERSION/ 2>/dev/null )"
 			# rpm is reporting two names here I think, we'll see, if it's got the
 			# kernel name in it, we'll call it installed.
 			headerInstalled=$( check_package_status "$headerName" 'i' | grep $kernelWorking )
@@ -2641,8 +2674,8 @@ apply_patch_file()
 	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SCRIPT_NAME-data.patches.$patchFile"
 	local patchFileDataTemp=''
 
-	cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY # first change to the correct directory
-	log_function_data "Patch File Dir: $INSTALL_WORKING_DIR$INSTALL_DIRECTORY"
+	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY # first change to the correct directory
+	log_function_data "Patch File Dir: $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY"
 	log_function_data "Patch URL: $patchUrl"
 
 	echo "${S}Retrieving patch ${C}$patchFile${S}...${N}"
@@ -2930,7 +2963,7 @@ install_native_driver()
 		x_start_stop_master stop
 
 		## cleanup up old stuff
-		pre_extract_cleanup
+		pre_extract_clean_set_up
 		preinstall_cleanup
 		# this is required to do radeon xorg driver
 		native_driver_install_keep
@@ -3213,7 +3246,7 @@ misc_fixes()
 	eval $LOGUS
 	case $1 in
 		nvidia-24-link)
-			local headersDir="/usr/src/linux-headers-$KERNEL_VERSION/include"
+			local headersDir="${USRS}linux-headers-$KERNEL_VERSION/include"
 			# I don't know why the -e/f tests fail, I thought -e means exists at all...
 			if [ -L "$headersDir/asm" -o -e "$headersDir/asm" ];then
 				rm -f $headersDir/asm
@@ -3234,7 +3267,7 @@ misc_fixes()
 			fi
 			;;
 		nvidia-generated-patch)
-			local generated1="/usr/src/$KERNEL_VERSION/include/generated/" 
+			local generated1="${USRS}$KERNEL_VERSION/include/generated/" 
 			local generated2="/lib/modules/$KERNEL_VERSION/build/include/generated/"
 			
 			if [ -d "$generated1" -o -d "$generated2" ];then
@@ -3294,9 +3327,10 @@ set_download_info()
 }
 
 # arg: $1 install package to remove
-pre_extract_cleanup()
+pre_extract_clean_set_up()
 {
 	eval $LOGUS
+	cd $SCRIPT_WORKING_DIR
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
 		rm -rf $1 # this removes nvidia install dir if present
 	fi
@@ -3321,10 +3355,8 @@ download_extract_driver()
 			atiRef='--referer=ati.com '
 			;;
 	esac
-
-	cd $INSTALL_WORKING_DIR
-	pre_extract_cleanup $2 ## $2 will only apply to nvidia install dir removal
-
+	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
+	
 	# test for existing downloaded version, then download, error if download fails
 	# have to keep it in a clean if to avoid error
 	if [ ! -f $runPackage ];then
@@ -3435,8 +3467,8 @@ set_install_directory()
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
 			;;
 	esac
-	cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY
-	log_function_data "Function: set_install_directory - set to: $INSTALL_WORKING_DIR$INSTALL_DIRECTORY"
+	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
+	log_function_data "Function: set_install_directory - set to: $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY"
 }
 
 preinstall_cleanup()
@@ -3448,7 +3480,7 @@ preinstall_cleanup()
 	echo "${S}Running preinstall cleanup...${N}"
 	# this is not set as a path if native driver install
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
-		cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY
+		cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
 	fi
 	# some legacy cleanup gunk, this can probably be dumped
 	if [ -f /etc/modutils/1alsa ];then
@@ -3461,8 +3493,9 @@ preinstall_cleanup()
 
 	## NVIDIA removal...
 	# double check, clean up anything left after uninstaller runs
-	rm -f /usr/src/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-	rm -rf /usr/src/modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+	rm -f ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+	rm -f ${SCRIPT_WORKING_DIR}nvidia*
+	rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	
 	
 	rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.*o 1>> $LOG_FILE 2>> $LOG_FILE
@@ -3848,7 +3881,7 @@ apply_module_patch()
 				grep 'CONFIG_LUPO' . -Rl 2> /dev/null | xargs -i sed -i -e 's/CONFIG_LUPO/CONFIG_XEN/g' {}
 				;;
 		esac
-		cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY
+		cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
 	fi
 	eval $LOGPE
 }
@@ -3865,7 +3898,7 @@ run_driver_installer()
 	local distroCodeName=''
 
 	# this was set in prep_install()
-	cd $INSTALL_WORKING_DIR$INSTALL_DIRECTORY
+	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
 	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT${S} (this might take a while)...${N}"
 
 	log_function_data "driver: $DRIVER_DEFAULT"
@@ -3982,7 +4015,7 @@ post_installer_steps()
 
 	echo "${S}Running post installer steps...${N}"
 
-	cd $INSTALL_WORKING_DIR
+	cd $SCRIPT_WORKING_DIR
 
 	rm -rf $INSTALL_DIRECTORY # remove the extracted driver install directory in /usr/src
 
@@ -4388,7 +4421,7 @@ final_install_steps()
 			;;
 		$FGLRX)
 			##  clean up install parts
-			rm -rf /usr/src/modules/fglrx
+			rm -rf ${USRS}modules/fglrx
 			rm -rf /tmp/fglrx* fglrx*
 			add_module 'fglrx'
 			# note, since ubuntu uses dkms we don't want to purge the kernel source
@@ -5304,7 +5337,7 @@ show_options()
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
-	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: sgfxi -K 2.6.25-2"
+	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SCRIPT_NAME -K 2.6.25-2"
 	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu only)."
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
 	echo "   n to show current nvidia support status; f to show current fglrx support status;"
@@ -5355,9 +5388,9 @@ show_options()
 		echo "-! 20 - Uses patch from svn branch one server (must be in branch/one/patches)."
 		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
 		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version (legacy, don't use)."
-		echo "        Use X -configure instead to redo your xorg, or -z option in sgfxi."
+		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-! 31 - Backup, download, replace, xorg.conf with basic sidux xorg.conf version(legacy, don't use)."
-		echo "        Use X -configure instead to redo your xorg, or -z option in sgfxi."
+		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
@@ -5692,7 +5725,7 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	check_supported_driver # make sure user entered data is correct
 	set_cpu_data
 fi
-# needs to be out to give print version
+# needs to be out to give print version, if print out driver data, exits after.
 set_driver_install_version
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
@@ -5700,6 +5733,7 @@ if [ "$B_NATIVE_DRIVER" != 'true' ];then
 fi
 
 if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
+	create_data_storage
 	check_run_package_tools
 	set_download_info # also triggers the download / extract function
 	# this is going to run either the fglrx or nvidia patch library file function
