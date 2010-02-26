@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.10.96
+####  version: 4.10.97
 ####  Date: February 26 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1642,11 +1642,12 @@ create_data_storage()
 		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
 		mkdir -p $SCRIPT_WORKING_DIR
 		rm -f ${USRS}nohup.out &>/dev/null # sometimes these get left over...
-		nvidiaPackages=$( ls ${USRS}NVIDIA-* 2>/dev/null )
+		rm -rf /usr/src/nvidia-installer &>/dev/null # this can cause weirdness so dump it
+		nvidiaPackages=$( ls ${USRS}NVIDIA* 2>/dev/null )
 		nvidiaPackages=$nvidiaPackages$( ls ${USRS}nvidia* 2>/dev/null )
 		nvidiaPackages=$( echo $nvidiaPackages )
 		fglrxPackages=$( ls ${USRS}ati-driver-*  2>/dev/null )
-		fglrxPackages=$fglrxPackages$( ls ${USRS}FGLRX-* 2>/dev/null )
+		fglrxPackages=$fglrxPackages$( ls ${USRS}FGLRX* 2>/dev/null )
 		fglrxPackages=$fglrxPackages$( ls ${USRS}fglrx-install* 2>/dev/null )
 		fglrxPackages=$( echo $fglrxPackages )
 		log_function_data "nvidiaPackages:\n$nvidiaPackages"
