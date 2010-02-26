@@ -1630,7 +1630,7 @@ cleanup_temp_files()
 # make the default locations for driver run package files
 create_data_storage()
 {
-	local nvidiaPackages='' fglrxPackages='' bMOved=''
+	local nvidiaPackages='' fglrxPackages='' bMoved=''
 	# don't run this in case of user set test paths
 	if [ ! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
 		echo $LINE
@@ -1649,12 +1649,12 @@ create_data_storage()
 		if [ -n "$nvidiaPackages" ];then
 			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
 			mv -f $nvidiaPackages $SCRIPT_WORKING_DIR
-			bMOved='true'
+			bMoved='true'
 		fi
 		if [ -n "$fglrxPackages" ];then
 			echo "${S}Moving all existing ${C}ATI/fglrx${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
 			mv -f $fglrxPackages $SCRIPT_WORKING_DIR
-			bMOved='true'
+			bMoved='true'
 		fi
 		if [ "$bMoved" == 'true' ];then
 			echo "${S}Please take note of the updated location for the downloaded drivers:"
