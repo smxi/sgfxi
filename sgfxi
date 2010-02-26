@@ -1632,7 +1632,7 @@ create_data_storage()
 {
 	local nvidiaPackages='' fglrxPackages='' bMOved=''
 	# don't run this in case of user set test paths
-	if [ -! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
+	if [ ! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
 		echo $LINE
 		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
 		mkdir -p $SCRIPT_WORKING_DIR
