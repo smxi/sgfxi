@@ -1657,8 +1657,7 @@ create_data_storage()
 			bMoved='true'
 		fi
 		if [ "$bMoved" == 'true' ];then
-			echo "${S}Please take note of the updated location for the downloaded drivers:"
-			echo "${C}$SCRIPT_WORKING_DIR${N}"
+			echo "${S}Please take note of the updated location for the downloaded drivers.${N}"
 			print_hec
 		fi
 	fi
