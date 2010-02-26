@@ -1644,6 +1644,8 @@ create_data_storage()
 		fglrxPackages=$fglrxPackages$( ls ${USRS}FGLRX-* 2>/dev/null )
 		fglrxPackages=$fglrxPackages$( ls ${USRS}fglrx-install* 2>/dev/null )
 		fglrxPackages=$( echo $fglrxPackages )
+		log_function_data "nvidiaPackages:\n$nvidiaPackages"
+		log_function_data "fglrxPackages:\n$fglrxPackages"
 		if [ -n "$nvidiaPackages" ];then
 			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
 			mv -f $nvidiaPackages $SCRIPT_WORKING_DIR
