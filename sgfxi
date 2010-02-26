@@ -1639,9 +1639,11 @@ create_data_storage()
 		rm ${USRS}nohup.out # sometimes these get left over...
 		nvidiaPackages=$( ls ${USRS}NVIDIA-* 2>/dev/null )
 		nvidiaPackages=$nvidiaPackages$( ls ${USRS}nvidia* 2>/dev/null )
+		nvidiaPackages=$( echo $nvidiaPackages )
 		fglrxPackages=$( ls ${USRS}ati-driver-*  2>/dev/null )
 		fglrxPackages=$fglrxPackages$( ls ${USRS}FGLRX-* 2>/dev/null )
 		fglrxPackages=$fglrxPackages$( ls ${USRS}fglrx-install* 2>/dev/null )
+		fglrxPackages=$( echo $fglrxPackages )
 		if [ -n "$nvidiaPackages" ];then
 			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
 			mv -f $nvidiaPackages $SCRIPT_WORKING_DIR
