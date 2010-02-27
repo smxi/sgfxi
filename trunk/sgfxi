@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.12.1
-####  Date: February 26 2010
+####  version: 4.12.2
+####  Date: February 27 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -3429,7 +3429,7 @@ build_kernel_module_only()
 install_modules_to_all_kernels()
 {
 	check_root
-	local kernels=$(ls /boot | grep '^vmlinuz' | grep -v "$( uname -r )" | sed 's/vmlinuz-//')
+	local kernels=$(ls /lib/modules | grep '^vmlinuz' | grep -v "$( uname -r )" | sed 's/vmlinuz-//')
 	local otherDriver=''
 	# support other drivers being used if desired
 	if [ -n "$DRIVER_OVERRIDE" ];then
