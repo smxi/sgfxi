@@ -3364,6 +3364,7 @@ build_kernel_module_only()
 {
 	eval $LOGPS
 	local nvidiaPackages='' installedDriver='' moduleResult=0
+	local runPackage="$DRIVER_FILE.run"
 	# double check that target kernel, or current one, has stuff in /lib/modules
 	echo $LINE
 	echo "${S}Starting kernel $NVIDIA module build process for kernel: ${C}$KERNEL_VERSION${N}"
@@ -3371,9 +3372,9 @@ build_kernel_module_only()
 		$NVIDIA)
 			test_install_kernel_version
 			echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
-			if [ ! -f "$SCRIPT_WORKING_DIR$DRIVER_FILE" ];then
+			if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
 				echo "${W}NOT FOUND${N}"
-				error_handler 175 "$DRIVER_FILE"
+				error_handler 175 "$runPackage"
 			else
 				echo "${S}File Exists${N}"
 			fi
@@ -3387,7 +3388,7 @@ build_kernel_module_only()
 			fi
 			echo "${S}Checking that installed driver is the same as the driver you are having" 
 			echo "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${N}"
-			installedDriver=$( bash $SCRIPT_WORKING_DIR$DRIVER_FILE | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+			installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 			if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
 				echo "${W}MISMATCH${N}"
 				error_handler 172 "$installedDriver"
@@ -3396,7 +3397,7 @@ build_kernel_module_only()
 			fi
 			echo $LINE
 			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now...${N}"
-			bash $SCRIPT_WORKING_DIR$DRIVER_FILE --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+			bash $SCRIPT_WORKING_DIR$runPackage --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
 			if [ "$moduleResult" -ne 0 ];then
 				error_handler 171 "$moduleResult"
 			else
