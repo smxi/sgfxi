@@ -3423,6 +3423,19 @@ build_kernel_module_only()
 	
 	eval $LOGPE
 }
+install_modules_to_all_kernels()
+{
+	check_root
+	kernels=$(ls /boot | grep '^vmlinuz' | grep -v "$( uname -r )" | sed 's/vmlinuz-//')
+	echo $LINE
+	echo "${S}OK, installing modules to all kernels now...${N}"
+	for i in $kernels
+	do 
+		sgfxi -R -A -k -K $i
+	done
+	echo $LINE
+	echo "${S}Hey, did it work? Great! Bye for now.${N}"
+}
 
 # arg: $1 install package to remove
 pre_extract_clean_set_up()
@@ -3930,7 +3943,6 @@ add_module()
 						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
 						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
 						B_FORCE_REBOOT='true'
-						
 						print_hec
 					fi
 					;;
@@ -5791,6 +5803,9 @@ get_options()
 						check_set_distro
 						check_update_script "sm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
 						exit 0
+						;;
+					40)
+						install_modules_to_all_kernels
 						;;
 					*)	
 						error_handler 178 "$OPTARG"
