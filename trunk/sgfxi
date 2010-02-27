@@ -1197,7 +1197,7 @@ error_handler()
 			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure."
 			;;
 		170)
-			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or find out why it's still there."
+			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nThis will remove all previous modules, then you can rebuild them with -! 40 option (see $SCRIPT_NAME -H)."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
