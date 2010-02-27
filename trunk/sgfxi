@@ -3435,6 +3435,7 @@ install_modules_to_all_kernels()
 	done
 	echo $LINE
 	echo "${S}Hey, did it work? Great! Bye for now.${N}"
+	exit 0
 }
 
 # arg: $1 install package to remove
