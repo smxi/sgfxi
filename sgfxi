@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.11.91
+####  version: 4.12.0
 ####  Date: February 26 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -5349,15 +5349,17 @@ show_options()
 	fi
 	#local pattern='(1\.0-)?([0-9]{4}|1[0-9]{2}\.[0-9]{2}\.?[0-9]{0,2}):?'
 	#local nvDefault=$( echo $NV_DEFAULT | sed -r 's/'$pattern'/\2 /g')
-	local nvDefault=$( echo $NV_DEFAULT | tr ':' ' ' | sed 's/1.0-//g' )
+	local nvDefaults=$( echo $NV_VERSIONS | tr ':' ' ' | sed 's/1.0-//g' )
 	#local nvVersions=$( echo "$NV_VERSIONS:$NV_OTHERS" | sed -r 's/'$pattern'/\2 /g')
-	local nvVersions=$( echo "$NV_VERSIONS:$NV_OTHERS" | tr ':' ' ' | sed 's/1.0-//g')
+	local nvVersions=$( echo "$NV_OTHERS" | tr ':' ' ' | sed 's/1.0-//g')
 	#local nvQuadText='' nvQuad=$( echo $NV_QUAD | sed -r 's/'$pattern'/\2 /g')
 	local nvQuadText='' nvQuad=$( echo $NV_QUAD | tr ':' ' ' | sed 's/1.0-//g')
 	local fgDefault=$FG_DEFAULT
 	local fgVersions=$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
 	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
 	local fgTesting='' nvTesting='' testingText='' fgDebianSid=''
+	local counter=0 driverCount=0
+	driverCount=$( wc -w <<< $nativeVersions )
 
 	if [ "$B_DISTRO_FLAG" == 'true' ];then
 		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently broken in Debian (works in Ubuntu). Script will default to: '$DISTRO_FGLRX${N}'"'
@@ -5366,7 +5368,7 @@ show_options()
 	fi
 
 	if [ -n "$NV_TESTING" -a "$NV_TESTING" != "$NV_DEFAULT" ];then
-		nvTesting='echo -e "nvidia:\t'$( echo $NV_TESTING | tr ':' ' ' | sed 's/[[:space:]][[:space:]]/ /g' )'"'
+		nvTesting='echo -e "nvidia: '$( echo $NV_TESTING | tr ':' ' ' | sed 's/[[:space:]][[:space:]]/ /g' )'"'
 	fi
 	if [ -n "$FG_TESTING" -a "$FG_TESTING" != "$FG_DEFAULT" ];then
 		fgTesting='echo -e "fgrlx:\t'$FG_TESTING'"'
@@ -5396,9 +5398,47 @@ show_options()
 	echo "print out what driver it will install when you start it up, with option to exit."
 	echo
 	echo "'supported-drivers:' choices require -o <see -o for correct syntax> to install."
-	eval $fgDebianSid
+	echo "fglrx:  default: $fgDefault"
+	echo -n "Other supported-drivers: "
+	counter=0
+	driverCount=$( wc -w <<< $fgVersions )
+	for i in $fgVersions
+	do
+		(( counter++ ))
+		case $counter in
+			12|28)
+				echo "$i "
+				echo -n ""
+				;;
+			$driverCount)
+				echo "$i "
+				;;
+			*)
+				echo -n "$i "
+				;;
+		esac
+	done
 	#echo "fglrx:  default: $fgDefault		supported-drivers: $fgVersions"
-	echo "nvidia: default: $nvDefault	supported-drivers: $nvVersions"
+	echo "nvidia: Defaults (Current + Legacy - 3 2 1): $nvDefaults"
+	echo -n "Other supported-drivers: "
+	counter=0
+	driverCount=$( wc -w <<< $nvVersions )
+	for i in $nvVersions
+	do
+		(( counter++ ))
+		case $counter in
+			7|17)
+				echo "$i "
+				echo -n ""
+				;;
+			$driverCount)
+				echo "$i "
+				;;
+			*)
+				echo -n "$i "
+				;;
+		esac
+	done
 	eval $nvQuadText
 	eval $testingText
 	eval $nvTesting
@@ -5436,8 +5476,26 @@ show_options()
 	echo "-n Automatically installs correct native xorg nv, intel, or ati driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
 	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf"
-	echo "-N Force install of specific xorg driver. Syntax: $SCRIPT_NAME -N <one of the drivers from the list, like -N radeon>"
-	echo "   Supported Xorg drivers: $nativeVersions"
+	echo "-N Force install of specific xorg driver. Syntax: $SCRIPT_NAME -N <driver> Ex: $SCRIPT_NAME -N radeonhd"
+	echo -n "   Supported Xorg drivers: "
+	counter=0
+	driverCount=$( wc -w <<< $nativeVersions )
+	for i in $nativeVersions
+	do
+		(( counter++ ))
+		case $counter in
+			12|25)
+				echo " $i"
+				echo -n "  "
+				;;
+			$driverCount)
+				echo " $i"
+				;;
+			*)
+				echo -n " $i"
+				;;
+		esac
+	done
 	echo "   Also configures xorg.conf as required. Full radeon xorg 3d configuration automatically."
 	echo "-o Override default: install a specific driver, this is an absolute override - syntax:"
 	echo "   -o 177.68 (for nVidia) or: -o 8-6 (for fglrx)"
