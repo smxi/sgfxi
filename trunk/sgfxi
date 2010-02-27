@@ -5491,6 +5491,7 @@ show_options()
 	echo "-k Build kernel module either for current kernel or another kernel (with -K <kernel version) (nVdia only)"
 	echo "   Can be run in X. Simply builds the kernel module for that kernel, and does not remove"
 	echo "   any other modules or drivers. Requires previous install with sgfxi of the same driver."
+	echo "   Hint: sgfxi -! 40 will install modules to all your non-running kernels automatically!"
 	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SCRIPT_NAME -K 2.6.25-2"
 	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu only)."
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
@@ -5563,6 +5564,8 @@ show_options()
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-! 31 - Backup, download, replace, xorg.conf with basic sidux xorg.conf version(legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
+		echo "-! 40 - Create modules for all your kernels (nVidia only). Will loop through and"
+		echo "        test each if can be made, then create the modules, excluding your running kernel."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
