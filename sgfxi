@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.11.0
+####  version: 4.11.90
 ####  Date: February 26 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1181,6 +1181,21 @@ error_handler()
 		176)
 			errorData="Whoops, how did this happen? It appears you are not running a supported Distro for distro driver install."
 			;;
+		175)
+			errorData="You are using the -k (build kernel module only) option, but required file: $errorExtra\nis not found in $SCRIPT_WORKING_DIR"
+			;;
+		174)
+			errorData="The -k option cannot be used if you are using distribution packaged nVidia drivers."
+			;;
+		173)
+			errorData="The -k option only supports nVidia cards, sorry."
+			;;
+		172)
+			errorData="The -k option can only be used to install to the same driver that is running.\nYour system is running $errorExtra but you are building the module for: $DRIVER_DEFAULT\nYou can use the -o <driver version> option to override the defaults."
+			;;
+		171)
+			errorData="The kernel module build failed with error code: $errorExtra"
+			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
 			;;
@@ -2193,7 +2208,7 @@ check_apt_aptitude()
 		if [ -f /var/log/aptitude ];then
 			case $SYSTEM_BASE in
 				debian)
-					echo ${S}$LINE
+					echo $LINE
 					echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
 					echo "Please pick your preferred package manager before you continue, or exit now."
 					echo
@@ -2430,7 +2445,7 @@ remove_package()
 	echo ${M}$LINE
 	echo "You will need to remove the following package(s): ${C}$1"
 	echo "${M}in order to proceed with your${C}$extraInfo${M} driver install${N}"
-	echo $LINE
+	echo ${M}$LINE${N}
 	if [ "$3" == 'no-loop' ];then
 		echo "${S}Removing ${C}$1${S}...${N}"
 		$APT_TYPE $purge $1 || error_handler 190 "$1"
@@ -2774,10 +2789,10 @@ print_hec()
 	local response=''
 
 	if [ "$AUTORUN" != 'true' ];then
-		echo $LINE
+		echo ${M}$LINE
 		# halt the script so people can read the advice
 		echo "${Q}Please hit ${C}enter${Q} to continue${N}"
-		echo $LINE
+		echo ${M}$LINE
 		read response
 	fi
 }
@@ -3013,7 +3028,7 @@ install_native_driver()
 					;;
 			esac
 			B_FORCE_REBOOT='true'
-			echo $LINE
+			echo ${M}$LINE
 			echo "${M}Note: the ${C}Xorg nouveau${M} driver requires a ${C}reboot${M} to become active."
 			echo "${C}$SCRIPT_NAME${S} will now let you do that.${N}"
 		fi
@@ -3340,7 +3355,62 @@ set_download_info()
 	log_function_data "download url: $downloadUrl - driver file: $DRIVER_FILE"
 
 	eval $LOGPE
-	download_extract_driver $downloadUrl $DRIVER_FILE
+	if [ "$B_KERNEL_MODULE_ONLY" != 'true' ];then
+		download_extract_driver $downloadUrl $DRIVER_FILE
+	fi
+}
+
+build_kernel_module_only()
+{
+	eval $LOGPS
+	local nvidiaPackages='' installedDriver='' moduleResult=0
+	# double check that target kernel, or current one, has stuff in /lib/modules
+	echo $LINE
+	echo "${S}Starting kernel $NVIDIA module build process for kernel: ${C}$KERNEL_VERSION${N}"
+	case $CARD in
+		$NVIDIA)
+			test_install_kernel_version
+			echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
+			if [ ! -f "$SCRIPT_WORKING_DIR$DRIVER_FILE" ];then
+				echo "${W}NOT FOUND${N}"
+				error_handler 175 "$DRIVER_FILE"
+			else
+				echo "${S}File Exists${N}"
+			fi
+			echo -n "${S}Checking for distribution ${C}nvidia${S} driver packages.... ${N}"
+			nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
+			if [ -n "$nvidiaPackages" ];then
+				echo "${W}PRESENT${N}"
+				error_handler 174
+			else
+				echo "${S}None Detected${N}"
+			fi
+			echo "${S}Checking that installed driver is the same as the driver you are having" 
+			echo "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${N}"
+			installedDriver=$( bash $SCRIPT_WORKING_DIR$DRIVER_FILE | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+			if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
+				echo "${W}MISMATCH${N}"
+				error_handler 172 "$installedDriver"
+			else
+				echo "${S}Drivers Match${N}"
+			fi
+			echo $LINE
+			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now...${N}"
+			bash $SCRIPT_WORKING_DIR$DRIVER_FILE --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+			if [ "$moduleResult" -ne 0 ];then
+				error_handler 171 "$moduleResult"
+			else
+				echo "${S}Build of module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
+				echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
+				exit 0
+			fi
+			;;
+		*)
+			error_handler 173 
+			;;
+	esac
+	
+	eval $LOGPE
 }
 
 # arg: $1 install package to remove
@@ -3713,20 +3783,20 @@ reboot_now_question()
 	eval $LOGPS
 	local opt='' options=''
 	
-	echo $LINE
+	echo ${M}$LINE
 	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
 	echo "your ${C}$CARD${M} install is completed, and you may need to reboot again if it errors out,"
 	echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
 	echo
 	echo "${S}For best results, select the ${C}shutdown${S} option, let the computer sit for a minute, then restart it."
-	echo $LINE
+	echo ${M}$LINE
 	echo "${M}Remember, to install ${C}$2${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
 	echo "after you have restarted (use init ${C}3${M} to start, or use ${C}3${M} at grub)"
 	echo $LINE
 	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
 	echo "${C}2 - reboot${S} - Reboot. This may not let some data unload from your memory.${N}"
 	echo "${C}3 - quit${S} - Exit script, do other things (then restart system to install nvidia).${N}"
-	echo $LINE
+	echo $LINE${N}
 	options="shutdown reboot quit"
 	select opt in $options
 	do
@@ -4570,7 +4640,7 @@ start_x_question()
 	eval $fgGlxInstall
 	echo "${C}$startXReboot${M} - $startXRebootText"
 	echo "${C}quit${M} - Quit now, to do something else before starting your desktop.${N}"
-	echo $LINE
+	echo $LINE${N}
 	options="$iaOpt $fgGlxOpt $startXReboot quit"
 	select opt in $options
 	do
@@ -5354,6 +5424,9 @@ show_options()
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
+	echo "-k Build kernel module either for current kernel or another kernel (with -K <kernel version) (nVdia only)"
+	echo "   Can be run in X. Simply builds the kernel module for that kernel, and does not remove"
+	echo "   any other modules or drivers. Requires previous install with sgfxi of the same driver."
 	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SCRIPT_NAME -K 2.6.25-2"
 	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu only)."
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
@@ -5422,7 +5495,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbBcCdDeEfFhHj:K:L:nN:o:pP:QrRsStUvWXxzZ!: opt
+	while getopts AbBcCdDeEfFhHj:kK:L:nN:o:pP:QrRsStUvWXxzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -5479,6 +5552,10 @@ get_options()
 				else
 					error_handler 228 $OPTARG
 				fi
+				;;
+			k)	B_KERNEL_MODULE_ONLY='true'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -k - building nvidia kernel module using previously installed driver\n"
+				START_OPTIONS=$START_OPTIONS" -k "
 				;;
 			K)	INSTALL_TO_KERNEL="$OPTARG"
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -K - You are installing a graphic driver onto the kernel: ${C}$INSTALL_TO_KERNEL${S}\n"
@@ -5733,7 +5810,7 @@ fi
 if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_PRINT_VER" != 'true' -a "$B_SM_INSTALL" != 'true' ];then
 	check_package_manager_updated
 fi
-
+# this exits when done
 if [ "$B_NATIVE_DRIVER" == 'true' ];then
 	install_native_driver
 fi
@@ -5751,13 +5828,19 @@ fi
 
 if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	create_data_storage
-	check_run_package_tools
-	set_download_info # also triggers the download / extract function
-	# this is going to run either the fglrx or nvidia patch library file function
-	# must be after set_driver_install_version for output of data to smxi
-	# note this must occur before binary driver install
-	set_install_directory
-	run_driver_patches
+	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+		# this will run by itself because it's just some tests and a module rebuild
+		# when it's done it will simply exit, no reboot or desktop start is required.
+		build_kernel_module_only
+	else
+		check_run_package_tools
+		set_download_info # also triggers the download / extract function
+		# this is going to run either the fglrx or nvidia patch library file function
+		# must be after set_driver_install_version for output of data to smxi
+		# note this must occur before binary driver install
+		set_install_directory
+		run_driver_patches
+	fi
 	if [ "$B_TESTING_2" == 'true' ];then
 		exit 0 # this is just to test up to download/extract point
 	fi
