@@ -3429,7 +3429,7 @@ build_kernel_module_only()
 install_modules_to_all_kernels()
 {
 	check_root
-	local kernels=$(ls /lib/modules | grep '^vmlinuz' | grep -v "$( uname -r )" | sed 's/vmlinuz-//')
+	local kernels=$(ls /lib/modules | grep -v "$( uname -r )" )
 	local otherDriver=''
 	# support other drivers being used if desired
 	if [ -n "$DRIVER_OVERRIDE" ];then
