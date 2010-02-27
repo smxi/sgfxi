@@ -1643,33 +1643,20 @@ create_data_storage()
 		mkdir -p $SCRIPT_WORKING_DIR
 		rm -f ${USRS}nohup.out &>/dev/null # sometimes these get left over...
 		rm -rf /usr/src/nvidia-installer &>/dev/null # this can cause weirdness so dump it
-		nvidiaPackages=$( ls ${USRS}NVIDIA* 2>/dev/null )
-		nvidiaPackages=$nvidiaPackages$( ls ${USRS}nvidia* 2>/dev/null )
+		nvidiaPackages=$( ls ${USRS} 2>/dev/null | grep -Esi '^nvidia' )
 		nvidiaPackages=$( echo $nvidiaPackages )
-		fglrxPackages=$( ls ${USRS}ati-driver-*  2>/dev/null )
-		fglrxPackages=$fglrxPackages$( ls ${USRS}FGLRX* 2>/dev/null )
-		fglrxPackages=$fglrxPackages$( ls ${USRS}fglrx-install* 2>/dev/null )
+		fglrxPackages=$( ls ${USRS} 2>/dev/null | grep -Esi '^(ati-driver-|fglrx)'  )
 		fglrxPackages=$( echo $fglrxPackages )
 		log_function_data "nvidiaPackages:\n$nvidiaPackages"
 		log_function_data "fglrxPackages:\n$fglrxPackages"
 		if [ -n "$nvidiaPackages" ];then
 			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
-			for i in $nvidiaPackages
-			do
-				if [ -e "$i" ];then
-					mv -f $i $SCRIPT_WORKING_DIR 2>/dev/null
-				fi
-			done
+			mv -f $nvidiaPackages $SCRIPT_WORKING_DIR 2>/dev/null
 			bMoved='true'
 		fi
 		if [ -n "$fglrxPackages" ];then
 			echo "${S}Moving all existing ${C}ATI/fglrx${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
-			for i in $fglrxPackages
-			do
-				if [ -e "$i" ];then
-					mv -f $i $SCRIPT_WORKING_DIR 2>/dev/null
-				fi
-			done
+			mv -f $fglrxPackages $SCRIPT_WORKING_DIR 2>/dev/null
 			bMoved='true'
 		fi
 		if [ "$bMoved" == 'true' ];then
