@@ -1653,7 +1653,7 @@ create_data_storage()
 			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
 			for i in $nvidiaPackages
 			do
-				if [ -e "$i" ];then
+				if [ -e "${USRS}$i" ];then
 					mv -f ${USRS}$i $SCRIPT_WORKING_DIR 2>/dev/null
 				fi
 			done
@@ -1663,7 +1663,7 @@ create_data_storage()
 			echo "${S}Moving all existing ${C}ATI/fglrx${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
 			for i in $fglrxPackages
 			do
-				if [ -e "$i" ];then
+				if [ -e "${USRS}$i" ];then
 					mv -f ${USRS}$i $SCRIPT_WORKING_DIR 2>/dev/null
 				fi
 			done
