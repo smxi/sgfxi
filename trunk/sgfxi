@@ -1856,7 +1856,7 @@ basic_startup_tests()
 	# this corrects a stupid mistake I made
 	rm -f *-sgfxi.log # was creating log files in /usr/local/bin
 	# test to see if any dm is running, we'll shutdown all wm later though
-	if [ -n "$DISPLAY" -a "$B_SKIP_X_TEST" != 'true' ];then
+	if [ -n "$DISPLAY" -a "$B_SKIP_X_TEST" != 'true' -a "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		error_handler 250
 	fi
 	case $SYSTEM_BASE in
