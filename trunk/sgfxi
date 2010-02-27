@@ -3423,10 +3423,11 @@ build_kernel_module_only()
 	
 	eval $LOGPE
 }
+
 install_modules_to_all_kernels()
 {
 	check_root
-	kernels=$(ls /boot | grep '^vmlinuz' | grep -v "$( uname -r )" | sed 's/vmlinuz-//')
+	local kernels=$(ls /boot | grep '^vmlinuz' | grep -v "$( uname -r )" | sed 's/vmlinuz-//')
 	echo $LINE
 	echo "${S}OK, installing modules to all kernels now...${N}"
 	for i in $kernels
