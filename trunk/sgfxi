@@ -3388,7 +3388,7 @@ build_kernel_module_only()
 			fi
 			echo "${S}Checking that installed driver is the same as the driver you are having" 
 			echo "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${N}"
-			installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+			installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 			if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
 				echo "${W}MISMATCH${N}"
 				error_handler 172 "$installedDriver"
@@ -3396,7 +3396,7 @@ build_kernel_module_only()
 				echo "${S}Drivers Match${N}"
 			fi
 			echo $LINE
-			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now...${N}"
+			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (this can take a while...${N}"
 			bash $SCRIPT_WORKING_DIR$runPackage --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
 			if [ "$moduleResult" -ne 0 ];then
 				error_handler 171 "$moduleResult"
