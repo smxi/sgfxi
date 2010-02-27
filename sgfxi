@@ -1654,7 +1654,7 @@ create_data_storage()
 			for i in $nvidiaPackages
 			do
 				if [ -e "$i" ];then
-					mv -f $i $SCRIPT_WORKING_DIR 2>/dev/null
+					mv -f ${USRS}$i $SCRIPT_WORKING_DIR 2>/dev/null
 				fi
 			done
 			bMoved='true'
@@ -1664,7 +1664,7 @@ create_data_storage()
 			for i in $fglrxPackages
 			do
 				if [ -e "$i" ];then
-					mv -f $i $SCRIPT_WORKING_DIR 2>/dev/null
+					mv -f ${USRS}$i $SCRIPT_WORKING_DIR 2>/dev/null
 				fi
 			done
 			bMoved='true'
