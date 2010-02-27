@@ -1196,6 +1196,9 @@ error_handler()
 		171)
 			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure."
 			;;
+		170)
+			errorData="An nvidia module already exists for $KERNEL_VERSION in path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or find out why it's still there."
+			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
 			;;
@@ -3363,7 +3366,7 @@ set_download_info()
 build_kernel_module_only()
 {
 	eval $LOGPS
-	local nvidiaPackages='' installedDriver='' moduleResult=0
+	local nvidiaPackages='' installedDriver='' moduleResult=0 driverModule=''
 	local runPackage="$DRIVER_FILE.run"
 	# double check that target kernel, or current one, has stuff in /lib/modules
 	echo $LINE
@@ -3394,6 +3397,13 @@ build_kernel_module_only()
 				error_handler 172 "$installedDriver"
 			else
 				echo "${S}Drivers Match${N}"
+			fi
+			echo -n "${S}Testing for previous ${C}nvidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
+			if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
+				echo "${W}PRESENT${N}"
+				error_handler 170
+			else
+				echo "${S}None Detected${N}"
 			fi
 			echo $LINE
 			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
