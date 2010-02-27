@@ -5830,15 +5830,15 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	create_data_storage
 	check_run_package_tools
 	set_download_info # also triggers the download / extract function
-	# this is going to run either the fglrx or nvidia patch library file function
-	# must be after set_driver_install_version for output of data to smxi
-	# note this must occur before binary driver install
-	set_install_directory
 	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		# this will run by itself because it's just some tests and a module rebuild
 		# when it's done it will simply exit, no reboot or desktop start is required.
 		build_kernel_module_only
 	else
+		# this is going to run either the fglrx or nvidia patch library file function
+		# must be after set_driver_install_version for output of data to smxi
+		# note this must occur before binary driver install
+		set_install_directory
 		run_driver_patches
 	fi
 	if [ "$B_TESTING_2" == 'true' ];then
