@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.12.2
+####  version: 4.12.3
 ####  Date: February 27 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -2905,6 +2905,31 @@ log_function_data()
 	fi
 }
 
+log_driver_installer_failure()
+{
+	local nvidiaLog='/var/log/nvidia-installer.log'
+	local atiLog='/usr/share/ati/fglrx- install.log'
+	local errorLog=''
+	
+	case $CARD in
+		$FGLRX)
+			errorLog=$atiLog
+			;;
+		$NVIDIA)
+			errorLog=$nvidiaLog
+			;;
+	esac
+	echo $LINE  >> $LOG_FILE
+	echo "Error logs from $CARD install: $errorFileData" >> $LOG_FILE
+	echo $LINE  >> $LOG_FILE
+	if [ -f "$errorLog" ];then
+		cat $errorLog >> $LOG_FILE
+	else
+		echo "No error logs found from the run package installer!" >> $LOG_FILE
+	fi
+	echo $LINE  >> $LOG_FILE
+}
+
 # args: $1 - data to write to logfile. Note that the function is always logged
 # via function_logging first, and other relevant globals are set there as well
 log_writer()
@@ -3364,53 +3389,27 @@ set_download_info()
 		download_extract_driver $downloadUrl $DRIVER_FILE
 	fi
 }
-
+# $1 - direct/build
 build_kernel_module_only()
 {
 	eval $LOGPS
-	local nvidiaPackages='' installedDriver='' moduleResult=0 driverModule=''
+	local installedDriver='' moduleResult=0 driverModule='' silent=' '
 	local runPackage="$DRIVER_FILE.run"
 	# double check that target kernel, or current one, has stuff in /lib/modules
 	echo $LINE
 	echo "${S}Starting kernel $NVIDIA module build process for kernel: ${C}$KERNEL_VERSION${N}"
 	case $CARD in
 		$NVIDIA)
-			test_install_kernel_version
-			echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
-			if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
-				echo "${W}NOT FOUND${N}"
-				error_handler 175 "$runPackage"
-			else
-				echo "${S}File Exists${N}"
-			fi
-			echo -n "${S}Checking for distribution ${C}nvidia${S} driver packages.... ${N}"
-			nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
-			if [ -n "$nvidiaPackages" ];then
-				echo "${W}PRESENT${N}"
-				error_handler 174
-			else
-				echo "${S}None Detected${N}"
-			fi
-			echo "${S}Checking that installed driver is the same as the driver you are having" 
-			echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
-			installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
-			if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
-				echo "${W}MISMATCH${N}"
-				error_handler 172 "$installedDriver"
-			else
-				echo "${S}Drivers Match${N}"
-			fi
-			echo -n "${S}Testing for previous ${C}nvidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
-			if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
-				echo "${W}PRESENT${N}"
-				error_handler 170
-			else
-				echo "${S}None Detected${N}"
+			if [ "$1" == 'direct' ];then
+				test_install_kernel_version
+				test_module_build_ok
+				silent=''
 			fi
 			echo $LINE
 			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
-			bash $SCRIPT_WORKING_DIR$runPackage -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+			bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
 			if [ "$moduleResult" -ne 0 ];then
+				log_driver_installer_failure
 				error_handler 171 "$moduleResult"
 			else
 				echo "${S}Build of module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
@@ -3423,6 +3422,59 @@ build_kernel_module_only()
 			;;
 	esac
 	
+	eval $LOGPE
+}
+
+# $1 - error/return
+test_module_build_ok()
+{
+	eval $LOGPS
+	runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
+	echo $LINE
+	echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
+	if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
+		echo "${W}NOT FOUND${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 175 "$runPackage"
+		fi
+	else
+		echo "${S}File Exists${N}"
+	fi
+	echo -n "${S}Checking for distribution ${C}nvidia${S} driver packages.... ${N}"
+	nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
+	if [ -n "$nvidiaPackages" ];then
+		echo "${W}PRESENT${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 174
+		fi
+	else
+		echo "${S}None Detected${N}"
+	fi
+	echo "${S}Checking that installed driver is the same as the driver you are having" 
+	echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
+	installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+	if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
+		echo "${W}MISMATCH${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 172 "$installedDriver"
+		fi
+	else
+		echo "${S}Drivers Match${N}"
+	fi
+	echo -n "${S}Testing for previous ${C}nvidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
+	if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
+		echo "${W}PRESENT${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 170
+		fi
+	else
+		echo "${S}None Detected${N}"
+	fi
+	return "$returnValue"
 	eval $LOGPE
 }
 
@@ -4091,6 +4143,7 @@ run_driver_installer()
 	esac
 
 	if [ "$installError" -gt 0 ];then
+		log_driver_installer_failure
 		error_handler 245 $installError
 	fi
 	case $CARD in
@@ -5934,7 +5987,7 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		# this will run by itself because it's just some tests and a module rebuild
 		# when it's done it will simply exit, no reboot or desktop start is required.
-		build_kernel_module_only
+		build_kernel_module_only 'direct'
 	else
 		# this is going to run either the fglrx or nvidia patch library file function
 		# must be after set_driver_install_version for output of data to smxi
