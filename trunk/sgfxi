@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.11.90
+####  version: 4.11.91
 ####  Date: February 26 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1194,7 +1194,7 @@ error_handler()
 			errorData="The -k option can only be used to install to the same driver that is running.\nYour system is running $errorExtra but you are building the module for: $DRIVER_DEFAULT\nYou can use the -o <driver version> option to override the defaults."
 			;;
 		171)
-			errorData="The kernel module build failed with error code: $errorExtra"
+			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -3397,7 +3397,7 @@ build_kernel_module_only()
 			fi
 			echo $LINE
 			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (this can take a while...${N}"
-			bash $SCRIPT_WORKING_DIR$runPackage -s -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+			bash $SCRIPT_WORKING_DIR$runPackage -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
 			if [ "$moduleResult" -ne 0 ];then
 				error_handler 171 "$moduleResult"
 			else
