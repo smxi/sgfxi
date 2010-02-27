@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.12.0
+####  version: 4.12.1
 ####  Date: February 26 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -110,6 +110,7 @@ X_NAME=''
 ## main script boolean switches
 B_AUTORUN=''
 B_BETA_EXISTS=''
+B_BUILD_KERNEL_MODULES=''
 B_DISTRO_FLAG=''
 B_DISPLAY_DEVICES=''
 B_EXPERIMENTAL=''
@@ -118,6 +119,7 @@ B_FGLRX_DEB_BUILDER=''
 B_FGLRX_DIRECT='true' # raising the white flag of surrender...
 B_FORCE_REBOOT=''
 B_FORCE_UPDATE=''
+B_KERNEL_MODULE_ONLY=''
 B_MOVE_X_CONF=''
 B_NATIVE_DRIVER=''
 B_DEFAULT_NATIVE_DRIVER=''
@@ -3428,11 +3430,16 @@ install_modules_to_all_kernels()
 {
 	check_root
 	local kernels=$(ls /boot | grep '^vmlinuz' | grep -v "$( uname -r )" | sed 's/vmlinuz-//')
+	local otherDriver=''
+	# support other drivers being used if desired
+	if [ -n "$DRIVER_OVERRIDE" ];then
+		otherDriver=" -o $DRIVER_OVERRIDE"
+	fi
 	echo $LINE
 	echo "${S}OK, installing modules to all kernels now...${N}"
 	for i in $kernels
 	do 
-		sgfxi -R -A -k -K $i
+		sgfxi $otherDriver -R -A -k -K $i
 	done
 	echo $LINE
 	echo "${S}Hey, did it work? Great! Bye for now.${N}"
@@ -5810,7 +5817,7 @@ get_options()
 						exit 0
 						;;
 					40)
-						install_modules_to_all_kernels
+						B_BUILD_KERNEL_MODULES='true'
 						;;
 					*)	
 						error_handler 178 "$OPTARG"
@@ -5837,6 +5844,10 @@ get_options()
 set_script_colors $COLOR_DEFAULT
 # set all options
 get_options "$@"
+# this exits when it's done if triggered
+if [ "$B_BUILD_KERNEL_MODULES" == 'true' ];then
+	install_modules_to_all_kernels
+fi
 # Get kernel string stuff, no need to rerun this after it's been set in options
 if [ -z "$INSTALL_TO_KERNEL" ];then
 	kernel_string_info
