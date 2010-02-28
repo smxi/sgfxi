@@ -3,7 +3,7 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.12.4
+####  version: 4.12.5
 ####  Date: February 27 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -286,6 +286,9 @@ EAR='/etc/arch-release'
 EDV='/etc/debian_version'
 EFR='/etc/fedora-release'
 ELR='/etc/lsb-release'
+GRUB1='/boot/grub/menu.lst'
+GRUB1_FED='/boot/grub/grub.conf'
+GRUB2='/boot/grub/grub.cfg'
 KERNEL_HEADER_DIRECT='/usr/include/linux/kernel.h'
 USRS='/usr/src/' 
 
@@ -3482,14 +3485,45 @@ install_modules_to_all_kernels()
 {
 	check_root
 	local kernels=$(ls /lib/modules | grep -v "$( uname -r )" )
-	local otherDriver=''
+	local otherDriver='' kernel='' grubFile='' kernelInGrub='' kernelsConfirmed=''
+	if [ -f "$GRUB2" ];then
+		grubFile=$GRUB2
+	elif [ -f "$GRUB1_FED" ];then
+		grubFile=$GRUB1_FED
+	elif  [ -f "$GRUB1" ];then
+		grubFile=$GRUB1
+	fi
+	# this isn't a great test, but it's better than no test, and should avoid a lot of false
+	# kernel ids
+	case $SYSTEM_BASE in
+		debian|ubuntu|fedora)
+			echo $LINE
+			echo "${S}Confirming full kernel list from ${C}/lib/modules${S}...${N}"
+			# make sure the kernels are real, not fake as found in /lib/modules vmware added...
+			for kernel in $kernels
+			do
+				echo -n "${S}Checking ${C}$kernel${S} in ${C}$grubFile${S}.... ${N}"
+				kernelInGrub=$( grep -Eis "^[[:space:]]*(kernel|linux).*$kernel" $grubFile )
+				if [ -n "$kernelInGrub" ];then
+					echo "${M}Confirmed${N}"
+					kernelsConfirmed="$kernelsConfirmed $kernel"
+				else
+					echo "${W}Invalid${N}"
+				fi
+			done
+			;;
+		arch)
+			# arch has unreliable kernel naming, not following uname -r, ie: kernel26.img
+			kernelsConfirmed=$kernels 
+			;;
+	esac
 	# support other drivers being used if desired
 	if [ -n "$DRIVER_OVERRIDE" ];then
 		otherDriver=" -o $DRIVER_OVERRIDE"
 	fi
 	echo $LINE
-	echo "${S}OK, installing modules to all kernels now...${N}"
-	for i in $kernels
+	echo "${S}OK, installing modules to all confirmed kernels now...${N}"
+	for i in $kernelsConfirmed
 	do 
 		sgfxi $otherDriver -R -A -k -K $i
 	done
@@ -3769,9 +3803,7 @@ preinstall_cleanup()
 remove_module()
 {
 	eval $LOGPS
-	local grub1='/boot/grub/menu.lst'
-	local grub2='/boot/grub/grub.cfg'
-	local grub1fed='/boot/grub/grub.conf'
+
 	local emod='/etc/modules' 
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
@@ -3810,28 +3842,28 @@ remove_module()
 				print_hec
 				;;
 			fedora)
-				if [ -f "$grub1fed" -a ! -f "$grub2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
-					if [ -f "$grub1fed" -a -z "$( grep -si 'rdblacklist=nouveau' $grub1fed )" ];then
-						echo -n "${S}Adding ${C}$grub1fed nouveau blacklist${S} items..... ${N}"
-						sed -i '/ root=/s|$| rdblacklist=nouveau|' $grub1fed
-						log_function_data "file updated to add nouveau blacklist: $grub1fed"
+				if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $GRUB1_FED )" ];then
+					if [ -f "$GRUB1_FED" -a -z "$( grep -si 'rdblacklist=nouveau' $GRUB1_FED )" ];then
+						echo -n "${S}Adding ${C}$GRUB1_FED nouveau blacklist${S} items..... ${N}"
+						sed -i '/ root=/s|$| rdblacklist=nouveau|' $GRUB1_FED
+						log_function_data "file updated to add nouveau blacklist: $GRUB1_FED"
 						echo "${S}Added${N}"
 					fi
-					if [ -f "$grub1fed" -a -z "$( grep -si 'vmalloc=' $grub1fed )" ];then
-						echo -n "${S}Adding ${C}$grub1fed vmalloc=256m${S} item..... ${N}"
-						sed -i '/ root=/s|$| vmalloc=256m|' $grub1fed
-						log_function_data "file updated to add vmalloc=256m: $grub1fed"
+					if [ -f "$GRUB1_FED" -a -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
+						echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
+						sed -i '/ root=/s|$| vmalloc=256m|' $GRUB1_FED
+						log_function_data "file updated to add vmalloc=256m: $GRUB1_FED"
 						echo "${S}Added${N}"
 					fi
 					showMessage1='true'
 				fi
 				# also make system bootable to init 3 easily with grub, otherwise you can
 				# literally not be able to access tty OR desktop in some cases
-				if [ -f "$grub1fed" -a ! -f "$grub2" -a -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $grub1fed )" ];then
-					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$grub1fed${S}..... ${N}"
-					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $grub1fed
-					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $grub1fed
-					log_function_data "file updated to restore grub timeout/unhide menu: $grub1fed"
+				if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $GRUB1_FED )" ];then
+					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$GRUB1_FED${S}..... ${N}"
+					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $GRUB1_FED
+					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $GRUB1_FED
+					log_function_data "file updated to restore grub timeout/unhide menu: $GRUB1_FED"
 					echo "${S}Modified${N}"
 				fi
 				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/*.conf )" ];then
@@ -3948,9 +3980,7 @@ update_initramfs()
 add_module()
 {
 	eval $LOGPS
-	local grub1='/boot/grub/menu.lst'
-	local grub1fed='/boot/grub/grub.conf'
-	local grub2='/boot/grub/grub.cfg'
+
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
@@ -3974,11 +4004,11 @@ add_module()
 		nouveau)
 			case $SYSTEM_BASE in
 				fedora)
-					if [ -f "$grub1fed" -a ! -f "$grub2" -a -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $grub1fed )" ];then
-						echo -n "${S}Removing ${C}$grub1fed nouveau blacklist${S} items..... ${N}"
-						sed -i 's|[[:space:]]nouveau.modeset=0||i' $grub1fed
-						sed -i 's|[[:space:]]rdblacklist=nouveau||i' $grub1fed
-						log_function_data "file updated to remove nouveau blacklist: $grub1fed"
+					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $GRUB1_FED )" ];then
+						echo -n "${S}Removing ${C}$GRUB1_FED nouveau blacklist${S} items..... ${N}"
+						sed -i 's|[[:space:]]nouveau.modeset=0||i' $GRUB1_FED
+						sed -i 's|[[:space:]]rdblacklist=nouveau||i' $GRUB1_FED
+						log_function_data "file updated to remove nouveau blacklist: $GRUB1_FED"
 						echo "${S}Removed${N}"
 						showMessage='true'
 					fi
@@ -5900,6 +5930,7 @@ set_script_colors $COLOR_DEFAULT
 get_options "$@"
 # this exits when it's done if triggered
 if [ "$B_BUILD_KERNEL_MODULES" == 'true' ];then
+	check_set_distro ## need to know what it is for some tests
 	install_modules_to_all_kernels
 fi
 # Get kernel string stuff, no need to rerun this after it's been set in options
