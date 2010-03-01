@@ -2667,8 +2667,8 @@ check_update_script()
 				localVersion=$( cut -d ':' -f 1 <<< "$versionData" )
 				remoteVersion=$( cut -d ':' -f 2 <<< "$versionData" )
 				if [ "$versionTest" -eq 0 ];then
-					echo "${S}local ${C}$localVersion${S} matches remote ${C}$remoteVersion${S}${N}"
-					echo "${S}No script update required. Continuing...${N}"
+					echo "${S}local and remote versions match. Continuing...${N}"
+					runUpdate='false'
 				elif [ "$versionTest" -eq 1 ];then
 					echo "${M}update required:${S} local: ${C}$localVersion${S} - remote: ${C}$remoteVersion${N}"
 					runUpdate='true'
