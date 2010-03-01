@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.8
-####  Date: February 28 2010
+####  version: 4.12.9
+####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -2635,7 +2635,8 @@ check_package_manager_updated()
 # $3 - extra message; $4 - repeat, to only retest download failure once
 check_update_script()
 {
-	local fileDataTemp='' isGood='' extraText='' 
+	local fileDataTemp='' isGood='' extraText='' runUpdate=''
+	local versionTest=0 versionData='' localVersion='' remoteVersion=''
 	local downloadUrl=$2 uArgs='up' ua="-U s-tools/$SCRIPT_NAME"
 	local origXorg='/etc/X11/xorg-conf-orig-sg'
 
@@ -2648,45 +2649,72 @@ check_update_script()
 	# download / replace requested file
 	case $1 in
 		$SCRIPT_NAME)
-			if [ "$B_FORCE_UPDATE" == 'true' -o "$4" == 'repeat' ];then
+			if [ "$B_FORCE_UPDATE" == 'true' ];then
 				uArgs='ufr'
-			fi
-			ua="$ua.$uArgs.$SIS"
-			echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
-			fileDataTemp="$( wget $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
-
-			# all smxi files have this string as last line, if there, the file should usually
-			# run fine, except for weird fringe cases where the ascii file is corrupted partially
-			isGood=$( grep -si '##\*\*EOF\*\*##' <<< "$fileDataTemp" )
-
-			if [ -n "$isGood" ];then
-				echo "$fileDataTemp" > $1
-				chmod 705 $1
-				if [ "$B_FORCE_UPDATE" != 'true' ];then
-					./$1 -R$START_OPTIONS
-				else
-					print_information
-					echo "${C}$SCRIPT_NAME${S} was successfully updated. Please start the script again to access"
-					echo "the latest features and drivers. Remember that ${C}$SCRIPT_NAME${S} always updates itself"
-					echo "automatically when it starts so usually ${C}-U${S} is not required."
-					echo
-					echo "To see the latest drivers or support features, use the ${C}-L${S} option. You can"
-					echo "run this option in X, and you don't need to be root to use it. Features:"
-					echo "Show all currently supported drivers: ${C}$SCRIPT_NAME -L d${S}"
-					echo "Show current nVidia support status: ${C}$SCRIPT_NAME -L n${S}"
-					echo "Show current ATI/Fglrx support status: ${C}$SCRIPT_NAME -L f${S}"
-					echo "Show current local/remote ${C}$SCRIPT_NAME${S} versions: ${C}$SCRIPT_NAME -L v${S}"
-					print_hec
-					echo "${S}Update completed. Exiting now.${N}"
-				fi
-				exit 0
+				runUpdate='true'
+			elif [ "$4" == 'repeat' ];then
+				uArgs='rep'
+				runUpdate='true'
+			# uncomment if you need this to not trigger for dev purposes
+# 			elif [ "$B_TESTING_5" == 'true' ];then
+# 				uArgs='dev'
+# 				runUpdate='true'
 			else
-				if [ "$4" != 'repeat' ];then
-					# let's try this once again to make sure it wasn't just a temp problem
-					echo -e "${E}The file ${C}$1${E} did not download correctly from:\n$2\nRetrying download now...${N}"
-					check_update_script "$1" "$2" "$3" 'repeat'
+				echo -n "${S}Checking ${C}$SCRIPT_NAME${S} versions.... ${N}"
+				# 0: same versionp; 1 - different version; 2 - download error
+				versionData=$( check_script_version )
+				versionTest="$?"
+				localVersion=$( cut -d ':' -f 1 <<< "$versionData" )
+				remoteVersion=$( cut -d ':' -f 2 <<< "$versionData" )
+				if [ "$versionTest" -eq 0 ];then
+					echo "${S}local ${C}$localVersion${S} matches remote ${C}$remoteVersion${S}${N}"
+					echo "${S}No script update required. Continuing...${N}"
+				elif [ "$versionTest" -eq 1 ];then
+					echo "${M}update required:${S} local: ${C}$localVersion${S} - remote: ${C}$remoteVersion${N}"
+					runUpdate='true'
 				else
-					error_handler 231 $1
+					echo "${E}Failed to aquire remote version data. ${S}Will try direct download instead.${N}"
+					runUpdate='true'
+				fi
+			fi
+			# this will try to download again, the version tester itself isn't going to do any
+			# kind of error handling
+			if [ "$runUpdate" == 'true' ];then
+				ua="$ua.$uArgs.$SIS"
+				echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
+				fileDataTemp="$( wget $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
+				# all smxi files have this string as last line, if there, the file should usually
+				# run fine, except for weird fringe cases where the ascii file is corrupted partially
+				isGood=$( grep -si '##\*\*EOF\*\*##' <<< "$fileDataTemp" )
+				if [ -n "$isGood" ];then
+					echo "$fileDataTemp" > $1
+					chmod 705 $1
+					if [ "$B_FORCE_UPDATE" != 'true' ];then
+						./$1 -R$START_OPTIONS
+					else
+						print_information
+						echo "${C}$SCRIPT_NAME${S} was successfully updated. Please start the script again to access"
+						echo "the latest features and drivers. Remember that ${C}$SCRIPT_NAME${S} always updates itself"
+						echo "automatically when it starts so usually ${C}-U${S} is not required."
+						echo
+						echo "To see the latest drivers or support features, use the ${C}-L${S} option. You can"
+						echo "run this option in X, and you don't need to be root to use it. Features:"
+						echo "Show all currently supported drivers: ${C}$SCRIPT_NAME -L d${S}"
+						echo "Show current nVidia support status: ${C}$SCRIPT_NAME -L n${S}"
+						echo "Show current ATI/Fglrx support status: ${C}$SCRIPT_NAME -L f${S}"
+						echo "Show current local/remote ${C}$SCRIPT_NAME${S} versions: ${C}$SCRIPT_NAME -L v${S}"
+						print_hec
+						echo "${S}Update completed. Exiting now.${N}"
+					fi
+					exit 0
+				else
+					if [ "$4" != 'repeat' ];then
+						# let's try this once again to make sure it wasn't just a temp problem
+						echo -e "${E}The file ${C}$1${E} did not download correctly from:\n$2\nRetrying download now...${N}"
+						check_update_script "$1" "$2" "$3" 'repeat'
+					else
+						error_handler 231 $1
+					fi
 				fi
 			fi
 			;;
@@ -2725,6 +2753,33 @@ check_update_script()
 			fi
 			;;
 	esac
+}
+# return values: # 0: same versionp; 1 - different version; 2 - download error
+check_script_version()
+{
+	local returnValue=0 wgetError=0 validated='' versionData=''
+	local ua="-U s-tools/$SCRIPT_NAME-data.sm-versions"
+	local localVersion='' remoteVersion=''
+	
+	versionData="$( wget $ua -qO - $SCRIPT_DOWNLOAD_VERSION )" || wgetError="$?"
+	if [ "$wgetError" -eq 0  ];then
+		validated=$( grep -Esi '#\*\*EOF\*\*#' <<< "$versionData" )
+		if [ -n "$validated" ];then
+			localVersion=$( awk '/^#.*[[:space:]]version:/ {print $3}' $SCRIPT_HOME/$SCRIPT_NAME )
+			remoteVersion=$( grep 'sgfxi' <<< "$versionData" | cut -d '=' -f 2 | cut -d ':' -f 1 )
+			if [ "$localVersion" == "$remoteVersion" ];then
+				returnValue=0
+			else
+				returnValue=1
+			fi
+			echo "$localVersion:$remoteVersion"
+		else
+			returnValue=2
+		fi
+	else
+		returnValue=2
+	fi
+	return $returnValue
 }
 
 # args: $1 patch file to apply
