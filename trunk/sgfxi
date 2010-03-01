@@ -3,8 +3,8 @@
 ####  Script Name: system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.12.6
-####  Date: February 27 2010
+####  version: 4.12.7
+####  Date: February 28 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -117,6 +117,7 @@ B_EXPERIMENTAL=''
 B_EXTRA_EXPERIMENTAL=''
 B_FGLRX_DEB_BUILDER=''
 B_FGLRX_DIRECT='true' # raising the white flag of surrender...
+B_FORCE_OPTION=''
 B_FORCE_REBOOT=''
 B_FORCE_UPDATE=''
 B_KERNEL_MODULE_ONLY=''
@@ -1040,7 +1041,7 @@ error_handler()
 		245)
 			errorData2=''
 			if [ "$CARD" == "$FGLRX" -a "$B_FGLRX_DIRECT" != 'true' ];then
-				errorData2="\nYou might want to try installing without the -F option instead, which will do a\ndirect (no debs) binary install from the FGLRX run package.\nThis works more reliably for some systems (especially 64 bit)."
+				errorData2="\nYou might want to try installing without the -D (formerly -F) option instead, which will do a\ndirect (no debs) binary install from the FGLRX run package.\nThis works more reliably for some systems (especially 64 bit)."
 			fi
 			errorData="The $CARD installer exited with the error: $errorExtra$errorData2"
 			;;
@@ -1126,7 +1127,7 @@ error_handler()
 			errorData="Something went wrong in the creation of your new $EXXC file\nPlease let the script maintainer know."
 			;;
 		217)
-			errorData="No supported $CARD card found for the Distro Driver (-s) installer option!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
+			errorData="No supported $CARD card found for the distro driver (-d - formerly -s) installer option!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
 			;;
 		216)
 			errorData="You are using Ubuntu but you do not appear to have the 'restricted' repos enabled.\nPlease enable them before continuing, thank you."
@@ -5493,7 +5494,7 @@ show_options()
 	local fgVersions=$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
 	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
 	local fgTesting='' nvTesting='' testingText='' fgDebianSid=''
-	local counter=0 driverCount=0
+	local counter=0 driverCount=0 skipOutput=''
 	driverCount=$( wc -w <<< $nativeVersions )
 
 	if [ "$B_DISTRO_FLAG" == 'true' ];then
@@ -5589,14 +5590,13 @@ show_options()
 	echo "-c Use composite mode. For things like Beryl/Compiz (nVidia/new ATI cards only)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
 	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
-# 	echo "-d Remove IgnoreDisplayDevices, allow TV for example (nVidia cards only)."
-	# leaving these commented out in case new experimental xorg drivers need to be tested
+	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (formerly -s)."
+	echo "-D Build Distro (Debian/Ubuntu only) packages for fglrx with FGLRX binary run package,"
+	echo "   then install them (formerly -F). Not recommended. Because of constant package"
+	echo "   builder failures, the direct install method is now default."
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
-	echo "-f Install direct fglrx with FGLRX binary run package, without creating deb files (ATI Only)."
-	echo "   Deprecated. Because of constant deb builder failures, the direct install method is now default."
-	echo "-F Build Debian/Ubuntu (only) debs for fglrx with FGLRX binary run package, then install them (ATI Only)."
-	echo "   Because of constant deb builder failures, the direct install method is recommended and default for $SCRIPT_NAME."
+	echo "-f Force option. Will force script behaviors. Currently only for dev purposes."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
@@ -5642,7 +5642,7 @@ show_options()
 	echo "-r Remove mode lines from xorg.conf"
 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
 	echo "-R Skips self updating feature. No restart."
-	echo "-s Installs Distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (Debian/Ubuntu only)."
+	
 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
@@ -5716,13 +5716,15 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -C'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -C - Xorg.conf will not be modified by this script.\n"
 				;;
-			d) B_DISPLAY_DEVICES='true'
+			d)	B_USE_DISTRO_DRIVER='true'
+				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -d'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -d - IgnoreDisplayDevices is off. TV will be used. nVidia only,\n       DEPRECATED: legacy option - no longer used by $SCRIPT_NAME!\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -d - Install distro packaged driver.\n"
 				;;
-			D) B_SM_INSTALL='true'
-				S=${CALLER_DEF} # change standard text color to caller standard text
+			D)	B_FGLRX_DEB_BUILDER='true'
+				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -D'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -D - Using FGLRX Distro package builder install. Not reliable, but try if you want.\n       Builds/Installs packages for distro from downloaded fglrx run file.\n"
 				;;
 	# 		e) B_EXPERIMENTAL='true'
 	# 			START_OPTIONS=$START_OPTIONS' -e'
@@ -5730,14 +5732,14 @@ get_options()
 	# 		E) B_EXTRA_EXPERIMENTAL='true'
 	# 			START_OPTIONS=$START_OPTIONS' -E'
 	# 			;;
-			f)	B_FGLRX_DIRECT='true'
+			f)	B_FORCE_OPTION=''='true'
 				START_OPTIONS=$START_OPTIONS' -f'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - Using direct FGLRX install. No debs created. Binary direct install\n       from downloaded fglrx run file.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - You are using the forced override option. This is only for dev\n       purposes at the moment but will override features in the future.\n"
 				;;
 			F)	B_FGLRX_DEB_BUILDER='true'
 				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -F'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX Debian/Ubuntu deb package builder install. Not reliable, but try if you want.\n       Builds debs from downloaded fglrx run file.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX package builder install. Not reliable, but try if you want.\n       -F is deprecated, please use -D instead in the future.\n"
 				;;
 			j)	if [ -n "$( grep -E '^[0-3]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
@@ -5806,10 +5808,11 @@ get_options()
 				;;
 			R) B_SKIP_RESTART='true'
 				;;
+			# deprecated but leaving to not break existing methods
 			s)	B_USE_DISTRO_DRIVER='true'
 				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -s'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -s - Install distro packaged driver. (ATI fglrx or nVidia)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -s - Install distro packaged driver. Deprecated. Please use -d instead\n"
 				;;
 			S) B_SKIP_AUTOSTART='true'
 				START_OPTIONS=$START_OPTIONS' -S'
@@ -5854,6 +5857,7 @@ get_options()
 				;;
 			## debuggers and testing options
 			!)	# test for various supported methods
+				skipOutput=''
 				case $OPTARG in
 					1)	B_TESTING_1='true'
 						;;
@@ -5924,12 +5928,19 @@ get_options()
 					40)
 						B_BUILD_KERNEL_MODULES='true'
 						;;
+					120)
+						B_SM_INSTALL='true'
+						S=${CALLER_DEF} # change standard text color to caller standard text
+						skipOutput='true'
+						;;
 					*)	
 						error_handler 178 "$OPTARG"
 						;;
 				esac
 				START_OPTIONS="$START_OPTIONS -! $OPTARG"
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -! $OPTARG - You are using an advanced Testing option. Only use this if you know what you are doing!\n"
+				if [ "$skipOutput" != 'true' ];then
+					START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -! $OPTARG - You are using an advanced Testing option. Only use this if you know what you are doing!\n"
+				fi
 				;;
 			*) show_options err
 				;;
