@@ -1,9 +1,9 @@
 #!/bin/bash
 ########################################################################
-####  Script Name: system graphics installer: sgfxi
+####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
-####  New: Ubuntu support in progress. Arch Support under development
-####  version: 4.12.7
+####  New: Ubuntu support in progress. Arch/Fedora Support under development
+####  version: 4.12.8
 ####  Date: February 28 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3414,145 +3414,7 @@ set_download_info()
 		download_extract_driver $downloadUrl $DRIVER_FILE
 	fi
 }
-# $1 - direct/build
-build_kernel_module_only()
-{
-	eval $LOGPS
-	local installedDriver='' moduleResult=0 driverModule='' silent=' '
-	local runPackage="$DRIVER_FILE.run"
-	# double check that target kernel, or current one, has stuff in /lib/modules
-	echo $LINE
-	echo "${S}Starting kernel $NVIDIA module build process for kernel: ${C}$KERNEL_VERSION${N}"
-	case $CARD in
-		$NVIDIA)
-			if [ "$1" == 'direct' ];then
-				test_install_kernel_version
-				test_module_build_ok 'error'
-				silent=''
-			fi
-			echo $LINE
-			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
-			bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
-			if [ "$moduleResult" -ne 0 ];then
-				log_driver_installer_failure
-				error_handler 171 "$moduleResult"
-			else
-				echo "${S}Build of module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
-				echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
-				exit 0
-			fi
-			;;
-		*)
-			error_handler 173 
-			;;
-	esac
-	
-	eval $LOGPE
-}
 
-# $1 - error/return
-test_module_build_ok()
-{
-	eval $LOGPS
-	runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
-	echo $LINE
-	echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
-	if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
-		echo "${W}NOT FOUND${N}"
-		returnValue=1
-		if [ "$1" == 'error' ];then
-			error_handler 175 "$runPackage"
-		fi
-	else
-		echo "${S}File Exists${N}"
-	fi
-	echo -n "${S}Checking for distribution ${C}nvidia${S} driver packages.... ${N}"
-	nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
-	if [ -n "$nvidiaPackages" ];then
-		echo "${W}PRESENT${N}"
-		returnValue=1
-		if [ "$1" == 'error' ];then
-			error_handler 174
-		fi
-	else
-		echo "${S}None Detected${N}"
-	fi
-	echo "${S}Checking that installed driver is the same as the driver you are having" 
-	echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
-	installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
-	if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
-		echo "${W}MISMATCH${N}"
-		returnValue=1
-		if [ "$1" == 'error' ];then
-			error_handler 172 "$installedDriver"
-		fi
-	else
-		echo "${S}Drivers Match${N}"
-	fi
-	echo -n "${S}Testing for previous ${C}nvidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
-	if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
-		echo "${W}PRESENT${N}"
-		returnValue=1
-		if [ "$1" == 'error' ];then
-			error_handler 170
-		fi
-	else
-		echo "${S}None Detected${N}"
-	fi
-	return "$returnValue"
-	eval $LOGPE
-}
-
-install_modules_to_all_kernels()
-{
-	check_root
-	local kernels=$(ls /lib/modules | grep -v "$( uname -r )" )
-	local otherDriver='' kernel='' grubFile='' kernelInGrub='' kernelsConfirmed=''
-	if [ -f "$GRUB2" ];then
-		grubFile=$GRUB2
-	elif [ -f "$GRUB1_FED" ];then
-		grubFile=$GRUB1_FED
-	elif  [ -f "$GRUB1" ];then
-		grubFile=$GRUB1
-	fi
-	# this isn't a great test, but it's better than no test, and should avoid a lot of false
-	# kernel ids
-	case $SYSTEM_BASE in
-		debian|ubuntu|fedora)
-			echo $LINE
-			echo "${S}Confirming full kernel list from ${C}/lib/modules${S}...${N}"
-			# make sure the kernels are real, not fake as found in /lib/modules vmware added...
-			for kernel in $kernels
-			do
-				echo -n "${S}Checking ${C}$kernel${S} in ${C}$grubFile${S}.... ${N}"
-				kernelInGrub=$( grep -Eis "^[[:space:]]*(kernel|linux).*$kernel" $grubFile )
-				if [ -n "$kernelInGrub" ];then
-					echo "${M}Confirmed${N}"
-					kernelsConfirmed="$kernelsConfirmed $kernel"
-				else
-					echo "${W}Invalid${N}"
-				fi
-			done
-			;;
-		arch)
-			# arch has unreliable kernel naming, not following uname -r, ie: kernel26.img
-			kernelsConfirmed=$kernels 
-			;;
-	esac
-	# support other drivers being used if desired
-	if [ -n "$DRIVER_OVERRIDE" ];then
-		otherDriver=" -o $DRIVER_OVERRIDE"
-	fi
-	echo $LINE
-	echo "${S}OK, installing modules to all confirmed kernels now...${N}"
-	for i in $kernelsConfirmed
-	do 
-		sgfxi $otherDriver -R -A -k -K $i
-	done
-	echo $LINE
-	echo "${S}Hey, did it work? Great! Bye for now.${N}"
-	exit 0
-}
 
 # arg: $1 install package to remove
 pre_extract_clean_set_up()
@@ -3819,6 +3681,312 @@ preinstall_cleanup()
 	eval $LOGPE
 }
 
+## run patch module, then install
+run_driver_installer()
+{
+	eval $LOGPS
+	local installError=0 installerArgs='' nothing=''
+	local xModPath='/usr/lib/xorg/modules'
+	local xLibPath='/usr/lib'
+	local installer='nvidia-installer'
+	local distroId=''
+	local distroCodeName=''
+
+	# this was set in prep_install()
+	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
+	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT${S} (this might take a while)...${N}"
+
+	log_function_data "driver: $DRIVER_DEFAULT"
+
+	# run the card installers
+	case $CARD in
+		$NVIDIA)
+			if [ -d $xModPath -a -d $xLibPath ];then
+				# --x-library-path=$xLibPath
+				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPath"
+			else
+				installerArgs="-s -N"
+			fi
+			# note: handles change from older /emul libs in Debian
+			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
+			# note that lenny can be assumed to not need, this, so wait til squeeze stable
+			if [ "$BITS" == '64' ];then
+				case $SYSTEM_BASE in
+					debian)
+						if [ "$SYSTEM_CODENAME" == 'sid' -o "$SYSTEM_CODENAME" == 'testing' ];then
+							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+						fi
+						;;
+					ubuntu)
+						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+						;;
+				esac
+			fi
+			
+			installerArgs="$installerArgs -k $KERNEL_VERSION"
+			# fresh arch installs may have the single file but no headers in /usr/src
+			# note that this didn't work even though the target file existed
+# 			if [ "$B_USE_DIRECT_KERNEL_HEADER" == 'true' ];then
+# 				installerArgs="$installerArgs --kernel-source-path=$KERNEL_HEADER_DIRECT"
+# 			fi
+			./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
+			# reverting the patched stuff before anything else happens
+			apply_module_patch post
+			install_libvdpau
+			# only do a final removal of nouveau if the install succeeded
+# 			remove_module 'nouveau' 
+			;;
+		$FGLRX)
+			distroId=$FG_DISTRIB_ID
+			distroCodeName=$FG_DISTRIB_CODENAME
+			installer='ati-installer.sh'
+			if [ "$B_FGLRX_DIRECT" != 'true' ];then
+				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
+				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
+			else
+				echo ${M}$LINE
+				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
+				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
+				echo "${S}Hit ${C}<enter>${S} now to start the direct installer."
+				echo ${M}$LINE${N}
+				read nothing
+				installerArgs="$DRIVER_DEFAULT --install"
+				log_function_data "direct fglrx install - no debs: options: $installerArgs"
+			fi
+
+			# tell fglrx installer correct x version
+	# 		if [ -n "$( echo $X_VERSION | grep -E '[1-2]\.[4-9]' )" ]
+	# 		then
+	# 			export XVERSION=$X_VERSION
+	# 			export XTYPE='X.Org'
+	# 		fi
+			# note: there's a bug in fglrx that apparently will show no error return on failure
+			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE
+			installError="$?"
+			;;
+	esac
+
+	if [ "$installError" -gt 0 ];then
+		log_driver_installer_failure
+		error_handler 245 $installError
+	fi
+	case $CARD in
+		$FGLRX)
+			:
+			;;
+	esac
+	eval $LOGPE
+}
+
+# nvidia new only
+install_libvdpau()
+{
+	local libVdPau=''
+	
+	case $SYSTEM_BASE in
+		arch)
+# 			libVdPau='libvdpau'
+			libVdPau=''
+			;;
+		# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=558369
+		# note: until the sid break for nvidia-libvdpau1/nvidia-libvdpau1-driver is fixed...
+# 		debian)
+# 			libVdPau='nvidia-libvdpau1-driver'
+# 			;;
+	esac
+	
+	if [ "$B_TESTING_5" != 'true' -a -n "$libVdPau" -a "$LEGACY_LEVEL" -gt 3 ];then
+		if [ -z "$( check_package_status "$libVdPau" 'i' )" ];then
+			if [ -n "$( check_package_status "$libVdPau" 'c' )" ];then
+				install_package "$libVdPau"
+			fi
+		fi
+	fi
+}
+
+post_installer_steps()
+{
+	eval $LOGPS
+	local ema='/etc/modutils/aliases' oldFglrx=''
+
+	echo "${S}Running post installer steps...${N}"
+
+	cd $SCRIPT_WORKING_DIR
+
+	rm -rf $INSTALL_DIRECTORY # remove the extracted driver install directory in /usr/src
+
+	## this I think I will combine into one, just cleanup everything, that will handle
+	## card brand changes more robustly, and leave less cruft in the system
+	case $CARD in
+		$NVIDIA)
+			rm -f /etc/modutils/nvidia
+			if [ -f $ema ];then
+				perl -pi -e 's|.*char-major-195.*[\n]?||' $ema
+				perl -pi -e 's|[\n]?$|\n|' $ema
+				echo "alias char-major-195 nvidia" >> $ema
+			fi
+			;;
+		$FGLRX)
+			clean_up_fglrx_junk
+			rm -f fglrx-installer_*.changes
+			case $SYSTEM_BASE in
+				arch)
+					if [ -z "$( check_package_status 'mesa' 'i' )" ];then
+						if [ -n "$( check_package_status 'mesa' 'c' )" ];then
+							install_package 'mesa'
+						fi
+					fi
+					;;
+			esac
+			;;
+	esac
+	eval $LOGPE
+}
+
+### -------------------------------------------------------------------
+### module tools
+### -------------------------------------------------------------------
+
+# $1 - direct/build
+build_kernel_module_only()
+{
+	eval $LOGPS
+	local installedDriver='' moduleResult=0 driverModule='' silent=' '
+	local runPackage="$DRIVER_FILE.run"
+	# double check that target kernel, or current one, has stuff in /lib/modules
+	echo $LINE
+	echo "${S}Starting kernel $NVIDIA module build process for kernel: ${C}$KERNEL_VERSION${N}"
+	case $CARD in
+		$NVIDIA)
+			if [ "$1" == 'direct' ];then
+				test_install_kernel_version
+				test_module_build_ok 'error'
+				silent=''
+			fi
+			echo $LINE
+			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
+			bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+			if [ "$moduleResult" -ne 0 ];then
+				log_driver_installer_failure
+				error_handler 171 "$moduleResult"
+			else
+				echo "${S}Build of module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
+				echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
+				exit 0
+			fi
+			;;
+		*)
+			error_handler 173 
+			;;
+	esac
+	
+	eval $LOGPE
+}
+
+# $1 - error/return
+test_module_build_ok()
+{
+	eval $LOGPS
+	runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
+	echo $LINE
+	echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
+	if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
+		echo "${W}NOT FOUND${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 175 "$runPackage"
+		fi
+	else
+		echo "${S}File Exists${N}"
+	fi
+	echo -n "${S}Checking for distribution ${C}nvidia${S} driver packages.... ${N}"
+	nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
+	if [ -n "$nvidiaPackages" ];then
+		echo "${W}PRESENT${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 174
+		fi
+	else
+		echo "${S}None Detected${N}"
+	fi
+	echo "${S}Checking that installed driver is the same as the driver you are having" 
+	echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
+	installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+	if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
+		echo "${W}MISMATCH${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 172 "$installedDriver"
+		fi
+	else
+		echo "${S}Drivers Match${N}"
+	fi
+	echo -n "${S}Testing for previous ${C}nvidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
+	if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
+		echo "${W}PRESENT${N}"
+		returnValue=1
+		if [ "$1" == 'error' ];then
+			error_handler 170
+		fi
+	else
+		echo "${S}None Detected${N}"
+	fi
+	return "$returnValue"
+	eval $LOGPE
+}
+
+install_modules_to_all_kernels()
+{
+	check_root
+	local kernels=$(ls /lib/modules | grep -v "$( uname -r )" )
+	local otherDriver='' kernel='' grubFile='' kernelInGrub='' kernelsConfirmed=''
+	if [ -f "$GRUB2" ];then
+		grubFile=$GRUB2
+	elif [ -f "$GRUB1_FED" ];then
+		grubFile=$GRUB1_FED
+	elif  [ -f "$GRUB1" ];then
+		grubFile=$GRUB1
+	fi
+	# this isn't a great test, but it's better than no test, and should avoid a lot of false
+	# kernel ids
+	case $SYSTEM_BASE in
+		debian|ubuntu|fedora)
+			echo $LINE
+			echo "${S}Confirming full kernel list from ${C}/lib/modules${S}...${N}"
+			# make sure the kernels are real, not fake as found in /lib/modules vmware added...
+			for kernel in $kernels
+			do
+				echo -n "${S}Checking ${C}$kernel${S} in ${C}$grubFile${S}.... ${N}"
+				kernelInGrub=$( grep -Eis "^[[:space:]]*(kernel|linux).*$kernel" $grubFile )
+				if [ -n "$kernelInGrub" ];then
+					echo "${M}Confirmed${N}"
+					kernelsConfirmed="$kernelsConfirmed $kernel"
+				else
+					echo "${W}Invalid${N}"
+				fi
+			done
+			;;
+		arch)
+			# arch has unreliable kernel naming, not following uname -r, ie: kernel26.img
+			kernelsConfirmed=$kernels 
+			;;
+	esac
+	# support other drivers being used if desired
+	if [ -n "$DRIVER_OVERRIDE" ];then
+		otherDriver=" -o $DRIVER_OVERRIDE"
+	fi
+	echo $LINE
+	echo "${S}OK, installing modules to all confirmed kernels now...${N}"
+	for i in $kernelsConfirmed
+	do 
+		sgfxi $otherDriver -R -A -k -K $i
+	done
+	echo $LINE
+	echo "${S}Hey, did it work? Great! Bye for now.${N}"
+	exit 0
+}
+
 # note: for 
 # args: $1 - which module; for nouveau used, post nvidia install with no errors
 # use: $2 - nvidia-post - clean grub/module files of nouveau blacklists
@@ -3996,7 +4164,6 @@ update_initramfs()
 	eval $LOGPE
 }
 
-
 # args: $1 - module to add or process
 # do some extra processing here for nouveau
 add_module()
@@ -4106,168 +4273,6 @@ apply_module_patch()
 		esac
 		cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
 	fi
-	eval $LOGPE
-}
-
-## run patch module, then install
-run_driver_installer()
-{
-	eval $LOGPS
-	local installError=0 installerArgs='' nothing=''
-	local xModPath='/usr/lib/xorg/modules'
-	local xLibPath='/usr/lib'
-	local installer='nvidia-installer'
-	local distroId=''
-	local distroCodeName=''
-
-	# this was set in prep_install()
-	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
-	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT${S} (this might take a while)...${N}"
-
-	log_function_data "driver: $DRIVER_DEFAULT"
-
-	# run the card installers
-	case $CARD in
-		$NVIDIA)
-			if [ -d $xModPath -a -d $xLibPath ];then
-				# --x-library-path=$xLibPath
-				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPath"
-			else
-				installerArgs="-s -N"
-			fi
-			# note: handles change from older /emul libs in Debian
-			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
-			# note that lenny can be assumed to not need, this, so wait til squeeze stable
-			if [ "$BITS" == '64' ];then
-				case $SYSTEM_BASE in
-					debian)
-						if [ "$SYSTEM_CODENAME" == 'sid' -o "$SYSTEM_CODENAME" == 'testing' ];then
-							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
-						fi
-						;;
-					ubuntu)
-						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
-						;;
-				esac
-			fi
-			
-			installerArgs="$installerArgs -k $KERNEL_VERSION"
-			# fresh arch installs may have the single file but no headers in /usr/src
-			# note that this didn't work even though the target file existed
-# 			if [ "$B_USE_DIRECT_KERNEL_HEADER" == 'true' ];then
-# 				installerArgs="$installerArgs --kernel-source-path=$KERNEL_HEADER_DIRECT"
-# 			fi
-			./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
-			# reverting the patched stuff before anything else happens
-			apply_module_patch post
-			install_libvdpau
-			# only do a final removal of nouveau if the install succeeded
-# 			remove_module 'nouveau' 
-			;;
-		$FGLRX)
-			distroId=$FG_DISTRIB_ID
-			distroCodeName=$FG_DISTRIB_CODENAME
-			installer='ati-installer.sh'
-			if [ "$B_FGLRX_DIRECT" != 'true' ];then
-				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
-				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
-			else
-				echo ${M}$LINE
-				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
-				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
-				echo "${S}Hit ${C}<enter>${S} now to start the direct installer."
-				echo ${M}$LINE${N}
-				read nothing
-				installerArgs="$DRIVER_DEFAULT --install"
-				log_function_data "direct fglrx install - no debs: options: $installerArgs"
-			fi
-
-			# tell fglrx installer correct x version
-	# 		if [ -n "$( echo $X_VERSION | grep -E '[1-2]\.[4-9]' )" ]
-	# 		then
-	# 			export XVERSION=$X_VERSION
-	# 			export XTYPE='X.Org'
-	# 		fi
-			# note: there's a bug in fglrx that apparently will show no error return on failure
-			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE
-			installError="$?"
-			;;
-	esac
-
-	if [ "$installError" -gt 0 ];then
-		log_driver_installer_failure
-		error_handler 245 $installError
-	fi
-	case $CARD in
-		$FGLRX)
-			:
-			;;
-	esac
-	eval $LOGPE
-}
-
-# nvidia new only
-install_libvdpau()
-{
-	local libVdPau=''
-	
-	case $SYSTEM_BASE in
-		arch)
-# 			libVdPau='libvdpau'
-			libVdPau=''
-			;;
-		# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=558369
-		# note: until the sid break for nvidia-libvdpau1/nvidia-libvdpau1-driver is fixed...
-# 		debian)
-# 			libVdPau='nvidia-libvdpau1-driver'
-# 			;;
-	esac
-	
-	if [ "$B_TESTING_5" != 'true' -a -n "$libVdPau" -a "$LEGACY_LEVEL" -gt 3 ];then
-		if [ -z "$( check_package_status "$libVdPau" 'i' )" ];then
-			if [ -n "$( check_package_status "$libVdPau" 'c' )" ];then
-				install_package "$libVdPau"
-			fi
-		fi
-	fi
-}
-
-post_installer_steps()
-{
-	eval $LOGPS
-	local ema='/etc/modutils/aliases' oldFglrx=''
-
-	echo "${S}Running post installer steps...${N}"
-
-	cd $SCRIPT_WORKING_DIR
-
-	rm -rf $INSTALL_DIRECTORY # remove the extracted driver install directory in /usr/src
-
-	## this I think I will combine into one, just cleanup everything, that will handle
-	## card brand changes more robustly, and leave less cruft in the system
-	case $CARD in
-		$NVIDIA)
-			rm -f /etc/modutils/nvidia
-			if [ -f $ema ];then
-				perl -pi -e 's|.*char-major-195.*[\n]?||' $ema
-				perl -pi -e 's|[\n]?$|\n|' $ema
-				echo "alias char-major-195 nvidia" >> $ema
-			fi
-			;;
-		$FGLRX)
-			clean_up_fglrx_junk
-			rm -f fglrx-installer_*.changes
-			case $SYSTEM_BASE in
-				arch)
-					if [ -z "$( check_package_status 'mesa' 'i' )" ];then
-						if [ -n "$( check_package_status 'mesa' 'c' )" ];then
-							install_package 'mesa'
-						fi
-					fi
-					;;
-			esac
-			;;
-	esac
 	eval $LOGPE
 }
 
