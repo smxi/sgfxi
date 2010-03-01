@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.9
+####  version: 4.12.10
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3475,7 +3475,10 @@ set_download_info()
 pre_extract_clean_set_up()
 {
 	eval $LOGUS
-	cd $SCRIPT_WORKING_DIR
+	# this is only made for binary run packge installs
+	if [ -d "$SCRIPT_WORKING_DIR" ];then
+		cd $SCRIPT_WORKING_DIR
+	fi
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
 		rm -rf $1 # this removes nvidia install dir if present
 	fi
@@ -3942,7 +3945,8 @@ build_kernel_module_only()
 test_module_build_ok()
 {
 	eval $LOGPS
-	runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
+	local runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
+	local libGlNvidia=''
 	echo $LINE
 	echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
 	if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
@@ -3954,7 +3958,7 @@ test_module_build_ok()
 	else
 		echo "${S}File Exists${N}"
 	fi
-	echo -n "${S}Checking for distribution ${C}nvidia${S} driver packages.... ${N}"
+	echo -n "${S}Checking for distribution ${C}nVidia${S} driver packages.... ${N}"
 	nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
 	if [ -n "$nvidiaPackages" ];then
 		echo "${W}PRESENT${N}"
@@ -3965,18 +3969,49 @@ test_module_build_ok()
 	else
 		echo "${S}None Detected${N}"
 	fi
-	echo "${S}Checking that installed driver is the same as the driver you are having" 
-	echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
-	installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
-	if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
-		echo "${W}MISMATCH${N}"
-		returnValue=1
-		if [ "$1" == 'error' ];then
-			error_handler 172 "$installedDriver"
+	libGlNvidia=$( readlink /usr/lib/libGL.so.1 | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
+	echo "${S}Checking that installed driver is the same as the driver you are having ${C}$SCRIPT_NAME${S} build" 
+	echo -n "a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
+	if [ -n "$libGlNvidia" ];then
+		if [ "$libGlNvidia" != "$DRIVER_DEFAULT" ];then
+			echo "${W}MISMATCH${N}"
+			returnValue=1
+			if [ "$1" == 'error' ];then
+				error_handler 172 "$installedDriver"
+			fi
+		else
+			echo "${S}Drivers Match${N}"
 		fi
 	else
-		echo "${S}Drivers Match${N}"
+		# need to find how this is actually grabbed, my guess is it tests for: 
+		installedDriver=$( ls /usr/lib/tls/libnvidia-tls.so* 2>/dev/null )
+		installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+		returnValue=1
+		if [ -n "$installedDriver" ];then
+			echo "${W}No Prior ${C}nVidia${W} Driver Detected${N}"
+			if [ "$1" == 'error' ];then
+				error_handler 168
+			fi
+		else
+			echo "${C}Xorg${W} Update Requires Driver Reinstall${N}"
+			if [ "$1" == 'error' ];then
+				error_handler 169
+			fi
+		fi
 	fi
+
+# 	echo "${S}Checking that installed driver is the same as the driver you are having" 
+# 	echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
+# 	installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+# 	if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
+# 		echo "${W}MISMATCH${N}"
+# 		returnValue=1
+# 		if [ "$1" == 'error' ];then
+# 			error_handler 172 "$installedDriver"
+# 		fi
+# 	else
+# 		echo "${S}Drivers Match${N}"
+# 	fi
 	echo -n "${S}Testing for previous ${C}nvidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
 	if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
 		echo "${W}PRESENT${N}"
