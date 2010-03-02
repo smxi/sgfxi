@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.20
+####  version: 4.12.21
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -130,6 +130,7 @@ B_REMOVE_MODELINES=''
 B_SKIP_AUTOSTART=''
 B_SKIP_CONFIG=''
 B_SKIP_CONNECT=''
+B_SKIP_INSTALL=''
 B_SKIP_RESTART=''
 B_SKIP_WGET=''
 B_SKIP_X_QUESTION=''
@@ -3953,6 +3954,7 @@ build_kernel_module_only()
 	
 	case $CARD in
 		$NVIDIA)
+			B_SKIP_INSTALL='true'
 			if [ "$1" == 'direct' ];then
 				test_install_kernel_version
 				test_module_build_ok 'error'
@@ -6188,6 +6190,7 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 fi
 # needs to be out to give print version, if print out driver data, exits after.
 set_driver_install_version
+
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
 	check_kernel_headers
@@ -6197,50 +6200,55 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	create_data_storage
 	check_run_package_tools
 	set_download_info # also triggers the download / extract function
-	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
-		# this will run by itself because it's just some tests and a module rebuild
-		# when it's done it will simply exit, no reboot or desktop start is required.
-		build_kernel_module_only 'direct'
+	# need to make sure this doesn't run for module build component
+	if [ "$B_SKIP_INSTALL" != 'true' ];then
+		if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+			# this will run by itself because it's just some tests and a module rebuild
+			# when it's done it will simply exit, no reboot or desktop start is required.
+			build_kernel_module_only 'direct'
+		else
+			# this is going to run either the fglrx or nvidia patch library file function
+			# must be after set_driver_install_version for output of data to smxi
+			# note this must occur before binary driver install
+			set_install_directory
+			run_driver_patches
+		fi
+		if [ "$B_TESTING_2" == 'true' ];then
+			exit 0 # this is just to test up to download/extract point
+		fi
+	fi
+fi
+# need to make sure this doesn't run for module build component
+if [ "$B_SKIP_INSTALL" != 'true' ];then	
+	x_start_stop_master stop
+	
+	if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_PRINT_VER" != 'true' -a "$B_NATIVE_DRIVER" != 'true' ];then
+		check_driver_install_tools
+	fi
+	prep_install
+	# for testing/debugging and alt driver/card download testing,
+	# I don't want to remove this stuff from system
+	if [ "$B_SKIP_FUNCTION" != 'true' ];then
+		preinstall_cleanup
+	fi
+	
+	## both have same function name, so no detection is required, we did it already
+	if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
+		run_driver_installer
+		post_installer_steps
+		if [ "$B_FGLRX_DEB_BUILDER" == 'true' ];then
+			install_fglrx_debs
+		fi
 	else
-		# this is going to run either the fglrx or nvidia patch library file function
-		# must be after set_driver_install_version for output of data to smxi
-		# note this must occur before binary driver install
-		set_install_directory
-		run_driver_patches
+		update_to_nonfree_sources
+		install_distro_drivers
 	fi
-	if [ "$B_TESTING_2" == 'true' ];then
-		exit 0 # this is just to test up to download/extract point
+	if [ "$B_SKIP_CONFIG" != 'true' ];then
+		update_xorg
 	fi
+	final_install_steps
+	
+	x_start_stop_master start
 fi
-
-x_start_stop_master stop
-
-if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_PRINT_VER" != 'true' -a "$B_NATIVE_DRIVER" != 'true' ];then
-	check_driver_install_tools
-fi
-prep_install
-# for testing/debugging and alt driver/card download testing,
-# I don't want to remove this stuff from system
-if [ "$B_SKIP_FUNCTION" != 'true' ];then
-	preinstall_cleanup
-fi
-
-## both have same function name, so no detection is required, we did it already
-if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
-	run_driver_installer
-	post_installer_steps
-	if [ "$B_FGLRX_DEB_BUILDER" == 'true' ];then
-		install_fglrx_debs
-	fi
-else
-	update_to_nonfree_sources
-	install_distro_drivers
-fi
-if [ "$B_SKIP_CONFIG" != 'true' ];then
-	update_xorg
-fi
-final_install_steps
-
-x_start_stop_master start
 
 ###**EOF**###
