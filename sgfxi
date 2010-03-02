@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.26
+####  version: 4.12.27
 ####  Date: March 2 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4889,8 +4889,15 @@ x_start_stop_master()
 						start_x_question
 					# handles case where sgfxi is run in X
 					else
-						echo "${S}All done with driver install. Remember, you have to restart X for the new"
-						echo "driver you installed to be active (ctrl+backspace).${N}"
+						# almost no cases will X be running except a module build to another
+						# kernel, since driver install shuts down X. Maybe distro-driver can do this.
+						if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ] || [ "$B_FORCE_REBOOT" == 'true' ];then
+							echo "${S}All done with driver install. Remember, you have to reboot to kernel ${C}$INSTALL_TO_KERNEL${S}"
+							echo "for the driver module you just updated to be active.${N}"
+						else
+							echo "${S}All done with driver install. Remember, you have to restart X (your desktop)"
+							echo "before your new driver is active.${N}"
+						fi
 					fi
 				fi
 			fi
