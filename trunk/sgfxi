@@ -1049,7 +1049,7 @@ error_handler()
 			if [ "$CARD" == "$FGLRX" -a "$B_FGLRX_DIRECT" != 'true' ];then
 				errorData2="\nYou might want to try installing without the -D (formerly -F) option instead, which will do a\ndirect (no debs) binary install from the FGLRX run package.\nThis works more reliably for some systems (especially 64 bit)."
 			fi
-			errorData="The $CARD installer exited with the error: $errorExtra$errorData2"
+			errorData="The $CARD installer exited with the error: $errorExtra$errorData2\nA copy of this driver installer error log is also here: $LOG_FILE_DIR/$LOG_FILE"
 			;;
 		244)
 			errorData="Xorg does not appear to be installed."
