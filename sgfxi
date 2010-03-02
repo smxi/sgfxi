@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.13
+####  version: 4.12.14
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3476,7 +3476,6 @@ set_download_info()
 	fi
 }
 
-
 # arg: $1 install package to remove
 pre_extract_clean_set_up()
 {
@@ -3927,12 +3926,14 @@ build_kernel_module_only()
 				test_install_kernel_version
 				test_module_build_ok 'error'
 			fi
-			if [ "$B_SM_INSTALL" == 'true' ];then
-				silent=' -s'
-			fi
 			echo $LINE
-			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
-			bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
+			if [ "$B_SM_INSTALL" != 'true' ];then
+				bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+			else
+				silent=' -s'
+				bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
+			fi
 			if [ "$moduleResult" -ne 0 ];then
 				log_driver_installer_failure
 				error_handler 171 "$moduleResult"
