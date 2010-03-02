@@ -1226,6 +1226,12 @@ error_handler()
 		170)
 			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nThis will remove all previous modules, then you can rebuild them with the\n-! 40 option (see $SCRIPT_NAME -H for more information on that method)."
 			;;
+		169)
+			errorData="No previous $NVIDIA $SCRIPT_NAME run package install detected for module build."
+			;;
+		168)
+			errorData="An Xorg update overwrote $NVIDIA run package files. You must reinstall $NVIDIA driver.\nUnable to build module."
+			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
 			;;
@@ -3985,7 +3991,7 @@ test_module_build_ok()
 	else
 		# need to find how this is actually grabbed, my guess is it tests for: 
 		installedDriver=$( ls /usr/lib/tls/libnvidia-tls.so* 2>/dev/null )
-		installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+# 		installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 		returnValue=1
 		if [ -n "$installedDriver" ];then
 			echo "${W}No Prior ${C}nVidia${W} Driver Detected${N}"
