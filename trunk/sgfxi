@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.17
+####  version: 4.12.18
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4095,18 +4095,22 @@ install_modules_to_all_kernels()
 			kernelsConfirmed=$kernels 
 			;;
 	esac
-	# support other drivers being used if desired
-	if [ -n "$DRIVER_OVERRIDE" ];then
-		otherDriver=" -o $DRIVER_OVERRIDE"
+	if [ -n "$kernelsConfirmed" ];then
+		# support other drivers being used if desired
+		if [ -n "$DRIVER_OVERRIDE" ];then
+			otherDriver=" -o $DRIVER_OVERRIDE"
+		fi
+		echo $LINE
+		echo "${S}OK, installing modules to all confirmed kernels now...${N}"
+		for i in $kernelsConfirmed
+		do 
+			sgfxi $otherDriver -R -A -k -K $i
+		done
+		echo $LINE
+		echo "${S}Hey, did it work? Great! Bye for now.${N}"
+	else
+		echo "${S}No kernels found to create modules for, oh well. Time to go.${N}"
 	fi
-	echo $LINE
-	echo "${S}OK, installing modules to all confirmed kernels now...${N}"
-	for i in $kernelsConfirmed
-	do 
-		sgfxi $otherDriver -R -A -k -K $i
-	done
-	echo $LINE
-	echo "${S}Hey, did it work? Great! Bye for now.${N}"
 	exit 0
 }
 
