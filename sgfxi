@@ -4109,7 +4109,7 @@ install_modules_to_all_kernels()
 		echo $LINE
 		echo "${S}Hey, did it work? Great! Bye for now.${N}"
 	else
-		echo "${S}No kernels found to create modules for, oh well. Time to go.${N}"
+		echo "${S}No kernels found to create modules for. Exiting script now.${N}"
 	fi
 	exit 0
 }
