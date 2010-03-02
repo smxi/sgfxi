@@ -5044,7 +5044,7 @@ start_stop_x()
 			else
 				dmanCommand=''
 			fi
-			
+			log_function_data "dmanCommand: $dmanCommand"
 			if [ -n "$dmanCommand" ];then
 				# nohup is required to make sure dm is fully stopped, and pids removed
 				echo "${S}Attempting to ${C}$1${S} display manager ${C}$dman${S} now... ${N}"
@@ -5068,6 +5068,7 @@ start_stop_x()
 		else
 			dmanCommand=''
 		fi
+		log_function_data "dmanCommand: $dmanCommand"
 		if [ -n "$dmanCommand" ];then
 			# I tried stringing these in a && sequence but something failed and
 			# init 5 start broke. This order takes care of runlevel restart bug
