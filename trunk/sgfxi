@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.10
+####  version: 4.12.11
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -2883,7 +2883,7 @@ print_hec()
 		echo ${M}$LINE
 		# halt the script so people can read the advice
 		echo "${Q}Please hit ${C}enter${Q} to continue${N}"
-		echo ${M}$LINE
+		echo ${M}$LINE${N}
 		read response
 	fi
 }
