@@ -3938,8 +3938,7 @@ build_kernel_module_only()
 	local runPackage="$DRIVER_FILE.run"
 	
 	# double check that target kernel, or current one, has stuff in /lib/modules
-	echo $LINE
-	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_VERSION${N}"
+	
 	case $CARD in
 		$NVIDIA)
 			if [ "$1" == 'direct' ];then
@@ -3982,6 +3981,7 @@ test_module_build_ok()
 	local runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
 	local libGlNvidia=''
 	echo $LINE
+	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_VERSION${N}"
 	echo -n "${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
 	if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
 		echo "${W}NOT FOUND${N}"
