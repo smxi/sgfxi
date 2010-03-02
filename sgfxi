@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.16
+####  version: 4.12.17
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3485,7 +3485,7 @@ set_download_info()
 			test_module_build_ok 'return'
 			moduleTest="$?"
 			if [ "$moduleTest" -eq 0 ];then
-				build_kernel_module_only 'build'
+				build_kernel_module_only 'build' 'silent'
 			else
 				echo "${S}Unable to rebuild module from previous driver install. Reinstalling driver instead.${N}"
 				download_extract_driver $downloadUrl $DRIVER_FILE
@@ -3930,7 +3930,7 @@ post_installer_steps()
 ### module tools
 ### -------------------------------------------------------------------
 
-# $1 - direct/build
+# $1 - direct/build; $2 - silent [optional]
 build_kernel_module_only()
 {
 	eval $LOGPS
@@ -3948,7 +3948,7 @@ build_kernel_module_only()
 			fi
 			echo $LINE
 			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
-			if [ "$B_SM_INSTALL" != 'true' ];then
+			if [ "$2" != 'silent' ];then
 				bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
 			else
 				silent=' -s'
