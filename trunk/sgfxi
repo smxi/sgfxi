@@ -4050,7 +4050,7 @@ test_module_build_ok()
 		fi
 	fi
 	if [ "$returnValue" -eq 0 ];then
-		echo -n "${S}Check to make sure ${C}Xorg${S} has not been updated since last ${C}nVidia${S} install.... ${N}" 
+		echo -n "${S}Checking to make sure ${C}Xorg${S} has not been updated since last ${C}nVidia${S} install.... ${N}" 
 		# this file belongs to xserver-xorg but is overwritten by nvidia, so if above test
 		# is true and this is null, then xorg has been renewed
 		xorgNvidia=$( readlink /usr/lib/xorg/modules/extensions/libglx.so | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
@@ -4078,7 +4078,7 @@ test_module_build_ok()
 # 		echo "${S}Drivers Match${N}"
 # 	fi
 	if [ "$returnValue" -eq 0 ];then
-		echo -n "${S}Testing for previous ${C}nVidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
+		echo -n "${S}Checking for previous ${C}nVidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
 		if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
 			echo "${W}PRESENT${N}"
 			returnValue=1
