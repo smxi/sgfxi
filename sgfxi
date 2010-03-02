@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.29
+####  version: 4.13.0
 ####  Date: March 2 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3484,14 +3484,17 @@ set_download_info()
 
 	eval $LOGPE
 	
-	if [ "$B_FORCE_OPTION" == 'true' ];then
-		download_extract_driver $downloadUrl $DRIVER_FILE
-	elif [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+	# absolute override
+	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		: # do nothing
+	# otherwise if -f used, force install
+	elif [ "$B_FORCE_OPTION" == 'true' ];then
+		download_extract_driver $downloadUrl $DRIVER_FILE
 	else
 		case $CARD in
 			$NVIDIA)
-				if [ "$B_TESTING_5" == 'true' ];then
+				# leaving in test flags in case something goes wrong in early tests
+# 				if [ "$B_TESTING_5" == 'true' ];then
 					test_module_build_ok 'return'
 					moduleTest="$?"
 					if [ "$moduleTest" -eq 0 ];then
@@ -3505,9 +3508,9 @@ set_download_info()
 						fi
 						download_extract_driver $downloadUrl $DRIVER_FILE
 					fi
-				else
-					download_extract_driver $downloadUrl $DRIVER_FILE
-				fi
+# 				else
+# 					download_extract_driver $downloadUrl $DRIVER_FILE
+# 				fi
 				;;
 			$FGLRX)
 				download_extract_driver $downloadUrl $DRIVER_FILE
