@@ -3993,15 +3993,15 @@ test_module_build_ok()
 		installedDriver=$( ls /usr/lib/tls/libnvidia-tls.so* 2>/dev/null )
 # 		installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 		returnValue=1
-		if [ -n "$installedDriver" ];then
-			echo "${W}No Prior ${C}nVidia${W} Driver Detected${N}"
+		if [ -z "$installedDriver" ];then
+			echo "${W}No $SCRIPT_NAME Installed ${C}nVidia${W} Driver Detected${N}"
 			if [ "$1" == 'error' ];then
-				error_handler 168
+				error_handler 169
 			fi
 		else
 			echo "${C}Xorg${W} Update Requires Driver Reinstall${N}"
 			if [ "$1" == 'error' ];then
-				error_handler 169
+				error_handler 168
 			fi
 		fi
 	fi
