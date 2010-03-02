@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.25
-####  Date: March 1 2010
+####  version: 4.12.26
+####  Date: March 2 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -2769,9 +2769,9 @@ check_update_script()
 check_script_version()
 {
 	local returnValue=0 wgetError=0 validated='' versionData=''
-	local ua="-U s-tools/$SCRIPT_NAME-data.sm-versions"
+	local ua="-U s-tools/$SCRIPT_NAME-updater.$SIS"
 	local localVersion='' remoteVersion=''
-	
+
 	versionData="$( wget $ua -qO - $SCRIPT_DOWNLOAD_VERSION )" || wgetError="$?"
 	if [ "$wgetError" -eq 0  ];then
 		validated=$( grep -Esi '#\*\*EOF\*\*#' <<< "$versionData" )
@@ -3997,13 +3997,14 @@ test_module_build_ok()
 {
 	eval $LOGPS
 	local runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
-	local libGlNvidia='' xorgNvidia=''
+	local libGlNvidia='' xorgNvidia='' logData=''
 	echo $LINE
 	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_VERSION${N}"
 	echo -n "  ${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
 	if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
 		echo "${W}NOT FOUND${N}"
 		returnValue=1
+		logData="No Driver Run Package: "
 		if [ "$1" == 'error' ];then
 			error_handler 175 "$runPackage"
 		fi
@@ -4015,7 +4016,8 @@ test_module_build_ok()
 		nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
 		if [ -n "$nvidiaPackages" ];then
 			echo "${W}PRESENT${N}"
-			returnValue=1
+			returnValue=2
+			logData="${logData}Distro Nvidia Package: "
 			if [ "$1" == 'error' ];then
 				error_handler 174
 			fi
@@ -4029,7 +4031,8 @@ test_module_build_ok()
 		echo -n "  ${S}Checking for installed ${C}nVidia${S} driver.... ${N}" 
 		if [ -z "$libGlNvidia" ];then
 			echo "${W}No $SCRIPT_NAME ${C}nVidia${W} Driver Detected${N}"
-			returnValue=1
+			returnValue=3
+			logData="${logData}No Installed Nvidia: "
 			if [ "$1" == 'error' ];then
 				error_handler 169
 			fi
@@ -4041,7 +4044,8 @@ test_module_build_ok()
 		echo -n "  ${S}Checking installed driver ${C}$libGlNvidia${S} matches requested driver ${C}$DRIVER_DEFAULT${S}.... ${N}" 
 		if [ "$libGlNvidia" != "$DRIVER_DEFAULT" ];then
 			echo "${W}MISMATCH${N}"
-			returnValue=1
+			returnValue=4
+			logData="${logData}Driver Mismatch $libGlNvidia/$DRIVER_DEFAULT: "
 			if [ "$1" == 'error' ];then
 				error_handler 172 "$installedDriver"
 			fi
@@ -4057,7 +4061,8 @@ test_module_build_ok()
 		# installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 		if [ -z "$xorgNvidia" ];then
 			echo "${C}Xorg${W} Updated${N}"
-			returnValue=1
+			returnValue=5
+			logData="${logData}Xorg updated: "
 			if [ "$1" == 'error' ];then
 				error_handler 168
 			fi
@@ -4081,7 +4086,8 @@ test_module_build_ok()
 		echo -n "  ${S}Checking for previous ${C}nVidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
 		if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
 			echo "${W}PRESENT${N}"
-			returnValue=1
+			returnValue=6
+			logData="${logData}Nvidia module exists: "
 			if [ "$1" == 'error' ];then
 				error_handler 170
 			fi
@@ -4089,6 +4095,7 @@ test_module_build_ok()
 			echo "${S}None Detected${N}"
 		fi
 	fi
+	log_function_data "returnValue: $returnValue\nError Data: $logData"
 	return "$returnValue"
 	eval $LOGPE
 }
@@ -4900,7 +4907,7 @@ start_x_question()
 	local ia32Alert='echo -e "\n${M}You should probably (re)install ${C}$ia32libs${M} (even if already installed)\nif you use applications that depend on them in your ${C}64 bit${M} system,\nfor example ${C}Wine${M}.${N}"'
 	local ia32Install='echo -e "${C}$iaOpt${M} - Install ${C}$ia32libs${M} libs."'
 	local fgGlxOpt='' fgGlx='' fgGlxAlert='' fgGlxInstall=''
-	local startXReboot='start-desktop' startXRebootText='All finished, (re-)start desktop now.'
+	local startXopt='' startXText='' rebootOpt='' rebootText=''
 
 	case $BITS in
 		32)
@@ -4929,9 +4936,14 @@ start_x_question()
 	fgGlxOpt=''
 	fgGlxAlert=''
 	fgGlxInstall=''
+	
+	if [ "$B_SKIP_INSTALL" == 'true' -o -z "$INSTALL_TO_KERNEL" -o "$INSTALL_TO_KERNEL" == "$( uname -r )" ];then
+		startXopt='start-desktop' 
+		startXText='echo -e "${C}$startXopt${M} - All finished, (re-)start desktop now."'
+	fi
 	if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ] || [ "$B_FORCE_REBOOT" == 'true' ];then
-		startXReboot='reboot-now'
-		startXRebootText='You must reboot before you can start your desktop.'
+		rebootOpt='reboot-now'
+		rebootText='echo -e "${C}$rebootOpt${M} - You must reboot to use the driver for ${C}$INSTALL_TO_KERNEL${M}."'
 	fi
 
 	echo ${M}$LINE
@@ -4941,10 +4953,11 @@ start_x_question()
 	echo $LINE
 	eval $ia32Install
 	eval $fgGlxInstall
-	echo "${C}$startXReboot${M} - $startXRebootText"
+	eval $startXText
+	eval $rebootText
 	echo "${C}quit${M} - Quit now, to do something else before starting your desktop.${N}"
 	echo $LINE${N}
-	options="$iaOpt $fgGlxOpt $startXReboot quit"
+	options="$iaOpt $fgGlxOpt $startXopt $rebootOpt quit"
 	select opt in $options
 	do
 		case $opt in
