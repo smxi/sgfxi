@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.27
+####  version: 4.12.29
 ####  Date: March 2 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -998,8 +998,11 @@ set_script_colors()
 
 	CALLER_DEF=${S} # will switch default output color to the calling script's
 	S=${B} # this is slightly tricky, making standard blue AFTER the caller def is set.
-
-	LINE='- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
+	PLINE='- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
+	LINE="${S}$PLINE${N}"
+	ELINE="${E}$PLINE${N}"
+	MLINE="${M}$PLINE${N}"
+	WLINE="${W}$PLINE${N}"
 }
 
 ### -------------------------------------------------------------------
@@ -1224,16 +1227,16 @@ error_handler()
 			errorData="The -k option can only be used to install to the same driver that is running.\nYour system is running $errorExtra but you are building the module for: $DRIVER_DEFAULT\nYou can use the -o <driver version> option to override the defaults."
 			;;
 		171)
-			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure."
+			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure.\nA copy of this nvidia error log is also here: $LOG_FILE_DIR/$LOG_FILE"
 			;;
 		170)
-			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nThis will remove all previous modules, then you can rebuild them with the\n-! 40 option (see $SCRIPT_NAME -H for more information on that method)."
+			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nInstalling a driver will remove all previous modules, then you can\nrebuild them with the -! 40 option (see $SCRIPT_NAME -h for more information on that method)."
 			;;
 		169)
-			errorData="No previous $NVIDIA $SCRIPT_NAME run package install detected for module build."
+			errorData="No previous $NVIDIA $SCRIPT_NAME run package install detected for -k option module build."
 			;;
 		168)
-			errorData="An Xorg update overwrote $NVIDIA run package files. You must reinstall $NVIDIA driver.\nUnable to build module."
+			errorData="An Xorg update overwrote $NVIDIA run package files. You must reinstall $NVIDIA driver.\nUnable to build -k option module."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -1271,7 +1274,7 @@ select_card()
 	local options='' opt='' found=''
 	local timeStampXorg=$EXXC-bu-$( date +%Y-%m-%d-%H:%M:%S )
 
-	echo ${M}$LINE
+	echo $MLINE
 	echo "${S}The script detected more than one video card in your system:"
 	echo "${C}$cardData"
 	echo
@@ -1292,7 +1295,7 @@ select_card()
 	fi
 	echo
 	echo "${S}Please select which card you want to install a driver for now to proceed:"
-	echo ${M}$LINE${N}
+	echo $MLINE
 
 	options="$cardData exit"
 	select opt in $options
@@ -2255,7 +2258,7 @@ check_apt_aptitude()
 					echo
 					echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
 					echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
-					echo $LINE${N}
+					echo $LINE
 		
 					select opt in $managers
 					do
@@ -2483,10 +2486,10 @@ remove_package()
 		extraInfo=" $extraInfo"
 	fi
 
-	echo ${M}$LINE
-	echo "You will need to remove the following package(s): ${C}$1"
+	echo $MLINE
+	echo "${M}You will need to remove the following package(s): ${C}$1"
 	echo "${M}in order to proceed with your${C}$extraInfo${M} driver install${N}"
-	echo ${M}$LINE${N}
+	echo $MLINE
 	if [ "$3" == 'no-loop' ];then
 		echo "${S}Removing ${C}$1${S}...${N}"
 		$APT_TYPE $purge $1 || error_handler 190 "$1"
@@ -2838,9 +2841,9 @@ print_information()
 		cardRam=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]' | sed -r 's/.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]/\1/' )
 		cardVendor=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Subsystem:[[:space:]]*(.*)' | sed -r 's/.*Subsystem:[[:space:]]*(.*)/\1/' | sed 's/[dD]evice.*$//g' | sed 's/[uU]nknown//g' )
 	fi
-	echo ${M}$LINE
+	echo $MLINE
 	echo " ${M}$SCRIPT_NAME${S} :: version: ${C}$scriptVersion${S} :: last updated: ${C}$scriptDate"
-	echo ${M}$LINE
+	echo $MLINE
 	echo " ${S}graphics card information:"
 	echo "   ${S}series: ${C}$cardInfo"
 	if [ -n "$cardVendor" ];then
@@ -2849,7 +2852,7 @@ print_information()
 	if [ -n "$cardRam" ];then
 		echo "   ${S}ram:    ${C}$cardRam MegaBytes ${S}(note: not accurate for built in graphics)"
 	fi
-	echo ${M}$LINE${N}
+	echo $MLINE
 }
 #print_information
 
@@ -2885,10 +2888,10 @@ print_hec()
 	local response=''
 
 	if [ "$AUTORUN" != 'true' ];then
-		echo ${M}$LINE
+		echo $MLINE
 		# halt the script so people can read the advice
 		echo "${Q}Please hit ${C}enter${Q} to continue${N}"
-		echo ${M}$LINE${N}
+		echo $MLINE
 		read response
 	fi
 }
@@ -3010,15 +3013,15 @@ log_driver_installer_failure()
 			errorLog=$nvidiaLog
 			;;
 	esac
-	echo $LINE  >> $LOG_FILE
+	echo $PLINE  >> $LOG_FILE
 	echo "Error logs from $CARD install: $errorFileData" >> $LOG_FILE
-	echo $LINE  >> $LOG_FILE
+	echo $PLINE  >> $LOG_FILE
 	if [ -f "$errorLog" ];then
 		cat $errorLog >> $LOG_FILE
 	else
 		echo "No error logs found from the run package installer!" >> $LOG_FILE
 	fi
-	echo $LINE  >> $LOG_FILE
+	echo $PLINE  >> $LOG_FILE
 }
 
 # args: $1 - data to write to logfile. Note that the function is always logged
@@ -3149,7 +3152,7 @@ install_native_driver()
 					;;
 			esac
 			B_FORCE_REBOOT='true'
-			echo ${M}$LINE
+			echo $MLINE
 			echo "${M}Note: the ${C}Xorg nouveau${M} driver requires a ${C}reboot${M} to become active."
 			echo "${C}$SCRIPT_NAME${S} will now let you do that.${N}"
 		fi
@@ -3844,11 +3847,11 @@ run_driver_installer()
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 			else
-				echo ${M}$LINE
+				echo $MLINE
 				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
 				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
 				echo "${S}Hit ${C}<enter>${S} now to start the direct installer."
-				echo ${M}$LINE${N}
+				echo $MLINE
 				read nothing
 				installerArgs="$DRIVER_DEFAULT --install"
 				log_function_data "direct fglrx install - no debs: options: $installerArgs"
@@ -4258,20 +4261,20 @@ reboot_now_question()
 	eval $LOGPS
 	local opt='' options=''
 	
-	echo ${M}$LINE
+	echo $MLINE
 	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
 	echo "your ${C}$CARD${M} install is completed, and you may need to reboot again if it errors out,"
 	echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
 	echo
 	echo "${S}For best results, select the ${C}shutdown${S} option, let the computer sit for a minute, then restart it."
-	echo ${M}$LINE
+	echo $MLINE
 	echo "${M}Remember, to install ${C}$2${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
 	echo "after you have restarted (use init ${C}3${M} to start, or use ${C}3${M} at grub)"
 	echo $LINE
 	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
 	echo "${C}2 - reboot${S} - Reboot. This may not let some data unload from your memory.${N}"
 	echo "${C}3 - quit${S} - Exit script, do other things (then restart system to install nvidia).${N}"
-	echo $LINE${N}
+	echo $LINE
 	options="shutdown reboot quit"
 	select opt in $options
 	do
@@ -4843,7 +4846,7 @@ final_install_steps()
 	esac
 
 	sync # Force changed blocks to disk, update the super block
-	echo ${M}$LINE
+	echo $MLINE
 	echo "${S}Congratulations! It looks like your new ${C}$DRIVER_DEFAULT $CARD${S} driver installed successfully!${N}"
 	eval $LOGPE
 }
@@ -4953,7 +4956,7 @@ start_x_question()
 		rebootText='echo -e "${C}$rebootOpt${M} - You must reboot to use the driver for ${C}$INSTALL_TO_KERNEL${M}."'
 	fi
 
-	echo ${M}$LINE
+	echo $MLINE
 	echo "${S}Your driver install is now finished. You have the following options:"
 	eval $ia32Alert
 	eval $fgGlxAlert
@@ -4963,7 +4966,7 @@ start_x_question()
 	eval $startXText
 	eval $rebootText
 	echo "${C}quit${M} - Quit now, to do something else before starting your desktop.${N}"
-	echo $LINE${N}
+	echo $LINE
 	options="$iaOpt $fgGlxOpt $startXopt $rebootOpt quit"
 	select opt in $options
 	do
@@ -5619,7 +5622,7 @@ show_extra_data()
 			dataType='Nvidia Status'
 			;;
 		v)
-			fullUrl='http://smxi.org/sm/sm-versions'
+			fullUrl=$SCRIPT_DOWNLOAD_VERSION
 			uaFull="$ua.version-data"
 			dataType="(latest) $SCRIPT_NAME version information"
 			;;
@@ -5706,22 +5709,22 @@ show_options()
 	if [ "$1" == 'err' ];then
 		echo "${W}Sorry, one of your arguments is not a supported option.${N}"
 		echo "Please check the following options and try again."
-		echo $LINE
+		echo $PLINE
 	fi
 	if [ -n "$DISPLAY" ];then
 		echo "${W}While you can run this script in X, we recommend you run it in terminal.${N}"
-		echo $LINE
+		echo $PLINE
 	fi
-	echo "Script Requirements: Debian/Ubuntu based systems. Arch under development."
+	echo "Script Requirements: Debian/Ubuntu/Arch/Fedora based systems."
 	echo "Xorg version required: 7.1/1.1 or greater - Your X version: $xVersion"
 	echo "Linux Kernel required: 2.6.18 or greater - Your kernel: $(uname -r)"
-	echo $LINE
-	echo "'default:' - This is the driver installed automatically unless it is not supported by"
+	echo $PLINE
+	echo "'default(s):' - The driver installed automatically by $SCRIPT_NAME unless it is not supported by"
 	echo "your card. Some older cards will force an override of this basic default. Script will"
 	echo "print out what driver it will install when you start it up, with option to exit."
 	echo
-	echo "'supported-drivers:' choices require -o <see -o for correct syntax> to install."
-	echo "fglrx:  default: $fgDefault"
+	echo "'supported-drivers:' choices require -o <see -o for correct syntax> to install>."
+	echo "Fglrx:  default: $fgDefault"
 	echo -n "Other supported-drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $fgVersions )
@@ -5742,7 +5745,7 @@ show_options()
 		esac
 	done
 	#echo "fglrx:  default: $fgDefault		supported-drivers: $fgVersions"
-	echo "nvidia: Defaults (Current + Legacy - 3 2 1): $nvDefaults"
+	echo "Nvidia: defaults (current + legacy - 3 2 1): $nvDefaults"
 	echo -n "Other supported-drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nvVersions )
@@ -5766,8 +5769,8 @@ show_options()
 	eval $testingText
 	eval $nvTesting
 	eval $fgTesting
-	echo $LINE
-	echo "These are your supported options:"
+	echo $PLINE
+	echo "Script Options:"
 	echo "-A Run the install non-interactively. Will not restart x at end."
 	echo "-b Enable tripleBuffer (nvidia only). triplebuffer can reduce 3d performance on cards"
 	echo "   with low graphics memory (64 mB or less). Default is disabled/off."
@@ -5783,7 +5786,7 @@ show_options()
 	echo "   builder failures, the direct install method is now default."
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
-	echo "-f Force option. Will force script behaviors. Currently only for dev purposes."
+	echo "-f Force option. Forces (re)install of your driver, bypasses module check/build (nVidia only)."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (script default); -j 2 (alternate color scheme); -j 3 (nice earthy scheme)"
@@ -5842,8 +5845,13 @@ show_options()
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
 	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
 	echo "   you are sure your connection is fine."
+	echo $PLINE
+	echo "Advanced Options :: Only for Specialized Cases"
+	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
+	echo "      each if can be made, then create the modules, excluding your running kernel."
+	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
 	if [ "$1" == 'full' ];then
-		echo ""
+		echo $PLINE
 		echo "Developer and Testing Options (Advanced):"
 		echo "-! 1 - Sets flag B_TESTING_1='true' - sets testing function data active."
 		echo "-! 2 - Sets flag B_TESTING_2='true' - triggers exit after run package download/extract."
@@ -5864,8 +5872,6 @@ show_options()
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-! 31 - Backup, download, replace, xorg.conf with basic sidux xorg.conf version(legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
-		echo "-! 40 - Create modules for all your kernels (nVidia only). Will loop through and"
-		echo "        test each if can be made, then create the modules, excluding your running kernel."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
@@ -5919,9 +5925,9 @@ get_options()
 	# 		E) B_EXTRA_EXPERIMENTAL='true'
 	# 			START_OPTIONS=$START_OPTIONS' -E'
 	# 			;;
-			f)	B_FORCE_OPTION=''='true'
+			f)	B_FORCE_OPTION='true'
 				START_OPTIONS=$START_OPTIONS' -f'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - You are using the forced override option. This is only for dev\n       purposes at the moment but will override features in the future.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -f - You are using the forced override option. This will bypass kernel module\n       check/build and force reinstall of your driver (nVidia only).\n"
 				;;
 			F)	B_FGLRX_DEB_BUILDER='true'
 				B_FGLRX_DIRECT=''
