@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.24
+####  version: 4.12.25
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4055,7 +4055,6 @@ test_module_build_ok()
 		# is true and this is null, then xorg has been renewed
 		xorgNvidia=$( readlink /usr/lib/xorg/modules/extensions/libglx.so | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
 		# installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
-		returnValue=1
 		if [ -z "$xorgNvidia" ];then
 			echo "${C}Xorg${W} Updated${N}"
 			returnValue=1
