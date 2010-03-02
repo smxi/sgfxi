@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.12
+####  version: 4.12.13
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3917,9 +3917,7 @@ build_kernel_module_only()
 	eval $LOGPS
 	local installedDriver='' moduleResult=0 driverModule='' silent=' '
 	local runPackage="$DRIVER_FILE.run"
-	if [ "$B_SM_INSTALL" == 'true' ];then
-		silent=' -s'
-	fi
+	
 	# double check that target kernel, or current one, has stuff in /lib/modules
 	echo $LINE
 	echo "${S}Starting ${C}$NVIDIA module${S} build process for kernel: ${C}$KERNEL_VERSION${S} (can take a while)${N}"
@@ -3928,7 +3926,9 @@ build_kernel_module_only()
 			if [ "$1" == 'direct' ];then
 				test_install_kernel_version
 				test_module_build_ok 'error'
-				silent=''
+			fi
+			if [ "$B_SM_INSTALL" == 'true' ];then
+				silent=' -s'
 			fi
 			echo $LINE
 			echo "${S}Building kernel module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
@@ -3937,7 +3937,7 @@ build_kernel_module_only()
 				log_driver_installer_failure
 				error_handler 171 "$moduleResult"
 			else
-				echo "${S}Build of module ${C}$installedDriver${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
+				echo "${S}Build of module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
 				echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
 				exit 0
 			fi
