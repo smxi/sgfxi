@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.11
+####  version: 4.12.12
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3917,9 +3917,12 @@ build_kernel_module_only()
 	eval $LOGPS
 	local installedDriver='' moduleResult=0 driverModule='' silent=' '
 	local runPackage="$DRIVER_FILE.run"
+	if [ "$B_SM_INSTALL" == 'true' ];then
+		silent=' -s'
+	fi
 	# double check that target kernel, or current one, has stuff in /lib/modules
 	echo $LINE
-	echo "${S}Starting kernel $NVIDIA module build process for kernel: ${C}$KERNEL_VERSION${N}"
+	echo "${S}Starting ${C}$NVIDIA module${S} build process for kernel: ${C}$KERNEL_VERSION${S} (can take a while)${N}"
 	case $CARD in
 		$NVIDIA)
 			if [ "$1" == 'direct' ];then
