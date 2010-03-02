@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.15
+####  version: 4.12.16
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3450,7 +3450,7 @@ misc_fixes()
 set_download_info()
 {
 	eval $LOGPS
-	local packageName='' downloadUrl='' response='' nvPkgNo=0
+	local packageName='' downloadUrl='' response='' nvPkgNo=0 moduleTest=0
 
 	case $CARD in
 		$NVIDIA)
@@ -3475,8 +3475,24 @@ set_download_info()
 	log_function_data "download url: $downloadUrl - driver file: $DRIVER_FILE"
 
 	eval $LOGPE
-	if [ "$B_KERNEL_MODULE_ONLY" != 'true' ];then
+	
+	if [ "$B_FORCE_OPTION" == 'true' ];then
 		download_extract_driver $downloadUrl $DRIVER_FILE
+	elif [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+		: # do nothing
+	else
+		if [ "$B_TESTING_5" == 'true' ];then
+			test_module_build_ok 'return'
+			moduleTest="$?"
+			if [ "$moduleTest" -eq 0 ];then
+				build_kernel_module_only 'build'
+			else
+				echo "${S}Unable to rebuild module from previous driver install. Reinstalling driver instead.${N}"
+				download_extract_driver $downloadUrl $DRIVER_FILE
+			fi
+		else
+			download_extract_driver $downloadUrl $DRIVER_FILE
+		fi
 	fi
 }
 
@@ -3943,8 +3959,12 @@ build_kernel_module_only()
 				error_handler 171 "$moduleResult"
 			else
 				echo "${S}Build of module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
-				echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
-				exit 0
+				if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+					echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
+					exit 0
+				else
+					x_start_stop_master start
+				fi
 			fi
 			;;
 		*)
