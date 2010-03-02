@@ -4024,6 +4024,7 @@ test_module_build_ok()
 		fi
 	fi
 	if [ "$returnValue" -eq 0 ];then
+		# really readlink /usr/lib/$( readlink /usr/lib/libGL.so )
 		libGlNvidia=$( readlink /usr/lib/libGL.so.1 | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
 		echo -n "${S}Checking for installed ${C}nVidia${S} driver.... ${N}" 
 		if [ -z "$libGlNvidia" ];then
