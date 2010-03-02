@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.14
+####  version: 4.12.15
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3318,6 +3318,7 @@ set_driver_install_version()
 {
 	eval $LOGPS
 	local response='' printDriver='' newKernelText='' betaDriverText=''
+	local moduleOrInstall='installing'
 
 	# I'm forcing special cases to override the defaults so the data
 	# printed out will show what drivers are supported
@@ -3379,7 +3380,10 @@ set_driver_install_version()
 				;;
 		esac
 	fi
-	print_information_continue 'standard' "The graphics installer will be installing the ${C}$CARD${S} driver: ${C}$DRIVER_DEFAULT${N}$betaDriverText$newKernelText"
+	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+		moduleOrInstall='building a module for'
+	fi
+	print_information_continue 'standard' "The graphics installer will be $moduleOrInstall the ${C}$CARD${S} driver: ${C}$DRIVER_DEFAULT${N}$betaDriverText$newKernelText"
 
 	log_function_data "Installing this driver: $DRIVER_DEFAULT"
 
@@ -3919,7 +3923,7 @@ build_kernel_module_only()
 	
 	# double check that target kernel, or current one, has stuff in /lib/modules
 	echo $LINE
-	echo "${S}Starting ${C}$NVIDIA module${S} build process for kernel: ${C}$KERNEL_VERSION${S} (can take a while)${N}"
+	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_VERSION${N}"
 	case $CARD in
 		$NVIDIA)
 			if [ "$1" == 'direct' ];then
