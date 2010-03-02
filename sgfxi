@@ -305,6 +305,8 @@ SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
 SCRIPT_DOWNLOAD_BRANCH_1='http://sgfxi.googlecode.com/svn/branches/one/'
 SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
 
+ARCH_FGLRX='arch-fglrx'
+ARCH_NVIDIA='arch-nvidia'
 DEBIAN_FGLRX='debian-fglrx'
 DEBIAN_NVIDIA='debian-nvidia'
 DISTRO_FGLRX=''
@@ -1964,6 +1966,8 @@ check_set_distro()
 	case $workingId in
 		arch)
 			APT_TYPE='pacman'
+			DISTRO_FGLRX=$ARCH_FGLRX
+			DISTRO_NVIDIA=$ARCH_NVIDIA
 			SYSTEM_BASE='arch'
 			SYSTEM_CODENAME='arch'
 			SCRIPT_HOME='/usr/bin'
