@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.12.19
+####  version: 4.12.20
 ####  Date: March 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3481,18 +3481,26 @@ set_download_info()
 	elif [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		: # do nothing
 	else
-		if [ "$B_TESTING_5" == 'true' ];then
-			test_module_build_ok 'return'
-			moduleTest="$?"
-			if [ "$moduleTest" -eq 0 ];then
-				build_kernel_module_only 'build' 'silent'
-			else
-				echo "${S}Unable to rebuild module from previous driver install. Reinstalling driver instead.${N}"
+		case $CARD in
+			$NVIDIA)
+				if [ "$B_TESTING_5" == 'true' ];then
+					test_module_build_ok 'return'
+					moduleTest="$?"
+					if [ "$moduleTest" -eq 0 ];then
+						build_kernel_module_only 'build' 'silent'
+					else
+						echo $LINE
+						echo "${S}Unable to rebuild module from previous driver install. Reinstalling driver instead.${N}"
+						download_extract_driver $downloadUrl $DRIVER_FILE
+					fi
+				else
+					download_extract_driver $downloadUrl $DRIVER_FILE
+				fi
+				;;
+			$FGLRX)
 				download_extract_driver $downloadUrl $DRIVER_FILE
-			fi
-		else
-			download_extract_driver $downloadUrl $DRIVER_FILE
-		fi
+				;;
+		esac
 	fi
 }
 
