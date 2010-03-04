@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.0
-####  Date: March 2 2010
+####  version: 4.13.1
+####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -291,6 +291,7 @@ ELR='/etc/lsb-release'
 GRUB1='/boot/grub/menu.lst'
 GRUB1_FED='/boot/grub/grub.conf'
 GRUB2='/boot/grub/grub.cfg'
+GRUBED='/etc/default/grub'
 KERNEL_HEADER_DIRECT='/usr/include/linux/kernel.h'
 USRS='/usr/src/' 
 
@@ -4174,7 +4175,6 @@ remove_module()
 	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
 	local blacklistNouveau='false'
 	local outcome='unset' 
-	local showMessage1='false'
 
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}...... ${N}"
@@ -4194,9 +4194,41 @@ remove_module()
 			outcome='removed'
 		fi
 	fi
-
 	if [ "$1" == 'nouveau' -a "$outcome" == 'failed' ];then
+		check_set_kms_off "$1"
+	fi
+	log_function_data "operation outcome: $outcome"
+	eval $LOGPE
+}
+
+# $1 - module to be handled
+check_set_kms_off()
+{
+	eval $LOGPE
+	local showMessage1='false' initLevel='no-init' grubFiles=
+	if [ -f "$GRUB1_FED" ];then
+			grubFiles="$GRUB1_FED"
+	else
+		if [ -f "$GRUB1" ];then
+			grubFiles="$GRUB1"
+		fi
+		if [ -f "$GRUB2" ];then
+			grubFiles="$grubFiles$GRUB2"
+		fi
+	fi
+	log_function_data "grub files: $grubFiles"
+	
+	case $DISTRIB_ID in
+		fedora|sidux|mepis|antix)
+			initLevel=3
+			;;
+		debian|ubuntu|mint)
+			initLevel='no-init'
+			;;
+	esac
+	if [ "$1" == 'nouveau' ];then
 		B_FORCE_REBOOT='true'
+		
 		case $SYSTEM_BASE in
 			arch)
 				echo $LINE
@@ -4204,6 +4236,31 @@ remove_module()
 				echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
 				echo "This is because its not possible to remove ${C}nouveau${S} from a running system.${N}"
 				print_hec
+				;;
+			debian|ubuntu)
+				if [ -n "$grubFiles" -a -z "$( grep -Eis '(nomodeset|nouveau.modeset=0|rdblacklist=nouveau)' $grubFiles )" ];then
+					echo -n "${S}Adding ${C}$grubFiles nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
+					sed -i '/ root=/s|$| nomodeset|' $grubFiles
+					log_function_data "file updated to add nouveau nomodeset: $grubFiles"
+					echo "${S}Added${N}"
+					showMessage1='true'
+				fi
+				if [ -f "$GRUBED" -a -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*(nomodeset|nouveau.modeset=0|rdblacklist=nouveau)" $GRUBED )" ];then
+					echo -n "${S}Adding ${C}$GRUBED nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
+					sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 nomodeset"|' 
+				fi
+				
+				if [ "$showMessage1" == 'true' ];then
+# 					if [ "$B_TESTING_6" == 'true' ];then
+# 						update_initramfs 'remove-nouveau' "$initLevel"
+# 					fi
+					# note: we don't want nouveau to try to restart on reboot, so we're changing
+					# xorg.conf to use vesa here.
+					NATIVE_OVERRIDE='vesa'
+					echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
+					update_xorgconf_driver_version
+					reboot_now_question 'nouveau' 'nvidia' "$initLevel"
+				fi
 				;;
 			fedora)
 				if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $GRUB1_FED )" ];then
@@ -4242,27 +4299,36 @@ remove_module()
 				fi
 				if [ "$showMessage1" == 'true' ];then
 # 					if [ "$B_TESTING_6" == 'true' ];then
-						update_initramfs 'remove-nouveau'
+						update_initramfs 'remove-nouveau' 
 # 					fi
 					# note: we don't want nouveau to try to restart on reboot, so we're changing
 					# xorg.conf to use vesa here.
 					NATIVE_OVERRIDE='vesa'
 					echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
 					update_xorgconf_driver_version
-					reboot_now_question 'nouveau' 'nvidia'
+					reboot_now_question 'nouveau' 'nvidia' "$initLevel"
 				fi
 				;;
 		esac
 	fi
-	log_function_data "operation outcome: $outcome"
-	eval $LOGPE
+	eval $LOGPS
 }
 
-# args: $1 - module; $2 - driver
+# args: $1 - module; $2 - driver; $3 - init level (?)
 reboot_now_question()
 {
 	eval $LOGPS
-	local opt='' options=''
+	local opt='' options='' initText=''
+	
+	case $3 in
+		2|3|4)
+			initText="(use init ${C}$3${M} to start, or use ${C}$3${M} at grub)"
+			;;
+		*)
+			initText="(use ctrl+alt+F1 to enter console after reboot)"
+			;;
+	esac
+	
 	
 	echo $MLINE
 	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
@@ -4272,7 +4338,7 @@ reboot_now_question()
 	echo "${S}For best results, select the ${C}shutdown${S} option, let the computer sit for a minute, then restart it."
 	echo $MLINE
 	echo "${M}Remember, to install ${C}$2${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
-	echo "after you have restarted (use init ${C}3${M} to start, or use ${C}3${M} at grub)"
+	echo "after you have restarted $initText"
 	echo $LINE
 	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
 	echo "${C}2 - reboot${S} - Reboot. This may not let some data unload from your memory.${N}"
@@ -4307,7 +4373,7 @@ reboot_now_question()
 	fi
 }
 
-# 1 - add-nouveau/remove-nouveau
+# 1 - add-nouveau/remove-nouveau; 
 update_initramfs()
 {
 	eval $LOGPS
@@ -6172,7 +6238,7 @@ if [ "$B_SKIP_FUNCTION" != 'true' ];then
 fi
 
 ## update everything, restart if not run from smxi
-if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' ];then
+if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a "$B_PRINT_VER" != 'true' ];then
 	check_update_script $SCRIPT_NAME "$SCRIPT_DOWNLOAD" 'default server'
 fi
 
