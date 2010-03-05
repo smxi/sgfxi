@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.10
+####  version: 4.13.11
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4260,7 +4260,7 @@ check_set_modesetting_off()
 			grubFiles="$GRUB1"
 		fi
 		if [ -f "$GRUB2" ];then
-			grubFiles="$grubFiles$GRUB2"
+			grubFiles="$grubFiles $GRUB2"
 		fi
 	fi
 	log_function_data "grub files: $grubFiles"
@@ -4393,10 +4393,10 @@ check_set_modesetting_on()
 		grubFiles="$GRUB1"
 	fi
 	if [ -f "$GRUB2" ];then
-		grubFiles="$grubFiles$GRUB2"
+		grubFiles="$grubFiles $GRUB2"
 	fi
 	if [ -f "$GRUBED" ];then
-		grubFiles="$grubFiles$GRUBED"
+		grubFiles="$grubFiles $GRUBED"
 	fi
 	
 	case $1 in
