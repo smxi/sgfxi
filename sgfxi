@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.6
+####  version: 4.13.7
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4173,11 +4173,6 @@ remove_module()
 {
 	eval $LOGPS
 
-	local emod='/etc/modules' 
-	local embc='/etc/modprobe.d/blacklist.conf'
-	local emd='/etc/modprobe.d/'
-	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
-	local blacklistNouveau='false'
 	local outcome='unset' 
 
 	if [ -n "$( lsmod | grep "^$1" )" ];then
@@ -4198,19 +4193,57 @@ remove_module()
 			outcome='removed'
 		fi
 	fi
-	if [ "$1" == 'nouveau' -a "$outcome" == 'failed' ];then
-		check_set_kms_off "$1"
+	log_function_data "operation outcome: $outcome"
+	if [ "$outcome" == 'failed' ];then
+		check_set_modesetting_off "$1"
+	fi
+	
+	eval $LOGPE
+}
+
+# args: $1 - module to add or process
+# do some extra processing here for nouveau
+add_module()
+{
+	eval $LOGPS
+
+	
+	local outcome='unset' 
+	
+	echo -n "${S}Adding module${C} $1${S}...... ${N}"
+	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
+	if [ "$?" -ne 0 ];then
+		echo "${W}FAILED${N}"
+		echo "${M}Error adding ${C}$1${M} module after installation."
+		echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
+		outcome='failed'
+	else
+		if [ -z "$( grep "^$1" /etc/modules )" ];then
+			echo "$1" >> /etc/modules
+		fi
+		echo "${S}Added${N}"
+		outcome='added'
 	fi
 	log_function_data "operation outcome: $outcome"
+	if [ "$outcome" == 'failed' ];then
+		check_set_modesetting_on "$1"
+	fi
+	
 	eval $LOGPE
 }
 
 # $1 - module to be handled
-check_set_kms_off()
+check_set_modesetting_off()
 {
 	eval $LOGPE
 	local showMessage1='false' initLevel='no-init' grubFiles=''
 	local moduleSearch1='' moduleSearch2=''
+	local emod='/etc/modules' 
+	local embc='/etc/modprobe.d/blacklist.conf'
+	local emd='/etc/modprobe.d/'
+	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
+	local blacklistNouveau='false'
+	
 	if [ -f "$GRUB1_FED" ];then
 			grubFiles="$GRUB1_FED"
 	else
@@ -4333,6 +4366,85 @@ check_set_kms_off()
 	eval $LOGPS
 }
 
+# $1 - module to be handled
+check_set_modesetting_on()
+{
+	local embc='/etc/modprobe.d/blacklist.conf'
+	local emd='/etc/modprobe.d/'
+	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
+	local showMessage='' grubFiles=''
+	
+	if [ -f "$GRUB1" ];then
+		grubFiles="$GRUB1"
+	fi
+	if [ -f "$GRUB2" ];then
+		grubFiles="$grubFiles$GRUB2"
+	fi
+	if [ -f "$GRUBED" ];then
+		grubFiles="$grubFiles$GRUBED"
+	fi
+	
+	case $1 in
+		nouveau|radeon)
+			case $SYSTEM_BASE in
+				debian|ubuntu)
+					if [ -n "$grubFiles" -a -n "$( grep -Eis '(nomodeset)' $grubFiles )" ];then
+						echo -n "${S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
+						sed -i 's|[[:space:]]nomodeset||i' $grubFiles
+						log_function_data "file updated to remove $1 blacklist: $grubFiles"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ "$showMessage" == 'true' ];then
+# 						if [ "$B_TESTING_6" == 'true' ];then
+# 							update_initramfs "add-$1"
+# 						fi
+						echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
+						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
+						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
+						B_FORCE_REBOOT='true'
+						print_hec
+					fi
+					;;
+				fedora)
+					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '('$1'.modeset=0|rdblacklist='$1')' $GRUB1_FED )" ];then
+						echo -n "${S}Removing ${C}$GRUB1_FED $1 blacklist${S} items..... ${N}"
+						sed -i 's|[[:space:]]'$1'.modeset=0||i' $GRUB1_FED
+						sed -i 's|[[:space:]]rdblacklist='$1'||i' $GRUB1_FED
+						log_function_data "file updated to remove $1 blacklist: $GRUB1_FED"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ -f "$emdbc" -a -n "$( grep -Esi '^blacklist[[:space:]]+'$1'' $emdbc )" ];then
+						echo -n "${S}Removing ${C}$emdbc $1 blacklist${S} items..... ${N}"
+						rm -f $emdbc
+						log_function_data "file removed to remove $1 blacklist: $emdbc"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ -f "$embc" -a -n "$( grep -Esi '^blacklist[[:space:]]+'$1'' $embc )" ];then
+						echo -n "${S}Removing ${C}$embc $1 blacklist${S} items..... ${N}"
+						sed -i 's|blacklist[[:space:]]'$1'||i' $embc
+						log_function_data "file updated to remove $1 blacklist: $embc"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ "$showMessage" == 'true' ];then
+# 						if [ "$B_TESTING_6" == 'true' ];then
+							update_initramfs "add-$1"
+# 						fi
+						echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
+						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
+						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
+						B_FORCE_REBOOT='true'
+						print_hec
+					fi
+					;;
+			esac
+			;;
+	esac
+}
+
 # args: $1 - module; $2 - driver; $3 - init level (?)
 reboot_now_question()
 {
@@ -4436,108 +4548,6 @@ update_initramfs()
 			esac
 			;;
 	esac
-	eval $LOGPE
-}
-
-# args: $1 - module to add or process
-# do some extra processing here for nouveau
-add_module()
-{
-	eval $LOGPS
-
-	local embc='/etc/modprobe.d/blacklist.conf'
-	local emd='/etc/modprobe.d/'
-	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
-	local outcome='unset' showMessage='' grubFiles=''
-	
-	if [ -f "$GRUB1_FED" ];then
-			grubFiles="$GRUB1_FED"
-	else
-		if [ -f "$GRUB1" ];then
-			grubFiles="$GRUB1"
-		fi
-		if [ -f "$GRUB2" ];then
-			grubFiles="$grubFiles$GRUB2"
-		fi
-		if [ -f "$GRUBED" ];then
-			grubFiles="$grubFiles$GRUBED"
-		fi
-	fi
-	
-	echo -n "${S}Adding module${C} $1${S}...... ${N}"
-	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
-	if [ "$?" -ne 0 ];then
-		echo "${W}FAILED${N}"
-		echo "${M}Error adding ${C}$1${M} module after installation."
-		echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
-		outcome='failed'
-	else
-		if [ -z "$( grep "^$1" /etc/modules )" ];then
-			echo "$1" >> /etc/modules
-		fi
-		echo "${S}Added${N}"
-		outcome='added'
-	fi
-	case $1 in
-		nouveau|radeon)
-			case $SYSTEM_BASE in
-				debian|ubuntu)
-					if [ -n "$grubFiles" -a -n "$( grep -Eis '(nomodeset)' $grubFiles )" ];then
-						echo -n "${S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
-						sed -i 's|[[:space:]]nomodeset||i' $grubFiles
-						log_function_data "file updated to remove $1 blacklist: $grubFiles"
-						echo "${S}Removed${N}"
-						showMessage='true'
-					fi
-					if [ "$showMessage" == 'true' ];then
-# 						if [ "$B_TESTING_6" == 'true' ];then
-# 							update_initramfs "add-$1"
-# 						fi
-						echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
-						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
-						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
-						B_FORCE_REBOOT='true'
-						print_hec
-					fi
-					;;
-				fedora)
-					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $GRUB1_FED )" ];then
-						echo -n "${S}Removing ${C}$GRUB1_FED $1 blacklist${S} items..... ${N}"
-						sed -i 's|[[:space:]]'$1'.modeset=0||i' $GRUB1_FED
-						sed -i 's|[[:space:]]rdblacklist='$1'||i' $GRUB1_FED
-						log_function_data "file updated to remove $1 blacklist: $GRUB1_FED"
-						echo "${S}Removed${N}"
-						showMessage='true'
-					fi
-					if [ -f "$emdbc" -a -n "$( grep -Esi '^blacklist[[:space:]]+'$1'' $emdbc )" ];then
-						echo -n "${S}Removing ${C}$emdbc $1 blacklist${S} items..... ${N}"
-						rm -f $emdbc
-						log_function_data "file removed to remove $1 blacklist: $emdbc"
-						echo "${S}Removed${N}"
-						showMessage='true'
-					fi
-					if [ -f "$embc" -a -n "$( grep -Esi '^blacklist[[:space:]]+'$1'' $embc )" ];then
-						echo -n "${S}Removing ${C}$embc $1 blacklist${S} items..... ${N}"
-						sed -i 's|blacklist[[:space:]]'$1'||i' $embc
-						log_function_data "file updated to remove $1 blacklist: $embc"
-						echo "${S}Removed${N}"
-						showMessage='true'
-					fi
-					if [ "$showMessage" == 'true' ];then
-# 						if [ "$B_TESTING_6" == 'true' ];then
-							update_initramfs "add-$1"
-# 						fi
-						echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
-						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
-						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
-						B_FORCE_REBOOT='true'
-						print_hec
-					fi
-					;;
-			esac
-			;;
-	esac
-	log_function_data "operation outcome: $outcome"
 	eval $LOGPE
 }
 
