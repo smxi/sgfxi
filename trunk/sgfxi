@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.7
+####  version: 4.13.8
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3052,7 +3052,7 @@ install_native_driver()
 	local xorgBase='' xorgNv='nv' xorgAti='ati' xorgIntel='intel'
 	local xorgDriver='' driver='' currentlyInstalled='' xorgCore=''
 	local driverInstall='' experimentalText='' libMesaGlx=''
-	local extraAtiPackage1=''
+	local extraAtiPackage1='' skipInstall=''
 	
 	case $SYSTEM_BASE in
 		debian|ubuntu)
@@ -3107,11 +3107,16 @@ install_native_driver()
 		fi
 		# driver is the actual driver xorg will use
 		driver=$xorgBase$xorgDriver
-
+		
 		if [ "$B_PRINT_VER" != 'true' ];then
 			# make sure the driver is available for the user's debian version
+			# is it true? nouveau pulled out of xorg? what the hell?
 			if [ -z "$( check_package_status $driver 'c' )" ];then
-				error_handler 222 "$driver"
+				if [ "$NATIVE_OVERRIDE" != 'nouveau' ];then
+					error_handler 222 "$driver"
+				else
+					skipInstall='true'
+				fi
 			fi
 			print_information_continue 'standard' "The graphics installer will be installing the${C}$experimentalText Free xorg${S} driver: ${C}$driverInstall${N}"
 		else
@@ -3136,7 +3141,9 @@ install_native_driver()
 			echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
 			native_driver_experimental "$driver"
 		else
-			install_package $driver '' 'reinstall'
+			if [ "$skipInstall" != 'true' ];then
+				install_package $driver '' 'reinstall'
+			fi
 			if [ "$CARD" == "$FGLRX" ];then
 				eval $extraAtiPackage1
 			fi
@@ -3148,7 +3155,7 @@ install_native_driver()
 		
 		if [ "$NATIVE_OVERRIDE" == 'nouveau' ];then
 			case $SYSTEM_BASE in
-				arch|fedora)
+				arch|fedora|debian|ubuntu)
 					add_module "$NATIVE_OVERRIDE"
 					;;
 			esac
