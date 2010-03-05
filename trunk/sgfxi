@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.9
+####  version: 4.13.10
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3161,8 +3161,11 @@ install_native_driver()
 			esac
 			B_FORCE_REBOOT='true'
 			echo $MLINE
-			echo "${M}Note: the ${C}Xorg nouveau${M} driver requires a ${C}reboot${M} to become active."
+			echo "${M}Note: the ${C}nouveau${M} driver requires a ${C}reboot${M} to become active."
 			echo "${C}$SCRIPT_NAME${S} will now let you do that.${N}"
+		else
+			check_set_modesetting_on 'nouveau'
+			check_set_modesetting_on 'radeon'
 		fi
 
 		eval $LOGPE
