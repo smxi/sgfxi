@@ -4249,6 +4249,7 @@ check_set_kms_off()
 				if [ -f "$GRUBED" -a -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*(nomodeset|nouveau.modeset=0|rdblacklist=nouveau)" $GRUBED )" ];then
 					echo -n "${S}Adding ${C}$GRUBED nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 					sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 nomodeset"|' 
+					showMessage1='true'
 				fi
 				
 				if [ "$showMessage1" == 'true' ];then
