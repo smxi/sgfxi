@@ -4207,7 +4207,6 @@ add_module()
 {
 	eval $LOGPS
 
-	
 	local outcome='unset' 
 	
 	echo -n "${S}Adding module${C} $1${S}...... ${N}"
@@ -4369,6 +4368,7 @@ check_set_modesetting_off()
 # $1 - module to be handled
 check_set_modesetting_on()
 {
+	eval $LOGPS
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
 	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
@@ -4443,6 +4443,7 @@ check_set_modesetting_on()
 			esac
 			;;
 	esac
+	eval $LOGPE
 }
 
 # args: $1 - module; $2 - driver; $3 - init level (?)
