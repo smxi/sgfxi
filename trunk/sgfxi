@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.4
+####  version: 4.13.5
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3971,6 +3971,9 @@ build_kernel_module_only()
 				test_install_kernel_version
 				test_module_build_ok 'error'
 			fi
+			if [ -z "$DISPLAY" -a "$B_KERNEL_MODULE_ONLY" != 'true' ];then
+				x_start_stop_master stop
+			fi
 			echo $LINE
 			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
 			if [ "$2" != 'silent' ];then
@@ -4229,7 +4232,6 @@ check_set_kms_off()
 	esac
 	if [ "$1" == 'nouveau' ];then
 		B_FORCE_REBOOT='true'
-		
 		case $SYSTEM_BASE in
 			arch)
 				echo $LINE
