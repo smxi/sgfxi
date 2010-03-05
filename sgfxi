@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.8
+####  version: 4.13.9
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4294,7 +4294,12 @@ check_set_modesetting_off()
 				debian|ubuntu)
 					if [ -n "$grubFiles" -a -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" ];then
 						echo -n "${S}Adding ${C}$grubFiles nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-						sed -i '/ root=/s|$| nomodeset|' $grubFiles
+						if [ -f "$GRUB1" ];then
+							sed -i '/kernel.* root=/s|$| nomodeset|' $GRUB1
+						fi
+						if [ -f "$GRUB2" ];then
+							sed -i '/linux.* root=/s|$| nomodeset|' $GRUB2
+						fi
 						log_function_data "file updated to add $1 nomodeset: $grubFiles"
 						echo "${S}Added${N}"
 						showMessage1='true'
@@ -4323,13 +4328,13 @@ check_set_modesetting_off()
 					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -z "$( grep -Eis '('$moduleSearch2')' $GRUB1_FED )" ];then
 						if [ -f "$GRUB1_FED" -a -z "$( grep -si 'rdblacklist='$1'' $GRUB1_FED )" ];then
 							echo -n "${S}Adding ${C}$GRUB1_FED $1 blacklist${S} items..... ${N}"
-							sed -i '/ root=/s|$| rdblacklist='$1'|' $GRUB1_FED
+							sed -i '/kernel.* root=/s|$| rdblacklist='$1'|' $GRUB1_FED
 							log_function_data "file updated to add $1 blacklist: $GRUB1_FED"
 							echo "${S}Added${N}"
 						fi
 						if [ -f "$GRUB1_FED" -a -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
 							echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
-							sed -i '/ root=/s|$| vmalloc=256m|' $GRUB1_FED
+							sed -i '/kernel.* root=/s|$| vmalloc=256m|' $GRUB1_FED
 							log_function_data "file updated to add vmalloc=256m: $GRUB1_FED"
 							echo "${S}Added${N}"
 						fi
