@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.5
+####  version: 4.13.6
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4176,13 +4176,13 @@ remove_module()
 	local emod='/etc/modules' 
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
-	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
+	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
 	local blacklistNouveau='false'
 	local outcome='unset' 
 
 	if [ -n "$( lsmod | grep "^$1" )" ];then
 		echo -n "${S}Removing module${C} $1${S}...... ${N}"
-		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE ## needs -f to force it
+		modprobe -r $1 1>> $LOG_FILE 2>> $LOG_FILE 
 		if [ "$?" -ne 0 ];then
 			echo "${W}FAILED${N}"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
@@ -4209,7 +4209,8 @@ remove_module()
 check_set_kms_off()
 {
 	eval $LOGPE
-	local showMessage1='false' initLevel='no-init' grubFiles=
+	local showMessage1='false' initLevel='no-init' grubFiles=''
+	local moduleSearch1='' moduleSearch2=''
 	if [ -f "$GRUB1_FED" ];then
 			grubFiles="$GRUB1_FED"
 	else
@@ -4230,93 +4231,105 @@ check_set_kms_off()
 			initLevel='no-init'
 			;;
 	esac
-	if [ "$1" == 'nouveau' ];then
-		B_FORCE_REBOOT='true'
-		case $SYSTEM_BASE in
-			arch)
-				echo $LINE
-				echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
-				echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
-				echo "This is because its not possible to remove ${C}nouveau${S} from a running system.${N}"
-				print_hec
-				;;
-			debian|ubuntu)
-				if [ -n "$grubFiles" -a -z "$( grep -Eis '(nomodeset|nouveau.modeset=0|rdblacklist=nouveau)' $grubFiles )" ];then
-					echo -n "${S}Adding ${C}$grubFiles nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-					sed -i '/ root=/s|$| nomodeset|' $grubFiles
-					log_function_data "file updated to add nouveau nomodeset: $grubFiles"
-					echo "${S}Added${N}"
-					showMessage1='true'
-				fi
-				if [ -f "$GRUBED" -a -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*(nomodeset|nouveau.modeset=0|rdblacklist=nouveau)" $GRUBED )" ];then
-					echo -n "${S}Adding ${C}$GRUBED nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-					sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 nomodeset"|' $GRUBED
-					echo "${S}Added${N}"
-					log_function_data "file updated to add nouveau nomodeset: $GRUBED"
-					showMessage1='true'
-				fi
-				
-				if [ "$showMessage1" == 'true' ];then
-# 					if [ "$B_TESTING_6" == 'true' ];then
-# 						update_initramfs 'remove-nouveau' "$initLevel"
-# 					fi
-					# note: we don't want nouveau to try to restart on reboot, so we're changing
-					# xorg.conf to use vesa here.
-					NATIVE_OVERRIDE='vesa'
-					echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
-					update_xorgconf_driver_version
-					reboot_now_question 'nouveau' 'nvidia' "$initLevel"
-				fi
-				;;
-			fedora)
-				if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -z "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $GRUB1_FED )" ];then
-					if [ -f "$GRUB1_FED" -a -z "$( grep -si 'rdblacklist=nouveau' $GRUB1_FED )" ];then
-						echo -n "${S}Adding ${C}$GRUB1_FED nouveau blacklist${S} items..... ${N}"
-						sed -i '/ root=/s|$| rdblacklist=nouveau|' $GRUB1_FED
-						log_function_data "file updated to add nouveau blacklist: $GRUB1_FED"
+	case $1 in
+		nouveau)
+			moduleSearch1='nomodeset|nouveau.modeset=0|rdblacklist=nouveau'
+			moduleSearch2='nomodeset|nouveau.modeset=0|rdblacklist=nouveau'
+			;;
+		radeon)
+			moduleSearch1='nomodeset'
+			moduleSearch2='radeon.modeset=0|rdblacklist=radeon'
+			;;
+	esac
+	case $1 in
+		nouveau|radeon)
+			B_FORCE_REBOOT='true'
+			case $SYSTEM_BASE in
+				arch)
+					echo $LINE
+					echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
+					echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
+					echo "This is because its not possible to remove ${C}$1${S} from a running system.${N}"
+					print_hec
+					;;
+				debian|ubuntu)
+					if [ -n "$grubFiles" -a -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" ];then
+						echo -n "${S}Adding ${C}$grubFiles nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
+						sed -i '/ root=/s|$| nomodeset|' $grubFiles
+						log_function_data "file updated to add $1 nomodeset: $grubFiles"
 						echo "${S}Added${N}"
+						showMessage1='true'
 					fi
-					if [ -f "$GRUB1_FED" -a -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
-						echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
-						sed -i '/ root=/s|$| vmalloc=256m|' $GRUB1_FED
-						log_function_data "file updated to add vmalloc=256m: $GRUB1_FED"
+					if [ -f "$GRUBED" -a -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*$moduleSearch1" $GRUBED )" ];then
+						echo -n "${S}Adding ${C}$GRUBED nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
+						sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 nomodeset"|' $GRUBED
 						echo "${S}Added${N}"
+						log_function_data "file updated to add nouveau nomodeset: $GRUBED"
+						showMessage1='true'
 					fi
-					showMessage1='true'
-				fi
-				# also make system bootable to init 3 easily with grub, otherwise you can
-				# literally not be able to access tty OR desktop in some cases
-				if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $GRUB1_FED )" ];then
-					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$GRUB1_FED${S}..... ${N}"
-					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $GRUB1_FED
-					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $GRUB1_FED
-					log_function_data "file updated to restore grub timeout/unhide menu: $GRUB1_FED"
-					echo "${S}Modified${N}"
-				fi
-				if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc $emd/*.conf )" ];then
-					blacklistNouveau='true'
-				fi
-				if [ ! -f "$emdbc" -a -d "$emd" -a "$blacklistNouveau" == 'true' ];then
-					echo -n "${S}Creating ${C}$emdbc nouveau blacklist${S} item..... ${N}"
-					echo 'blacklist nouveau' > $emdbc
-					log_function_data "file updated to add nouveau blacklist: $emdbc"
-					echo "${S}Created${N}"
-					showMessage1='true'
-				fi
-				if [ "$showMessage1" == 'true' ];then
-# 					if [ "$B_TESTING_6" == 'true' ];then
-						update_initramfs 'remove-nouveau' 
-# 					fi
-					# note: we don't want nouveau to try to restart on reboot, so we're changing
-					# xorg.conf to use vesa here.
-					NATIVE_OVERRIDE='vesa'
-					echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
-					update_xorgconf_driver_version
-					reboot_now_question 'nouveau' 'nvidia' "$initLevel"
-				fi
-				;;
-		esac
-	fi
+					
+					if [ "$showMessage1" == 'true' ];then
+	# 					if [ "$B_TESTING_6" == 'true' ];then
+	# 						update_initramfs "remove-$1"
+	# 					fi
+						# note: we don't want nouveau to try to restart on reboot, so we're changing
+						# xorg.conf to use vesa here.
+						NATIVE_OVERRIDE='vesa'
+						echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
+						update_xorgconf_driver_version
+						reboot_now_question "$1" "$CARD" "$initLevel"
+					fi
+					;;
+				fedora)
+					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -z "$( grep -Eis '('$moduleSearch2')' $GRUB1_FED )" ];then
+						if [ -f "$GRUB1_FED" -a -z "$( grep -si 'rdblacklist='$1'' $GRUB1_FED )" ];then
+							echo -n "${S}Adding ${C}$GRUB1_FED $1 blacklist${S} items..... ${N}"
+							sed -i '/ root=/s|$| rdblacklist='$1'|' $GRUB1_FED
+							log_function_data "file updated to add $1 blacklist: $GRUB1_FED"
+							echo "${S}Added${N}"
+						fi
+						if [ -f "$GRUB1_FED" -a -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
+							echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
+							sed -i '/ root=/s|$| vmalloc=256m|' $GRUB1_FED
+							log_function_data "file updated to add vmalloc=256m: $GRUB1_FED"
+							echo "${S}Added${N}"
+						fi
+						showMessage1='true'
+					fi
+					# also make system bootable to init 3 easily with grub, otherwise you can
+					# literally not be able to access tty OR desktop in some cases
+					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $GRUB1_FED )" ];then
+						echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$GRUB1_FED${S}..... ${N}"
+						sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $GRUB1_FED
+						sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $GRUB1_FED
+						log_function_data "file updated to restore grub timeout/unhide menu: $GRUB1_FED"
+						echo "${S}Modified${N}"
+					fi
+					if [ -f "$embc" -a -z "$( grep -Esi '^blacklist[[:space:]]+'$1'' $embc $emd/*.conf )" ];then
+						blacklistNouveau='true'
+					fi
+					if [ ! -f "$emdbc" -a -d "$emd" -a "$blacklistNouveau" == 'true' ];then
+						echo -n "${S}Creating ${C}$emdbc $1 blacklist${S} item..... ${N}"
+						echo 'blacklist nouveau' > $emdbc
+						log_function_data "file updated to add $1 blacklist: $emdbc"
+						echo "${S}Created${N}"
+						showMessage1='true'
+					fi
+					if [ "$showMessage1" == 'true' ];then
+	# 					if [ "$B_TESTING_6" == 'true' ];then
+							update_initramfs "remove-$1"
+	# 					fi
+						# note: we don't want nouveau to try to restart on reboot, so we're changing
+						# xorg.conf to use vesa here.
+						NATIVE_OVERRIDE='vesa'
+						echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
+						update_xorgconf_driver_version
+						reboot_now_question "$1" "$CARD" "$initLevel"
+					fi
+					;;
+			esac
+			;;
+	esac
 	eval $LOGPS
 }
 
@@ -4334,7 +4347,6 @@ reboot_now_question()
 			initText="(use ctrl+alt+F1 to enter console after reboot)"
 			;;
 	esac
-	
 	
 	echo $MLINE
 	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
@@ -4384,6 +4396,7 @@ update_initramfs()
 {
 	eval $LOGPS
 	local storedNouveau="/boot/initramfs-$KERNEL_VERSION-nouveau.img"
+	local storedRadeon="/boot/initramfs-$KERNEL_VERSION-radeon.img"
 	local startingInitram="/boot/initramfs-$KERNEL_VERSION.img"
 	case $SYSTEM_BASE in
 		fedora)
@@ -4395,12 +4408,28 @@ update_initramfs()
 						dracut $startingInitram $KERNEL_VERSION
 					fi
 					;;
+				remove-radeon)
+					if [ -n "$( type -p dracut )" ];then
+						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}radeon${S} now...${N}"
+						mv -f $startingInitram $storedRadeon
+						dracut $startingInitram $KERNEL_VERSION
+					fi
+					;;
 				add-nouveau)
 					if [ -f "$storedNouveau" ];then
 						echo "${S}Restoring ${C}initramfs${S} with ${C}nouveau${S} now...${N}"
 						mv -f $storedNouveau $startingInitram 
 					elif [ -n "$( type -p dracut )" ];then
 						echo "${S}Building ${C}initramfs${S} with ${C}nouveau${S} now...${N}"
+						dracut $startingInitram $KERNEL_VERSION
+					fi
+					;;
+				add-radeon)
+					if [ -f "$storedRadeon" ];then
+						echo "${S}Restoring ${C}initramfs${S} with ${C}radeon${S} now...${N}"
+						mv -f $storedRadeon $startingInitram 
+					elif [ -n "$( type -p dracut )" ];then
+						echo "${S}Building ${C}initramfs${S} with ${C}radeon${S} now...${N}"
 						dracut $startingInitram $KERNEL_VERSION
 					fi
 					;;
@@ -4418,8 +4447,22 @@ add_module()
 
 	local embc='/etc/modprobe.d/blacklist.conf'
 	local emd='/etc/modprobe.d/'
-	local emdbc='/etc/modprobe.d/blacklist-nouveau.conf'
-	local outcome='unset' showMessage=''
+	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
+	local outcome='unset' showMessage='' grubFiles=''
+	
+	if [ -f "$GRUB1_FED" ];then
+			grubFiles="$GRUB1_FED"
+	else
+		if [ -f "$GRUB1" ];then
+			grubFiles="$GRUB1"
+		fi
+		if [ -f "$GRUB2" ];then
+			grubFiles="$grubFiles$GRUB2"
+		fi
+		if [ -f "$GRUBED" ];then
+			grubFiles="$grubFiles$GRUBED"
+		fi
+	fi
 	
 	echo -n "${S}Adding module${C} $1${S}...... ${N}"
 	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
@@ -4436,36 +4479,55 @@ add_module()
 		outcome='added'
 	fi
 	case $1 in
-		nouveau)
+		nouveau|radeon)
 			case $SYSTEM_BASE in
-				fedora)
-					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $GRUB1_FED )" ];then
-						echo -n "${S}Removing ${C}$GRUB1_FED nouveau blacklist${S} items..... ${N}"
-						sed -i 's|[[:space:]]nouveau.modeset=0||i' $GRUB1_FED
-						sed -i 's|[[:space:]]rdblacklist=nouveau||i' $GRUB1_FED
-						log_function_data "file updated to remove nouveau blacklist: $GRUB1_FED"
-						echo "${S}Removed${N}"
-						showMessage='true'
-					fi
-					if [ -f "$emdbc" -a -n "$( grep -Esi '^blacklist[[:space:]]+nouveau' $emdbc )" ];then
-						echo -n "${S}Removing ${C}$emdbc nouveau blacklist${S} items..... ${N}"
-						rm -f $emdbc
-						log_function_data "file removed to remove nouveau blacklist: $emdbc"
-						echo "${S}Removed${N}"
-						showMessage='true'
-					fi
-					if [ -f "$embc" -a -n "$( grep -Esi '^blacklist[[:space:]]+nouveau' $embc )" ];then
-						echo -n "${S}Removing ${C}$embc nouveau blacklist${S} items..... ${N}"
-						sed -i 's|blacklist[[:space:]]nouveau||i' $embc
-						log_function_data "file updated to remove nouveau blacklist: $embc"
+				debian|ubuntu)
+					if [ -n "$grubFiles" -a -n "$( grep -Eis '(nomodeset)' $grubFiles )" ];then
+						echo -n "${S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
+						sed -i 's|[[:space:]]nomodeset||i' $grubFiles
+						log_function_data "file updated to remove $1 blacklist: $grubFiles"
 						echo "${S}Removed${N}"
 						showMessage='true'
 					fi
 					if [ "$showMessage" == 'true' ];then
 # 						if [ "$B_TESTING_6" == 'true' ];then
-							update_initramfs 'add-nouveau'
+# 							update_initramfs "add-$1"
 # 						fi
-						echo "${M}Since ${C}nouveau${M} module has been added to the kernel, and ${C}nouveau${M} was"
+						echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
+						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
+						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
+						B_FORCE_REBOOT='true'
+						print_hec
+					fi
+					;;
+				fedora)
+					if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -n "$( grep -Eis '(nouveau.modeset=0|rdblacklist=nouveau)' $GRUB1_FED )" ];then
+						echo -n "${S}Removing ${C}$GRUB1_FED $1 blacklist${S} items..... ${N}"
+						sed -i 's|[[:space:]]'$1'.modeset=0||i' $GRUB1_FED
+						sed -i 's|[[:space:]]rdblacklist='$1'||i' $GRUB1_FED
+						log_function_data "file updated to remove $1 blacklist: $GRUB1_FED"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ -f "$emdbc" -a -n "$( grep -Esi '^blacklist[[:space:]]+'$1'' $emdbc )" ];then
+						echo -n "${S}Removing ${C}$emdbc $1 blacklist${S} items..... ${N}"
+						rm -f $emdbc
+						log_function_data "file removed to remove $1 blacklist: $emdbc"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ -f "$embc" -a -n "$( grep -Esi '^blacklist[[:space:]]+'$1'' $embc )" ];then
+						echo -n "${S}Removing ${C}$embc $1 blacklist${S} items..... ${N}"
+						sed -i 's|blacklist[[:space:]]'$1'||i' $embc
+						log_function_data "file updated to remove $1 blacklist: $embc"
+						echo "${S}Removed${N}"
+						showMessage='true'
+					fi
+					if [ "$showMessage" == 'true' ];then
+# 						if [ "$B_TESTING_6" == 'true' ];then
+							update_initramfs "add-$1"
+# 						fi
+						echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
 						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
 						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
 						B_FORCE_REBOOT='true'
