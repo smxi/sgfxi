@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.1
+####  version: 4.13.2
 ####  Date: March 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3966,6 +3966,7 @@ build_kernel_module_only()
 	case $CARD in
 		$NVIDIA)
 			B_SKIP_INSTALL='true'
+			remove_module 'nouveau'
 			if [ "$1" == 'direct' ];then
 				test_install_kernel_version
 				test_module_build_ok 'error'
