@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.16
-####  Date: March 5 2010
+####  version: 4.13.17
+####  Date: March 6 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1238,7 +1238,7 @@ error_handler()
 			errorData="The -k option can only be used to install to the same driver that is running.\nYour system is running $errorExtra but you are building the module for: $DRIVER_DEFAULT\nYou can use the -o <driver version> option to override the defaults."
 			;;
 		171)
-			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure.\nA copy of this nvidia error log is also here: $LOG_FILE_DIR/$LOG_FILE"
+			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure.\nA copy of this nvidia error log is also here: $LOG_FILE_DIR/$LOG_FILE\nPlease try to reinstall the driver using: sgfxi -f (force override module build)\nbecause sometimes modules cannot be built to new kernels without the source\nbeing patched first, which requires a driver reinstall."
 			;;
 		170)
 			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nInstalling a driver will remove all previous modules, then you can\nrebuild them with the -! 40 option (see $SCRIPT_NAME -h for more information on that method)."
@@ -3425,6 +3425,7 @@ set_driver_install_version()
 misc_fixes()
 {
 	eval $LOGUS
+	local outcome=''
 	case $1 in
 		nvidia-24-link)
 			local headersDir="${USRS}linux-headers-$KERNEL_VERSION/include"
@@ -3450,10 +3451,12 @@ misc_fixes()
 		nvidia-generated-patch)
 			local generated1="${USRS}$KERNEL_VERSION/include/generated/" 
 			local generated2="/lib/modules/$KERNEL_VERSION/build/include/generated/"
-			
+			outcome="$generated1 or $generated2 do not exist"
 			if [ -d "$generated1" -o -d "$generated2" ];then
 				echo 'true'
+				outcome="$generated1 or $generated2 exist"
 			fi
+			log_function_data "outcome: $outcome"
 			;;
 		drm-2-x-test)
 			local drmVersion=$( check_package_status 'libdrm2' 'i' )
