@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.18
+####  version: 4.13.19
 ####  Date: March 6 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4310,8 +4310,11 @@ check_set_modesetting_off()
 				debian|ubuntu)
 					if [ -n "$grubFiles" -a -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" ];then
 						echo -n "${S}Adding ${C}$grubFiles nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-						if [ -f "$GRUB1" ];then
-							sed -i '/ root=/s|$| nomodeset|' $GRUB1
+						if [ -f "$GRUB1" -a -z "$( grep -Eis 'kernel.*root=.*nomodeset' $GRUB1 )" ];then
+							sed -i '/kernel.* root=/s|$| nomodeset|' $GRUB1
+						fi
+						if [ -f "$GRUB1" -a -z "$( grep -Eis 'kopt.*root=.*nomodeset' $GRUB1 )" ];then
+							sed -i '/kopt.*root=/s|$| nomodeset|' $GRUB1
 						fi
 						if [ -f "$GRUB2" ];then
 							sed -i '/linux.* root=/s|$| nomodeset|' $GRUB2
