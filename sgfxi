@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.20
+####  version: 4.13.21
 ####  Date: March 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -201,7 +201,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA=':::'
+NV_VERSIONS_BETA='195.30:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -803,11 +803,11 @@ run_driver_patches()
 					if [ -n "$( misc_fixes nvidia-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
 						case $DRIVER_DEFAULT in
 							# this is fixed in newest beta, it does auto testing for /generated/
-# 							195.*)
-# 								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
-# 								patchFile='NVIDIA-195-2.6.33.diff'
-# 								apply_patch_file $patchFile
-# 								;;
+							195.30)
+								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
+								patchFile='NVIDIA-195-2.6.33.diff'
+								apply_patch_file $patchFile
+								;;
 							190.53) # won't be needed for new version, it will be fixed
 								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
 								patchFile='NVIDIA-190.53-2.6.33.diff'
