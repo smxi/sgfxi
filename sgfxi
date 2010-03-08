@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.19
-####  Date: March 6 2010
+####  version: 4.13.20
+####  Date: March 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -923,7 +923,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-		CARD_DATA=1002:9442 # fake ati post x2000 card
+# 		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -1060,7 +1060,7 @@ error_handler()
 			if [ "$CARD" == "$FGLRX" -a "$B_FGLRX_DIRECT" != 'true' ];then
 				errorData2="\nYou might want to try installing without the -D (formerly -F) option instead, which will do a\ndirect (no debs) binary install from the FGLRX run package.\nThis works more reliably for some systems (especially 64 bit)."
 			fi
-			errorData="The $CARD installer exited with the error: $errorExtra$errorData2\nA copy of this driver installer error log is also here: $LOG_FILE_DIR/$LOG_FILE"
+			errorData="The $CARD installer exited with the error: $errorExtra$errorData2\nA copy of this driver installer error log is also here: $LOG_FILE"
 			;;
 		244)
 			errorData="Xorg does not appear to be installed."
@@ -1238,7 +1238,7 @@ error_handler()
 			errorData="The -k option can only be used to install to the same driver that is running.\nYour system is running $errorExtra but you are building the module for: $DRIVER_DEFAULT\nYou can use the -o <driver version> option to override the defaults."
 			;;
 		171)
-			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure.\nA copy of this nvidia error log is also here: $LOG_FILE_DIR/$LOG_FILE\nPlease try to reinstall the driver using: sgfxi -f (force override module build)\nbecause sometimes modules cannot be built to new kernels without the source\nbeing patched first, which requires a driver reinstall."
+			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure.\nA copy of this nvidia error log is also here: $LOG_FILE\nPlease try to reinstall the driver using: sgfxi -f (force override module build)\nbecause sometimes modules cannot be built to new kernels without the source\nbeing patched first, which requires a driver reinstall."
 			;;
 		170)
 			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nInstalling a driver will remove all previous modules, then you can\nrebuild them with the -! 40 option (see $SCRIPT_NAME -h for more information on that method)."
@@ -3526,8 +3526,8 @@ set_download_info()
 					else
 						echo $LINE
 						echo "${S}Unable to rebuild module from previous driver install. Reinstalling driver instead.${N}"
-						if [ -n "$DISPLAY" ];then
-							echo "${W}Sorry, installing the ${C}nVidia${W} driver can't be done in X.${N}"
+						if [ -n "$DISPLAY" -a "$B_TESTING_2" != 'true' ];then
+							echo "${W}Sorry, installing the ${C}nVidia${W} driver can't be done in ${C}X${W}.${N}"
 							error_handler 250
 						fi
 						download_extract_driver $downloadUrl $DRIVER_FILE
@@ -3710,7 +3710,7 @@ preinstall_cleanup()
 			depmod $KERNEL_VERSION -a
 		fi
 	fi
-
+	log_function_data "nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko 2>/dev/null )"
 	#rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
 	# for real driver installs, we need to remove ALL the existing nvidia driver .ko files
 	rm -f /lib/modules/*/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
