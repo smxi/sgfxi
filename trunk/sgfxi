@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.21
-####  Date: March 8 2010
+####  version: 4.13.22
+####  Date: March 10 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -4512,15 +4512,17 @@ reboot_now_question()
 		case $opt in
 			shutdown)
 				echo "${S}Shutting down now...${N}"
+				shutdown
 				exit 0
 				;;
 			reboot)
 				echo "${S}Rebooting now...${N}"
 				reboot
+				exit 0
 				;;
 			quit)
 				echo "${S}Ok, remember you need to reboot before the $1 changes are live.${N}"
-				exit 0 # need to exit with 100 to not trigger pid root kill in smxi
+				exit 100 # need to exit with 100 to not trigger root pid kill in smxi
 				;;
 			*)
 				echo "${W}Please select one of the options in the list, thank you.${N}"
