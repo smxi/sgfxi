@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.23
-####  Date: March 15 2010
+####  version: 4.13.24
+####  Date: March 25 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -239,12 +239,12 @@ NVIDIA_DOWNLOAD_SITE=''
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='10-2:10-1:9-3'
-FG_DEFAULT='10-2'
+FG_VERSIONS='10-3:10-2:9-3'
+FG_DEFAULT='10-3'
 
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
-FG_OTHERS='9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
+FG_OTHERS='10-2:10-1:9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
 FG_DISTRIB_CODENAME=''
