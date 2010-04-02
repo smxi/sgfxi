@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.24
-####  Date: March 25 2010
+####  version: 4.13.25
+####  Date: April 2 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -4590,6 +4590,7 @@ update_initramfs()
 clean_dkms()
 {
 	eval $LOGPS
+	local eddma='/etc/default/dmakms'
 	if [ -d /var/lib/dkms/fglrx ];then
 		log_function_data "fglrx dkms directories found and deleted"
 		rm -rf /var/lib/dkms/fglrx 1>> $LOG_FILE 2>> $LOG_FILE
@@ -4597,6 +4598,17 @@ clean_dkms()
 	if [ -d /var/lib/dkms/nvidia ];then
 		log_function_data "nvidia dkms directories found and deleted"
 		rm -rf /var/lib/dkms/nvidia 1>> $LOG_FILE 2>> $LOG_FILE
+	fi
+	# handle the dmakms stuff too if present
+	if [ -f "$eddma" ];then
+		if [ -n "$( grep -Esi '^[[:space:]]*nvidia-kernel-source' $eddma )" ];then
+			log_function_data "nvidia dmakms entry found and commented out"
+			sed -i 's/nvidia-kernel-source/#nvidia-kernel-source/' $eddma
+		fi
+		if [ -n "$( grep -Esi '^[[:space:]]*fglrx-kernel-source' $eddma )" ];then
+			log_function_data "fglrx dmakms entry found and commented out"
+			sed -i 's/fglrx-kernel-source/#fglrx-kernel-source/' $eddma
+		fi
 	fi
 	eval $LOGPE
 }
