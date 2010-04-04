@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.25
-####  Date: April 2 2010
+####  version: 4.13.26
+####  Date: April 3 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -3526,7 +3526,7 @@ set_download_info()
 					else
 						echo $LINE
 						echo "${S}Unable to rebuild module from previous driver install. Reinstalling driver instead.${N}"
-						if [ -n "$DISPLAY" -a "$B_TESTING_2" != 'true' ];then
+						if [ -n "$DISPLAY" -a "$B_TESTING_2" != 'true' -a "$B_SKIP_X_TEST" != 'true' ];then
 							echo "${W}Sorry, installing the ${C}nVidia${W} driver can't be done in ${C}X${W}.${N}"
 							error_handler 250
 						fi
