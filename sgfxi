@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.28
+####  version: 4.13.29
 ####  Date: April 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -2849,7 +2849,7 @@ print_information()
 	busId=$( lspci -n | grep "$CARD_DATA" | grep -Eio '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' )
 
 	if [ -n "$busId" ];then
-		cardRam=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]' | sed -r 's/.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9]+)M\]/\1/' )
+		cardRam=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9\.]+[KMG])\]' | sed -r 's/.*Memory[[:space:]].*[[:space:]]prefetchable.*\[size=([0-9\.]+[KMG])\]/\1/' )
 		cardVendor=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Subsystem:[[:space:]]*(.*)' | sed -r 's/.*Subsystem:[[:space:]]*(.*)/\1/' | sed 's/[dD]evice.*$//g' | sed 's/[uU]nknown//g' )
 	fi
 	echo $MLINE
@@ -2861,7 +2861,7 @@ print_information()
 		echo "   ${S}vendor: ${C}$cardVendor"
 	fi
 	if [ -n "$cardRam" ];then
-		echo "   ${S}ram:    ${C}$cardRam MegaBytes ${S}(note: not accurate for built in graphics)"
+		echo "   ${S}ram:    ${C}$cardRam ${S}(note: not accurate for built in graphics)"
 	fi
 	echo $MLINE
 }
