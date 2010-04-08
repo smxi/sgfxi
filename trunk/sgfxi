@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.27
-####  Date: April 6 2010
+####  version: 4.13.28
+####  Date: April 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -5820,6 +5820,7 @@ show_extra_data()
 			dataType="(latest) $SCRIPT_NAME version information"
 			;;
 	esac
+	echo "${S}System Information :: Xorg Version: $X_VERSION - Kernel: $( uname -r )"
 	echo -n "${S}Retrieving live data... ${N}"
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
 	case $1 in
