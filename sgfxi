@@ -5823,7 +5823,7 @@ show_extra_data()
 			;;
 	esac
 	if [ "$sysInfo" == 'true' ];then
-		echo "${S}System Information :: Xorg Version: $X_VERSION - Kernel: $( uname -r )"
+		echo "${S}System Information :: Xorg Version: $X_VERSION :: Kernel: $( uname -r )"
 	fi
 	echo -n "${S}Retrieving live data... ${N}"
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
