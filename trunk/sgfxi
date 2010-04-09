@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.29
+####  version: 4.13.30
 ####  Date: April 8 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -82,7 +82,7 @@ B_ALLOW_AUTO_UPDATE='true'
 SCRIPT_HOME='/usr/local/bin'
 SCRIPT_NAME='sgfxi'
 SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads/"
-SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads/'
+SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 
 # script global data
 NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
@@ -1693,7 +1693,7 @@ cleanup_update_files()
 	if [ -f $slxorg ];then
 		rm -f $slxorg # clean up old xorg lib file
 	fi
-	if [ ! -d $SM_KERNEL_DOWNLOADS -a -d /usr/src/kernel-downloads ];then
+	if [ -d /usr/src/kernel-downloads -a ! -d $SM_KERNEL_DOWNLOADS  ];then
 		mv -f /usr/src/kernel-downloads $SM_KERNEL_DOWNLOADS
 	fi
 	
@@ -1799,7 +1799,7 @@ check_kernel_headers()
 			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
-			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
+			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
 		
 			log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
 		
