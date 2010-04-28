@@ -371,6 +371,7 @@ driver_support_tests()
 		supported-driver)
 			case $CARD in
 				$FGLRX)
+					# xorg info: http://www.x.org/wiki/Releases/7.4
 					# first dump if legacy level 1 and pre 9-4
 					if [ "$LEGACY_LEVEL" -eq 1 -a "$B_USE_DISTRO_DRIVER" != 'true' ];then
 						case $DRIVER_DEFAULT in
@@ -388,10 +389,22 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
-						1.[7-9]|2.[0-9]|7.[5-9]|8.[0-9])
+						1.[8]|2.[0-9]|7.[6-9]|8.[0-9])
 							case $DRIVER_DEFAULT in
-								10-[5-9]|10-1[0-2])
-									: # all other drivers fail to support xorg >= 1.6
+								10-[7-9]|10-1[0-2]|11-*) # update when 1.8 is actually supported
+									: # all other drivers fail to support xorg >= 1.8
+									;;
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
+									;;
+							esac
+							;;
+						1.[7]|2.[0-9]|7.[5-9]|8.[0-9])
+							case $DRIVER_DEFAULT in
+								10-[4-9]|10-1[0-2]|11-*)
+									: # all other drivers fail to support xorg >= 1.7
 									;;
 								*)
 									if [ "$B_TESTING_3" != 'true' ];then
@@ -402,7 +415,7 @@ driver_support_tests()
 							;;
 						1.[6]|7.[3-4])
 							case $DRIVER_DEFAULT in
-								9-[4-9]|9-1[0-2]|10-[1-9]|10-1[0-2])
+								9-[4-9]|9-1[0-2]|10-*|11-*)
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -527,6 +540,7 @@ driver_support_tests()
 # 					else
 						# test for >= xorg 1.5 support, using a blacklist now of previous
 						# drivers rather than whitelisting
+						# xorg info: http://www.x.org/wiki/Releases/7.4
 						case $X_VERSION in
 							1.[5-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
