@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.33
-####  Date: April 28 2010
+####  version: 4.13.34
+####  Date: April 30 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -949,7 +949,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati post x2000 card
+		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -3917,7 +3917,9 @@ run_driver_installer()
 	# 			export XTYPE='X.Org'
 	# 		fi
 			# note: there's a bug in fglrx that apparently will show no error return on failure
-			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE
+# 			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE
+			# ati just made the installer interactive, so can't log the data for now...
+			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 
 			installError="$?"
 			;;
 	esac
