@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.35
+####  version: 4.13.36
 ####  Date: May 2 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -915,6 +915,17 @@ run_driver_patches()
 							;;
 						10-[3-6])
 							patchFile='FGLRX-2.6.33-10-x.diff'
+							apply_patch_file $patchFile
+							;;
+					esac
+					;; 
+				34)
+					# these handle that /generated/ path change in kernel headers
+					case $DRIVER_DEFAULT in
+						10-[4-6])
+							patchFile='FGLRX-2.6.33-10-x.diff'
+							apply_patch_file $patchFile
+							patchFile='FGLRX-2.6.34-rc4-10-4.diff'
 							apply_patch_file $patchFile
 							;;
 					esac
