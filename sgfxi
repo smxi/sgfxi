@@ -826,7 +826,7 @@ run_driver_patches()
 					;;
 				32|33)
 					# test if the /generated directory exists, if it does, then use patch.
-					if [ -n "$( misc_fixes nvidia-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
+					if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
 						case $DRIVER_DEFAULT in
 							# this is fixed in newest beta, it does auto testing for /generated/
 							195.30)
@@ -908,27 +908,33 @@ run_driver_patches()
 					;;
 				33)
 					# these handle that /generated/ path change in kernel headers
-					case $DRIVER_DEFAULT in
-						10-2)
-							patchFile='FGLRX-2.6.33-10-2.diff'
-							apply_patch_file $patchFile
-							;;
-						10-[3-6])
-							patchFile='FGLRX-2.6.33-10-x.diff'
-							apply_patch_file $patchFile
-							;;
-					esac
+					# test if the /generated directory exists, if it does, then use patch.
+					if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
+						case $DRIVER_DEFAULT in
+							10-2)
+								patchFile='FGLRX-2.6.33-10-2.diff'
+								apply_patch_file $patchFile
+								;;
+							10-[3-6])
+								patchFile='FGLRX-2.6.33-10-x.diff'
+								apply_patch_file $patchFile
+								;;
+						esac
+					fi
 					;; 
 				34)
 					# these handle that /generated/ path change in kernel headers
-					case $DRIVER_DEFAULT in
-						10-[4-6])
-							patchFile='FGLRX-2.6.33-10-x.diff'
-							apply_patch_file $patchFile
-							patchFile='FGLRX-2.6.34-rc4-10-4.diff'
-							apply_patch_file $patchFile
-							;;
-					esac
+					# test if the /generated directory exists, if it does, then use patch.
+					if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
+						case $DRIVER_DEFAULT in
+							10-[4-6])
+								patchFile='FGLRX-2.6.33-10-x.diff'
+								apply_patch_file $patchFile
+								patchFile='FGLRX-2.6.34-rc4-10-4.diff'
+								apply_patch_file $patchFile
+								;;
+						esac
+					fi
 					;; 
 			esac
 			;;
@@ -3490,7 +3496,7 @@ misc_fixes()
 				log_function_data "link asm-x86 asm-i386 in $headersDir already exists"
 			fi
 			;;
-		nvidia-generated-patch)
+		linux-generated-patch)
 			local generated1="${USRS}$KERNEL_VERSION/include/generated/" 
 			local generated2="/lib/modules/$KERNEL_VERSION/build/include/generated/"
 			outcome="$generated1 or $generated2 do not exist"
