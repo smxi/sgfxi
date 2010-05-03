@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.36
+####  version: 4.13.37
 ####  Date: May 2 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3867,7 +3867,7 @@ run_driver_installer()
 	local xModPath='/usr/lib/xorg/modules'
 	local xLibPath='/usr/lib'
 	local installer='nvidia-installer'
-	local distroId=''
+	local distroId='' fglrxNumber='1'
 	local distroCodeName=''
 
 	# this was set in prep_install()
@@ -3921,10 +3921,14 @@ run_driver_installer()
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
 				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
 				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
+				fglrxNumber='2'
 			else
 				echo $MLINE
 				echo "${M}NOTE: When the ${C}FGLRX${M} direct installer runs, it will ask you a series of questions."
 				echo "Simply hit ${C}<enter>${M} for each question the installer asks you, the defaults are good."
+				echo "${M}If the first question asks you which driver method, type the number ${C}$fglrxNumber${M}"
+				echo "and then hit ${C}<enter>${M}, then continue to the other questions."
+				echo
 				echo "${S}Hit ${C}<enter>${S} now to start the direct installer."
 				echo $MLINE
 				read nothing
