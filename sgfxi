@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.37
-####  Date: May 2 2010
+####  version: 4.13.38
+####  Date: May 9 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1196,6 +1196,12 @@ error_handler()
 			;;
 		216)
 			errorData="You are using Ubuntu but you do not appear to have the 'restricted' repos enabled.\nPlease enable them before continuing, thank you."
+			;;
+		215)
+			errorData="Your new $EXXC is missing, or is not located where expected.\nPlease let the script maintainer know."
+			;;
+		214)
+			errorData="Cannot create your new $EXXC because X cannot be killed.\nPlease let the script maintainer know."
 			;;
 		# specific install issues
 		200)
@@ -5488,9 +5494,24 @@ create_x_conf()
 					if [ "$( x_is_running )" -eq 0 ];then
 						start_stop_x 'stop'
 					fi
+					# now double check and kill with precise errors to try to catch the cause
+					# of failing xorg.conf generation
+					if [ "$( x_is_running )" -eq 0 ];then
+						error_handler 214
+					fi
 					$X_NAME -configure
-					echo "${S}Moving newly created ${C}xorg.conf${S} to ${C}$EXXC${S} now...${N}"
-					mv -f /root/xorg.conf.new $EXXC
+					
+					# getting error reports of missing file or error on file creation
+					if [ -f /root/xorg.conf.new ];then
+						echo "${S}Moving newly created ${C}xorg.conf${S} to ${C}$EXXC${S} now...${N}"
+						mv -f /root/xorg.conf.new $EXXC
+					else
+						# temporary debugger logging
+						ls /root/xorg* >> $LOG_FILE
+						ls /usr/local/bin/xorg* >> $LOG_FILE
+						error_handler 215
+					fi
+
 					# this handles the case where nouveau was running, sgfxi was started, 
 					# no xorg.conf was found, and the X -configure command defaults to nv
 					if [ "$B_TESTING_5" == 'true' -a -n "$( lsmod | grep '^nouveau' )" ];then
