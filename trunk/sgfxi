@@ -5509,6 +5509,7 @@ create_x_conf()
 						# temporary debugger logging
 						ls /root/xorg* >> $LOG_FILE
 						ls /usr/local/bin/xorg* >> $LOG_FILE
+						ls $(pwd)/xorg* >> $LOG_FILE
 						error_handler 215
 					fi
 
