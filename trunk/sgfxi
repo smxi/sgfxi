@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.39
-####  Date: May 9 2010
+####  version: 4.13.40
+####  Date: May 10 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -5505,12 +5505,22 @@ create_x_conf()
 					if [ -f /root/xorg.conf.new ];then
 						echo "${S}Moving newly created ${C}xorg.conf${S} to ${C}$EXXC${S} now...${N}"
 						mv -f /root/xorg.conf.new $EXXC
+						log_function_data "xorg.conf created and mv to /etc/X11/"
 					else
 						# temporary debugger logging
-						ls /root/xorg* >> $LOG_FILE
-						ls /usr/local/bin/xorg* >> $LOG_FILE
-						ls $(pwd)/xorg* >> $LOG_FILE
-						error_handler 215
+# 						ls /root/xorg* >> $LOG_FILE
+# 						ls /usr/local/bin/xorg* >> $LOG_FILE
+# 						ls $(pwd)/xorg* >> $LOG_FILE
+# 						error_handler 215
+
+						# this is a short term hack, only required until X/xserver-xorg package
+						# is fixed to be able to create an xorg.conf file.. In theory this should
+						# simply vanish as soon as the xorg.conf is generated again, since this
+						# case would then never exist.
+						if [ ! -f $EXXC ];then
+							log_function_data "touch created xorg.conf file because it was missing, X -configure error."
+							touch $EXXC
+						fi
 					fi
 
 					# this handles the case where nouveau was running, sgfxi was started, 
