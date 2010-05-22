@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.44
+####  version: 4.13.45
 ####  Date: May 22 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1000,7 +1000,7 @@ set_test_data()
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
-# 		BITS=64
+		BITS=64
 # 		# if you want to test for/without sidux kernels, set to null '' or 'true'
 		IS_SIDUX_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
@@ -3912,14 +3912,19 @@ run_driver_installer()
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
 			# note that lenny can be assumed to not need, this, so wait til squeeze stable
 			if [ "$BITS" == '64' ];then
+				# note: it appears that 256.xx changed something here for 64 bit paths, and
+				# this is an attempt to fix that, not sure if it will work
+				# http://forum.xbmc.org/showthread.php?t=57885
 				case $SYSTEM_BASE in
 					debian)
 						if [ "$SYSTEM_CODENAME" == 'sid' -o "$SYSTEM_CODENAME" == 'testing' ];then
-							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+# 							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+							installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
 						fi
 						;;
 					ubuntu)
-						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+# 						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+						installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
 						;;
 				esac
 			fi
