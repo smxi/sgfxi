@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.43
+####  version: 4.13.44
 ####  Date: May 22 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -236,13 +236,8 @@ NV_FED_LEGACY_2='-96xx'
 NV_FED_LEGACY_3='-173xx'
 # set dynamically in fixes, line 529 or so
 NVIDIA_DOWNLOAD_SITE='' 
-
-NV_PKG_NO='-pkg1'
-# this tweak thanks to ajw1980, who pointed out that pkg2 installs
-# 32 bit compatibility libs in 64 bit without further fuss.
-if [ "$BITS" == '64' ];then
-	NV_PKG_NO='-pkg2'
-fi
+# needs dynamic assignment because new drivers won't use this in the string
+NV_PKG_NO=''
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
@@ -618,6 +613,19 @@ driver_support_tests()
 								;;
 							*)
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
+								;;
+						esac
+						# white list of old path version drivers
+						# new download urls, no -pkgx in file name string
+						case $DRIVER_DEFAULT in
+							195.36.24|173.14.25|96.43.17|71.86.13|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.22|169.12|100.14.19|96.43.16|96.43.14|71.86.11|71.86.09)
+								# this tweak thanks to ajw1980, who pointed out that pkg2 installs
+								# 32 bit compatibility libs in 64 bit without further fuss.
+								if [ "$BITS" == '64' ];then
+									NV_PKG_NO='-pkg2'
+								else
+									NV_PKG_NO='-pkg0'
+								fi
 								;;
 						esac
 						# handle change to legacy 5xxx level cards
