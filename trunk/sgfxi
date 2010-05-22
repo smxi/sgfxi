@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.42
+####  version: 4.13.43
 ####  Date: May 22 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -237,11 +237,11 @@ NV_FED_LEGACY_3='-173xx'
 # set dynamically in fixes, line 529 or so
 NVIDIA_DOWNLOAD_SITE='' 
 
-NV_PKG_NO=1
+NV_PKG_NO='-pkg1'
 # this tweak thanks to ajw1980, who pointed out that pkg2 installs
 # 32 bit compatibility libs in 64 bit without further fuss.
 if [ "$BITS" == '64' ];then
-	NV_PKG_NO=2
+	NV_PKG_NO='-pkg2'
 fi
 
 # other options: nothing now
@@ -608,11 +608,10 @@ driver_support_tests()
 						# driver=71.86.13;wget --spider http://download.nvidia.com/XFree86/Linux-x86/$driver/NVIDIA-Linux-x86-$driver-pkg0.run 
 						# default download site for nvidia, return http://us.download if problems
 						case $DRIVER_DEFAULT in
+							# new download urls, no -pkgx in file name string
 							256.25)
-								NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
-								if [ "$BITS" == '32' ];then
-									NV_PKG_NO=1 # for some reason no 0 version, but 2 is standard 64 bit
-								fi
+								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
+								NV_PKG_NO=''
 								;;
 							190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[13]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
@@ -3556,7 +3555,7 @@ set_download_info()
 		$NVIDIA)
 			
 			# set the package name, .run is added to it when it's needed
-			DRIVER_FILE="NVIDIA-Linux-x86$ARCH-$DRIVER_DEFAULT-pkg$NV_PKG_NO"
+			DRIVER_FILE="NVIDIA-Linux-x86$ARCH-$DRIVER_DEFAULT$NV_PKG_NO"
 			downloadUrl="$NVIDIA_DOWNLOAD_SITE/XFree86/Linux-x86$ARCH/$DRIVER_DEFAULT/"
 			;;
 		$FGLRX)
