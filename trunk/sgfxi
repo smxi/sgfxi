@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.45
-####  Date: May 22 2010
+####  version: 4.13.46
+####  Date: May 27 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -241,12 +241,12 @@ NV_PKG_NO=''
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='10-4:10-3:9-3'
-FG_DEFAULT='10-4'
+FG_VERSIONS='10-5:10-4:9-3'
+FG_DEFAULT='10-5'
 
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
-FG_OTHERS='10-3:10-2:10-1:9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
+FG_OTHERS='10-4:10-3:10-2:10-1:9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
 FG_DISTRIB_CODENAME=''
@@ -992,11 +992,11 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati post x2000 card
+		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
-		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
+# 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
