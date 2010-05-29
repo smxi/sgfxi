@@ -529,7 +529,19 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						3[4-9])
+						34)
+							case $DRIVER_DEFAULT in
+								10-[5-9]|10-1[0-2])
+									:
+									;;
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
+									;;
+							esac
+							;;
+						3[5-9])
 							if [ "$B_TESTING_3" != 'true' ];then
 								error_handler 234 $KERNEL_THIRD
 							fi
