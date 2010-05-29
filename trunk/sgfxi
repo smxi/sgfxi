@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.47
-####  Date: May 28 2010
+####  version: 4.13.48
+####  Date: May 29 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -201,7 +201,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='256.25:::'
+NV_VERSIONS_BETA='256.29:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -610,16 +610,12 @@ driver_support_tests()
 								esac
 								;;
 						esac
+						
 						# white list of known http downloads, otherwise use ftp, this will be required
 						# for any future drivers auto detected beta drivers anyway.
 						# driver=71.86.13;wget --spider http://download.nvidia.com/XFree86/Linux-x86/$driver/NVIDIA-Linux-x86-$driver-pkg0.run 
 						# default download site for nvidia, return http://us.download if problems
 						case $DRIVER_DEFAULT in
-							# new download urls, no -pkgx in file name string
-							256.25)
-								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
-								NV_PKG_NO=''
-								;;
 							190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[13]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
 								;;
@@ -627,9 +623,14 @@ driver_support_tests()
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
+						
 						# white list of old path version drivers
 						# new download urls, no -pkgx in file name string
 						case $DRIVER_DEFAULT in
+							# new download urls, no -pkgx in file name string
+							256.*)
+								NV_PKG_NO=''
+								;;
 							195.36.24|173.14.25|96.43.17|71.86.13|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.22|169.12|100.14.19|96.43.16|96.43.14|71.86.11|71.86.09)
 								# this tweak thanks to ajw1980, who pointed out that pkg2 installs
 								# 32 bit compatibility libs in 64 bit without further fuss.
@@ -1004,7 +1005,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-		CARD_DATA=1002:9442 # fake ati post x2000 card
+# 		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -1024,7 +1025,7 @@ set_test_data()
 # 		# 'sid' 'testing' 'stable' 'etch'
 #		SYSTEM_BASE='debian'
 # 		SYSTEM_CODENAME='testing'
-		X_VERSION='1.6' # override for patching etc
+		X_VERSION='1.7' # override for patching etc
 # leave this at first character or errors in updater tools will occur
 :
 	fi
