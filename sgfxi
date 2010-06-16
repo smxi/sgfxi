@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.48
-####  Date: May 29 2010
+####  version: 4.13.49
+####  Date: June 16 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -169,9 +169,9 @@ else
 	BITS="32"
 fi
 
-# this handles the 1.x syntax used by xorg version in experimental
-# it also handles the totally pointless change in ID text they did with 1.4
-# slicing out parts prior to parentheses
+# this handles the 1.x syntax used by newer xorg versions
+# it also handles the change in ID text they did with 1.4
+# slicing out parts prior to parentheses: X.Org X Server 1.7.7
 X_VERSION=$( X -version 2>&1 | grep 'X Window System' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]' )
 if [ -z "$X_VERSION" ];then
 	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]' )
@@ -193,7 +193,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='195.36.24:173.14.25:96.43.17:71.86.13'
+NV_VERSIONS='195.36.31:173.14.25:96.43.17:71.86.13'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -211,12 +211,13 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA"
+# stable primary: 195.36.31
 # stable primary: 190.53 190.42 195.36.08 ( bad, recalled ) 195.36.15 195.36.24
 # stable primary: 185.18.36 185.18.31 185.18.29 185.18.14 180.60 180.51 180.44
 # stable legacy 1: 71.86.13 71.86.11 71.86.09 71.86.06
 # stable legacy 2: 96.43.16 96.43.14 96.43.13 96.43.11
 # stable legacy 3: 173.14.25 173.14.22 173.14.20 173.14.18 173.14.12
-NV_OTHERS='195.36.15:190.53:190.42:185.18.36:180.60:177.82:173.14.22:169.12:100.14.19:96.43.16:96.43.14:71.86.11:71.86.09'
+NV_OTHERS='195.36.24:195.36.15:190.53:190.42:185.18.36:180.60:177.82:173.14.22:169.12:100.14.19:96.43.16:96.43.14:71.86.11:71.86.09'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -574,7 +575,7 @@ driver_support_tests()
 						case $X_VERSION in 
 							1.[8-9])
 								case $DRIVER_DEFAULT in
-									256.*|195.36.24|$DISTRO_NVIDIA)
+									256.*|195.36.[2-9][0-9]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.8
 										;;
 									*)
@@ -631,7 +632,7 @@ driver_support_tests()
 							256.*)
 								NV_PKG_NO=''
 								;;
-							195.36.24|173.14.25|96.43.17|71.86.13|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.22|169.12|100.14.19|96.43.16|96.43.14|71.86.11|71.86.09)
+							195.36.31|195.36.24|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.25|173.14.22|169.12|100.14.19|96.43.17|71.86.13|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.22|169.12|100.14.19|96.43.16|96.43.14|71.86.11|71.86.09)
 								# this tweak thanks to ajw1980, who pointed out that pkg2 installs
 								# 32 bit compatibility libs in 64 bit without further fuss.
 								if [ "$BITS" == '64' ];then
