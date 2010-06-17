@@ -950,7 +950,7 @@ run_driver_patches()
 								patchFile='FGLRX-2.6.33-10-2.diff'
 								apply_patch_file $patchFile
 								;;
-							10-[3-6])
+							10-[3-5])
 								patchFile='FGLRX-2.6.33-10-x.diff'
 								apply_patch_file $patchFile
 								;;
@@ -962,7 +962,7 @@ run_driver_patches()
 					# test if the /generated directory exists, if it does, then use patch.
 					if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
 						case $DRIVER_DEFAULT in
-							10-[4-6])
+							10-[4-5])
 								patchFile='FGLRX-2.6.33-10-x.diff'
 								apply_patch_file $patchFile
 								patchFile='FGLRX-2.6.34-rc4-10-4.diff'
