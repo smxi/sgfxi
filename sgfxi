@@ -969,10 +969,10 @@ run_driver_patches()
 								apply_patch_file $patchFile
 								;;
 							10-[6])
-								patchFile='FGLRX-2.6.33-10-x.diff'
-								apply_patch_file $patchFile
-# 								patchFile='FGLRX-2.6.34-rc4-10-4.diff'
+# 								patchFile='FGLRX-2.6.33-10-x.diff'
 # 								apply_patch_file $patchFile
+								patchFile='FGLRX-2.6.34-rc4-10-4.diff'
+								apply_patch_file $patchFile
 								;;
 						esac
 					fi
