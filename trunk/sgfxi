@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.53
-####  Date: June 18 2010
+####  version: 4.13.54
+####  Date: June 19 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -161,6 +161,7 @@ KERNEL_THREE='' # like: 2.6.19
 KERNEL_THIRD='' # like: 19, for math use
 IS_SIDUX_KERNEL=''
 IS_XEN=''
+NV_64_ARCH=''
 
 # check for 64 bit first
 if [ -n "$( uname -m | grep -o 'x86_64' )" ];then
@@ -624,19 +625,26 @@ driver_support_tests()
 								NVIDIA_DOWNLOAD_SITE='ftp://download.nvidia.com'
 								;;
 						esac
-						
+						# ftp://download.nvidia.com/XFree86/Linux-x86/256.35/NVIDIA-Linux-x86-256.35.run
+						#ftp://download.nvidia.com/XFree86/Linux-x86_64/256.35/NVIDIA-Linux-x86_64-256.35.run
+						#ftp://download.nvidia.com/XFree86/Linux-x86_64/256.35/NVIDIA-Linux-x86-256.35.run
 						# white list of old path version drivers
 						# new download urls, no -pkgx in file name string
 						case $DRIVER_DEFAULT in
 							# new download urls, no -pkgx in file name string
-							256.*)
+							256.29)
 								NV_PKG_NO=''
+								# this has changed in 256.35, no idea why
+								if [ "$BITS" == '64' ];then
+									NV_64_ARCH='_64'
+								fi
 								;;
 							195.36.31|195.36.24|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.25|173.14.22|169.12|100.14.19|96.43.17|71.86.13|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.22|169.12|100.14.19|96.43.16|96.43.14|71.86.11|71.86.09)
 								# this tweak thanks to ajw1980, who pointed out that pkg2 installs
 								# 32 bit compatibility libs in 64 bit without further fuss.
 								if [ "$BITS" == '64' ];then
 									NV_PKG_NO='-pkg2'
+									NV_64_ARCH='_64'
 								else
 									NV_PKG_NO='-pkg0'
 								fi
@@ -1020,7 +1028,7 @@ set_test_data()
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
-		BITS=64
+# 		BITS=64
 # 		# if you want to test for/without sidux kernels, set to null '' or 'true'
 		IS_SIDUX_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
@@ -3583,7 +3591,7 @@ set_download_info()
 		$NVIDIA)
 			
 			# set the package name, .run is added to it when it's needed
-			DRIVER_FILE="NVIDIA-Linux-x86$ARCH-$DRIVER_DEFAULT$NV_PKG_NO"
+			DRIVER_FILE="NVIDIA-Linux-x86$NV_64_ARCH-$DRIVER_DEFAULT$NV_PKG_NO"
 			downloadUrl="$NVIDIA_DOWNLOAD_SITE/XFree86/Linux-x86$ARCH/$DRIVER_DEFAULT/"
 			;;
 		$FGLRX)
