@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.54
+####  version: 4.13.55
 ####  Date: June 19 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -161,7 +161,6 @@ KERNEL_THREE='' # like: 2.6.19
 KERNEL_THIRD='' # like: 19, for math use
 IS_SIDUX_KERNEL=''
 IS_XEN=''
-NV_64_ARCH=''
 
 # check for 64 bit first
 if [ -n "$( uname -m | grep -o 'x86_64' )" ];then
@@ -240,6 +239,7 @@ NV_FED_LEGACY_3='-173xx'
 NVIDIA_DOWNLOAD_SITE='' 
 # needs dynamic assignment because new drivers won't use this in the string
 NV_PKG_NO=''
+NV_64_ARCH='' # if nvidia changes file name use this
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
@@ -635,16 +635,15 @@ driver_support_tests()
 							256.29)
 								NV_PKG_NO=''
 								# this has changed in 256.35, no idea why
-								if [ "$BITS" == '64' ];then
-									NV_64_ARCH='_64'
-								fi
+# 								if [ "$BITS" == '64' ];then
+# 									NV_64_ARCH='_64'
+# 								fi
 								;;
 							195.36.31|195.36.24|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.25|173.14.22|169.12|100.14.19|96.43.17|71.86.13|195.36.15|190.53|190.42|185.18.36|180.60|177.82|173.14.22|169.12|100.14.19|96.43.16|96.43.14|71.86.11|71.86.09)
 								# this tweak thanks to ajw1980, who pointed out that pkg2 installs
 								# 32 bit compatibility libs in 64 bit without further fuss.
 								if [ "$BITS" == '64' ];then
 									NV_PKG_NO='-pkg2'
-									NV_64_ARCH='_64'
 								else
 									NV_PKG_NO='-pkg0'
 								fi
@@ -1028,7 +1027,7 @@ set_test_data()
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
-# 		BITS=64
+		BITS=64
 # 		# if you want to test for/without sidux kernels, set to null '' or 'true'
 		IS_SIDUX_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
@@ -3406,6 +3405,7 @@ set_cpu_data()
 		$NVIDIA)
 			if [ "$BITS" == '64' ];then
 				ARCH='_64'
+				NV_64_ARCH='_64'
 			fi
 			;;
 		$FGLRX)
