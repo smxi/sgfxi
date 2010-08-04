@@ -214,8 +214,8 @@ NV_TESTING="$NV_VERSIONS_BETA:256.29"
 # stable primary: 256.35 256.44 
 # stable primary: 195.36.08 ( bad, recalled ) 195.36.15 195.36.24 195.36.31
 # stable primary: 190.42 190.53 
-# stable primary: 185.18.36 185.18.31 185.18.29 185.18.14 
-# stable primary: 180.60 180.51 180.44
+# stable primary: 185.18.14 185.18.29 185.18.31 185.18.36 
+# stable primary: 180.44 180.51 180.60 
 # stable legacy 1: 71.86.06 71.86.09 71.86.11 71.86.13 71.86.14
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
