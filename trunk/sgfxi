@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.64
+####  version: 4.13.65
 ####  Date: September 4 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -201,7 +201,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA=':::'
+NV_VERSIONS_BETA='260.19.04:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -210,8 +210,8 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:256.29"
-# stable primary: 256.35 256.44 
+NV_TESTING="$NV_VERSIONS_BETA:"
+# stable primary: 256.35 256.44 256.53 
 # stable primary: 195.36.08 ( bad, recalled ) 195.36.15 195.36.24 195.36.31
 # stable primary: 190.42 190.53 
 # stable primary: 185.18.14 185.18.29 185.18.31 185.18.36 
@@ -590,7 +590,7 @@ driver_support_tests()
 						case $X_VERSION in 
 							1.[8-9])
 								case $DRIVER_DEFAULT in
-									256.*|195.36.[2-9][0-9]|173.14.2[789]|96.43.1[89]|$DISTRO_NVIDIA)
+									260.*|256.*|195.36.[2-9][0-9]|173.14.2[789]|96.43.1[89]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.8
 										;;
 									*)
@@ -602,7 +602,7 @@ driver_support_tests()
 								;;
 							1.[7]|7.[5-9]|8.[0-9])
 								case $DRIVER_DEFAULT in
-									256.*|195.*|190.53|173.14.2*|96.43.1*|71.86.1[34]|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.53|173.14.2*|96.43.1*|71.86.1[34]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.7
 										;;
 									*)
@@ -679,7 +679,7 @@ driver_support_tests()
 								;;
 							26)
 								case $DRIVER_DEFAULT in
-									256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -691,7 +691,7 @@ driver_support_tests()
 								;;
 							27)
 								case $DRIVER_DEFAULT in
-									256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -703,7 +703,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									256.*|195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -715,7 +715,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									256.*|195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -727,7 +727,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									256.*|195.*|190.*|185.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.*|185.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -740,7 +740,7 @@ driver_support_tests()
 							# note: 34 not fully confirmed yet for all drivers/legacy levels
 							31|32|33|34)
 								case $DRIVER_DEFAULT in
-									256.*|195.*|190.*|185.*|173.14.2*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.*|185.*|173.14.2*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
