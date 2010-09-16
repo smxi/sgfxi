@@ -2051,6 +2051,9 @@ check_set_distro()
 	# be handled as we find them, empirically.
 	elif [ -f "$EDV" ];then
 		workingId='debian'
+		if [ -n "$( grep -si 'Linux Mint Debian' <<< $etcIssue )" ];then
+			workingId='linuxmint-debian'
+		fi
 		# test apt.conf for default version information, this will override everything else
 		if [ -n "$( grep -Esi 'APT::Default-Release[[:space:]]+"(stable|etch|lenny)"' $EAA )" ];then
 			debianDefault='stable'
@@ -2098,11 +2101,14 @@ check_set_distro()
 			SCRIPT_HOME='/usr/bin'
 			X_NAME='Xorg'
 			;;
-		debian)
+		debian|linuxmint-debian)
 			DISTRO_FGLRX=$DEBIAN_FGLRX
 			DISTRO_NVIDIA=$DEBIAN_NVIDIA
 			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
+			if [ "$workingId" == 'linuxmint-debian' ];then
+				APT_TYPE='apt-get'
+			fi
 
 			# set system type. This test will never be perfect, but it's a good approximation
 			if [ "$debianDefault" == 'stable' ] || [ "$debianVersion" == 'etch' -o "$debianVersion" == 'lenny' ] || [ "$stableSources" -gt 0 -a "$sidSources" -eq 0 -a "$testingSources" -eq 0 ];then
@@ -2373,33 +2379,38 @@ check_apt_aptitude()
 		if [ -f /var/log/aptitude ];then
 			case $SYSTEM_BASE in
 				debian)
-					echo $LINE
-					echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
-					echo "Please pick your preferred package manager before you continue, or exit now."
-					echo
-					echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
-					echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
-					echo $LINE
-		
-					select opt in $managers
-					do
-						case $opt in
-							apt-get|aptitude)
-								APT_TYPE=$opt
-								log_function_data "Selected package manager: $opt"
-								get_set_prefs 'set' "apt-type=$opt"
-								;;
-							quit)
-								echo "${S}Ok, figure it out and try again later...${N}"
-								exit 0
-								;;
-							*)
-								echo "${E}You have to pick one before you can continue!${N}"
-								ask_apt_aptitude
-								;;
-						esac
-						break
-					done
+					# leave mint debian using apt-get
+					if [ -z "$( type -P apt )" ];then
+						echo $LINE
+						echo "${S}It appears you are using aptitude. It is not good to mix apt-get and aptitude."
+						echo "Please pick your preferred package manager before you continue, or exit now."
+						echo
+						echo "Your selection (for example: ${C}apt-type=apt-get${S}) will be stored in ${C}/etc/smxi.conf${S}"
+						echo "${C}smxi${S} will also use this choice for its default package manager, so make sure it's correct."
+						echo $LINE
+			
+						select opt in $managers
+						do
+							case $opt in
+								apt-get|aptitude)
+									APT_TYPE=$opt
+									log_function_data "Selected package manager: $opt"
+									get_set_prefs 'set' "apt-type=$opt"
+									;;
+								quit)
+									echo "${S}Ok, figure it out and try again later...${N}"
+									exit 0
+									;;
+								*)
+									echo "${E}You have to pick one before you can continue!${N}"
+									ask_apt_aptitude
+									;;
+							esac
+							break
+						done
+					else
+						log_function_data "Derived Mint Debian using apt wrapper - default to apt-get."
+					fi
 					;;
 				ubuntu)
 					# going to ignore linuxmint's apt wrapper method
