@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.67
+####  version: 4.13.68
 ####  Date: September 16 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -2044,8 +2044,8 @@ check_set_distro()
 	# note that mint/ubuntu have file /etc/debian_version so we need to be careful here
 	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
 		workingId='ubuntu'
-	# mint test
-	elif [ -n "$( grep -si 'mint' <<< $etcIssue )" ];then
+	# mint test, note that for new lmde we are treating it as pure debian
+	elif [ -n "$( grep -si 'mint' <<< $etcIssue )" -a -z "$( grep -si 'Linux Mint Debian' <<< $etcIssue )" ];then
 		workingId='linuxmint'
 	# debian defaults, might miss other ubuntu derived distros but those will
 	# be handled as we find them, empirically.
