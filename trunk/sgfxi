@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.68
+####  version: 4.13.69
 ####  Date: September 16 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1257,6 +1257,9 @@ error_handler()
 			;;
 		214)
 			errorData="Cannot create your new $EXXC because X cannot be killed.\nPlease let the script maintainer know."
+			;;
+		213)
+			errorData="$SCRIPT_NAME cannot locate any /boot/grub/ config files. Unable to continue.\n$SCRIPT_NAME requires grub config files: /boot/grub/menu.lst or /boot/grub/grub.cfg\n$SCRIPT_NAME does not support lilo or unmounted /boot partitions.\nThe action: $errorExtra cannot be done without an active Grub on your system."
 			;;
 		# specific install issues
 		200)
@@ -4275,6 +4278,9 @@ install_modules_to_all_kernels()
 	elif  [ -f "$GRUB1" ];then
 		grubFile=$GRUB1
 	fi
+	if [ -z "$grubFile" ];then
+		error_handler 213 "kernel-module-installer"
+	fi
 	# this isn't a great test, but it's better than no test, and should avoid a lot of false
 	# kernel ids
 	case $SYSTEM_BASE in
@@ -4406,6 +4412,10 @@ check_set_modesetting_off()
 		fi
 	fi
 	log_function_data "grub files: $grubFiles"
+	
+	if [ -z "$grubFiles" ];then
+		error_handler 213 "modesetting-off-$1"
+	fi
 	
 	case $DISTRIB_ID in
 		fedora|sidux|mepis|antix)
@@ -4542,6 +4552,9 @@ check_set_modesetting_on()
 	fi
 	if [ -f "$GRUBED" ];then
 		grubFiles="$grubFiles $GRUBED"
+	fi
+	if [ -z "$grubFiles" ];then
+		error_handler 213 "modesetting-on-$1"
 	fi
 	
 	case $1 in
