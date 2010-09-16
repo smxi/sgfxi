@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.65
-####  Date: September 4 2010
+####  version: 4.13.66
+####  Date: September 16 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -201,7 +201,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='260.19.04:::'
+NV_VERSIONS_BETA='260.19.06:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
