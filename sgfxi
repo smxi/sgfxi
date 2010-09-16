@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and sidux graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.66
+####  version: 4.13.67
 ####  Date: September 16 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1026,9 +1026,9 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-		CARD_DATA=1002:9442 # fake ati post x2000 card
+# 		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
-# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
+		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
@@ -1977,9 +1977,10 @@ check_kernel_headers()
 ### startup and tools testing
 ### -------------------------------------------------------------------
 
+# note that we want this to print with no root error
 check_root()
 {
-	if [ "$(whoami)" != 'root' ];then
+	if [ "$(whoami)" != 'root' -a "$B_PRINT_VER" != 'true' ];then
 		error_handler 251
 	fi
 }
@@ -2018,7 +2019,7 @@ basic_startup_tests()
 	# this corrects a stupid mistake I made
 	rm -f *-sgfxi.log # was creating log files in /usr/local/bin
 	# test to see if any dm is running, we'll shutdown all wm later though
-	if [ -n "$DISPLAY" -a "$B_SKIP_X_TEST" != 'true' -a "$B_KERNEL_MODULE_ONLY" != 'true' ];then
+	if [ -n "$DISPLAY" -a "$B_SKIP_X_TEST" != 'true' -a "$B_KERNEL_MODULE_ONLY" != 'true' -a "$B_PRINT_VER" != 'true' ];then
 		error_handler 250
 	fi
 	case $SYSTEM_BASE in
