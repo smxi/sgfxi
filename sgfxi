@@ -1,9 +1,9 @@
 #!/bin/bash
 ########################################################################
 ####  Script Name: simple/system graphics installer: sgfxi
-####  Debian Sid, Testing, and sidux graphic driver install.
+####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.69
+####  version: 4.13.70
 ####  Date: September 16 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -85,7 +85,7 @@ SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads/"
 SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 
 # script global data
-NON_DEBIAN_PATTERN='(deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
+NON_DEBIAN_PATTERN='(deb-ats|deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
 
 APT_TYPE='apt-get'
 CARD='' # card type: fglrx or nvidia
@@ -159,7 +159,7 @@ KERNEL_BASE='' # like: 2.6
 # note the extra cut -d '-' -f 1 test is to dump the doubled 2.6.24 in new kernel strings.
 KERNEL_THREE='' # like: 2.6.19
 KERNEL_THIRD='' # like: 19, for math use
-IS_SIDUX_KERNEL=''
+IS_APTOSID_KERNEL=''
 IS_XEN=''
 
 # check for 64 bit first
@@ -432,13 +432,13 @@ driver_support_tests()
 							esac
 							;;
 					esac
-					# handle no sidux kernel support first for < 2.6.32
+					# handle no aptosid kernel support first for < 2.6.32
 					# fglrx is working on all Debian/Liquorix kernels
 					# for testing/debugging set this re:
 					# http://techpatterns.com/docs/sgfxi-set-test-data.htm
 					case $KERNEL_THIRD in
 						2[5-9]|3[0-1])
-							if [ -n "$IS_SIDUX_KERNEL" ];then
+							if [ -n "$IS_APTOSID_KERNEL" ];then
 								error_handler 229
 							fi
 							;;
@@ -673,7 +673,7 @@ driver_support_tests()
 						case $KERNEL_THIRD in
 							24) # going to try just 2.6.24 links, see if any issues appear
 								# this doesn't work on debian kernels
-								if [ -n "$IS_SIDUX_KERNEL" ];then
+								if [ -n "$IS_APTOSID_KERNEL" ];then
 									misc_fixes nvidia-24-link # this might always be needed, all cases?
 								fi
 								;;
@@ -900,7 +900,7 @@ run_driver_patches()
 # 						8-4|8-5)
 # 							# debian kernls work normally, no patch required
 # 							# note: due to concerns raised, this patch is not going to be used
-# 							if [ -n "$IS_SIDUX_KERNEL" ]
+# 							if [ -n "$IS_APTOSID_KERNEL" ]
 # 							then
 # 								# pre patch link required, just to keep the information for future reference:
 # 								ln -s arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1.0 arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1
@@ -1035,8 +1035,8 @@ set_test_data()
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
 		BITS=64
-# 		# if you want to test for/without sidux kernels, set to null '' or 'true'
-		IS_SIDUX_KERNEL=''
+# 		# if you want to test for/without aptosid kernels, set to null '' or 'true'
+		IS_APTOSID_KERNEL=''
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
 		KERNEL_THIRD=33
@@ -1210,7 +1210,7 @@ error_handler()
 			errorData="Could not detect gcc version: $errorExtra, or it is not installed.\nPlease let the script maintainer know, this may be a bug in the script."
 			;;
 		229)
-			errorData="The driver: $DRIVER_DEFAULT does not work on sidux kernels.\nYou are trying to install it to this kernel: $KERNEL_VERSION\nCurrently $FGLRX only works on new non-sidux kernels."
+			errorData="The driver: $DRIVER_DEFAULT does not work on aptosid/sidux kernels.\nYou are trying to install it to this kernel: $KERNEL_VERSION\nCurrently $FGLRX only works on new non-aptosid kernels."
 			;;
 		228)
 			errorData="The option you selected: $errorExtra is not supported."
@@ -1870,7 +1870,7 @@ kernel_string_info()
 		KERNEL_VERSION=$( uname -r ) # full kernel name
 	fi
 
-	IS_SIDUX_KERNEL=$( echo $KERNEL_VERSION | grep -E "[\.|-]slh\(64\)\?[\.|-]" )
+	IS_APTOSID_KERNEL=$( echo $KERNEL_VERSION | grep -E "[\.|-]slh\(64\)\?[\.|-]" )
 	IS_XEN=$( grep -si 'CONFIG_XEN=y' /boot/config-$KERNEL_VERSION )
 	KERNEL_BASE=$( echo $KERNEL_VERSION | cut -d '.' -f 1-2 ) # like: 2.6
 	KERNEL_THREE=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 1-3 ) # like: 2.6.19
@@ -2132,7 +2132,9 @@ check_set_distro()
 			X_NAME='X'
 			# these will be used for various advanced tests in some components
 			if [ -z "$DISTRIB_ID" ];then
-				if [ -f /etc/sidux-version ];then
+				if [ -f /etc/aptosid-version ];then
+					DISTRIB_ID='aptosid'
+				elif [ -f /etc/sidux-version ];then
 					DISTRIB_ID='sidux'
 				elif [ -f /etc/antix-version ];then
 					DISTRIB_ID='antix'
@@ -2673,7 +2675,7 @@ update_to_nonfree_sources()
 	local isFree=0 i='' counter=0
 	local eas='/etc/apt/sources.list'
 	local easdl='/etc/apt/sources.list.d/debian.list'
-	local eassl='/etc/apt/sources.list.d/sidux.list'
+	local eassl='/etc/apt/sources.list.d/aptosid.list'
 	local aptProx='' 
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
 	local yumFreeRepo='' yumNonFreeRepo='' yumList='' repoAdded=''
@@ -3166,7 +3168,7 @@ log_writer()
 	# this handles first line indents, all other indents must be set in message data
 	# like so: message="some problem... \n${LOG_INDENT}more problem stuff..."
 	if [ "$LOGGING_STARTED" == 'true' ];then
-		# strip out escape color code, if any. Method by dzz of sidux, thanks ;-)
+		# strip out escape color code, if any. Method by dzz, thanks ;-)
 		echo -e "$1" | sed 's/\x1b\[[0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,2\}m//g' >> $LOG_FILE
 	fi
 }
@@ -3774,7 +3776,7 @@ prep_install()
 
 	echo "${S}Preparing driver install...${N}"
 
-	if [ -f $EDV -a ! -f /etc/sidux-version ];then
+	if [ -f $EDV -a ! -f /etc/sidux-version -a ! -f /etc/aptosid-version ];then
 		m-a -i prepare
 	fi
 
@@ -4418,7 +4420,7 @@ check_set_modesetting_off()
 	fi
 	
 	case $DISTRIB_ID in
-		fedora|sidux|mepis|antix)
+		fedora|aptosid|sidux|mepis|antix)
 			initLevel=3
 			;;
 		debian|ubuntu|mint)
@@ -6236,7 +6238,7 @@ show_options()
 		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
 		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version (legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
-		echo "-! 31 - Backup, download, replace, xorg.conf with basic sidux xorg.conf version(legacy, don't use)."
+		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version(legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 	fi
 	echo
