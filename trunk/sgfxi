@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.13.72
+####  version: 4.14.0
 ####  Date: September 19 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -121,6 +121,7 @@ B_FORCE_OPTION=''
 B_FORCE_REBOOT=''
 B_FORCE_UPDATE=''
 B_KERNEL_MODULE_ONLY=''
+B_GET_LIVE_DRIVERS=''
 B_MOVE_X_CONF=''
 B_NATIVE_DRIVER=''
 B_DEFAULT_NATIVE_DRIVER=''
@@ -1768,6 +1769,40 @@ get_live_nvidia_betas()
 	echo $driverList
 }
 
+# this is to get the live data for print out only, for apps that might use this
+# this is only for -p script printout, and is triggered by: -p -! 121
+reset_using_live_driver_data()
+{
+	local uaFull="-U s-tools/sgfxi-data.tool-data" 
+	local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers )"
+	local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
+	local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
+	local fglrxDefault=$( grep -iA 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
+	
+	# reset script locals with remote values, but only if wget succeeded, otherwise use script
+	# local values as an acceptable failsafe default.
+	if [ -n "$driverList" ];then
+		# DEFAULT: 256.53 :: LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
+		NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefault" )
+		NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
+		NV_LEGACY_2=$( awk '{print $10}' <<< "$nvidiaDefault" ) # ge4xx cards
+		NV_LEGACY_3=$( awk '{print $14}' <<< "$nvidiaDefault" ) # 5xxx cards
+		NV_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 ":" $14 }' <<< "$nvidiaDefault" )
+		
+		# DEFAULT: 260.19.06 :: LEGACY 3: N/A :: LEGACY 2: N/A  :: LEGACY 1: N/A
+		## beta drivers 
+		NV_DEFAULT_BETA=$( awk '{print $2}' <<< "$nvidiaBeta" ) # >= 6xxx
+		NV_LEGACY_BETA_1=$( awk '{print $6}' <<< "$nvidiaBeta" ) # old, tnt etc
+		NV_LEGACY_BETA_2=$( awk '{print $10}' <<< "$nvidiaBeta" ) # ge4xx cards
+		NV_LEGACY_BETA_3=$( awk '{print $14}' <<< "$nvidiaBeta" ) # 5xxx cards
+		
+		# DEFAULT: 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
+		# fglrx drivers
+		FG_DEFAULT=$( awk '{print $2}' <<< "$fglrxDefault" )
+		FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDefault" )
+	fi
+}
+
 ### -------------------------------------------------------------------
 ### general script utilities
 ### -------------------------------------------------------------------
@@ -1868,6 +1903,58 @@ create_data_storage()
 	fi
 }
 
+clean_script_data()
+{
+	check_root
+	cd $SCRIPT_HOME
+
+	local downloadDirectorySize='' backupFiles='' backupFilesCount=''
+	local opt='' options='remove-video-driver-downloads delete-xorg.conf-backup-files quit' repeat='false'
+	
+	echo $MLINE
+	echo "${M}$SCRIPT_NAME cleanup tool"
+	echo $MLINE
+	echo "${S}Calculating cleanup data....${N}"
+	echo $LINE
+	downloadDirectorySize=$( du -ch $SCRIPT_WORKING_DIR 2>/dev/null | grep 'total' )
+	backupFiles=$( ls $EXXC-bu* )
+	backupFilesCount=$( wc -w <<< $backupFiles )
+	echo "${S}The following ${C}$SCRIPT_NAME${S} data exists for possible cleanup in your system"
+	echo "$SCRIPT_WORKING_DIR: ${C}$downloadDirectorySize${S}"
+	echo "$EXXC-bu* backup files: ${C}$backupFilesCount${S}"
+	echo $LINE
+	echo "${C}1 - remove-video-driver-downloads${S} - Delete the ALL video driver downloads."
+	echo "${C}2 - delete-xorg.conf-backup-files${S} - Delete the ALL xorg.conf backup files."
+	echo "${C}3 - quit${S} - Exit now."
+	echo $LINE
+	select opt in $options
+	do
+		case $opt in
+			remove-video-driver-downloads)
+				rm -rf $SCRIPT_WORKING_DIR
+				echo "${C}$SCRIPT_WORKING_DIR${S} deleted. ${C}$downloadDirectorySize${S} cleaned up.${N}"
+				repeat='true'
+				;;
+			delete-xorg.conf-backup-files)
+				rm -rf $backupFiles
+				echo "${C}$backupFilesCount $EXXC-bu*${S} back-up files deleted.${N}"
+				repeat='true'
+				;;
+			quit)
+				echo "${S}Ok, quitting now.${N}"
+				exit 0
+				;;
+			*)	print_error 'opt'
+				repeat='true'
+				;;
+		esac
+		break
+	done
+	
+	if [ "$repeat" == 'true' ];then
+		clean_script_data
+	fi
+}
 ### -------------------------------------------------------------------
 ### kernel data and header testing
 ### -------------------------------------------------------------------
@@ -6206,8 +6293,6 @@ show_options()
 	echo "   Also configures xorg.conf as required. Full radeon xorg 3d configuration automatically."
 	echo "-o Override default: install a specific driver, this is an absolute override - syntax:"
 	echo "   -o 177.68 (for nVidia) or: -o 8-6 (for fglrx)"
-# 	echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
-# 	echo "   then exit the script without doing the driver download/install."
 	echo "-Q Skip start X Question, automatically start X post driver install."
 	echo "-r Remove mode lines from xorg.conf"
 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
@@ -6221,6 +6306,8 @@ show_options()
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
 	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if not in X."
+	echo "-Y Clean script download and backup files. Shows a list of cleanup actions to carry out."
+	echo "   Can be run in X, as root."
 	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
 	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
@@ -6252,6 +6339,10 @@ show_options()
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version(legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
+		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
+		echo "   then exit the script without doing the driver download/install."
+		echo "-! 121  - When used with -p, will use the live driver list from smxi.org/sg/sg-drivers"
+		echo "          instead of the drivers taken from the local user $SCRIPT_NAME values."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
@@ -6266,7 +6357,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbBcCdDeEfFhHj:kK:L:nN:o:pP:QrRsStUvWXxzZ!: opt
+	while getopts AbBcCdDeEfFhHj:kK:L:nN:o:pP:QrRsStUvWXxYzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -6412,6 +6503,8 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -X'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -X - Skip the test for X/KDE. Only use if you know what you are doing!\n"
 				;;
+			Y)	clean_script_data
+				;;
 			z)	if [ -z "$DISPLAY" ];then
 					B_MOVE_X_CONF='true'
 					START_OPTIONS=$START_OPTIONS' -z'
@@ -6506,6 +6599,9 @@ get_options()
 						S=${CALLER_DEF} # change standard text color to caller standard text
 						skipOutput='true'
 						;;
+					121)
+						B_GET_LIVE_DRIVERS='true'
+						;;
 					*)	
 						error_handler 178 "$OPTARG"
 						;;
@@ -6566,6 +6662,10 @@ if [ "$B_PRINT_VER" != 'true' ];then
 		select_card
 	fi
 	print_information
+fi
+
+if [ "$B_GET_LIVE_DRIVERS" == 'true' -a "$B_PRINT_VER" == 'true' ];then
+	reset_using_live_driver_data
 fi
 
 ## this is separate so card can get set first for native installer
