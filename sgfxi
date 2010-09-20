@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.14.1
-####  Date: September 19 2010
+####  version: 4.14.2
+####  Date: September 20 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1774,7 +1774,7 @@ get_live_nvidia_betas()
 reset_using_live_driver_data()
 {
 	local uaFull="-U s-tools/sgfxi-data.tool-data" 
-	local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers )"
+	local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
 	local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
 	local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
 	local fglrxDefault=$( grep -iA 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
@@ -6077,7 +6077,7 @@ show_extra_data()
 	
 	case $1 in
 		d)
-			fullUrl='http://smxi.org/sg/data/sg-drivers'
+			fullUrl='http://smxi.org/sg/data/sg-drivers-23'
 			uaFull="$ua.driver-data"
 			dataType='Supported Drivers List'
 			;;
@@ -6349,7 +6349,7 @@ show_options()
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
 		echo "   then exit the script without doing the driver download/install."
-		echo "-! 121  - When used with -p, will use the live driver list from smxi.org/sg/sg-drivers"
+		echo "-! 121  - When used with -p, will use the live driver list from smxi.org"
 		echo "          instead of the drivers taken from the local user $SCRIPT_NAME values."
 	fi
 	echo
