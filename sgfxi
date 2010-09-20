@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.14.0
+####  version: 4.14.1
 ####  Date: September 19 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1917,7 +1917,7 @@ clean_script_data()
 	echo "${S}Calculating cleanup data....${N}"
 	echo $LINE
 	downloadDirectorySize=$( du -ch $SCRIPT_WORKING_DIR 2>/dev/null | grep 'total' )
-	backupFiles=$( ls $EXXC-bu* )
+	backupFiles=$( ls $EXXC-bu* 2>/dev/null )
 	backupFilesCount=$( wc -w <<< $backupFiles )
 	echo "${S}The following ${C}$SCRIPT_NAME${S} data exists for possible cleanup in your system"
 	echo "$SCRIPT_WORKING_DIR: ${C}$downloadDirectorySize${S}"
@@ -1931,13 +1931,21 @@ clean_script_data()
 	do
 		case $opt in
 			remove-video-driver-downloads)
-				rm -rf $SCRIPT_WORKING_DIR
-				echo "${C}$SCRIPT_WORKING_DIR${S} deleted. ${C}$downloadDirectorySize${S} cleaned up.${N}"
+				if [ -d $SCRIPT_WORKING_DIR ];then
+					rm -rf $SCRIPT_WORKING_DIR
+					echo "${C}$SCRIPT_WORKING_DIR${S} deleted. ${C}$downloadDirectorySize${S} cleaned up.${N}"
+				else
+					echo "${M}No ${C}$SCRIPT_WORKING_DIR${M} directory present so nothing deleted.${N}"
+				fi
 				repeat='true'
 				;;
 			delete-xorg.conf-backup-files)
-				rm -rf $backupFiles
-				echo "${C}$backupFilesCount $EXXC-bu*${S} back-up files deleted.${N}"
+				if [ -n "$backupFiles" ];then
+					rm -rf $backupFiles
+					echo "${C}$backupFilesCount $EXXC-bu*${S} back-up files deleted.${N}"
+				else
+					echo "${M}No ${C}$EXXC-bu*${M} back-up files present so none deleted.${N}"
+				fi
 				repeat='true'
 				;;
 			quit)
