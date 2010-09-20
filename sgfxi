@@ -1923,8 +1923,8 @@ clean_script_data()
 	echo "$SCRIPT_WORKING_DIR: ${C}$downloadDirectorySize${S}"
 	echo "$EXXC-bu* backup files: ${C}$backupFilesCount${S}"
 	echo $LINE
-	echo "${C}1 - remove-video-driver-downloads${S} - Delete the ALL video driver downloads."
-	echo "${C}2 - delete-xorg.conf-backup-files${S} - Delete the ALL xorg.conf backup files."
+	echo "${C}1 - remove-video-driver-downloads${S} - Delete ALL video driver downloads."
+	echo "${C}2 - delete-xorg.conf-backup-files${S} - Delete ALL xorg.conf backup files."
 	echo "${C}3 - quit${S} - Exit now."
 	echo $LINE
 	select opt in $options
