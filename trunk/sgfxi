@@ -1941,7 +1941,7 @@ clean_script_data()
 				;;
 			delete-xorg.conf-backup-files)
 				if [ -n "$backupFiles" ];then
-					rm -rf $backupFiles
+					rm -r $backupFiles
 					echo "${C}$backupFilesCount $EXXC-bu*${S} back-up files deleted.${N}"
 				else
 					echo "${M}No ${C}$EXXC-bu*${M} back-up files present so none deleted.${N}"
