@@ -1909,7 +1909,8 @@ clean_script_data()
 	cd $SCRIPT_HOME
 
 	local downloadDirectorySize='' backupFiles='' backupFilesCount=''
-	local opt='' options='remove-video-driver-downloads delete-xorg.conf-backup-files quit' repeat='false'
+	local opt='' repeat='false'
+	local options="remove-video-driver-downloads delete-xorg.conf-backup-files uninstall-$SCRIPT_NAME quit" 
 	
 	echo $MLINE
 	echo "${M}$SCRIPT_NAME cleanup tool"
@@ -1925,7 +1926,10 @@ clean_script_data()
 	echo $LINE
 	echo "${C}1 - remove-video-driver-downloads${S} - Delete ALL video driver downloads."
 	echo "${C}2 - delete-xorg.conf-backup-files${S} - Delete ALL xorg.conf backup files."
-	echo "${C}3 - quit${S} - Exit now."
+	echo "${C}3 - uninstall-$SCRIPT_NAME${S} - Removes ALL pieces of $SCRIPT_NAME. Cannot be undone."
+	echo "   Will confirm your choice before proceeding."
+	
+	echo "${C}4 - quit${S} - Exit now."
 	echo $LINE
 	select opt in $options
 	do
@@ -1948,6 +1952,9 @@ clean_script_data()
 				fi
 				repeat='true'
 				;;
+			uninstall-$SCRIPT_NAME)
+				uninstall_script
+				;;
 			quit)
 				echo "${S}Ok, quitting now.${N}"
 				exit 0
@@ -1961,6 +1968,45 @@ clean_script_data()
 	
 	if [ "$repeat" == 'true' ];then
 		clean_script_data
+	fi
+}
+
+uninstall_script()
+{
+	local opt=''
+	local options="yes-uninstall-everything return-main-menu"
+	echo $LINE
+	echo "${S}Are you sure you want to totally uninstall ${C}$SCRIPT_NAME${S}"
+	echo "This will remove $SCRIPT_NAME and all its components permanently!"
+	echo $LINE
+	echo "${S}Enter a number for your selection and hit enter"
+	echo $LINE
+	echo "${C}1 - yes-uninstall-everything${S} - Completely uninstall $SCRIPT_NAME and its related."
+	echo "    components, logs, and configurations."
+	echo "${C}2 - return-main-menu${S} - Go back to main menu, skip the uninstall."
+	echo $LINE
+	select opt in $options
+		do
+			case $opt in
+				yes-uninstall-everything)
+					echo "${S}Ok, removing all the pieces now...${N}"
+					rm -rf /var/log/${SCRIPT_NAME}*
+					rm -f $EXXC-bu*
+					rm -f /etc/logrotate.d/${SCRIPT_NAME}*
+					rm -rf $SCRIPT_WORKING_DIR
+					rm -f $SCRIPT_HOME/${SCRIPT_NAME}*
+					echo "${S}Ok, everything is removed. Exiting since $SCRIPT_NAME is now gone.${N}"
+					exit 0
+					;;
+				return-main-menu)
+					echo "${S}Ok, going back to cleanup menu now.${N}"
+					;;
+			esac
+			break
+	done
+	
+	if [ "$repeat" == 'true' ];then
+		uninstall_script
 	fi
 }
 ### -------------------------------------------------------------------
@@ -6314,7 +6360,7 @@ show_options()
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
 	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if not in X."
-	echo "-Y Clean script download and backup files. Shows a list of cleanup actions to carry out."
+	echo "-Y Clean script download and backup files. Shows a list of cleanup actions to carry out, including script uninstaller."
 	echo "   Can be run in X, as root."
 	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
