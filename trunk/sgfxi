@@ -1918,7 +1918,7 @@ clean_script_data()
 	echo "${S}Calculating cleanup data....${N}"
 	echo $LINE
 	downloadDirectorySize=$( du -ch $SCRIPT_WORKING_DIR 2>/dev/null | grep 'total' )
-	backupFiles=$( ls $EXXC-bu* 2>/dev/null )
+	backupFiles=$( ls $EXXC-bu* $EXXC.1st* 2>/dev/null )
 	backupFilesCount=$( wc -w <<< $backupFiles )
 	echo "${S}The following ${C}$SCRIPT_NAME${S} data exists for possible cleanup in your system"
 	echo "$SCRIPT_WORKING_DIR: ${C}$downloadDirectorySize${S}"
