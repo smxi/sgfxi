@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.14.2
-####  Date: September 20 2010
+####  version: 4.14.4
+####  Date: September 22 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -81,7 +81,7 @@ B_ALLOW_AUTO_UPDATE='true'
 # maintainers change this to script default path please to keep things simple if different
 SCRIPT_HOME='/usr/local/bin'
 SCRIPT_NAME='sgfxi'
-SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads/"
+SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads"
 SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 
 # script global data
@@ -1032,7 +1032,7 @@ set_test_data()
 # 		# note: devs: double check this output to make sure it's your user name
 		username=$( getent passwd 1000|cut -d \: -f1 )
 		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
-		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev/"
+		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev"
 		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/"
 # 		PATCH_DOWNLOAD='http://smxi.org/sg/'
 		cd $SCRIPT_HOME
@@ -1994,6 +1994,7 @@ uninstall_script()
 					rm -f $EXXC-bu*
 					rm -f /etc/logrotate.d/${SCRIPT_NAME}*
 					rm -rf $SCRIPT_WORKING_DIR
+					rm -f $SCRIPT_HOME/video_support_* $SCRIPT_HOME/sg-drivers*
 					rm -f $SCRIPT_HOME/${SCRIPT_NAME}*
 					echo "${S}Ok, everything is removed. Exiting since $SCRIPT_NAME is now gone.${N}"
 					exit 0
@@ -3095,8 +3096,8 @@ apply_patch_file()
 	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SCRIPT_NAME-data.patches.$patchFile"
 	local patchFileDataTemp=''
 
-	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY # first change to the correct directory
-	log_function_data "Patch File Dir: $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY"
+	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY # first change to the correct directory
+	log_function_data "Patch File Dir: $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY"
 	log_function_data "Patch URL: $patchUrl"
 
 	echo "${S}Retrieving patch ${C}$patchFile${S}...${N}"
@@ -3963,8 +3964,8 @@ set_install_directory()
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
 			;;
 	esac
-	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
-	log_function_data "Function: set_install_directory - set to: $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY"
+	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
+	log_function_data "Function: set_install_directory - set to: $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY"
 }
 
 preinstall_cleanup()
@@ -3976,7 +3977,7 @@ preinstall_cleanup()
 	echo "${S}Running preinstall cleanup...${N}"
 	# this is not set as a path if native driver install
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
-		cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
+		cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
 	fi
 	# some legacy cleanup gunk, this can probably be dumped
 	if [ -f /etc/modutils/1alsa ];then
@@ -4010,7 +4011,7 @@ preinstall_cleanup()
 	## NVIDIA removal...
 	# double check, clean up anything left after uninstaller runs
 	rm -f ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-	rm -f ${SCRIPT_WORKING_DIR}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+	rm -f ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	if [ -n "$installError" ];then
 		error_handler 192 $installError
@@ -4099,7 +4100,7 @@ run_driver_installer()
 	local distroCodeName=''
 
 	# this was set in prep_install()
-	cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
+	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
 	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT${S} (this might take a while)...${N}"
 
 	log_function_data "driver: $DRIVER_DEFAULT"
@@ -4287,10 +4288,10 @@ build_kernel_module_only()
 			echo $LINE
 			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
 			if [ "$2" != 'silent' ];then
-				bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
 			else
 				silent=' -s'
-				bash $SCRIPT_WORKING_DIR$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
+				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
 			fi
 			if [ "$moduleResult" -ne 0 ];then
 				log_driver_installer_failure
@@ -4322,7 +4323,7 @@ test_module_build_ok()
 	echo $LINE
 	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_VERSION${N}"
 	echo -n "  ${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
-	if [ ! -f "$SCRIPT_WORKING_DIR$runPackage" ];then
+	if [ ! -f "$SCRIPT_WORKING_DIR/$runPackage" ];then
 		echo "${W}NOT FOUND${N}"
 		returnValue=1
 		logData="No Driver Run Package: "
@@ -4379,7 +4380,7 @@ test_module_build_ok()
 		# this file belongs to xserver-xorg but is overwritten by nvidia, so if above test
 		# is true and this is null, then xorg has been renewed
 		xorgNvidia=$( readlink /usr/lib/xorg/modules/extensions/libglx.so | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
-		# installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+		# installedDriver=$( bash $SCRIPT_WORKING_DIR/$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 		if [ -z "$xorgNvidia" ];then
 			echo "${C}Xorg${W} Updated${N}"
 			returnValue=5
@@ -4393,7 +4394,7 @@ test_module_build_ok()
 	fi
 # 	echo "${S}Checking that installed driver is the same as the driver you are having" 
 # 	echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
-# 	installedDriver=$( bash $SCRIPT_WORKING_DIR$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+# 	installedDriver=$( bash $SCRIPT_WORKING_DIR/$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 # 	if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
 # 		echo "${W}MISMATCH${N}"
 # 		returnValue=1
@@ -4932,7 +4933,7 @@ apply_module_patch()
 				grep 'CONFIG_LUPO' . -Rl 2> /dev/null | xargs -i sed -i -e 's/CONFIG_LUPO/CONFIG_XEN/g' {}
 				;;
 		esac
-		cd $SCRIPT_WORKING_DIR$INSTALL_DIRECTORY
+		cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
 	fi
 	eval $LOGPE
 }
