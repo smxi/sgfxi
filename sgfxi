@@ -1991,7 +1991,7 @@ uninstall_script()
 				yes-uninstall-everything)
 					echo "${S}Ok, removing all the pieces now...${N}"
 					rm -rf /var/log/${SCRIPT_NAME}*
-					rm -f $EXXC-bu*
+					rm -f $EXXC-bu* $EXXC.1st*
 					rm -f /etc/logrotate.d/${SCRIPT_NAME}*
 					rm -rf $SCRIPT_WORKING_DIR
 					rm -f $SCRIPT_HOME/video_support_* $SCRIPT_HOME/sg-drivers*
