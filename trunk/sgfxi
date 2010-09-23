@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.14.4
-####  Date: September 22 2010
+####  version: 4.14.5
+####  Date: September 23 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -3420,6 +3420,12 @@ install_native_driver()
 		# this is required to do radeon xorg driver
 		native_driver_install_keep
 		if [ -n "$xorgCore" ];then
+			# aptitude doesn't download missing package for reinstall
+			case $SYSTEM_BASE in
+				debian|ubuntu)
+					install_package "$xorgCore" '' ''
+					;;
+			esac
 			install_package "$xorgCore" '' 'reinstall'
 		fi
 		# need an override for this
@@ -3432,6 +3438,12 @@ install_native_driver()
 			native_driver_experimental "$driver"
 		else
 			if [ "$skipInstall" != 'true' ];then
+				# aptitude doesn't download missing package for reinstall
+				case $SYSTEM_BASE in
+					debian|ubuntu)
+						install_package "$driver" '' ''
+						;;
+				esac
 				install_package $driver '' 'reinstall'
 			fi
 			if [ "$CARD" == "$FGLRX" ];then
@@ -4699,6 +4711,7 @@ check_set_modesetting_on()
 	local emd='/etc/modprobe.d/'
 	local emdbc="/etc/modprobe.d/$1-nouveau.conf"
 	local showMessage='' grubFiles=''
+	local searchReplace1='nomodeset|nouveau.modeset=0|rdblacklist=nouveau|nouveau.blacklist=1'
 	
 	if [ -f "$GRUB1" ];then
 		grubFiles="$GRUB1"
@@ -4717,9 +4730,9 @@ check_set_modesetting_on()
 		nouveau|radeon)
 			case $SYSTEM_BASE in
 				debian|ubuntu)
-					if [ -n "$grubFiles" -a -n "$( grep -Eis '(nomodeset)' $grubFiles )" ];then
+					if [ -n "$grubFiles" -a -n "$( grep -Eis '('$searchReplace1')' $grubFiles )" ];then
 						echo -n "${S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
-						sed -i 's|[[:space:]]nomodeset||i' $grubFiles
+						sed -ri 's/[[:space:]]('$searchReplace1')//g' $grubFiles
 						log_function_data "file updated to remove $1 blacklist: $grubFiles"
 						echo "${S}Removed${N}"
 						showMessage='true'
@@ -4729,7 +4742,7 @@ check_set_modesetting_on()
 # 							update_initramfs "add-$1"
 # 						fi
 						echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
-						echo "${C}blacklisted${M} in your system, you should reboot in order to make these changes"
+						echo "${C}blacklisted${M} in your system, you must reboot in order to make these changes"
 						echo "active for your ${C}$CARD${M} install, and it should work.${N}"
 						B_FORCE_REBOOT='true'
 						print_hec
