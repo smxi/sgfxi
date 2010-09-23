@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.14.5
+####  version: 4.14.6
 ####  Date: September 23 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4638,12 +4638,22 @@ check_set_modesetting_off()
 						showMessage1='true'
 					fi
 					
+					if [ -d /etc/modprobe.d -a -z "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+nouveau' )" ];then
+						if [ ! -f /etc/modprobe.d/nvidia.conf ];then
+							echo 'blacklist nouveau' > /etc/modprobe.d/nvidia.conf
+						else
+							echo 'blacklist nouveau' >> /etc/modprobe.d/nvidia.conf
+						fi
+					fi
+					
 					if [ "$showMessage1" == 'true' ];then
 	# 					if [ "$B_TESTING_6" == 'true' ];then
 	# 						update_initramfs "remove-$1"
 	# 					fi
 						# note: we don't want nouveau to try to restart on reboot, so we're changing
 						# xorg.conf to use vesa here.
+						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau from initrd... ${N}"
+						update-initramfs -u
 						NATIVE_OVERRIDE='vesa'
 						echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
 						update_xorgconf_driver_version
@@ -4736,6 +4746,10 @@ check_set_modesetting_on()
 						log_function_data "file updated to remove $1 blacklist: $grubFiles"
 						echo "${S}Removed${N}"
 						showMessage='true'
+					fi
+					if [ -d /etc/modprobe.d -a -n "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+nouveau' )" ];then
+						echo "${S}Removed nouveau blacklisting from /etc/modprobe.d/*.conf${N}"
+						sed -i 's/blacklist[[:space:]]\+nouveau//' /etc/modprobe.d/*.conf 2>/dev/null
 					fi
 					if [ "$showMessage" == 'true' ];then
 # 						if [ "$B_TESTING_6" == 'true' ];then
