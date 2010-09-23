@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.14.6
+####  version: 4.14.7
 ####  Date: September 23 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4638,12 +4638,14 @@ check_set_modesetting_off()
 						showMessage1='true'
 					fi
 					
-					if [ -d /etc/modprobe.d -a -z "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+nouveau' )" ];then
-						if [ ! -f /etc/modprobe.d/nvidia.conf ];then
-							echo 'blacklist nouveau' > /etc/modprobe.d/nvidia.conf
+					if [ -d /etc/modprobe.d -a -z "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+nouveau' /etc/modprobe.d/*.conf )" ];then
+						echo "${S}Creating ${C}/etc/modprobe.d/blacklist.conf $1 blacklist${S} item..... ${N}"
+						if [ -f /etc/modprobe.d/blacklist.conf ];then
+							echo -e 'blacklist nouveau\n' >> /etc/modprobe.d/blacklist.conf
 						else
-							echo 'blacklist nouveau' >> /etc/modprobe.d/nvidia.conf
+							echo -e 'blacklist nouveau\n' > /etc/modprobe.d/blacklist.conf
 						fi
+						showMessage1='true'
 					fi
 					
 					if [ "$showMessage1" == 'true' ];then
@@ -4690,7 +4692,11 @@ check_set_modesetting_off()
 					fi
 					if [ ! -f "$emdbc" -a -d "$emd" -a "$blacklistNouveau" == 'true' ];then
 						echo -n "${S}Creating ${C}$emdbc $1 blacklist${S} item..... ${N}"
-						echo 'blacklist nouveau' > $emdbc
+						if [ ! -f $emdbc ];then
+							echo -e 'blacklist nouveau\n' > $emdbc
+						else
+							echo -e 'blacklist nouveau\n' >> $emdbc
+						fi
 						log_function_data "file updated to add $1 blacklist: $emdbc"
 						echo "${S}Created${N}"
 						showMessage1='true'
