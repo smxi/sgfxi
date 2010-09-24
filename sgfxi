@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.1
+####  version: 4.15.2
 ####  Date: September 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3462,9 +3462,6 @@ install_native_driver()
 						;;
 				esac
 				set_modesetting_on 'nouveau'
-				echo $MLINE
-				echo "${M}Note: the ${C}nouveau${M} driver requires a ${C}reboot${M} to become active."
-				echo "${C}$SCRIPT_NAME${S} will now let you do that.${N}"
 				;;
 			radeon)
 				set_modesetting_on 'radeon'
@@ -3589,7 +3586,7 @@ prep_native_driver()
 ### KMS Tools - Modesetting On/Off, Blacklist On/Off, Initramfs set
 ### -------------------------------------------------------------------
 
-# $1 - module to be handled
+# $1 - module to be handled; $2 - optional: failed (triggers reboot requirement)
 set_modesetting_off()
 {
 	eval $LOGPE
@@ -3608,11 +3605,13 @@ set_modesetting_off()
 		nouveau|radeon)
 			case $SYSTEM_BASE in
 				arch)
-					echo $LINE
-					echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
-					echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
-					echo "This is because its not possible to remove ${C}$1${S} from a running system.${N}"
-					print_hec
+					if [ "$2" == 'failed' ];then
+						echo $LINE
+						echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
+						echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
+						echo "This is because its not possible to remove ${C}$1${S} from a running system.${N}"
+						print_hec
+					fi
 					;;
 				*)
 					# only act if blacklist/nomodeset was added
@@ -3624,9 +3623,11 @@ set_modesetting_off()
 					if [ "$?" -eq 0 ];then
 						showMessage='true'
 					fi
-					
 					if [ "$showMessage" == 'true' ];then
 						update_initramfs "remove-$1"
+					fi
+					
+					if [ "$showMessage" == 'true' -a "$2" == 'failed' ];then
 						# note: we don't want nouveau to try to restart on reboot, so we're changing
 						# xorg.conf to use vesa here.
 						NATIVE_OVERRIDE='vesa'
@@ -3641,25 +3642,12 @@ set_modesetting_off()
 	eval $LOGPS
 }
 
-# $1 - module to be handled
+# $1 - module to be handled; $2 - optional: failed (triggers reboot requirement)
 set_modesetting_on()
 {
 	eval $LOGPS
-	local showMessage='false' 
-	
-	if [ -f "$GRUB1" ];then
-		grubFiles="$GRUB1"
-	fi
-	if [ -f "$GRUB2" ];then
-		grubFiles="$grubFiles $GRUB2"
-	fi
-	if [ -f "$GRUBED" ];then
-		grubFiles="$grubFiles $GRUBED"
-	fi
-	if [ -z "$grubFiles" ];then
-		error_handler 213 "modesetting-on-$1"
-	fi
-	
+	local showMessage='false'
+
 	case $1 in
 		nouveau|radeon)
 			# only act if blacklist/nomodeset was removed
@@ -3673,9 +3661,12 @@ set_modesetting_on()
 			fi
 			if [ "$showMessage" == 'true' ];then
 				update_initramfs "add-$1"
+			fi
+			if [ "$showMessage" == 'true' -a "$2" == 'failed' ];then
 				echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
 				echo "${C}blacklisted${M} in your system, you must reboot in order to make these changes"
 				echo "active for your ${C}$CARD${M} install, and it should work.${N}"
+				reboot_now_question "$1" "$CARD" "$initLevel"
 				print_hec
 			fi
 			;;
@@ -3689,7 +3680,7 @@ get_active_grub_files()
 	local grubFiles=''
 	
 	if [ -f "$GRUB1_FED" ];then
-			grubFiles="$GRUB1_FED"
+		grubFiles="$GRUB1_FED"
 	else
 		if [ -f "$GRUB1" ];then
 			grubFiles="$GRUB1"
@@ -4922,7 +4913,7 @@ remove_module()
 	# going to run this for all cases, not just failure, maybe that will work better
 	case $1 in
 		nouveau|radeon)
-			set_modesetting_off "$1"
+			set_modesetting_off "$1" "$outcome"
 			;;
 	esac
 # 	if [ "$outcome" == 'failed' ];then
@@ -4955,9 +4946,15 @@ add_module()
 		outcome='added'
 	fi
 	log_function_data "operation outcome: $outcome"
-	if [ "$outcome" == 'failed' ];then
-		set_modesetting_on "$1"
-	fi
+	# going to run this for all cases, not just failure, maybe that will work better
+	case $1 in
+		nouveau|radeon)
+			set_modesetting_on "$1" "$outcome"
+			;;
+	esac
+# 	if [ "$outcome" == 'failed' ];then
+# 		set_modesetting_on "$1"
+# 	fi
 	
 	eval $LOGPE
 }
