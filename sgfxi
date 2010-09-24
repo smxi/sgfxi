@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.2
+####  version: 4.15.3
 ####  Date: September 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -93,6 +93,7 @@ DISTRIB_CODENAME=''
 DISTRIB_ID=''
 DISTRIB_RELEASE=''
 FED_KERNEL_PAE=''
+NON_FREE_DRIVER=''
 SYSTEM_BASE=''
 SYSTEM_CODENAME=''
 NATIVE_OVERRIDE=''
@@ -3449,22 +3450,20 @@ install_native_driver()
 				eval $extraAtiPackage1
 			fi
 		fi
-
+		# we'll need this to determine whether to do a reboot for radeon/nouveau
+		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' /etc/X11/xorg.conf | grep -oEs "(nvidia|fglrx)"
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		update_xorg
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
 		
 		case $NATIVE_OVERRIDE in
-			nouveau)
+			nouveau|radeon)
 				case $SYSTEM_BASE in
 					arch|fedora|debian|ubuntu)
 						add_module "$NATIVE_OVERRIDE"
 						;;
 				esac
-				set_modesetting_on 'nouveau'
-				;;
-			radeon)
-				set_modesetting_on 'radeon'
+				set_modesetting_on $NATIVE_OVERRIDE
 				;;
 		esac
 
@@ -3590,16 +3589,7 @@ prep_native_driver()
 set_modesetting_off()
 {
 	eval $LOGPE
-	local showMessage='false' initLevel='no-init' 
-	
-	case $DISTRIB_ID in
-		fedora|aptosid|sidux|mepis|antix)
-			initLevel=3
-			;;
-		debian|ubuntu|mint)
-			initLevel='no-init'
-			;;
-	esac
+	local showMessage='false'
 	
 	case $1 in
 		nouveau|radeon)
@@ -3633,7 +3623,7 @@ set_modesetting_off()
 						NATIVE_OVERRIDE='vesa'
 						echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
 						update_xorgconf_driver_version
-						reboot_now_question "$1" "$CARD" "$initLevel"
+						reboot_now_question "$1" 'modeset-off'
 					fi
 					;;
 			esac
@@ -3662,12 +3652,8 @@ set_modesetting_on()
 			if [ "$showMessage" == 'true' ];then
 				update_initramfs "add-$1"
 			fi
-			if [ "$showMessage" == 'true' -a "$2" == 'failed' ];then
-				echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
-				echo "${C}blacklisted${M} in your system, you must reboot in order to make these changes"
-				echo "active for your ${C}$CARD${M} install, and it should work.${N}"
-				reboot_now_question "$1" "$CARD" "$initLevel"
-				print_hec
+			if [ "$showMessage" == 'true' -a "$2" == 'failed' ] || [ -n "$NON_FREE_DRIVER" ];then
+				reboot_now_question "$1" 'modeset-on'
 			fi
 			;;
 	esac
@@ -3907,15 +3893,24 @@ update_initramfs()
 	eval $LOGPE
 }
 
-# args: $1 - module; $2 - driver; $3 - init level (?)
+# args: $1 - module; $2 - modeset-on/modeset-off
 reboot_now_question()
 {
 	eval $LOGPS
-	local opt='' options='' initText=''
+	local opt='' options='' initText='' initLevel=''
 	
-	case $3 in
+	case $DISTRIB_ID in
+		fedora|aptosid|sidux|mepis|antix)
+			initLevel=3
+			;;
+		*)
+			initLevel='no-init'
+			;;
+	esac
+	
+	case $initLevel in
 		2|3|4)
-			initText="(use init ${C}$3${M} to start, or use ${C}$3${M} at grub)"
+			initText="(use init ${C}$initLevel${M} to start, or use ${C}$initLevel${M} at grub)"
 			;;
 		*)
 			initText="(use ctrl+alt+F1 to enter console after reboot)"
@@ -3923,19 +3918,34 @@ reboot_now_question()
 	esac
 	
 	echo $MLINE
-	echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
-	echo "your ${C}$CARD${M} install is completed, and you may need to reboot again if it errors out,"
-	echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
-	echo
-	echo "${S}For best results, select the ${C}shutdown${S} option, let the computer sit for a minute, then restart it."
+	if [ "$2" == 'modeset-off' ];then
+		echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
+		echo "your ${C}$CARD${M} install is completed, and you may need to reboot again if it errors out,"
+		echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
+		echo
+		echo "${S}For best results, select the ${C}shutdown${S} option, let the computer sit for a minute, then restart it."
+		
+		echo $MLINE
+		echo "${S}Not everyone's systems are having problems getting rid of ${C}$1${S}, but to make the process"
+		echo "more consistently safe and reliable this step seems to be a good idea. Once you reboot,"
+		echo "the ${C}$1${S} module will not be loaded, and no conflicts or issues should occur."
+		echo "You only need to do this one time, since after that the ${C}$1${S} module will not load"
+	elif [ "$2" == 'modeset-on' ];then
+		echo "${M}To make your new ${C}$1 Xorg / Kernel modules${S} fully functional, you will need to reboot first"
+		echo
+		echo "${W}The ${C}$1${W} drivers have very unreliable support for newer ${C}nVidia/ATI${W} cards!"
+		echo 
+		echo "${S}If your desktop fails to start properly after you reboot, you may need to do one of two things:"
+		echo "1 - move your xorg.conf file to a temporary new file name, like: "
+		echo "    ${C}mv /etc/X11/xorg.conf /etc/X11/xorg.conf-holder${S}"
+		echo "    then restart your gdm/kdm/xdm/slim desktop login manager. If X then starts, you're fine."
+		echo "2 - Add the grub kernel option: ${C}nomodeset${S}"
+		echo "    at grub load, using the edit (e) method in grub, then boot with that. This will allow"
+		echo "    you to at least run $SCRIPT_NAME to install the non-free driver."
+	fi
 	echo $MLINE
-	echo "${M}Remember, to install ${C}$2${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
+	echo "${M}Remember, to install ${C}$CARD${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
 	echo "after you have restarted $initText"
-	echo $MLINE
-	echo "${S}Not everyone's systems are having problems getting rid of ${C}$1${S}, but to make the process"
-	echo "more consistently safe and reliable this step seems to be a good idea. Once you reboot,"
-	echo "the ${C}$1${S} module will not be loaded, and no conflicts or issues should occur."
-	echo "You only need to do this one time, since after that the ${C}$1${S} module will not load"
 	echo $LINE
 	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
 	echo "${C}2 - reboot${S} - Reboot. This may not let some data unload from your memory.${N}"
@@ -3971,8 +3981,6 @@ reboot_now_question()
 		reboot_now_question
 	fi
 }
-
-
 
 ### -------------------------------------------------------------------
 ### Non-free Driver installer section
