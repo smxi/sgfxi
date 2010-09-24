@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.3
+####  version: 4.15.4
 ####  Date: September 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3799,18 +3799,18 @@ remove_grub_nomodeset_blacklist_item()
 add_modprobe_d_blacklist_item()
 {
 	eval $LOGUS
-	local emdbc='/etc/modprobe.d/blacklist.conf' returnValue=1
+	local empksb='/etc/modprobe.d/kms-sg-blacklist.conf' returnValue=1
 	
 	if [ -d /etc/modprobe.d ];then
 		if [ -z "$( grep -Es "^[[:space:]]*blacklist[[:space:]]+$1" /etc/modprobe.d/*.conf )" ];then
-			echo "${S}Creating ${C}$emdbc $1 blacklist${S} item...${N}"
-			if [ -f $emdbc ];then
-				echo -e "blacklist $1\n" >> $emdbc
+			echo "${S}Creating ${C}$empksb $1 blacklist${S} item...${N}"
+			if [ -f $empksb ];then
+				echo -e "blacklist $1" >> $empksb
 			else
-				echo -e "blacklist $1\n" > $emdbc
+				echo -e "blacklist $1" > $empksb
 			fi
 			returnValue=0
-			log_function_data "file updated to add $1 blacklist: $emdbc"
+			log_function_data "file updated to add $1 blacklist: $empksb"
 		fi
 	fi
 	eval $LOGUE
