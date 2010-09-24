@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.4
+####  version: 4.15.5
 ####  Date: September 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3681,7 +3681,7 @@ get_active_grub_files()
 	log_function_data "grub files: $grubFiles"
 	
 	if [ -z "$grubFiles" ];then
-		error_handler 213 "modesetting-off-$1"
+		error_handler 213 "modesetting-on-off"
 	else
 		echo $grubFiles
 	fi
@@ -3693,40 +3693,30 @@ add_grub_nomodeset_blacklist_item()
 {
 	eval $LOGUS
 	
-	local grubFiles='' returnValue=1 moduleSearch1='' moduleSearch2=''
+	local returnValue=1 
 	local noModesetString='nomodeset'
-	
-	case $1 in
-		nouveau)
-			moduleSearch1='nomodeset|nouveau.modeset=0|rdblacklist=nouveau|nouveau.blacklist=1'
-			moduleSearch2='nomodeset|nouveau.modeset=0|rdblacklist=nouveau|nouveau.blacklist=1'
-			;;
-		radeon)
-			moduleSearch1='nomodeset'
-			moduleSearch2='radeon.modeset=0|rdblacklist=radeon|radeon.blacklist=1'
-			;;
-	esac
+	local moduleSearch1="nomodeset|$1.modeset=0|rdblacklist=$1|$1.blacklist=1"
+	local grubFiles=$( get_active_grub_files )
+
 	case $SYSTEM_BASE in
 		fedora)
 			noModesetString="rdblacklist=$1"
 			;;
 	esac
 	
-	grubFiles=$( get_active_grub_files )
-	
 	if [ -n "$grubFiles" ];then
 		if [ -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" ];then
 			echo -n "${S}Adding ${C}$grubFiles $noModesetString${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-			if [ -f "$GRUB1" -a -z "$( grep -Eis 'kernel.*root=.*nomodeset' $GRUB1 )" ];then
+			if [ -f "$GRUB1" -a -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
 				sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1
 			fi
-			if [ -f "$GRUB1" -a -z "$( grep -Eis 'kopt.*root=.*nomodeset' $GRUB1 )" ];then
+			if [ -f "$GRUB1" -a -z "$( grep -Eis 'kopt.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
 				sed -i "/kopt.*root=/s|$| $noModesetString|" $GRUB1
 			fi
-			if [ -f "$GRUB2" ];then
+			if [ -f "$GRUB2" -a -z "$( grep -Eis 'linux.*root=.*('$moduleSearch1')' $GRUB2 )" ];then
 				sed -i "/linux.* root=/s|$| $noModesetString|" $GRUB2
 			fi
-			if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" ];then
+			if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1_FED )" ];then
 				sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1_FED
 			fi	
 			log_function_data "file updated to add $1 nomodeset: $grubFiles"
@@ -3746,13 +3736,11 @@ add_grub_nomodeset_blacklist_item()
 	case $SYSTEM_BASE in
 		fedora)
 			if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" ];then
-				if [ -z "$( grep -Eis '('$moduleSearch2')' $GRUB1_FED )" ];then
-					if [ -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
-						echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
-						sed -i '/kernel.* root=/s|$| vmalloc=256m|' $GRUB1_FED
-						log_function_data "file updated to add vmalloc=256m: $GRUB1_FED"
-						echo "${S}Added${N}"
-					fi
+				if [ -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
+					echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
+					sed -i '/kernel.* root=/s|$| vmalloc=256m|' $GRUB1_FED
+					log_function_data "file updated to add vmalloc=256m: $GRUB1_FED"
+					echo "${S}Added${N}"
 				fi
 				# also make system bootable to init 3 easily with grub, otherwise you can
 				# literally not be able to access tty OR desktop in some cases
@@ -3775,16 +3763,15 @@ add_grub_nomodeset_blacklist_item()
 remove_grub_nomodeset_blacklist_item()
 {
 	eval $LOGUS
-	
-	local grubFiles='' returnValue=1
+
+	local returnValue=1
 	local searchReplace1="nomodeset|$1.modeset=0|rdblacklist=$1|$1.blacklist=1"
-	
-	grubFiles=$( get_active_grub_files )
+	local grubFiles=$( get_active_grub_files )
 	
 	if [ -n "$grubFiles" ];then
 		if [ -n "$( grep -Eis '('$searchReplace1')' $grubFiles )" ];then
 			echo -n "${S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
-			sed -ri 's/[[:space:]]('$searchReplace1')//ig' $grubFiles
+			sed -ri 's/[[:space:]]s('$searchReplace1')//ig' $grubFiles
 			log_function_data "file updated to remove $1 blacklist: $grubFiles"
 			echo "${S}Removed${N}"
 			returnValue=0
@@ -3799,7 +3786,8 @@ remove_grub_nomodeset_blacklist_item()
 add_modprobe_d_blacklist_item()
 {
 	eval $LOGUS
-	local empksb='/etc/modprobe.d/kms-sg-blacklist.conf' returnValue=1
+	local empksb='/etc/modprobe.d/kms-sg-blacklist.conf' 
+	local returnValue=1
 	
 	if [ -d /etc/modprobe.d ];then
 		if [ -z "$( grep -Es "^[[:space:]]*blacklist[[:space:]]+$1" /etc/modprobe.d/*.conf )" ];then
