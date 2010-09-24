@@ -3826,7 +3826,7 @@ remove_modprobe_d_blacklist_item()
 	if [ -d /etc/modprobe.d ];then
 		if [ -n "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+'$1'' /etc/modprobe.d/*.conf )" ];then
 			echo "${S}Removed $1 blacklisting from /etc/modprobe.d/*.conf${N}"
-			sed -i "s/blacklist[[:space:]]\+$1//i" /etc/modprobe.d/*.conf 2>/dev/null
+			sed -i "s/^[[:space:]]*blacklist[[:space:]]\+$1//i" /etc/modprobe.d/*.conf 2>/dev/null
 			returnValue=0
 			log_function_data "$1 blacklist removed from /etc/modprobe.d/*.conf"
 		fi
