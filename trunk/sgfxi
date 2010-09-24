@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.0
+####  version: 4.15.1
 ####  Date: September 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -118,7 +118,6 @@ B_EXTRA_EXPERIMENTAL=''
 B_FGLRX_DEB_BUILDER=''
 B_FGLRX_DIRECT='true' # raising the white flag of surrender...
 B_FORCE_OPTION=''
-B_FORCE_REBOOT=''
 B_FORCE_UPDATE=''
 B_KERNEL_MODULE_ONLY=''
 B_GET_LIVE_DRIVERS=''
@@ -3463,7 +3462,6 @@ install_native_driver()
 						;;
 				esac
 				set_modesetting_on 'nouveau'
-				B_FORCE_REBOOT='true'
 				echo $MLINE
 				echo "${M}Note: the ${C}nouveau${M} driver requires a ${C}reboot${M} to become active."
 				echo "${C}$SCRIPT_NAME${S} will now let you do that.${N}"
@@ -3608,7 +3606,6 @@ set_modesetting_off()
 	
 	case $1 in
 		nouveau|radeon)
-			B_FORCE_REBOOT='true'
 			case $SYSTEM_BASE in
 				arch)
 					echo $LINE
@@ -3679,7 +3676,6 @@ set_modesetting_on()
 				echo "${M}Since ${C}$1${M} module has been added to the kernel, and ${C}$1${M} was"
 				echo "${C}blacklisted${M} in your system, you must reboot in order to make these changes"
 				echo "active for your ${C}$CARD${M} install, and it should work.${N}"
-				B_FORCE_REBOOT='true'
 				print_hec
 			fi
 			;;
@@ -5464,7 +5460,7 @@ x_start_stop_master()
 					else
 						# almost no cases will X be running except a module build to another
 						# kernel, since driver install shuts down X. Maybe distro-driver can do this.
-						if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ] || [ "$B_FORCE_REBOOT" == 'true' ];then
+						if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ];then
 							echo "${S}All done with driver install. Remember, you have to reboot to kernel ${C}$INSTALL_TO_KERNEL${S}"
 							echo "for the driver module you just updated to be active.${N}"
 						else
@@ -5521,7 +5517,7 @@ start_x_question()
 		startXopt='start-desktop' 
 		startXText='echo -e "${C}$startXopt${M} - All finished, (re-)start desktop now."'
 	fi
-	if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ] || [ "$B_FORCE_REBOOT" == 'true' ];then
+	if [ -n "$INSTALL_TO_KERNEL" -a "$INSTALL_TO_KERNEL" != "$( uname -r )" ];then
 		rebootOpt='reboot-now'
 		rebootText='echo -e "${C}$rebootOpt${M} - You must reboot to use the driver for ${C}$INSTALL_TO_KERNEL${M}."'
 	fi
