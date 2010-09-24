@@ -3940,6 +3940,11 @@ reboot_now_question()
 	echo $MLINE
 	echo "${M}Remember, to install ${C}$2${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
 	echo "after you have restarted $initText"
+	echo $MLINE
+	echo "${S}Not everyone's systems are having problems getting rid of ${C}$1${S}, but to make the process"
+	echo "more consistently safe and reliable this step seems to be a good idea. Once you reboot,"
+	echo "the ${C}$1${S} module will not be loaded, and no conflicts or issues should occur."
+	echo "You only need to do this one time, since after that the ${C}$1${S} module will not load"
 	echo $LINE
 	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
 	echo "${C}2 - reboot${S} - Reboot. This may not let some data unload from your memory.${N}"
