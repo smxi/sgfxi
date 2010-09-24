@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.5
+####  version: 4.15.6
 ####  Date: September 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -3451,7 +3451,7 @@ install_native_driver()
 			fi
 		fi
 		# we'll need this to determine whether to do a reboot for radeon/nouveau
-		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' /etc/X11/xorg.conf | grep -oEs "(nvidia|fglrx)"
+		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' /etc/X11/xorg.conf | grep -oEs "(nvidia|fglrx)" )
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		update_xorg
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
@@ -3545,6 +3545,7 @@ download_install_package()
 			packageToInstall=$EXPERIMENTAL_LIBDRM_DEV$systemType
 			;;
 	esac
+	
 	url=$SCRIPT_DOWNLOAD'ati-drivers/'$packageToInstall
 	if [ -z "$packageToInstall" ];then
 		error_handler 187 download-package
@@ -3786,7 +3787,7 @@ remove_grub_nomodeset_blacklist_item()
 add_modprobe_d_blacklist_item()
 {
 	eval $LOGUS
-	local empksb='/etc/modprobe.d/kms-sg-blacklist.conf' 
+	local empksb='/etc/modprobe.d/kms-sg-blacklist.conf'
 	local returnValue=1
 	
 	if [ -d /etc/modprobe.d ];then
