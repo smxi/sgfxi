@@ -3716,7 +3716,7 @@ add_grub_nomodeset_blacklist_item()
 	
 	if [ -n "$grubFiles" ];then
 		if [ -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" ];then
-			echo -n "${S}Adding ${C}$grubFiles nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
+			echo -n "${S}Adding ${C}$grubFiles $noModesetString${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			if [ -f "$GRUB1" -a -z "$( grep -Eis 'kernel.*root=.*nomodeset' $GRUB1 )" ];then
 				sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1
 			fi
@@ -3737,7 +3737,7 @@ add_grub_nomodeset_blacklist_item()
 	if [ -f "$GRUBED" ];then
 		if [ -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*$moduleSearch1" $GRUBED )" ];then
 			echo -n "${S}Adding ${C}$GRUBED nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 nomodeset"|' $GRUBED
+			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 '$noModesetString'"|' $GRUBED
 			echo "${S}Added${N}"
 			log_function_data "file updated to add nouveau nomodeset: $GRUBED"
 			returnValue=0
