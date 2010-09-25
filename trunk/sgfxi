@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.6
+####  version: 4.15.7
 ####  Date: September 24 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -1996,6 +1996,7 @@ uninstall_script()
 					rm -rf $SCRIPT_WORKING_DIR
 					rm -f $SCRIPT_HOME/video_support_* $SCRIPT_HOME/sg-drivers*
 					rm -f $SCRIPT_HOME/${SCRIPT_NAME}*
+					rm -f /etc/modprobe.d/kms-sg-blacklist.conf
 					echo "${S}Ok, everything is removed. Exiting since $SCRIPT_NAME is now gone.${N}"
 					exit 0
 					;;
@@ -3837,7 +3838,7 @@ update_initramfs()
 				remove-nouveau|remove-radeon)
 					if [ -n "$( type -p update-initramfs )" ];then
 						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau from initrd... ${N}"
-						update-initramfs -u
+						update-initramfs -u -k $KERNEL_VERSION
 					fi
 					;;
 			esac
