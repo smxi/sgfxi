@@ -3452,7 +3452,7 @@ install_native_driver()
 			fi
 		fi
 		# we'll need this to determine whether to do a reboot for radeon/nouveau
-		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' /etc/X11/xorg.conf | grep -oEs "(nvidia|fglrx)" )
+		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' $EXXC | grep -oEs "(nvidia|fglrx)" )
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		update_xorg
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
