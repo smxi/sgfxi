@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.7
-####  Date: September 24 2010
+####  version: 4.15.8
+####  Date: September 27 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1351,7 +1351,7 @@ error_handler()
 			errorData="Whoops, how did this happen? It appears you are not running a supported Distro for distro driver install."
 			;;
 		175)
-			errorData="You are using the -k (build kernel module only) option, but required file: $errorExtra\nis not found in $SCRIPT_WORKING_DIR"
+			errorData="You are using the -k (build kernel module only) option, but required file: $errorExtra\nis not found in $SCRIPT_WORKING_DIR\nNote: if your installed driver is NOT the default $SCRIPT_NAME offers, you have to\nuse either the -o <driver number> OR the -B option (if you are using current beta driver)\nplus the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
 			;;
 		174)
 			errorData="The -k option cannot be used if you are using distribution packaged nVidia drivers."
@@ -4866,6 +4866,9 @@ install_modules_to_all_kernels()
 		if [ -n "$DRIVER_OVERRIDE" ];then
 			otherDriver=" -o $DRIVER_OVERRIDE"
 		fi
+		if [ "$B_USE_BETA" == 'true' ];then
+			otherDriver=" -B"
+		fi
 		echo $LINE
 		echo "${S}OK, installing modules to all confirmed kernels now...${N}"
 		for i in $kernelsConfirmed
@@ -6447,6 +6450,9 @@ show_options()
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
 	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
+	echo "      Note: if your installed driver is NOT the default $SCRIPT_NAME offers, you have to"
+	echo "      use either the -o <driver number> OR the -B option (if you are using current beta driver)"
+	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
 	if [ "$1" == 'full' ];then
 		echo $PLINE
 		echo "Developer and Testing Options (Advanced):"
