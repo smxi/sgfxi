@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.8
-####  Date: September 27 2010
+####  version: 4.15.9
+####  Date: October 1 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -194,7 +194,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='256.53:173.14.27:96.43.18:71.86.14'
+NV_VERSIONS='256.53:173.14.28:96.43.18:71.86.14'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -600,8 +600,21 @@ driver_support_tests()
 								;;
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
-						case $X_VERSION in 
-							1.[8-9])
+						case $X_VERSION in
+							1.9)
+								case $DRIVER_DEFAULT in
+									# not positive about 256 series + 1.9, or 96
+									260.*|256.*|173.14.2[89]|96.43.1[9]|$DISTRO_NVIDIA)
+										: # all other drivers fail to support xorg >= 1.9
+										;;
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
+							1.8)
 								case $DRIVER_DEFAULT in
 									260.*|256.*|195.36.[2-9][0-9]|173.14.2[789]|96.43.1[89]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.8
@@ -754,6 +767,19 @@ driver_support_tests()
 							31|32|33|34)
 								case $DRIVER_DEFAULT in
 									260.*|256.*|195.*|190.*|185.*|173.14.2*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+										: # do nothing
+										;;
+									*) # use 225 for beta testing errors
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 234 $KERNEL_THIRD
+										fi
+										;;
+								esac
+								;;
+							35|36)
+								# we'll assume the older drivers don't work here
+								case $DRIVER_DEFAULT in
+									260.*|256.*|173.14.2*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
