@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.11
+####  version: 4.15.12
 ####  Date: October 18 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -120,6 +120,7 @@ B_FGLRX_DEB_BUILDER=''
 B_FGLRX_DIRECT='true' # raising the white flag of surrender...
 B_FORCE_OPTION=''
 B_FORCE_UPDATE=''
+B_GUI_MODE='false'
 B_KERNEL_MODULE_ONLY=''
 B_GET_LIVE_DRIVERS=''
 B_MOVE_X_CONF=''
@@ -4538,8 +4539,12 @@ run_driver_installer()
 			if [ -d $xModPath -a -d $xLibPath ];then
 				# --x-library-path=$xLibPath
 				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPath"
+				
 			else
 				installerArgs="-s -N"
+			fi
+			if [ "$B_GUI_MODE" == 'true' ];then
+				installerArgs="$installerArgs --no-x-check"
 			fi
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
@@ -6520,7 +6525,7 @@ get_options()
 {
 	local opt=''
 
-	while getopts AbBcCdDeEfFhHj:kK:L:nN:o:pP:QrRsStUvWXxYzZ!: opt
+	while getopts AbBcCdDeEfFGhHj:kK:L:nN:o:pP:QrRsStUvWXxYzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -6567,6 +6572,11 @@ get_options()
 				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -F'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX package builder install. Not reliable, but try if you want.\n       -F is deprecated, please use -D instead in the future.\n"
+				;;
+			G)	B_GUI_MODE='true'
+				B_SKIP_X_TEST='true'
+				START_OPTIONS=$START_OPTIONS' -G'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -G - Gui mode. Run in X. For nVidia, passes --no-x-check flag to nvidia installer\n       . Not reliable, but try if you want.\n"
 				;;
 			j)	if [ -n "$( grep -E '^[0-4]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
