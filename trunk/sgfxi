@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.12
-####  Date: October 18 2010
+####  version: 4.15.13
+####  Date: October 20 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -109,60 +109,67 @@ WITHOUT_RECOMMENDS=''
 X_NAME=''
 
 ## main script boolean switches
-B_AUTORUN=''
-B_BETA_EXISTS=''
-B_BUILD_KERNEL_MODULES=''
-B_DISTRO_FLAG=''
-B_DISPLAY_DEVICES=''
-B_EXPERIMENTAL=''
-B_EXTRA_EXPERIMENTAL=''
-B_FGLRX_DEB_BUILDER=''
+B_AUTORUN='false'
+B_BETA_EXISTS='false'
+B_BUILD_KERNEL_MODULES='false'
+B_COMPOSITE='false' 
+B_DEFAULT_NATIVE_DRIVER='false'
+B_DISTRO_FLAG='false'
+B_DISPLAY_DEVICES='false'
+B_EXPERIMENTAL='false'
+B_EXTRA_EXPERIMENTAL='false'
+B_FGLRX_DEB_BUILDER='false'
 B_FGLRX_DIRECT='true' # raising the white flag of surrender...
-B_FORCE_OPTION=''
-B_FORCE_UPDATE=''
+B_FORCE_OPTION='false'
+B_FORCE_NO_COMPOSITE='false'
+B_FORCE_UPDATE='false'
+B_GET_LIVE_DRIVERS='false'
 B_GUI_MODE='false'
-B_KERNEL_MODULE_ONLY=''
-B_GET_LIVE_DRIVERS=''
-B_MOVE_X_CONF=''
-B_NATIVE_DRIVER=''
-B_DEFAULT_NATIVE_DRIVER=''
-B_NO_XVMC=''
-B_PRINT_VER='' # utilities for smxi
-B_REMOVE_MODELINES=''
-B_SKIP_AUTOSTART=''
-B_SKIP_CONFIG=''
-B_SKIP_CONNECT=''
-B_SKIP_INSTALL=''
-B_SKIP_RESTART=''
-B_SKIP_WGET=''
-B_SKIP_X_QUESTION=''
-B_SKIP_X_TEST=''
-B_SM_INSTALL='' # utilities for smxi
-B_TRIPLE_BUFFER=''
-B_TWINVIEW=''
-B_USE_BETA=''
-B_USE_DIRECT_KERNEL_HEADER=''
-B_USE_DISTRO_DRIVER=''
+B_IS_APTOSID_KERNEL='false'
+B_IS_XEN='false'
+B_KERNEL_MODULE_ONLY='false'
+B_LOGGING_STARTED='false'
+B_MOVE_X_CONF='false'
+B_NATIVE_DRIVER='false'
+B_NO_XVMC='false'
+B_PRINT_VER='false' # utilities for smxi
+B_REMOVE_MODELINES='false'
+# B_RENDER_ACCEL='true' # default use, true
+B_SKIP_AUTOSTART='false' # deprecated, not used
+B_SKIP_CONFIG='false'
+B_SKIP_CONNECT='false' # deprecated, not used
+B_SKIP_INSTALL='false'
+B_SKIP_RESTART='false'
+B_SKIP_WGET='false'
+B_SKIP_X_QUESTION='false'
+B_SKIP_X_TEST='false'
+B_SM_INSTALL='false' # utilities for smxi
+B_TRIPLE_BUFFER='false'
+B_TWINVIEW='false' # deprecated, commented out use
+B_UPDATED='false'
+B_USE_BETA='false' 
+B_USE_DIRECT_KERNEL_HEADER='false' # deprecated, commented out use
+B_USE_DISTRO_DRIVER='false'
+B_USE_XVMC='false'
+B_XORG_BACKED_UP='false'
 
 ## debugger/testing boolean switches
-B_SKIP_FUNCTION=''
-B_TESTING_1='' # triggers testing function
-B_TESTING_2='' # triggers post driver extract/patch exit
-B_TESTING_3='' # overrides testing cases xorg/kernel for driver support
-B_TESTING_4='' # triggers advanced general development testing cases
-B_TESTING_5='' # overrides patch tests
-B_TESTING_6='' # triggers new distro development tests
+B_SKIP_FUNCTION='false'
+B_TESTING_1='false' # triggers testing function
+B_TESTING_2='false' # triggers post driver extract/patch exit
+B_TESTING_3='false' # overrides testing cases xorg/kernel for driver support
+B_TESTING_4='false' # triggers advanced general development testing cases
+B_TESTING_5='false' # overrides patch tests
+B_TESTING_6='false' # triggers new distro development tests
 
-ARCH=''
 # kernel variables strings are now evaluated in kernel_string_info().
 INSTALL_TO_KERNEL=''
-KERNEL_VERSION='' # full kernel name
+KERNEL_ARCH=''
 KERNEL_BASE='' # like: 2.6
+KERNEL_THIRD='' # like: 19, for math use
 # note the extra cut -d '-' -f 1 test is to dump the doubled 2.6.24 in new kernel strings.
 KERNEL_THREE='' # like: 2.6.19
-KERNEL_THIRD='' # like: 19, for math use
-IS_APTOSID_KERNEL=''
-IS_XEN=''
+KERNEL_VERSION='' # full kernel name
 
 # check for 64 bit first
 if [ -n "$( uname -m | grep -o 'x86_64' )" ];then
@@ -250,7 +257,6 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # IMPORTANT: on function set_download_info the actual path file name is set:
 FG_VERSIONS='10-9:10-8:9-3'
 FG_DEFAULT='10-9'
-
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
 FG_OTHERS='10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1:9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4'
@@ -268,13 +274,7 @@ DRIVER_TESTING=''
 # 3 - nvidia 5xxx cards only
 # 100 - fully supported with latest driver
 LEGACY_LEVEL=''
-
 DRIVER_FILE=''
-USE_XVMC=''
-
-ATI_MOD_CONFIG=''
-UPDATED=''
-XORG_BACKED_UP=''
 
 # here we're cutting out both card type and version number for cases with > 1 card
 CARD_COUNT=$( lspci -n | grep -c '0300' )
@@ -285,9 +285,6 @@ CARD_BRAND=''
 # this is reset for multiple gfx cards in select_card()
 # " around CARD_DATA is mandatory for avoiding new grep issue
 BUS_ID=$( lspci -n | grep "$CARD_DATA" | grep -Eio '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' | sed 's/\./:/')
-
-B_COMPOSITE='' # default false
-# RENDER_ACCEL='true' # default use, true
 
 # system paths
 EAA='/etc/apt/apt.conf'
@@ -329,7 +326,6 @@ UBUNTU_NVIDIA='ubuntu-nvidia'
 
 LOG_FILE_DIR="/var/log/$SCRIPT_NAME/"
 LOG_FILE="$SCRIPT_NAME.log"
-LOGGING_STARTED=''
 LOGPS='log_function_data ps $FUNCNAME "$( echo $@ )"'
 LOGPE='log_function_data pe $FUNCNAME'
 LOGUS='log_function_data us $FUNCNAME "$( echo $@ )"'
@@ -453,7 +449,7 @@ driver_support_tests()
 					# http://techpatterns.com/docs/sgfxi-set-test-data.htm
 					case $KERNEL_THIRD in
 						2[5-9]|3[0-1])
-							if [ -n "$IS_APTOSID_KERNEL" ];then
+							if [ "$B_IS_APTOSID_KERNEL" == 'true' ];then
 								error_handler 229
 							fi
 							;;
@@ -701,7 +697,7 @@ driver_support_tests()
 						case $KERNEL_THIRD in
 							24) # going to try just 2.6.24 links, see if any issues appear
 								# this doesn't work on debian kernels
-								if [ -n "$IS_APTOSID_KERNEL" ];then
+								if [ "$B_IS_APTOSID_KERNEL" == 'true' ];then
 									misc_fixes nvidia-24-link # this might always be needed, all cases?
 								fi
 								;;
@@ -941,7 +937,7 @@ run_driver_patches()
 # 						8-4|8-5)
 # 							# debian kernls work normally, no patch required
 # 							# note: due to concerns raised, this patch is not going to be used
-# 							if [ -n "$IS_APTOSID_KERNEL" ]
+# 							if [ "$B_IS_APTOSID_KERNEL" == 'true' ]
 # 							then
 # 								# pre patch link required, just to keep the information for future reference:
 # 								ln -s arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1.0 arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1
@@ -1077,12 +1073,12 @@ set_test_data()
 # 		# set system bits to test 32/64 specific behaviors
 		BITS=64
 # 		# if you want to test for/without aptosid kernels, set to null '' or 'true'
-		IS_APTOSID_KERNEL=''
+		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
 		KERNEL_THIRD=33
 # 		# values: '' or 'true'
-# 		IS_XEN=''
+# 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
 # 		# 'sid' 'testing' 'stable' 'etch'
 #		SYSTEM_BASE='debian'
@@ -1411,7 +1407,7 @@ error_handler()
 	esac
 	ErrorMessage="ERROR: ($errorCode) $errorData"
 	echo -e ${E}$ErrorMessage${N}
-	if [ -f $LOG_FILE -a "$LOGGING_STARTED" == 'true' ];then
+	if [ -f $LOG_FILE -a "$B_LOGGING_STARTED" == 'true' ];then
 		log_function_data "$ErrorMessage"
 		echo
 		echo "${S}Log file is located here: $LOG_FILE"
@@ -1435,7 +1431,7 @@ select_card()
 
 	local cardData=$( lspci -nn | grep 'VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
 	local cards='' card='' singleCardId=''
-	local options='' opt='' found=''
+	local options='' opt='' bFound='false'
 	local timeStampXorg=$EXXC-bu-$( date +%Y-%m-%d-%H:%M:%S )
 
 	echo $MLINE
@@ -1483,7 +1479,7 @@ select_card()
 							cp $EXXC $timeStampXorg
 						fi
 						log_function_data "xorg.conf was backed up to: $timeStampXorg"
-						XORG_BACKED_UP='true'
+						B_XORG_BACKED_UP='true'
 						# set correct bus id as last step, note you have to check for . in PCI string:
 						# like this: O1:00.0 and change it to O1:00:0
 						BUS_ID=$( lspci -n | grep "$CARD_DATA" | grep -Eio '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' | sed 's/\./:/')
@@ -1499,15 +1495,15 @@ select_card()
 						fi
 					fi
 				fi
-				found='true'
+				bFound='true'
 				break
 			else
-				found='false'
+				bFound='false'
 			fi
 		done
 		break
 	done
-	if [ "$found" != "true" ];then
+	if [ "$bFound" != "true" ];then
 		echo "${E}Please select one of the numbers for your choices!${N}"
 		select_card
 	fi
@@ -1517,44 +1513,44 @@ select_card()
 # this is separated from detect card because it will be used for nv/ati basic card tests
 set_card()
 {
-	local foundCard='' card=''
+	local bCardFound='false' card=''
 
 	# note: select_card has already handled multiple cards on box, so no need to loop it
 	CARD_BRAND=$( echo $CARD_DATA | cut -d ':' -f1 )
 	case $CARD_BRAND in
 		10de|12d2)
 			CARD=$NVIDIA
-			foundCard='true'
+			bCardFound='true'
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		1002)
 			CARD=$FGLRX
-			foundCard='true'
+			bCardFound='true'
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		8086)
 			CARD=$INTEL
-			foundCard='true'
+			bCardFound='true'
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		10c8)
 			CARD=$NEOMAGIC
-			foundCard='true'
+			bCardFound='true'
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		121a)
 			CARD=$TDFX
-			foundCard='true'
+			bCardFound='true'
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		*)
 			# this is required to handle unknown card types when forced override is used
 			if [ -n "$NATIVE_OVERRIDE" ];then
-				foundCard='true'
+				bCardFound='true'
 			fi
 			;;
 	esac
-	if [ -z "$foundCard" ];then
+	if [ "$bCardFound" != 'true' ];then
 		error_handler 254
 	fi
 }
@@ -1563,7 +1559,7 @@ set_card()
 ## pick out the id string for nvidia/fglrx, set all the master variables for nv/fg
 detect_card_version()
 {
-	local foundVersion='' version='' found=''  card='' cardBrand='' cardNumber=''
+	local foundVersion='' version='' card='' cardBrand='' cardNumber=''
 	local isQuad='' is8xxx=''
 
 	# note: select_card has already handled multiple cards on box, so no need to loop it
@@ -1592,7 +1588,7 @@ detect_card_version()
 				0020|0028|0029|002c|002d|00a0|0100|0101|0103|0150|0151|0152|0153|0170)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-1' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-1' 'set-exists' )
-					# RENDER_ACCEL='' # set default to false
+					# B_RENDER_ACCEL='' # set default to false
 					LEGACY_LEVEL=1
 					# buntu doesn't have 71xxx drivers in package pool since they don't support
 					# new xorg
@@ -1608,7 +1604,10 @@ detect_card_version()
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-2' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-2' 'set-exists' )
 					LEGACY_LEVEL=2
-					# RENDER_ACCEL='' # set default to false
+					# B_RENDER_ACCEL='' # set default to false
+					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
+						B_COMPOSITE='true'
+					fi
 					;;
 				# This is for the GeForce FX 5xxx series. Not sure about the quadro fx series:
 				# 004d 004e 09d0 009d 00cd 00ce 00fe 019d 019e
@@ -1616,19 +1615,25 @@ detect_card_version()
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-3' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-3' 'set-exists' )
 					LEGACY_LEVEL=3
+					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
+						B_COMPOSITE='true'
+					fi
 					;;
 # 				0191|0193)
 # 					: # this handles the lack of xvmc support in 8xxx cards
 # 					;;
 				*)
 					# set flags for fully supported non-legacy cards
-					USE_XVMC='true'
+					B_USE_XVMC='true'
 					LEGACY_LEVEL=100
+					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
+						B_COMPOSITE='true'
+					fi
 					;;
 			esac
 			# this handles 8xxx xvmc issue
 			if [ -n "$is8xxx" ];then
-				USE_XVMC=''
+				B_USE_XVMC='false'
 			fi
 			# this handles quad cards, whose driver supports both nv legacy and standard cards
 			if [ -n "$isQuad" ];then
@@ -1695,6 +1700,9 @@ detect_card_version()
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
 						B_USE_DISTRO_DRIVER='true'
 					fi
+# 					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
+# 						B_COMPOSITE='true'
+# 					fi
 					;;
 			esac
 			;;
@@ -1786,13 +1794,15 @@ get_live_nvidia_betas()
 	local driverList='' betaCurrent='' beta173='' beta96='' beta71=''
 	
 	# get data
-	driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
-	# get beta drivers
-	betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
-	beta173=$( awk '/^173.*beta/ {print $3}' <<< "$driverList" )
-	beta96=$( awk '/^96.*beta/ {print $3}' <<< "$driverList" )
-	beta71=$( awk '/^71.*beta/ {print $3}' <<< "$driverList" )
-	driverList="$betaCurrent:$beta173:$beta96:$beta71"
+	if [ "$B_SKIP_WGET" != 'true' ];then
+		driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
+		# get beta drivers
+		betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
+		beta173=$( awk '/^173.*beta/ {print $3}' <<< "$driverList" )
+		beta96=$( awk '/^96.*beta/ {print $3}' <<< "$driverList" )
+		beta71=$( awk '/^71.*beta/ {print $3}' <<< "$driverList" )
+		driverList="$betaCurrent:$beta173:$beta96:$beta71"
+	fi
 	# return processed betas
 	echo $driverList
 }
@@ -1801,33 +1811,35 @@ get_live_nvidia_betas()
 # this is only for -p script printout, and is triggered by: -p -! 121
 reset_using_live_driver_data()
 {
-	local uaFull="-U s-tools/sgfxi-data.tool-data" 
-	local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
-	local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
-	local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
-	local fglrxDefault=$( grep -iA 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
-	
-	# reset script locals with remote values, but only if wget succeeded, otherwise use script
-	# local values as an acceptable failsafe default.
-	if [ -n "$driverList" ];then
-		# DEFAULT: 256.53 :: LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
-		NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefault" )
-		NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
-		NV_LEGACY_2=$( awk '{print $10}' <<< "$nvidiaDefault" ) # ge4xx cards
-		NV_LEGACY_3=$( awk '{print $14}' <<< "$nvidiaDefault" ) # 5xxx cards
-		NV_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 ":" $14 }' <<< "$nvidiaDefault" )
+	if [ "$B_SKIP_WGET" != 'true' ];then
+		local uaFull="-U s-tools/sgfxi-data.tool-data" 
+		local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
+		local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
+		local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
+		local fglrxDefault=$( grep -iA 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
 		
-		# DEFAULT: 260.19.06 :: LEGACY 3: N/A :: LEGACY 2: N/A  :: LEGACY 1: N/A
-		## beta drivers 
-		NV_DEFAULT_BETA=$( awk '{print $2}' <<< "$nvidiaBeta" ) # >= 6xxx
-		NV_LEGACY_BETA_1=$( awk '{print $6}' <<< "$nvidiaBeta" ) # old, tnt etc
-		NV_LEGACY_BETA_2=$( awk '{print $10}' <<< "$nvidiaBeta" ) # ge4xx cards
-		NV_LEGACY_BETA_3=$( awk '{print $14}' <<< "$nvidiaBeta" ) # 5xxx cards
-		
-		# DEFAULT: 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
-		# fglrx drivers
-		FG_DEFAULT=$( awk '{print $2}' <<< "$fglrxDefault" )
-		FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDefault" )
+		# reset script locals with remote values, but only if wget succeeded, otherwise use script
+		# local values as an acceptable failsafe default.
+		if [ -n "$driverList" ];then
+			# DEFAULT: 256.53 :: LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
+			NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefault" )
+			NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
+			NV_LEGACY_2=$( awk '{print $10}' <<< "$nvidiaDefault" ) # ge4xx cards
+			NV_LEGACY_3=$( awk '{print $14}' <<< "$nvidiaDefault" ) # 5xxx cards
+			NV_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 ":" $14 }' <<< "$nvidiaDefault" )
+			
+			# DEFAULT: 260.19.06 :: LEGACY 3: N/A :: LEGACY 2: N/A  :: LEGACY 1: N/A
+			## beta drivers 
+			NV_DEFAULT_BETA=$( awk '{print $2}' <<< "$nvidiaBeta" ) # >= 6xxx
+			NV_LEGACY_BETA_1=$( awk '{print $6}' <<< "$nvidiaBeta" ) # old, tnt etc
+			NV_LEGACY_BETA_2=$( awk '{print $10}' <<< "$nvidiaBeta" ) # ge4xx cards
+			NV_LEGACY_BETA_3=$( awk '{print $14}' <<< "$nvidiaBeta" ) # 5xxx cards
+			
+			# DEFAULT: 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
+			# fglrx drivers
+			FG_DEFAULT=$( awk '{print $2}' <<< "$fglrxDefault" )
+			FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDefault" )
+		fi
 	fi
 }
 
@@ -1890,7 +1902,7 @@ cleanup_update_files()
 # make the default locations for driver run package files
 create_data_storage()
 {
-	local nvidiaPackages='' fglrxPackages='' bMoved=''
+	local nvidiaPackages='' fglrxPackages='' bMoved='false'
 	# don't run this in case of user set test paths
 	if [ ! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
 		echo $LINE
@@ -1937,7 +1949,7 @@ clean_script_data()
 	cd $SCRIPT_HOME
 
 	local downloadDirectorySize='' backupFiles='' backupFilesCount=''
-	local opt='' repeat='false'
+	local opt='' bRepeat='false'
 	local options="remove-video-driver-downloads delete-xorg.conf-backup-files uninstall-$SCRIPT_NAME quit" 
 	
 	echo $MLINE
@@ -1969,7 +1981,7 @@ clean_script_data()
 				else
 					echo "${M}No ${C}$SCRIPT_WORKING_DIR${M} directory present so nothing deleted.${N}"
 				fi
-				repeat='true'
+				bRepeat='true'
 				;;
 			delete-xorg.conf-backup-files)
 				if [ -n "$backupFiles" ];then
@@ -1978,7 +1990,7 @@ clean_script_data()
 				else
 					echo "${M}No ${C}$EXXC-bu*${M} back-up files present so none deleted.${N}"
 				fi
-				repeat='true'
+				bRepeat='true'
 				;;
 			uninstall-$SCRIPT_NAME)
 				uninstall_script
@@ -1988,13 +2000,13 @@ clean_script_data()
 				exit 0
 				;;
 			*)	print_error 'opt'
-				repeat='true'
+				bRepeat='true'
 				;;
 		esac
 		break
 	done
 	
-	if [ "$repeat" == 'true' ];then
+	if [ "$bRepeat" == 'true' ];then
 		clean_script_data
 	fi
 }
@@ -2035,7 +2047,7 @@ uninstall_script()
 			break
 	done
 	
-	if [ "$repeat" == 'true' ];then
+	if [ "$bRepeat" == 'true' ];then
 		uninstall_script
 	fi
 }
@@ -2053,8 +2065,12 @@ kernel_string_info()
 		KERNEL_VERSION=$( uname -r ) # full kernel name
 	fi
 
-	IS_APTOSID_KERNEL=$( echo $KERNEL_VERSION | grep -E "[\.|-]slh\(64\)\?[\.|-]" )
-	IS_XEN=$( grep -si 'CONFIG_XEN=y' /boot/config-$KERNEL_VERSION )
+	if [ -n "$( echo $KERNEL_VERSION | grep -sE "[\.|-]slh\(64\)\?[\.|-]" )" ];then
+		B_IS_APTOSID_KERNEL='true'
+	fi
+	if [ -n "$( grep -si 'CONFIG_XEN=y' /boot/config-$KERNEL_VERSION )" ];then
+		B_IS_XEN='true'
+	fi
 	KERNEL_BASE=$( echo $KERNEL_VERSION | cut -d '.' -f 1-2 ) # like: 2.6
 	KERNEL_THREE=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 1-3 ) # like: 2.6.19
 	KERNEL_THIRD=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 3 ) # like: 19, for math use
@@ -2758,8 +2774,8 @@ install_package()
 # args: $1 - update type / name
 update_package_manager()
 {
-	if [ "$UPDATED" != 'true' ];then
-		$APT_TYPE $1 && UPDATED='true'
+	if [ "$B_UPDATED" != 'true' ];then
+		$APT_TYPE $1 && B_UPDATED='true'
 	fi
 }
 
@@ -2861,7 +2877,7 @@ update_to_nonfree_sources()
 	local eassl='/etc/apt/sources.list.d/aptosid.list'
 	local aptProx='' 
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
-	local yumFreeRepo='' yumNonFreeRepo='' yumList='' repoAdded=''
+	local yumFreeRepo='' yumNonFreeRepo='' yumList='' bRepoAdded='false'
 	
 	if [ "$B_USE_DISTRO_DRIVER" == 'true' ];then
 		case $SYSTEM_BASE in
@@ -2891,7 +2907,7 @@ update_to_nonfree_sources()
 							fi
 						fi
 					done
-					$APT_TYPE update && UPDATED='true' # need to refresh
+					$APT_TYPE update && B_UPDATED='true' # need to refresh
 				fi
 				;;
 			ubuntu)
@@ -2909,7 +2925,7 @@ update_to_nonfree_sources()
 				if [ -z "$yumFreeRepo" ];then
 					echo "${S}Adding${N}"
 					rpm -Uvh http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
-					repoAdded='true'
+					bRepoAdded='true'
 				else
 					echo "${S}Present${N}"
 				fi
@@ -2917,11 +2933,11 @@ update_to_nonfree_sources()
 				if [ -z "$yumNonFreeRepo" ];then
 					echo "${S}Adding${N}"
 					rpm -Uvh http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
-					repoAdded='true'
+					bRepoAdded='true'
 				else
 					echo "${S}Present${N}"
 				fi
-				if [ "$repoAdded" == 'true' ];then
+				if [ "$bRepoAdded" == 'true' ];then
 					echo "${S}Please note that you will be asked during the distro driver install to accept the"
 					echo "repo ${C}GPG keys${S} for the repos you just added. Make sure to enter ${C}y${S} for this question.${N}"
 					print_hec
@@ -2969,7 +2985,7 @@ check_package_manager_updated()
 # $3 - extra message; $4 - repeat, to only retest download failure once
 check_update_script()
 {
-	local fileDataTemp='' isGood='' extraText='' runUpdate=''
+	local fileDataTemp='' isGood='' extraText='' bRunUpdate='false'
 	local versionTest=0 versionData='' localVersion='' remoteVersion=''
 	local downloadUrl=$2 uArgs='up' ua="-U s-tools/$SCRIPT_NAME"
 	local origXorg='/etc/X11/xorg-conf-orig-sg'
@@ -2985,14 +3001,14 @@ check_update_script()
 		$SCRIPT_NAME)
 			if [ "$B_FORCE_UPDATE" == 'true' ];then
 				uArgs='ufr'
-				runUpdate='true'
+				bRunUpdate='true'
 			elif [ "$4" == 'repeat' ];then
 				uArgs='rep'
-				runUpdate='true'
+				bRunUpdate='true'
 			# uncomment if you need this to not trigger for dev purposes
 # 			elif [ "$B_TESTING_5" == 'true' ];then
 # 				uArgs='dev'
-# 				runUpdate='true'
+# 				bRunUpdate='true'
 			else
 				echo -n "${S}Checking ${C}$SCRIPT_NAME${S} versions.... ${N}"
 				# 0: same versionp; 1 - different version; 2 - download error
@@ -3002,18 +3018,18 @@ check_update_script()
 				remoteVersion=$( cut -d ':' -f 2 <<< "$versionData" )
 				if [ "$versionTest" -eq 0 ];then
 					echo "${S}local and remote versions match. Continuing...${N}"
-					runUpdate='false'
+					bRunUpdate='false'
 				elif [ "$versionTest" -eq 1 ];then
 					echo "${M}update required:${S} local: ${C}$localVersion${S} - remote: ${C}$remoteVersion${N}"
-					runUpdate='true'
+					bRunUpdate='true'
 				else
 					echo "${E}Failed to aquire remote version data. ${S}Will try direct download instead.${N}"
-					runUpdate='true'
+					bRunUpdate='true'
 				fi
 			fi
 			# this will try to download again, the version tester itself isn't going to do any
 			# kind of error handling
-			if [ "$runUpdate" == 'true' ];then
+			if [ "$bRunUpdate" == 'true' ];then
 				ua="$ua.$uArgs.$SIS"
 				echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
 				fileDataTemp="$( wget $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
@@ -3094,24 +3110,27 @@ check_script_version()
 	local returnValue=0 wgetError=0 validated='' versionData=''
 	local ua="-U s-tools/$SCRIPT_NAME-updater.$SIS"
 	local localVersion='' remoteVersion=''
-
-	versionData="$( wget $ua -qO - $SCRIPT_DOWNLOAD_VERSION )" || wgetError="$?"
-	if [ "$wgetError" -eq 0  ];then
-		validated=$( grep -Esi '#\*\*EOF\*\*#' <<< "$versionData" )
-		if [ -n "$validated" ];then
-			localVersion=$( awk '/^#.*[[:space:]]version:/ {print $3}' $SCRIPT_HOME/$SCRIPT_NAME )
-			remoteVersion=$( grep 'sgfxi' <<< "$versionData" | cut -d '=' -f 2 | cut -d ':' -f 1 )
-			if [ "$localVersion" == "$remoteVersion" ];then
-				returnValue=0
+	if [ "$B_SKIP_WGET" == 'true' ];then
+		returnValue=2
+	else
+		versionData="$( wget $ua -qO - $SCRIPT_DOWNLOAD_VERSION )" || wgetError="$?"
+		if [ "$wgetError" -eq 0  ];then
+			validated=$( grep -Esi '#\*\*EOF\*\*#' <<< "$versionData" )
+			if [ -n "$validated" ];then
+				localVersion=$( awk '/^#.*[[:space:]]version:/ {print $3}' $SCRIPT_HOME/$SCRIPT_NAME )
+				remoteVersion=$( grep 'sgfxi' <<< "$versionData" | cut -d '=' -f 2 | cut -d ':' -f 1 )
+				if [ "$localVersion" == "$remoteVersion" ];then
+					returnValue=0
+				else
+					returnValue=1
+				fi
+				echo "$localVersion:$remoteVersion"
 			else
-				returnValue=1
+				returnValue=2
 			fi
-			echo "$localVersion:$remoteVersion"
 		else
 			returnValue=2
 		fi
-	else
-		returnValue=2
 	fi
 	return $returnValue
 }
@@ -3281,9 +3300,9 @@ create_log()
 	if [ -f $SM_VALUES ];then
 		echo -e "Begin User Set $SM_VALUES:\n$( cat $SM_VALUES)\nEnd User Set Values" >> $LOG_FILE
 	fi
-	echo -e "INSTALL_TO_KERNEL: $INSTALL_TO_KERNEL\nKERNEL_VERSION: $KERNEL_VERSION\nKERNEL_BASE: $KERNEL_BASE\nKERNEL_THREE: $KERNEL_THREE\nKERNEL_THIRD: $KERNEL_THIRD\nIS_XEN: $IS_XEN" >> $LOG_FILE
+	echo -e "INSTALL_TO_KERNEL: $INSTALL_TO_KERNEL\nKERNEL_VERSION: $KERNEL_VERSION\nKERNEL_BASE: $KERNEL_BASE\nKERNEL_THREE: $KERNEL_THREE\nKERNEL_THIRD: $KERNEL_THIRD\nB_IS_XEN: $B_IS_XEN" >> $LOG_FILE
 
-	LOGGING_STARTED='true'
+	B_LOGGING_STARTED='true'
 }
 
 # $1 type or data; $2 is function; $3 - function args, optional
@@ -3350,7 +3369,7 @@ log_writer()
 {
 	# this handles first line indents, all other indents must be set in message data
 	# like so: message="some problem... \n${LOG_INDENT}more problem stuff..."
-	if [ "$LOGGING_STARTED" == 'true' ];then
+	if [ "$B_LOGGING_STARTED" == 'true' ];then
 		# strip out escape color code, if any. Method by dzz, thanks ;-)
 		echo -e "$1" | sed 's/\x1b\[[0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,2\}m//g' >> $LOG_FILE
 	fi
@@ -3371,7 +3390,7 @@ install_native_driver()
 	local xorgBase='' xorgNv='nv' xorgAti='ati' xorgIntel='intel'
 	local xorgDriver='' driver='' currentlyInstalled='' xorgCore=''
 	local driverInstall='' experimentalText='' libMesaGlx=''
-	local extraAtiPackage1='' skipInstall=''
+	local extraAtiPackage1='' bSkipInstall=''
 	
 	case $SYSTEM_BASE in
 		debian|ubuntu)
@@ -3434,7 +3453,7 @@ install_native_driver()
 # 				if [ "$NATIVE_OVERRIDE" != 'nouveau' ];then
 					error_handler 222 "$driver"
 # 				else
-# 					skipInstall='true'
+# 					bSkipInstall='true'
 # 				fi
 			fi
 			print_information_continue 'standard' "The graphics installer will be installing the${C}$experimentalText Free xorg${S} driver: ${C}$driverInstall${N}"
@@ -3466,7 +3485,7 @@ install_native_driver()
 			echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
 			native_driver_experimental "$driver"
 		else
-			if [ "$skipInstall" != 'true' ];then
+			if [ "$bSkipInstall" != 'true' ];then
 				# aptitude doesn't download missing package for reinstall
 				case $SYSTEM_BASE in
 					debian|ubuntu)
@@ -3619,7 +3638,7 @@ prep_native_driver()
 set_modesetting_off()
 {
 	eval $LOGPE
-	local showMessage='false'
+	local bShowMessage='false'
 	
 	case $1 in
 		nouveau|radeon)
@@ -3637,17 +3656,17 @@ set_modesetting_off()
 					# only act if blacklist/nomodeset was added
 					add_grub_nomodeset_blacklist_item $1
 					if [ "$?" -eq 0 ];then
-						showMessage='true'
+						bShowMessage='true'
 					fi
 					add_modprobe_d_blacklist_item $1
 					if [ "$?" -eq 0 ];then
-						showMessage='true'
+						bShowMessage='true'
 					fi
-					if [ "$showMessage" == 'true' ];then
+					if [ "$bShowMessage" == 'true' ];then
 						update_initramfs "remove-$1"
 					fi
 					
-					if [ "$showMessage" == 'true' -a "$2" == 'failed' ];then
+					if [ "$bShowMessage" == 'true' -a "$2" == 'failed' ];then
 						# note: we don't want nouveau to try to restart on reboot, so we're changing
 						# xorg.conf to use vesa here.
 						NATIVE_OVERRIDE='vesa'
@@ -3666,23 +3685,23 @@ set_modesetting_off()
 set_modesetting_on()
 {
 	eval $LOGPS
-	local showMessage='false'
+	local bShowMessage='false'
 
 	case $1 in
 		nouveau|radeon)
 			# only act if blacklist/nomodeset was removed
 			remove_grub_nomodeset_blacklist_item $1
 			if [ "$?" -eq 0 ];then
-				showMessage='true'
+				bShowMessage='true'
 			fi
 			remove_modprobe_d_blacklist_item $1
 			if [ "$?" -eq 0 ];then
-				showMessage='true'
+				bShowMessage='true'
 			fi
-			if [ "$showMessage" == 'true' ];then
+			if [ "$bShowMessage" == 'true' ];then
 				update_initramfs "add-$1"
 			fi
-			if [ "$showMessage" == 'true' -a "$2" == 'failed' ] || [ -n "$NON_FREE_DRIVER" ];then
+			if [ "$bShowMessage" == 'true' -a "$2" == 'failed' ] || [ -n "$NON_FREE_DRIVER" ];then
 				reboot_now_question "$1" 'modeset-on'
 			fi
 			;;
@@ -3989,13 +4008,13 @@ reboot_now_question()
 				;;
 			*)
 				echo "${W}Please select one of the options in the list, thank you.${N}"
-				repeat='true'
+				bRepeat='true'
 				;;
 		esac
 		break
 	done
 	eval $LOGPE
-	if [ "$repeat" == 'true' ];then
+	if [ "$bRepeat" == 'true' ];then
 		reboot_now_question
 	fi
 }
@@ -4010,21 +4029,21 @@ set_cpu_data()
 	case $CARD in
 		$NVIDIA)
 			if [ "$BITS" == '64' ];then
-				ARCH='_64'
+				KERNEL_ARCH='_64'
 				NV_64_ARCH='_64'
 			fi
 			;;
 		$FGLRX)
 			# this is legacy, no longer needed but in case ati changes again leave it
-			ARCH='i386' # default value
+			KERNEL_ARCH='i386' # default value
 			if [ "$BITS" == '64' ];then
-				ARCH='amd64'
+				KERNEL_ARCH='amd64'
 			fi
 			;;
 	esac
 
 	if [ "$B_PRINT_VER" != 'true' ];then
-		log_function_data "BITS: $BITS - arch: $ARCH"
+		log_function_data "BITS: $BITS - arch: $KERNEL_ARCH"
 	fi
 	eval $LOGUE
 }
@@ -4195,10 +4214,9 @@ set_download_info()
 
 	case $CARD in
 		$NVIDIA)
-			
 			# set the package name, .run is added to it when it's needed
 			DRIVER_FILE="NVIDIA-Linux-x86$NV_64_ARCH-$DRIVER_DEFAULT$NV_PKG_NO"
-			downloadUrl="$NVIDIA_DOWNLOAD_SITE/XFree86/Linux-x86$ARCH/$DRIVER_DEFAULT/"
+			downloadUrl="$NVIDIA_DOWNLOAD_SITE/XFree86/Linux-x86$KERNEL_ARCH/$DRIVER_DEFAULT/"
 			;;
 		$FGLRX)
 			# set driver package name
@@ -4318,7 +4336,7 @@ prep_install()
 	eval $LOGPS
 	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-6]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-6]\.[0-9]{1,2}' )
 	local gccPackage="gcc-$gccVersion"  
-	local libMesaGlx='' ubgv='' updateGcc='false'
+	local libMesaGlx='' ubgv='' bUpdateGcc='false'
 
 	case $SYSTEM_BASE in
 		arch)
@@ -4326,7 +4344,7 @@ prep_install()
 			libMesaGlx='libgl'
 			# -n "$gccVersion" -a 
 			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
-				updateGcc='true'
+				bUpdateGcc='true'
 			fi
 			;;
 		debian)
@@ -4338,7 +4356,7 @@ prep_install()
 		fedora)
 			gccPackage='gcc'
 			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
-				updateGcc='true'
+				bUpdateGcc='true'
 			fi
 			;;
 	esac
@@ -4362,7 +4380,7 @@ prep_install()
 		m-a -i prepare
 	fi
 
-	if [ -x "$ubgv" -a "$updateGcc" != 'true' ];then
+	if [ -x "$ubgv" -a "$bUpdateGcc" != 'true' ];then
 		export CC=$ubgv
 	else
 		# going to try to update gcc to kernel version first before error exit.
@@ -5029,7 +5047,7 @@ apply_module_patch()
 	local lmkv="/lib/modules/$KERNEL_VERSION"
 
 	# the debian sid nvidia drivers are now working fine with xen enabled sid kernels
-	if [ "$B_USE_DISTRO_DRIVER" != 'true' ] && [ -d "$lmkv" -a -n "$IS_XEN" ];then
+	if [ "$B_USE_DISTRO_DRIVER" != 'true' ] && [ -d "$lmkv" -a "$B_IS_XEN" == 'true' ];then
 		# patch source: http://blog.creonfx.com/linux/how-to-install-nvidia-driver-on-2625-2-debian-kernel-with-xen
 		cd $lmkv
 		case $1 in
@@ -5458,7 +5476,7 @@ process_xvmc()
 	local lxvmcN='libXvMCNVIDIA_dynamic.so.1' lxvmc='libXvMC.so.1' exxv='/etc/X11/XvMCConfig'
 
 	# xvmc information here: http://www.mythtv.org/wiki/index.php/XvMC
-	if [ "$USE_XVMC" == 'true' -a "$NO_XMVC" != 'true' -a -x /usr/lib/$lxvmcN ];then
+	if [ "$B_USE_XVMC" == 'true' -a "$B_NO_XVMC" != 'true' -a -x /usr/lib/$lxvmcN ];then
 		echo $lxvmcN > $exxv
 	else
 		echo $lxvmc > $exxv
@@ -5513,7 +5531,7 @@ x_start_stop_master()
 start_x_question()
 {
 	eval $LOGPS
-	local opt='' options='' repeat='' package=''
+	local opt='' options='' bRepeat='false' package=''
 	local ia32libs='ia32-libs' iaOpt='install-ia32libs'
 	local ia32Alert='echo -e "\n${M}You should probably (re)install ${C}$ia32libs${M} (even if already installed)\nif you use applications that depend on them in your ${C}64 bit${M} system,\nfor example ${C}Wine${M}.${N}"'
 	local ia32Install='echo -e "${C}$iaOpt${M} - Install ${C}$ia32libs${M} libs."'
@@ -5582,7 +5600,7 @@ start_x_question()
 				fi
 
 				# repeat the question for users so they can start x now if they want.
-				repeat='true'
+				bRepeat='true'
 				;;
 			install-fglrx-glx)
 				if [ "$BITS" == '64' -a "$CARD" == $FGLRX ];then
@@ -5597,7 +5615,7 @@ start_x_question()
 					echo "${E}The packages ${C}$fgGlx${E} are only installable in ${C}64 bit + ATI fglrx${E} systems.${N}"
 				fi
 				# repeat the question for users so they can start x now if they want.
-				repeat='true'
+				bRepeat='true'
 				;;
 			start-desktop)
 				echo "${S}Ok, starting your desktop now, thanks for using this script.${N}"
@@ -5619,13 +5637,13 @@ start_x_question()
 				;;
 			*)
 				echo "${W}Please select one of the options in the list, thank you.${N}"
-				repeat='true'
+				bRepeat='true'
 				;;
 		esac
 		break
 	done
 
-	if [ "$repeat" == 'true' ];then
+	if [ "$bRepeat" == 'true' ];then
 		start_x_question
 	fi
 	eval $LOGPE
@@ -5642,9 +5660,9 @@ start_stop_x()
 	# they will read it, so we'll always use this as default to respect user changes
 	local defaultRunlevel=$( grep -Es '^id.*:initdefault:' /etc/inittab | grep -Eo '[0-5]' )
 	# default, this prevents errors when these don't exist in for ex. fedora
-	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' skipXKill=''
+	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' bSkipXKill='false'
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
-	local gdmCommand='' skipLoop='' dManager=$DISPLAY_MANAGER
+	local gdmCommand='' bSkipLoop='false' dManager=$DISPLAY_MANAGER
 	
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
@@ -5656,13 +5674,13 @@ start_stop_x()
 	case $SYSTEM_BASE in
 		arch)
 			serviceControl='/etc/rc.d/'
-			skipXKill='true' # STARTS X when you KILL X...
+			bSkipXKill='true' # STARTS X when you KILL X...
 			startPath='/etc/rc.d/'
 			;;
 		fedora) 
 			serviceControl='' # no /etc/init.d, it's in /usr/sbin
-			skipLoop='true'
-			skipXKill='true' # STARTS X when you KILL X...
+			bSkipLoop='true'
+			bSkipXKill='true' # STARTS X when you KILL X...
 			case $1 in
 				start)
 					success='true' # go straight to init 5 start up
@@ -5676,7 +5694,7 @@ start_stop_x()
 	esac
 	log_function_data "default runlevel: $defaultRunlevel"
 	## restart x if this is not being run by smxi
-	if [ -z "$DISPLAY_MANAGER" -a "$skipLoop" != 'true' ];then
+	if [ -z "$DISPLAY_MANAGER" -a "$bSkipLoop" != 'true' ];then
 		for dman in $displayManagers
 		do
 			# arch, debian, ubuntu
@@ -5729,7 +5747,7 @@ start_stop_x()
 	# this handles cases where somehow X is still running
 	# startx x starts can for example bypass kdm tests, etc
 	if [ "$1" == 'stop' ];then
-		if [ "$( x_is_running )" -eq 0 -a "$skipXKill" != 'true' ];then
+		if [ "$( x_is_running )" -eq 0 -a "$bSkipXKill" != 'true' ];then
 			echo "${M}Note: display manager shutdown failed... shutting down X directly instead... ${N}"
 			xActionString="$noHup killall Xorg && finalXKill='true'"
 			eval $xActionString
@@ -5815,7 +5833,7 @@ create_x_conf()
 {
 	eval $LOGPS
 	
-	local repeat='' opt='' options=''
+	local bRepeat='false' opt='' options=''
 	
 	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
@@ -5890,13 +5908,13 @@ create_x_conf()
 					;;
 				*)
 					echo "${W}Please select one of the options in the list, thank you.${N}"
-					repeat='true'
+					bRepeat='true'
 					;;
 			esac
 			break
 		done
 		
-		if [ "$repeat" == 'true' ];then
+		if [ "$bRepeat" == 'true' ];then
 			create_x_conf
 		fi
 	elif [ ! -f $EXXC -a -z "$( which X )" ];then
@@ -6118,7 +6136,7 @@ clear_prep_xorg()
 remove_modelines()
 {
 	eval $LOGUS
-	local removeThem=''
+	local removeThem='false'
 
 	## this handles standard cases, always for fglrx, never for native ati/nv
 	#   and whenever required by argument. I'll see if native ever needs them removed
@@ -6149,7 +6167,7 @@ update_xorg()
 	local agpart='on' layout='AUTO,AUTO' allowGlx=''
 
 	# this is set in rare cases of dual card early copy of xorg.conf
-	if [ "$XORG_BACKED_UP" != 'true' ];then
+	if [ "$B_XORG_BACKED_UP" != 'true' ];then
 		if [ ! -e $timeStampXorg ];then
 			cp $EXXC $timeStampXorg
 		fi
@@ -6167,7 +6185,7 @@ update_xorg()
 		case $CARD in
 			$NVIDIA)
 				# set any custom stuff here
-				#[ "$RENDER_ACCEL" != 'true' ] && rend=$stateOff
+				#[ "$B_RENDER_ACCEL" != 'true' ] && rend=$stateOff
 				# switching off this, making default always off, watch for user feedback
 # 				if [ "$B_DISPLAY_DEVICES" == 'true' ];then
 					ignoreDisplay=''
@@ -6230,7 +6248,7 @@ show_extra_data()
 {
 	local fullUrl='' ua='-U s-tools/sgfxi-data' uaFull='' dataFull='' dataType=''
 	local scriptVersion='' scriptDate='' scriptRemoteVersion='' scriptRemoteDate=''
-	local dataWorking='' sysInfo=''
+	local dataWorking='' bSysInfo='false'
 	
 	case $1 in
 		d)
@@ -6242,13 +6260,13 @@ show_extra_data()
 			fullUrl='http://smxi.org/sm/upgrade-data/video_support_fglrx'
 			uaFull="$ua.fglrx-status"
 			dataType='FGLRX Status'
-			sysInfo='true'
+			bSysInfo='true'
 			;;
 		n)
 			fullUrl='http://smxi.org/sm/upgrade-data/video_support_nvidia'
 			uaFull="$ua.nvidia-status"
 			dataType='Nvidia Status'
-			sysInfo='true'
+			bSysInfo='true'
 			;;
 		v)
 			fullUrl=$SCRIPT_DOWNLOAD_VERSION
@@ -6256,7 +6274,7 @@ show_extra_data()
 			dataType="(latest) $SCRIPT_NAME version information"
 			;;
 	esac
-	if [ "$sysInfo" == 'true' ];then
+	if [ "$bSysInfo" == 'true' ];then
 		echo "${S}System Information :: Xorg Version: ${N}$X_VERSION ${S}:: Kernel: ${N}$( uname -r )"
 	fi
 	echo -n "${S}Retrieving live data... ${N}"
@@ -6409,7 +6427,8 @@ show_options()
 	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta driver (nVidia cards only)."
 	echo "   If no beta driver is available, the current stable driver for your card type is used."
 	echo "   (Also checks nvidia for live latest beta information, and replaces script defaults with newer if present)"
-	echo "-c Use composite mode. For things like Beryl/Compiz (nVidia/new ATI cards only)."
+	echo "-c Force use of Xorg composite mode. Beryl/Compiz requires this for 3d. Old nvidia/ATI/Intel "
+	echo "   cards not supported. Composite is default ON for newer nVidia cards (-c not required)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
 	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
 	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (formerly -s)."
@@ -6458,16 +6477,17 @@ show_options()
 	echo "   Also configures xorg.conf as required. Full radeon xorg 3d configuration automatically."
 	echo "-o Override default: install a specific driver, this is an absolute override - syntax:"
 	echo "   -o 177.68 (for nVidia) or: -o 8-6 (for fglrx)"
+	echo "-q Turns off composite mode. Default is ON for newer nVidia cards."
 	echo "-Q Skip start X Question, automatically start X post driver install."
 	echo "-r Remove mode lines from xorg.conf"
-	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
+# 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
 	echo "-R Skips self updating feature. No restart."
 	
-	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
+# 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
-	echo "-W Skip all wget downloads and connection tests. Only use this to reinstall a driver"
-	echo "   that has already been downloaded using $SCRIPT_NAME at least once previously."
+	echo "-W Skip all wget downloads. Only use this to reinstall a driver that has already been"
+	echo "   downloaded using $SCRIPT_NAME at least once previously."
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
 	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if not in X."
@@ -6475,8 +6495,8 @@ show_options()
 	echo "   Can be run in X, as root."
 	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
-	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
-	echo "   you are sure your connection is fine."
+# 	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
+# 	echo "   you are sure your connection is fine."
 	echo $PLINE
 	echo "Advanced Options :: Only for Specialized Cases"
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
@@ -6542,7 +6562,7 @@ get_options()
 				;;
 			c) B_COMPOSITE='true'
 				START_OPTIONS=$START_OPTIONS' -c'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -c - Composite is on. Does not work with legacy nVidia driver (nVidia|Intel only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -c - Force composite flag on. Does not work with legacy nVidia driver\n       Default is on for newer nVidia cards.\n       Switch nVidia composite off with: -q"
 				;;
 			C) B_SKIP_CONFIG='true'
 				START_OPTIONS=$START_OPTIONS' -C'
@@ -6635,6 +6655,11 @@ get_options()
 					error_handler 228 $OPTARG
 				fi
 				;;
+			q)	B_FORCE_NO_COMPOSITE='true'
+				B_COMPOSITE='false'
+				START_OPTIONS=$START_OPTIONS' -q'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -q - Turn off default composite flag (nVidia only).\n"
+				;;
 			Q)	B_SKIP_X_QUESTION='true'
 				START_OPTIONS=$START_OPTIONS' -Q'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Q - X will start automatically when the driver install is finished.\n"
@@ -6653,7 +6678,7 @@ get_options()
 				;;
 			S) B_SKIP_AUTOSTART='true'
 				START_OPTIONS=$START_OPTIONS' -S'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -S - Skip autostart of X/kde.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -S - Deprecated, not used. Skip autostart of X/kde.\n"
 				;;
 			t) B_TWINVIEW='true'
 				START_OPTIONS=$START_OPTIONS' -t'
@@ -6666,7 +6691,7 @@ get_options()
 				;;
 			W) B_SKIP_WGET='true'
 				START_OPTIONS=$START_OPTIONS' -W'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget connection tests. Only use if you are having problems connecting but connection is fine.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already.\n"
 				;;
 			x) B_NO_XVMC='true' # because two flags are required to use nvidia xvmc, this is fine
 				START_OPTIONS=$START_OPTIONS' -x'
@@ -6687,8 +6712,8 @@ get_options()
 				fi
 				;;
 			Z) B_SKIP_CONNECT='true'
-				START_OPTIONS=$START_OPTIONS' -Z'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Z - Skip the script connection tests. Limited utility, unless you already have downloaded the driver.\n"
+				START_OPTIONS=$START_OPTIONS' -ZW'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Z - Deprecated, use -R to skip script update; use -W to skip all downloads.\n"
 				;;
 			h) show_options
 				;;
@@ -6818,7 +6843,7 @@ if [ "$B_SKIP_FUNCTION" != 'true' ];then
 fi
 
 ## update everything, restart if not run from smxi
-if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a "$B_PRINT_VER" != 'true' ];then
+if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a "$B_PRINT_VER" != 'true'  ];then
 	check_update_script $SCRIPT_NAME "$SCRIPT_DOWNLOAD" 'default server'
 fi
 
