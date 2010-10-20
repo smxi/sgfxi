@@ -6562,7 +6562,7 @@ get_options()
 				;;
 			c) B_COMPOSITE='true'
 				START_OPTIONS=$START_OPTIONS' -c'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -c - Force composite flag on. Does not work with legacy nVidia driver\n       Default is on for newer nVidia cards.\n       Switch nVidia composite off with: -q"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -c - Force composite flag on. Does not work with legacy nVidia driver\n       Default is on for newer nVidia cards.\n       Switch nVidia composite off with: -q\n"
 				;;
 			C) B_SKIP_CONFIG='true'
 				START_OPTIONS=$START_OPTIONS' -C'
