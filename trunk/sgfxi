@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.15
-####  Date: October 22 2010
+####  version: 4.15.16
+####  Date: October 31 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -498,7 +498,7 @@ driver_support_tests()
 							;;
 						29)
 							case $DRIVER_DEFAULT in
-								9.2|9-[3-9]|9-1[0-2]|10-[0-9]|10-1[0-2])
+								9.2|9-[3-9]|9-1[0-2]|10-*|11-*)
 									: 
 									;;
 								*)
@@ -510,7 +510,7 @@ driver_support_tests()
 							;;
 						30)
 							case $DRIVER_DEFAULT in
-								9-8|9-9|9-1[0-2]|10-[0-9]|10-1[0-2])
+								9-8|9-9|9-1[0-2]|10-*|11-*)
 									: 
 									;;
 								*)
@@ -522,7 +522,7 @@ driver_support_tests()
 							;;
 						31|32)
 							case $DRIVER_DEFAULT in
-								9-1[0-2]|10-[0-9]|10-1[0-2])
+								9-1[0-2]|10-*|11-*)
 									: 
 									;;
 								*)
@@ -534,7 +534,7 @@ driver_support_tests()
 							;;
 						33)
 							case $DRIVER_DEFAULT in
-								10-[2-9]|10-1[0-2])
+								10-[2-9]|10-1[0-2]|11-*)
 									:
 									;;
 								*)
@@ -546,7 +546,7 @@ driver_support_tests()
 							;;
 						34)
 							case $DRIVER_DEFAULT in
-								10-[5-9]|10-1[0-2])
+								10-[5-9]|10-1[0-2]|11-*)
 									:
 									;;
 								*)
@@ -558,7 +558,7 @@ driver_support_tests()
 							;;
 						35)
 							case $DRIVER_DEFAULT in
-								10-[8-9]|10-1[0-2])
+								10-[8-9]|10-1[0-2]|11-*)
 									:
 									;;
 								*)
@@ -568,7 +568,21 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						3[6-9])
+						36)
+							case $DRIVER_DEFAULT in
+								# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
+								# patch from Arch works in application, don't know if it really works
+								10-1[0-2]|11-*) 
+									:
+									;;
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 234 $KERNEL_THIRD
+									fi
+									;;
+							esac
+							;;
+						3[7-9])
 							if [ "$B_TESTING_3" != 'true' ];then
 								error_handler 234 $KERNEL_THIRD
 							fi
@@ -1028,6 +1042,16 @@ run_driver_patches()
 						esac
 					fi
 					;; 
+				36)
+					case $DRIVER_DEFAULT in
+						10-1[0-1]) # run this for -11 too maybe it will work
+							patchFile='FGLRX-2.6.36-10-10.diff'
+							apply_patch_file $patchFile
+							patchFile='FGLRX-2.6.36-10-10-makefile-compat.diff'
+							apply_patch_file $patchFile
+							;;
+					esac
+					;;
 			esac
 			;;
 	esac
@@ -1063,20 +1087,20 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati post x2000 card
+		CARD_DATA=1002:9442 # fake ati post x2000 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
-		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
+# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
-		BITS=64
+# 		BITS=64
 # 		# if you want to test for/without aptosid kernels, set to null '' or 'true'
 		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
-		KERNEL_THIRD=33
+		KERNEL_THIRD=36
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
