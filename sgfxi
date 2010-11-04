@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.16
-####  Date: October 31 2010
+####  version: 4.15.17
+####  Date: November 3 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -202,7 +202,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='260.19.12:173.14.28:96.43.18:71.86.14'
+NV_VERSIONS='260.19.12:173.14.28:96.43.19:71.86.14'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -616,7 +616,7 @@ driver_support_tests()
 							1.9)
 								case $DRIVER_DEFAULT in
 									# not positive about 256 series + 1.9, or 96
-									260.*|256.*|173.14.2[89]|96.43.1[9]|$DISTRO_NVIDIA)
+									260.*|256.*|173.14.2[89]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.9
 										;;
 									*)
@@ -628,7 +628,7 @@ driver_support_tests()
 								;;
 							1.8)
 								case $DRIVER_DEFAULT in
-									260.*|256.*|195.36.[2-9][0-9]|173.14.2[789]|96.43.1[89]|$DISTRO_NVIDIA)
+									260.*|256.*|195.36.[2-9][0-9]|173.14.2[789]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.8
 										;;
 									*)
@@ -640,7 +640,7 @@ driver_support_tests()
 								;;
 							1.7|7.[5])
 								case $DRIVER_DEFAULT in
-									260.*|256.*|195.*|190.53|173.14.2*|96.43.1*|71.86.1[34]|$DISTRO_NVIDIA)
+									260.*|256.*|195.*|190.53|173.14.2*|96.43.1*|96.43.2*|71.86.1[345]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.7
 										;;
 									*)
