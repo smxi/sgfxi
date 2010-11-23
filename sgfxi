@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.21
-####  Date: November 18 2010
+####  version: 4.15.22
+####  Date: November 23 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -4490,7 +4490,7 @@ preinstall_cleanup()
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
-	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau|nvidia-bl-dkms)' )
+	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit)' )
 	if [ -n "$oldNvidia" ];then
 		case $SYSTEM_BASE in
 			# libgl will break the removal of nvidia, odd packaging decision, so need to reinstall it.
