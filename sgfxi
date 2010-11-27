@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.22
-####  Date: November 23 2010
+####  version: 4.15.23
+####  Date: November 27 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -4595,16 +4595,17 @@ run_driver_installer()
 				# note: it appears that 256.xx changed something here for 64 bit paths, and
 				# this is an attempt to fix that, not sure if it will work
 				# http://forum.xbmc.org/showthread.php?t=57885
+				## Update: 2010-11-27, apparently this was reverted by nvidia in 260.xx
 				case $SYSTEM_BASE in
 					debian)
 						if [ "$SYSTEM_CODENAME" == 'sid' -o "$SYSTEM_CODENAME" == 'testing' ];then
-# 							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
-							installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
+							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+							# installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
 						fi
 						;;
 					ubuntu)
-# 						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
-						installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
+						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+						# installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
 						;;
 				esac
 			fi
