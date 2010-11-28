@@ -4596,6 +4596,8 @@ run_driver_installer()
 				# this is an attempt to fix that, not sure if it will work
 				# http://forum.xbmc.org/showthread.php?t=57885
 				## Update: 2010-11-27, apparently this was reverted by nvidia in 260.xx
+				# further: --compat32-prefix= with no data seems to cause nvidia installer error
+				# and --compat32-chroot=/usr/lib32 seems to also cause undesired location
 				case $SYSTEM_BASE in
 					debian)
 						if [ "$SYSTEM_CODENAME" == 'sid' -o "$SYSTEM_CODENAME" == 'testing' ];then
