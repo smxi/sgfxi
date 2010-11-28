@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.23
+####  version: 4.15.24
 ####  Date: November 27 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
@@ -4599,13 +4599,15 @@ run_driver_installer()
 				case $SYSTEM_BASE in
 					debian)
 						if [ "$SYSTEM_CODENAME" == 'sid' -o "$SYSTEM_CODENAME" == 'testing' ];then
-							installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+							# installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
 							# installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
+							: # nothing happening now
 						fi
 						;;
 					ubuntu)
-						installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
+						# installerArgs="$installerArgs --compat32-prefix= --compat32-libdir=  --compat32-chroot=/usr/lib32"
 						# installerArgs="$installerArgs --compat32-prefix=/usr --compat32-libdir=lib32  --compat32-chroot=/usr/lib32"
+						: # nothing happening now
 						;;
 				esac
 			fi
