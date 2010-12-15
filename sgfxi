@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.25
-####  Date: December 14 2010
+####  version: 4.15.26
+####  Date: December 15 2010
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2010
 ####  Code contributions copyright: Latino 2008
@@ -1044,7 +1044,7 @@ run_driver_patches()
 					;; 
 				36)
 					case $DRIVER_DEFAULT in
-						10-1[0-1]) # run this for -11 too maybe it will work
+						10-1[0-2]) # run this for -11 too maybe it will work
 							patchFile='FGLRX-2.6.36-10-10.diff'
 							apply_patch_file $patchFile
 							patchFile='FGLRX-2.6.36-10-10-makefile-compat.diff'
