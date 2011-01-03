@@ -3,10 +3,10 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.27
-####  Date: December 16 2010
+####  version: 4.15.28
+####  Date: January 2 2011
 ########################################################################
-####  Copyright (C) Harald Hope 2007-2010
+####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  This program is free software; you can redistribute it and/or modify it under
@@ -2657,6 +2657,9 @@ check_apt_aptitude()
 		aptitude)
 			WITHOUT_RECOMMENDS='--without-recommends'
 			;;
+		apt-get)
+			WITHOUT_RECOMMENDS='--no-install-recommends'
+			;;
 	esac
 	
 	eval $LOGUE
@@ -2667,7 +2670,8 @@ check_apt_aptitude()
 check_package_status()
 {
 	eval $LOGUS
-	local packageVersion='' statusType=''
+	local packageVersion='' statusType='' cacheData=''
+	local poolPackageCount=0
 
 	case $2 in
 		c)	statusType='Candidate:'
@@ -2677,7 +2681,18 @@ check_package_status()
 	esac
 	case $APT_TYPE in
 		apt-get|aptitude)
-			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= packageVersion=$( apt-cache policy $1 2>/dev/null | grep -i "$statusType" | cut -d ':' -f 2-4 | cut -d ' ' -f2 | grep -iv '\(none\)' )
+			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= cacheData="$( apt-cache policy $1 2>/dev/null )"
+	
+			# we need to filter out all cases were the only instance in apt is the locally installed
+			# version, ie:  *** 2.13 0 \ 100 /var/lib/dpkg/status is the only value returned
+			poolPackageCount=$( grep -Es "^[[:space:]]*[0-9]{3}"  <<< "$cacheData" | grep -vcE "^[[:space:]]*100[[:space:]]" )
+			
+			packageVersion=$( grep -i "$statusType" <<< "$cacheData" | cut -d ':' -f 2-4 | cut -d ' ' -f2 | grep -iv '\(none\)' )
+			
+			# if either none found, or only a local apt version available, return null
+			if [ "$statusType" == 'Candidate:' -a "$poolPackageCount" -eq 0 ];then
+				packageVersion=''
+			fi
 			;;
 		pacman)
 			case $2 in
@@ -3416,6 +3431,9 @@ install_native_driver()
 	local driverInstall='' experimentalText='' libMesaGlx=''
 	local extraAtiPackage1='' bSkipInstall=''
 	
+# 	xserver-xorg-video-intel
+# 	libgl1-mesa-glx
+# 	libgl1-mesa-dri
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			xorgBase='xserver-xorg-video-'
