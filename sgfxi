@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.28
+####  version: 4.15.29
 ####  Date: January 2 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -2687,7 +2687,8 @@ check_package_status()
 			# version, ie:  *** 2.13 0 \ 100 /var/lib/dpkg/status is the only value returned
 			poolPackageCount=$( grep -Es "^[[:space:]]*[0-9]{3}"  <<< "$cacheData" | grep -vcE "^[[:space:]]*100[[:space:]]" )
 			
-			packageVersion=$( grep -i "$statusType" <<< "$cacheData" | cut -d ':' -f 2-4 | cut -d ' ' -f2 | grep -iv '\(none\)' )
+			packageVersion=$( awk 'BEGIN {IGNORECASE=1} 
+			/'$statusType'/ && !/\(None\)/ {print $2}' <<< "$cacheData" )
 			
 			# if either none found, or only a local apt version available, return null
 			if [ "$statusType" == 'Candidate:' -a "$poolPackageCount" -eq 0 ];then
