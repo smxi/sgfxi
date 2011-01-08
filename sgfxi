@@ -2270,7 +2270,7 @@ get_current_runlevel()
 # has a live connection or not. This is mainly for logging/debugging
 check_connection()
 {
-	checkUrl=${SCRIPT_DOWNLOAD_DATA}connection-test result=0
+	local checkUrl=${SCRIPT_DOWNLOAD_DATA}connection-test result=0
 	wget -q -t 1 -T 2 --spider $checkUrl || result=$?
 	echo $result
 }
