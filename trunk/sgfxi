@@ -3819,7 +3819,7 @@ add_grub_nomodeset_blacklist_item()
 {
 	eval $LOGUS
 	
-	local returnValue=1 
+	local returnValue=1 activeFile='No'
 	local noModesetString='nomodeset'
 	local moduleSearch1="nomodeset|$1.modeset=0|rdblacklist=$1|$1.blacklist=1"
 	local grubFiles=$( get_active_grub_files )
@@ -3833,19 +3833,25 @@ add_grub_nomodeset_blacklist_item()
 	if [ -n "$grubFiles" ];then
 		if [ -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" ];then
 			echo -n "${S}Adding ${C}$grubFiles $noModesetString${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-			if [ -f "$GRUB1" -a -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
-				sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1
-			fi
-			if [ -f "$GRUB1" -a -z "$( grep -Eis 'kopt.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
-				sed -i "/kopt.*root=/s|$| $noModesetString|" $GRUB1
+			if [ -f "$GRUB1" ];then
+				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
+					sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1
+					activeFile=$GRUB1
+				fi
+				if [ -z "$( grep -Eis 'kopt.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
+					sed -i "/kopt.*root=/s|$| $noModesetString|" $GRUB1
+					activeFile=$GRUB1
+				fi
 			fi
 			if [ -f "$GRUB2" -a -z "$( grep -Eis 'linux.*root=.*('$moduleSearch1')' $GRUB2 )" ];then
 				sed -i "/linux.* root=/s|$| $noModesetString|" $GRUB2
+				activeFile=$GRUB2
 			fi
 			if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" -a -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1_FED )" ];then
 				sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1_FED
+				activeFile=$GRUB1_FED
 			fi	
-			log_function_data "file updated to add $1 nomodeset: $grubFiles"
+			log_function_data "$activeFile file updated to add $1 nomodeset: $grubFiles"
 			echo "${S}Added${N}"
 			returnValue=0
 		fi
@@ -3855,7 +3861,7 @@ add_grub_nomodeset_blacklist_item()
 			echo -n "${S}Adding ${C}$GRUBED nomodeset${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 '$noModesetString'"|' $GRUBED
 			echo "${S}Added${N}"
-			log_function_data "file updated to add nouveau nomodeset: $GRUBED"
+			log_function_data "File $GRUBED updated to add $1 nomodeset: $GRUBED"
 			returnValue=0
 		fi
 	fi
@@ -3865,7 +3871,7 @@ add_grub_nomodeset_blacklist_item()
 				if [ -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
 					echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
 					sed -i '/kernel.* root=/s|$| vmalloc=256m|' $GRUB1_FED
-					log_function_data "file updated to add vmalloc=256m: $GRUB1_FED"
+					log_function_data "File $GRUB1_FED updated to add vmalloc=256m: $GRUB1_FED"
 					echo "${S}Added${N}"
 				fi
 				# also make system bootable to init 3 easily with grub, otherwise you can
@@ -3874,7 +3880,7 @@ add_grub_nomodeset_blacklist_item()
 					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$GRUB1_FED${S}..... ${N}"
 					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $GRUB1_FED
 					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $GRUB1_FED
-					log_function_data "file updated to restore grub timeout/unhide menu: $GRUB1_FED"
+					log_function_data "File $GRUB1_FED updated to restore grub timeout/unhide menu: $GRUB1_FED"
 					echo "${S}Modified${N}"
 				fi
 			fi
