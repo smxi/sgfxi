@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.31
-####  Date: January 7 2011
+####  version: 4.15.32
+####  Date: January 8 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -2270,7 +2270,9 @@ get_current_runlevel()
 check_connection()
 {
 	local checkUrl=${SCRIPT_DOWNLOAD_DATA}connection-test result=0
-	wget -q -t 1 -T 2 --spider $checkUrl || result=$?
+	local ua='-U s-tools/sgfxi-data.connection-test'
+	
+	wget $ua -q -t 1 -T 2 --spider $checkUrl || result=$?
 	echo $result
 }
 
@@ -3364,7 +3366,7 @@ create_log()
 	echo "FG_DISTRIB_ID: $FG_DISTRIB_ID" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
-	echo "X is Running (0=true;1=false): $( x_is_running )" >> $LOG_FILE
+	echo "X is Running: $( x_is_running )" >> $LOG_FILE
 	echo "Current Runlevel: $( get_current_runlevel )" >> $LOG_FILE
 	echo "Connection is live (0=true): $( check_connection )" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
@@ -5796,6 +5798,7 @@ start_stop_x()
 					else
 						echo "${W}Display manager ${C}$1${S} failed${N}"
 					fi
+					log_function_data "Display manager $1 success: $success"
 				fi
 			fi
 		done
@@ -5828,16 +5831,21 @@ start_stop_x()
 	# this handles cases where somehow X is still running
 	# startx x starts can for example bypass kdm tests, etc
 	if [ "$1" == 'stop' ];then
-		if [ "$( x_is_running )" -eq 0 -a "$bSkipXKill" != 'true' ];then
+		if [ "$( x_is_running )" == 'true' -a "$bSkipXKill" != 'true' ];then
 			echo "${M}Note: display manager shutdown failed... shutting down X directly instead... ${N}"
 			xActionString="$noHup killall Xorg && finalXKill='true'"
 			eval $xActionString
+			log_function_data "Final X kill reports worked: $finalXKill"
 			if [ -z "$noHup" ];then
 				if [ "$finalXKill" == 'true' ];then
 					echo "${S}X shutdown successful.${N}"
 				else
 					echo "${W}X shutdown failed.${N}"
 				fi
+			fi
+			# log the result
+			if [ "$( x_is_running )" == 'true' ];then
+				log_function_data "The final X kill has failed."
 			fi
 		fi
 	fi
@@ -5873,12 +5881,13 @@ x_is_running()
 	# we'll do one final X is running test here, note, handling a bunch of
 	# different possible X detections in etch, lenny, and sid, then filtering out the grep
 	local xIsRunning=$( ps aux | grep '/usr.*/X' | grep -vc 'grep' )
-	log_function_data "xIsRunning >1=true;0=false: $xIsRunning"
+	local return='false'
+
 	if [ "$xIsRunning" -gt 0 ];then
-		echo 0
-	else
-		echo 1
+		return='true'
 	fi
+	log_function_data "xIsRunning: $return"
+	echo $return
 	eval $LOGUE
 }
 
@@ -5892,7 +5901,7 @@ move_x_conf()
 	local x_full_bu="$EXXC-full-$( date +%Y-%m-%d-%H:%M:%S )"
 	
 	if [ -n "$( which $X_NAME )" ];then
-		if [ "$( x_is_running )" -eq 0 ];then
+		if [ "$( x_is_running )" == 'true' ];then
 			start_stop_x 'stop'
 		fi
 		if [ -f $EXXC ];then
@@ -5938,12 +5947,12 @@ create_x_conf()
 					echo "${S}Ok, creating your new ${C}$EXXC${S} file now...${N}"
 					# X has already been stopped in this case ideally from move, but 
 					# checking again to make sure. X command cannot be run with X running
-					if [ "$( x_is_running )" -eq 0 ];then
+					if [ "$( x_is_running )" == 'true' ];then
 						start_stop_x 'stop'
 					fi
 					# now double check and kill with precise errors to try to catch the cause
 					# of failing xorg.conf generation
-					if [ "$( x_is_running )" -eq 0 ];then
+					if [ "$( x_is_running )" == 'true' ];then
 						error_handler 214
 					fi
 					$X_NAME -configure 2>>$LOG_FILE
