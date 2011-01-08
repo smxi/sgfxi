@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.29
-####  Date: January 2 2011
+####  version: 4.15.30
+####  Date: January 7 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -1183,6 +1183,7 @@ set_script_colors()
 ### -------------------------------------------------------------------
 ### Error handling
 ### -------------------------------------------------------------------
+# args: $1 - error number; $2 error extra data, optional
 error_handler()
 {
 	local errorCode=$1 # error number
@@ -2258,6 +2259,22 @@ basic_startup_tests()
 	esac
 }
 
+get_current_runlevel()
+{
+	local rlc=$( echo $( runlevel ) | wc -w ) 
+	local currentRunlevel=$( echo $(runlevel) | cut -d " " -f $rlc )
+	echo $currentRunlevel
+}
+
+# this is a quick / dirty check so sgfxi can know if a user system
+# has a live connection or not. This is mainly for logging/debugging
+check_connection()
+{
+	checkUrl=${SCRIPT_DOWNLOAD_DATA}connection-test result=0
+	wget -q -t 1 -T 2 --spider $checkUrl || result=$?
+	echo $result
+}
+
 ## basic system requirements for this script to run, first so user doesn't
 ## have to be root or out of x to get basic failure information
 check_set_distro()
@@ -2806,6 +2823,7 @@ install_package()
 			;;
 	esac
 	# then install the package with all options
+	log_function_data "Install command for $APT_TYPE: $install - Extra args: $optionalArgs"
 	echo "${S}Updating required package ${C}$1${S} now...${N}"
 	$APT_TYPE $install $useUntrusted $WITHOUT_RECOMMENDS $doYes $optionalArgs $1$distroVersion || error_handler 200 $1
 	eval $LOGUE
@@ -2814,9 +2832,20 @@ install_package()
 # args: $1 - update type / name
 update_package_manager()
 {
+	eval $LOGUS
 	if [ "$B_UPDATED" != 'true' ];then
-		$APT_TYPE $1 && B_UPDATED='true'
+		$APT_TYPE $1
+		# for now not going to exit with real error, just want failures logged
+		if [ "$?" -eq 0 ];then
+			echo "${C}$APT_TYPE $1 ${S}successful. Continuing...${N}"
+			B_UPDATED='true'
+			log_function_data "Update $APT_TYPE successful"
+		else
+			echo "${C}$APT_TYPE $1 ${E}Failed. Continuing anyway...${N}"
+			log_function_data "Update $APT_TYPE error: $?"
+		fi
 	fi
+	eval $LOGUE
 }
 
 # args: $1 - package to test for; $2 - excludes from list
@@ -3335,6 +3364,10 @@ create_log()
 	echo "FG_DISTRIB_CODENAME: $FG_DISTRIB_CODENAME" >> $LOG_FILE
 	echo "FG_DISTRIB_ID: $FG_DISTRIB_ID" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
+	echo "=========================================================" >> $LOG_FILE
+	echo "X is Running (0=false): $( x_is_running )" >> $LOG_FILE
+	echo "Current Runlevel: $( get_current_runlevel )" >> $LOG_FILE
+	echo "Connection is live (0=true): $( check_connection )" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
 	# it's important to log these in case there's some issue or bug in the values
 	if [ -f $SM_VALUES ];then
@@ -5711,6 +5744,7 @@ start_stop_x()
 	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' bSkipXKill='false'
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
 	local gdmCommand='' bSkipLoop='false' dManager=$DISPLAY_MANAGER
+	local currentRunlevel=$( get_current_runlevel )
 	
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
@@ -5740,7 +5774,7 @@ start_stop_x()
 			dManager='gdm'
 			;;
 	esac
-	log_function_data "default runlevel: $defaultRunlevel"
+	log_function_data "default runlevel: $defaultRunlevel\ncurrent runlevel: $currentRunlevel"
 	## restart x if this is not being run by smxi
 	if [ -z "$DISPLAY_MANAGER" -a "$bSkipLoop" != 'true' ];then
 		for dman in $displayManagers
@@ -5840,7 +5874,7 @@ x_is_running()
 	# we'll do one final X is running test here, note, handling a bunch of
 	# different possible X detections in etch, lenny, and sid, then filtering out the grep
 	local xIsRunning=$( ps aux | grep '/usr.*/X' | grep -vc 'grep' )
-
+	log_function_data "xIsRunning >1=true;0=false: $xIsRunning"
 	if [ "$xIsRunning" -gt 0 ];then
 		echo 0
 	else
