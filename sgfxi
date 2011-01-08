@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.30
+####  version: 4.15.31
 ####  Date: January 7 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -2261,8 +2261,7 @@ basic_startup_tests()
 
 get_current_runlevel()
 {
-	local rlc=$( echo $( runlevel ) | wc -w ) 
-	local currentRunlevel=$( echo $(runlevel) | cut -d " " -f $rlc )
+	local currentRunlevel=$( echo $(runlevel) | awk '{print $NF}' )
 	echo $currentRunlevel
 }
 
