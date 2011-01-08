@@ -3365,7 +3365,7 @@ create_log()
 	echo "FG_DISTRIB_ID: $FG_DISTRIB_ID" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
-	echo "X is Running (0=false): $( x_is_running )" >> $LOG_FILE
+	echo "X is Running (0=true;1=false): $( x_is_running )" >> $LOG_FILE
 	echo "Current Runlevel: $( get_current_runlevel )" >> $LOG_FILE
 	echo "Connection is live (0=true): $( check_connection )" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
