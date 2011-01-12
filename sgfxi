@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.15.33
+####  version: 4.16.00
 ####  Date: January 11 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -134,6 +134,7 @@ B_NATIVE_DRIVER='false'
 B_NO_XVMC='false'
 B_PRINT_VER='false' # utilities for smxi
 B_REMOVE_MODELINES='false'
+B_RESTORE_DEFAULTS='false'
 # B_RENDER_ACCEL='true' # default use, true
 B_SKIP_AUTOSTART='false' # deprecated, not used
 B_SKIP_CONFIG='false'
@@ -3464,7 +3465,24 @@ install_native_driver()
 	local xorgBase='' xorgNv='nv' xorgAti='ati' xorgIntel='intel'
 	local xorgDriver='' driver='' currentlyInstalled='' xorgCore=''
 	local driverInstall='' experimentalText='' libMesaGlx=''
-	local extraAtiPackage1='' bSkipInstall=''
+	local extraAtiPackage1='' bSkipInstall='false'
+	
+	# we're going to force this behavior for the default restore option by setting
+	# explicit native override values, which will trigger the desired actions below
+	if [ "$B_RESTORE_DEFAULTS" == 'true' ];then
+		# need to do this for -! 5 flag testing, to set: SYSTEM_BASE etc
+		if [ "$B_SKIP_FUNCTION" == 'true' ];then
+			check_set_distro 
+		fi
+		case $CARD in
+			$NVIDIA)
+				NATIVE_OVERRIDE='nouveau'
+				;;
+			$FGLRX)
+				NATIVE_OVERRIDE='radeon'
+				;;
+		esac
+	fi
 	
 # 	xserver-xorg-video-intel
 # 	libgl1-mesa-glx
@@ -3520,22 +3538,35 @@ install_native_driver()
 			xorgDriver=$NATIVE_OVERRIDE
 			driverInstall=$NATIVE_OVERRIDE
 		fi
+		# this is mostly for cases where no default xorg driver is found
+		# this will apply to -! 32 option mostly
+		if [ -z "$xorgDriver" ];then
+			bSkipInstall='true'
+			driverInstall='no-driver-listed'
+		fi
 		# driver is the actual driver xorg will use
 		driver=$xorgBase$xorgDriver
-		
-		if [ "$B_PRINT_VER" != 'true' ];then
+
+		if [ "$B_PRINT_VER" == 'true' ];then
+			exit 0 # this is required for smxi native driver tests
+		else
+# 			if [ "$B_SM_INSTALL" != 'true' -a -n "$START_OPTIONS_PRINT" ];then
+# 				print_information_continue 'info' "You are using the following options:\n$START_OPTIONS_PRINT"
+# 			fi
 			# make sure the driver is available for the user's debian version
 			# is it true? nouveau pulled out of xorg? what the hell?
-			if [ -z "$( check_package_status $driver 'c' )" ];then
+			if [ "$bSkipInstall" != 'true' -a -z "$( check_package_status $driver 'c' )" ];then
 # 				if [ "$NATIVE_OVERRIDE" != 'nouveau' ];then
 					error_handler 222 "$driver"
 # 				else
 # 					bSkipInstall='true'
 # 				fi
 			fi
-			print_information_continue 'standard' "The graphics installer will be installing the${C}$experimentalText Free xorg${S} driver: ${C}$driverInstall${N}"
-		else
-			exit 0 # this is required for smxi native driver tests
+			if [ "$B_RESTORE_DEFAULTS" == 'true' ];then
+				print_information_continue 'standard' "The graphics installer will be cleaning out all previous drivers\nmoving ${C}$EXXC${S} to ${C}$EXXC-bu-$( date +%Y-%m-%d-%H:%M:%S )${S}\nIt will remove all $NATIVE_OVERRIDE nomodeset and blacklists in grub and /etc/modules,\nand will install Free xorg${S} driver: ${C}$driverInstall\n${S}This should more or less restore your system to the native, no xorg.conf state.${N}"
+			else
+				print_information_continue 'standard' "The graphics installer will be installing the${C}$experimentalText Free xorg${S} driver: ${C}$driverInstall${N}"
+			fi
 		fi
 		x_start_stop_master stop
 
@@ -3578,7 +3609,9 @@ install_native_driver()
 		# we'll need this to determine whether to do a reboot for radeon/nouveau
 		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' $EXXC | grep -oEs "(nvidia|fglrx)" )
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
-		update_xorg
+		if [ "$B_RESTORE_DEFAULTS" == 'false' ];then
+			update_xorg
+		fi
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
 		
 		case $NATIVE_OVERRIDE in
@@ -3833,7 +3866,7 @@ add_grub_nomodeset_blacklist_item()
 	esac
 	
 	if [ -n "$grubFiles" ];then
-		if [ -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" || -z "$( grep -Eis '('$moduleSearch2')' $grubFiles )" ];then
+		if [ -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" -o -z "$( grep -Eis '('$moduleSearch2')' $grubFiles )" ];then
 			echo -n "${S}Adding ${C}$grubFiles $noModesetString/$noModesetString2${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			if [ -f "$GRUB1" ];then
 				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
@@ -3972,10 +4005,10 @@ remove_modprobe_d_blacklist_item()
 	
 	if [ -d /etc/modprobe.d ];then
 		# first dump sgfxi created file if present, not going to use this for now
-# 		if [ -f "$empksb" ];then
-# 			rm -f $empksb
-# 			log_function_data "$empksb deleted from /etc/modprobe.d/"
-# 		fi
+		if [ -f "$empksb" ];then
+			rm -f $empksb
+			log_function_data "$empksb deleted from /etc/modprobe.d/"
+		fi
 		# then edit anything that remains to get rid of that blacklist item
 		if [ -n "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+'$1'' /etc/modprobe.d/*.conf )" ];then
 			echo "${S}Removed $1 blacklisting from /etc/modprobe.d/*.conf${N}"
@@ -4000,7 +4033,7 @@ update_initramfs()
 			case $1 in
 				remove-nouveau|remove-radeon)
 					if [ -n "$( type -p update-initramfs )" ];then
-						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau from initrd... ${N}"
+						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau/Radeon from initrd... ${N}"
 						update-initramfs -u -k $KERNEL_VERSION
 					fi
 					;;
@@ -5937,22 +5970,31 @@ x_is_running()
 move_x_conf()
 {
 	eval $LOGUS
-	local x_full_bu="$EXXC-full-$( date +%Y-%m-%d-%H:%M:%S )"
+	local x_full_bu="$EXXC-bu-$( date +%Y-%m-%d-%H:%M:%S )"
+	local message1="${S}Continuing to ${C}$EXXC${S} creation...${N}"
+	
+	if [ "$B_RESTORE_DEFAULTS" == 'true' ];then
+		message1=''
+	fi
 	
 	if [ -n "$( which $X_NAME )" ];then
-		if [ "$( x_is_running )" == 'true' ];then
+		if [ "$B_RESTORE_DEFAULTS" != 'true' -a "$( x_is_running )" == 'true' ];then
 			start_stop_x 'stop'
 		fi
 		if [ -f $EXXC ];then
 			echo "${M}Moving ${C}$EXXC${M} to ${C}$x_full_bu${M}...${N}"
 			mv -f $EXXC $x_full_bu
-			echo "${S}Continuing to ${C}$EXXC${S} creation...${N}"
+			echo "$message1"
 		else
-			echo "${M}No ${C}$EXXC${M} file exists, continuing to ${C}$EXXC${M} creation...${N}"
+			if [ "$B_RESTORE_DEFAULTS" != 'true' ];then
+				echo "${M}No ${C}$EXXC${M} file exists, continuing to ${C}$EXXC${M} creation...${N}"
+			fi
 		fi
 	else
-		log_function_data "A rebuild of xorg.conf is requested, but there is no X application to rebuild it with."
-		error_handler 177
+		if [ "$B_RESTORE_DEFAULTS" != 'true' ];then
+			log_function_data "A rebuild of xorg.conf is requested, but there is no X application to rebuild it with."
+			error_handler 177
+		fi
 	fi
 	eval $LOGUE
 }
@@ -6463,7 +6505,7 @@ show_options()
 	local fgVersions=$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
 	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
 	local fgTesting='' nvTesting='' testingText='' fgDebianSid=''
-	local counter=0 driverCount=0 skipOutput=''
+	local counter=0 driverCount=0 bSkipOutput=''
 	driverCount=$( wc -w <<< $nativeVersions )
 
 	if [ "$B_DISTRO_FLAG" == 'true' ];then
@@ -6628,6 +6670,9 @@ show_options()
 # 	echo "   you are sure your connection is fine."
 	echo $PLINE
 	echo "Advanced Options :: Only for Specialized Cases"
+	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore system to default"
+	echo "      without redoing xorg.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
+	echo "      require xorg.conf file to operate. Using this command restores system to default."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
 	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
@@ -6727,7 +6772,7 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -G'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -G - Gui mode. Run in X. For nVidia, passes --no-x-check flag to nvidia installer\n       . Not reliable, but try if you want.\n"
 				;;
-			j)	if [ -n "$( grep -E '^[0-4]$' <<< $OPTARG )" ];then
+			j)	if [ -n "$( grep -sE '^[0-4]$' <<< $OPTARG )" ];then
 					SCRIPT_COLORS=$OPTARG
 					START_OPTIONS=$START_OPTIONS" -j $OPTARG"
 					# no reason to reset the colors if they are default
@@ -6748,7 +6793,7 @@ get_options()
 				test_install_kernel_version
 				START_OPTIONS=$START_OPTIONS" -K $OPTARG"
 				;;
-			L)	if [ -n "$( grep -E '^[dfnv]$' <<< $OPTARG )" ];then
+			L)	if [ -n "$( grep -sE '^[dfnv]$' <<< $OPTARG )" ];then
 					show_extra_data "$OPTARG"
 					exit 0
 				else
@@ -6760,7 +6805,7 @@ get_options()
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -n - Auto install of native xorg intel, nvidia, 3dfx, or ati drivers.\n"
 				;;
 			N)
-				if [ -n $( grep -E '('$NATIVE_OVERRIDE_SUPPORTED')' <<< $NATIVE_OVERRIDE ) ];then
+				if [ -n $( grep -sE '('$NATIVE_OVERRIDE_SUPPORTED')' <<< $NATIVE_OVERRIDE ) ];then
 					NATIVE_OVERRIDE="$OPTARG"
 					B_NATIVE_DRIVER='true'
 					START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -N - Native driver custom install. You have requested to install the xorg driver: $NATIVE_OVERRIDE\n"
@@ -6776,7 +6821,7 @@ get_options()
 			p) B_PRINT_VER='true'
 				START_OPTIONS=$START_OPTIONS' -p'
 				;;
-			P)	if [ -n $( grep -E '^(apt-get|aptitude)$' <<< $OPTARG ) ];then
+			P)	if [ -n $( grep -sE '^(apt-get|aptitude)$' <<< $OPTARG ) ];then
 					PACKAGE_MANAGER=$OPTARG
 					APT_TYPE=$OPTARG
 					START_OPTIONS=$START_OPTIONS" -P $OPTARG"
@@ -6850,7 +6895,7 @@ get_options()
 				;;
 			## debuggers and testing options
 			!)	# test for various supported methods
-				skipOutput=''
+				bSkipOutput=''
 				case $OPTARG in
 					1)	B_TESTING_1='true'
 						;;
@@ -6918,13 +6963,18 @@ get_options()
 						check_update_script "sm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
 						exit 0
 						;;
+					32)
+						B_RESTORE_DEFAULTS='true'
+						B_NATIVE_DRIVER='true'
+						B_MOVE_X_CONF='true'
+						;;
 					40)
 						B_BUILD_KERNEL_MODULES='true'
 						;;
 					120)
 						B_SM_INSTALL='true'
 						S=${CALLER_DEF} # change standard text color to caller standard text
-						skipOutput='true'
+						bSkipOutput='true'
 						;;
 					121)
 						B_GET_LIVE_DRIVERS='true'
@@ -6934,7 +6984,7 @@ get_options()
 						;;
 				esac
 				START_OPTIONS="$START_OPTIONS -! $OPTARG"
-				if [ "$skipOutput" != 'true' ];then
+				if [ "$bSkipOutput" != 'true' ];then
 					START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -! $OPTARG - You are using an advanced Testing option. Only use this if you know what you are doing!\n"
 				fi
 				;;
@@ -6980,7 +7030,7 @@ set_test_data # this will set other test data for debugging
 
 if [ "$B_PRINT_VER" != 'true' ];then
 	# test for multiple video cards and select only one
-	if [ "$CARD_COUNT" -gt 1 ];then
+	if [ "$CARD_COUNT" -gt 1 -a "$B_RESTORE_DEFAULTS" != 'true' ];then
 		# handle no xorg.conf with new X situation, only create xorg.conf
 		# if > 2 cards prior to testing for supported cards
 		if [ "$B_SKIP_FUNCTION" != 'true' ];then
@@ -7019,7 +7069,9 @@ if [ "$B_PRINT_VER" != 'true' -a "$B_SKIP_FUNCTION" != 'true' ];then
 	if [ "$B_MOVE_X_CONF" == 'true' ];then
 		move_x_conf
 	fi
-	create_x_conf
+	if [ "$B_RESTORE_DEFAULTS" != 'true' ];then
+		create_x_conf
+	fi
 fi
 
 # we'll need to force an initial update on fresh apt type installs for header
