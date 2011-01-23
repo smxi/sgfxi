@@ -4410,7 +4410,7 @@ set_download_info()
 					else
 						echo $LINE
 						echo "${S}Unable to rebuild module from previous driver install. Reinstalling driver instead.${N}"
-						if [ -n "$DISPLAY" -a "$B_TESTING_2" != 'true' -a "$B_SKIP_X_TEST" != 'true' ];then
+						if [ -n "$DISPLAY" -a "$B_TESTING_2" != 'true' -a "$B_SKIP_X_TEST" != 'true'  -a "$B_LAUNCH_FROM_X" != 'true' ];then
 							echo "${W}Sorry, installing the ${C}nVidia${W} driver can't be done in ${C}X${W}.${N}"
 							error_handler 250
 						fi
