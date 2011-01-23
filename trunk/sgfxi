@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.16.00
-####  Date: January 11 2011
+####  version: 4.16.01
+####  Date: January 23 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -203,7 +203,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='260.19.29:173.14.28:96.43.19:71.86.14'
+NV_VERSIONS='260.19.36:173.14.28:96.43.19:71.86.14'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -221,7 +221,7 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA:"
-# stable primary: 260.19.12 260.19.21 260.19.29
+# stable primary: 260.19.12 260.19.21 260.19.29 260.19.36
 # stable primary: 256.35 256.44 256.53 
 # stable primary: 195.36.08 ( bad, recalled ) 195.36.15 195.36.24 195.36.31
 # stable primary: 190.42 190.53 
@@ -230,7 +230,7 @@ NV_TESTING="$NV_VERSIONS_BETA:"
 # stable legacy 1: 71.86.06 71.86.09 71.86.11 71.86.13 71.86.14
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
-NV_OTHERS='260.19.12:256.35:195.36.31:190.53:185.18.36:180.60:177.82:173.14.25:173.14.22:169.12:100.14.19:96.43.18:96.43.17:96.43.16:71.86.13:71.86.11'
+NV_OTHERS='260.19.29:260.19.12:256.35:195.36.31:190.53:185.18.36:180.60:177.82:173.14.25:173.14.22:169.12:100.14.19:96.43.18:96.43.17:96.43.16:71.86.13:71.86.11'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -569,7 +569,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						36)
+						36|37)
 							case $DRIVER_DEFAULT in
 								# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 								# patch from Arch works in application, don't know if it really works
@@ -583,7 +583,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						3[7-9])
+						3[8-9])
 							if [ "$B_TESTING_3" != 'true' ];then
 								error_handler 234 $KERNEL_THIRD
 							fi
@@ -789,7 +789,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							35|36)
+							35|36|37)
 								# we'll assume the older drivers don't work here
 								case $DRIVER_DEFAULT in
 									260.*|256.*|173.14.2*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
@@ -1043,7 +1043,7 @@ run_driver_patches()
 						esac
 					fi
 					;; 
-				36)
+				36|37)
 					case $DRIVER_DEFAULT in
 						10-1[0-2]) # run this for -11 too maybe it will work
 							patchFile='FGLRX-2.6.36-10-10.diff'
