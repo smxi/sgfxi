@@ -2615,7 +2615,8 @@ launch_from_X()
 {
 	if [ "$B_LAUNCH_FROM_X" == 'true' ];then
 		if [ "$( tty | grep pts )" ];then
-			TERM=linux
+			#TERM=linux
+			TERM=1
 			exec openvt -s bash -c "$SCRIPT_NAME $@; bash"
 		fi
 	fi
