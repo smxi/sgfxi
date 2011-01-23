@@ -5664,9 +5664,10 @@ x_start_stop_master()
 	case $1 in
 		stop)
 			if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_X_TEST" != 'true' -a "$B_AUTORUN" != 'true' ];then
+				launch_from_X 
 				start_stop_x stop
 				# testing this, only with trigger option
-				launch_from_X 
+				
 			fi
 			;;
 		start)
