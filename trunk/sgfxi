@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.16.01
+####  version: 4.16.02
 ####  Date: January 23 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -128,6 +128,7 @@ B_GUI_MODE='false'
 B_IS_APTOSID_KERNEL='false'
 B_IS_XEN='false'
 B_KERNEL_MODULE_ONLY='false'
+B_LAUNCH_FROM_X='false'
 B_LOGGING_STARTED='false'
 B_MOVE_X_CONF='false'
 B_NATIVE_DRIVER='false'
@@ -2608,6 +2609,17 @@ compare_numbers()
 }
 ## DEBUGGER
 # compare_numbers 195 195.53 ;exit
+
+# for smxi launch in X
+launch_from_X()
+{
+	if [ "$B_LAUNCH_FROM_X" == 'true' ];then
+		if [ "$( tty | grep pts )" ];then
+			TERM=linux
+			exec openvt -s bash -c "$SCRIPT_NAME $@; bash"
+		fi
+	fi
+}
 
 ### -------------------------------------------------------------------
 ### package manager tools
@@ -5653,6 +5665,8 @@ x_start_stop_master()
 		stop)
 			if [ "$B_SKIP_FUNCTION" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_X_TEST" != 'true' -a "$B_AUTORUN" != 'true' ];then
 				start_stop_x stop
+				# testing this, only with trigger option
+				launch_from_X 
 			fi
 			;;
 		start)
@@ -6978,6 +6992,9 @@ get_options()
 						;;
 					121)
 						B_GET_LIVE_DRIVERS='true'
+						;;
+					122)
+						B_LAUNCH_FROM_X='true'
 						;;
 					*)	
 						error_handler 178 "$OPTARG"
