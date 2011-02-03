@@ -599,7 +599,7 @@ driver_support_tests()
 						# drivers rather than whitelisting
 						# xorg info: http://www.x.org/wiki/Releases/7.4
 						case $X_VERSION in
-							1.[5-9]|2.[0-9]|7.[4-9])
+							1.[5-9]|1.10|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
 									169.12|100.14.19)
 										if [ "$B_TESTING_3" != 'true' ];then
@@ -615,6 +615,19 @@ driver_support_tests()
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
 						case $X_VERSION in
+							1.10)
+								case $DRIVER_DEFAULT in
+									# not positive about legacy drivers yet
+									270.*|$DISTRO_NVIDIA)
+										: # all other drivers fail to support xorg >= 1.9
+										;;
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
 							1.9)
 								case $DRIVER_DEFAULT in
 									# not positive about 256 series + 1.9, or 96
