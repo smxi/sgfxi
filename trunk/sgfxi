@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.16.04
-####  Date: February 2 2011
+####  version: 4.17.00
+####  Date: February 10 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -2295,8 +2295,8 @@ check_connection()
 ## have to be root or out of x to get basic failure information
 check_set_distro()
 {
-	local lsbData='' debianVersion='' debianDefault='' workingId=''
-	local stableSources='' testingSources='' sidSources=''
+	local lsbData='' workingId=''
+	local isStable='' isTesting='' isUnstable=''
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 	
 	# make sure that it's a debian/arch/ubuntu based system
@@ -2309,30 +2309,40 @@ check_set_distro()
 	# debian defaults, might miss other ubuntu derived distros but those will
 	# be handled as we find them, empirically.
 	elif [ -f "$EDV" ];then
+		# set files to ram first, no need to keep reading them
+		local edvContent='' easContent='' eaaContent=''
+		
 		workingId='debian'
+		
 		if [ -n "$( grep -si 'Linux Mint Debian' <<< $etcIssue )" ];then
 			workingId='linuxmint-debian'
 		fi
-		# test apt.conf for default version information, this will override everything else
-		if [ -n "$( grep -Esi 'APT::Default-Release[[:space:]]+"(stable|etch|lenny)"' $EAA )" ];then
-			debianDefault='stable'
-		elif [ -n "$( grep -Esi 'APT::Default-Release[[:space:]]+"(testing|squeeze)"' $EAA )" ];then
-			debianDefault='testing'
-		elif [ -n "$( grep -Esi 'APT::Default-Release[[:space:]]+"(unstable|sid)"' $EAA )" ];then
-			debianDefault='sid'
+		
+		if [ -f "$EDV" ];then
+			edvContent="$( cat $EDV )"
 		fi
-		# then test /etc/debian_version which will override for stable
-		if [ -n "$( grep -Eis '^(squeeze|6\.)' $EDV )" ];then
-			debianVersion='squeeze'
-		elif [ -n "$( grep -is '^5.' $EDV )" ];then
-			debianVersion='lenny'
-		elif [ -n "$( grep -is '^4.' $EDV )" ];then
-			debianVersion='etch'
+		if [ -f "$EAS" -o -d "$EAS.d" ];then
+			easContent="$( cat $EAS $EAS.d/*.list 2>/dev/null )"
 		fi
-		# then test apt sources themselves
-		stableSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '([[:space:]]stable|/stable|lenny|etch)' )
-		testingSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(squeeze|testing)' )
-		sidSources=$( grep -Esiw '^[[:space:]]*deb' $EAS $EAS.d/*.list | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
+		if [ -f "$EAA" ];then
+			eaaContent="$( cat $EAA )"
+		fi
+		
+		# these tests will be improved over time, but are ok for now
+		local isEtch=$( grep -is '^4.' <<< "$edvContent" )
+		local isLenny=$( grep -is '^5.' <<< "$edvContent" )
+		local isSqueeze=$( grep -Eis '^(squeeze|6\.)' <<< "$edvContent" )
+		local isWheezy=$( grep -Eis '^(wheezy|7\.)' <<< "$edvContent" )
+	
+		# first tests sources
+		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(stable|squeeze|lenny|etch)' )
+		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(wheezy|testing)' )
+		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
+	
+		# then test conf for default version
+		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny|squeeze)"' <<< "$eaaContent" )
+		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|wheezy)"' <<< "$eaaContent" )
+		local isUnstableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(sid|unstable)"' <<< "$eaaContent" )
 	# arch tests
 	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
 		workingId='arch'
@@ -2370,15 +2380,18 @@ check_set_distro()
 			fi
 
 			# set system type. This test will never be perfect, but it's a good approximation
-			if [ "$debianDefault" == 'stable' ] || [ "$debianVersion" == 'etch' -o "$debianVersion" == 'lenny' ] || [ "$stableSources" -gt 0 -a "$sidSources" -eq 0 -a "$testingSources" -eq 0 ];then
-				if [ "$debianVersion" == 'etch' ];then
+			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
+				if [ -n "$isEtch" ];then
 					FG_DISTRIB_CODENAME='etch'
 					SYSTEM_CODENAME='etch'
-				else
+				elif [ -n "$isLenny" ];then
 					FG_DISTRIB_CODENAME='lenny' # note: 'stable' breaks the installer
+					SYSTEM_CODENAME='lenny'
+				else
+					FG_DISTRIB_CODENAME='squeeze'
 					SYSTEM_CODENAME='stable'
 				fi
-			elif [ "$debianDefault" == 'testing' ] || [ "$sidSources" -eq 0 -a "$testingSources" -gt 0 ];then
+			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isWheezy" -o "$isTesting" -gt 0 ];then
 				FG_DISTRIB_CODENAME='sid'
 				SYSTEM_CODENAME='testing'
 			else
