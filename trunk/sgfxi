@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.00
-####  Date: February 10 2011
+####  version: 4.17.01
+####  Date: February 15 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -2442,6 +2442,12 @@ check_set_distro()
 					;;
 				9)	FG_DISTRIB_CODENAME='lucid'
 					SYSTEM_CODENAME='lucid'
+					;;
+				10)FG_DISTRIB_CODENAME='maverick'
+					SYSTEM_CODENAME='maverick'
+					;;
+				11)FG_DISTRIB_CODENAME='natty'
+					SYSTEM_CODENAME='natty'
 					;;
 			esac
 			X_NAME='X'
