@@ -257,7 +257,7 @@ NV_64_ARCH='' # if nvidia changes file name use this
 
 # other options: nothing now
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='11-2:10-12:9-3'
+FG_VERSIONS='11-2:11-1:9-3'
 FG_DEFAULT='11-2'
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
