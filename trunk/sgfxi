@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.04
+####  version: 4.17.05
 ####  Date: February 24 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -3825,6 +3825,7 @@ set_modesetting_off()
 						# note: we don't want nouveau to try to restart on reboot, so we're changing
 						# xorg.conf to use vesa here.
 						NATIVE_OVERRIDE='vesa'
+						B_NATIVE_DRIVER='true'
 						echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
 						update_xorgconf_driver_version
 						reboot_now_question "$1" 'modeset-off'
@@ -6247,6 +6248,7 @@ update_xorgconf_driver_version()
 			driverName=$NATIVE_OVERRIDE
 		fi
 	fi
+
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
