@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.07
-####  Date: March 9 2011
+####  version: 4.17.08
+####  Date: March 10 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -1740,9 +1740,9 @@ detect_card_version()
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
 						B_USE_DISTRO_DRIVER='true'
 					fi
-# 					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
-# 						B_COMPOSITE='true'
-# 					fi
+					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
+						B_COMPOSITE='true'
+					fi
 					;;
 			esac
 			;;
