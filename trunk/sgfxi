@@ -5177,6 +5177,8 @@ remove_module()
 	if [ "$B_SKIP_GRUB_TEST" == 'true' ];then
 		if [ "$outcome" == 'failed' ];then
 			error_handler 167 "remove-$1"
+		else
+			echo "${M}Skipping modesetting section because of user requested ${C}-! 33${M} case.${N}"
 		fi
 	else
 		case $1 in
