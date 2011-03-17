@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.08
-####  Date: March 10 2011
+####  version: 4.17.09
+####  Date: March 17 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -140,6 +140,7 @@ B_RESTORE_DEFAULTS='false'
 B_SKIP_AUTOSTART='false' # deprecated, not used
 B_SKIP_CONFIG='false'
 B_SKIP_CONNECT='false' # deprecated, not used
+B_SKIP_GRUB_TEST='false'
 B_SKIP_INSTALL='false'
 B_SKIP_RESTART='false'
 B_SKIP_WGET='false'
@@ -1437,6 +1438,9 @@ error_handler()
 			;;
 		168)
 			errorData="An Xorg update overwrote $NVIDIA run package files. You must reinstall $NVIDIA driver.\nUnable to build -k option module."
+			;;
+		167)
+			errorData="You have used the -! 33 override option but the $errorExtra module action reports as failed\n.$SCRIPT_NAME is unable to continue in this scenario.\nPlease blacklist/unblacklist your $errorExtra manually then run $SCRIPT_NAME again."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -3793,7 +3797,7 @@ prep_native_driver()
 set_modesetting_off()
 {
 	eval $LOGPE
-	local bShowMessage='false'
+	local bShowMessage='false' retValue=1 # default false
 	
 	case $1 in
 		nouveau|radeon)
@@ -3810,11 +3814,13 @@ set_modesetting_off()
 				*)
 					# only act if blacklist/nomodeset was added
 					add_grub_nomodeset_blacklist_item $1
-					if [ "$?" -eq 0 ];then
+					retValue=$?
+					if [ "$retValue" -eq 0 ];then
 						bShowMessage='true'
 					fi
 					add_modprobe_d_blacklist_item $1
-					if [ "$?" -eq 0 ];then
+					retValue=$?
+					if [ "$retValue" -eq 0 ];then
 						bShowMessage='true'
 					fi
 					if [ "$bShowMessage" == 'true' ];then
@@ -4013,6 +4019,10 @@ remove_grub_nomodeset_blacklist_item()
 			echo "${S}Removed${N}"
 			returnValue=0
 		fi
+	elif [ "$B_SKIP_GRUB_FILE" == 'true' ];then
+		echo "${M}Skipping grub file removal due to ${C}-! 33${M} option being used. Make sure to remove all blacklists"
+		echo "and then reboot before you proceed!${N}"
+		returnValue=0
 	fi
 	
 	eval $LOGUE
@@ -5162,11 +5172,19 @@ remove_module()
 	fi
 	log_function_data "operation outcome: $outcome"
 	# going to run this for all cases, not just failure, maybe that will work better
-	case $1 in
-		nouveau|radeon)
-			set_modesetting_off "$1" "$outcome"
-			;;
-	esac
+	# also, there is an override to skip grub tests, but user has to have handled nouveau/
+	# kms blacklisting manually
+	if [ "$B_SKIP_GRUB_TEST" == 'true' ];then
+		if [ "$outcome" == 'failed' ];then
+			error_handler 167 "remove-$1"
+		fi
+	else
+		case $1 in
+			nouveau|radeon)
+				set_modesetting_off "$1" "$outcome"
+				;;
+		esac
+	fi
 # 	if [ "$outcome" == 'failed' ];then
 # 		set_modesetting_off "$1"
 # 	fi
@@ -5198,11 +5216,13 @@ add_module()
 	fi
 	log_function_data "operation outcome: $outcome"
 	# going to run this for all cases, not just failure, maybe that will work better
+	# handle the no grub file explicitly in this one
 	case $1 in
 		nouveau|radeon)
 			set_modesetting_on "$1" "$outcome"
 			;;
 	esac
+
 # 	if [ "$outcome" == 'failed' ];then
 # 		set_modesetting_on "$1"
 # 	fi
@@ -6723,6 +6743,7 @@ show_options()
 	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore system to default"
 	echo "      without redoing xorg.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
 	echo "      require xorg.conf file to operate. Using this command restores system to default."
+	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
 	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
@@ -6750,6 +6771,7 @@ show_options()
 		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version (legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version(legacy, don't use)."
+		
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
 		echo "   then exit the script without doing the driver download/install."
@@ -7017,6 +7039,9 @@ get_options()
 						B_RESTORE_DEFAULTS='true'
 						B_NATIVE_DRIVER='true'
 						B_MOVE_X_CONF='true'
+						;;
+					33)
+						B_SKIP_GRUB_TEST='true'
 						;;
 					40)
 						B_BUILD_KERNEL_MODULES='true'
