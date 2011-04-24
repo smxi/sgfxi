@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.11
-####  Date: April 12 2011
+####  version: 4.17.12
+####  Date: April 24 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -205,7 +205,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='270.41.03:173.14.28:96.43.19:71.86.14'
+NV_VERSIONS='270.41.03:173.14.30:96.43.19:71.86.14'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -232,6 +232,7 @@ NV_TESTING="$NV_VERSIONS_BETA:"
 # stable legacy 1: 71.86.06 71.86.09 71.86.11 71.86.13 71.86.14
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
+#                  173.14.28 173.14.30
 NV_OTHERS='260.19.44:260.19.29:260.19.12:256.35:195.36.31:190.53:185.18.36:180.60:177.82:173.14.25:173.14.22:169.12:100.14.19:96.43.18:96.43.17:96.43.16:71.86.13:71.86.11'
 
 # distro legacies (default to Debian packages):
@@ -619,7 +620,7 @@ driver_support_tests()
 							1.10)
 								case $DRIVER_DEFAULT in
 									# not positive about legacy drivers yet
-									270.*|$DISTRO_NVIDIA)
+									270.*|173.14.3*|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.9
 										;;
 									*)
@@ -632,7 +633,7 @@ driver_support_tests()
 							1.9)
 								case $DRIVER_DEFAULT in
 									# not positive about 256 series + 1.9, or 96
-									270.*|260.*|256.*|173.14.2[89]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
+									270.*|260.*|256.*|173.14.3*|173.14.2[89]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.9
 										;;
 									*)
@@ -644,7 +645,7 @@ driver_support_tests()
 								;;
 							1.8)
 								case $DRIVER_DEFAULT in
-									270.*|260.*|256.*|195.36.[2-9][0-9]|173.14.2[789]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
+									270.*|260.*|256.*|195.36.[2-9][0-9]|173.14.3*|173.14.2[789]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.8
 										;;
 									*)
@@ -656,7 +657,7 @@ driver_support_tests()
 								;;
 							1.7|7.[5])
 								case $DRIVER_DEFAULT in
-									270.*|260.*|256.*|195.*|190.53|173.14.2*|96.43.1*|96.43.2*|71.86.1[345]|$DISTRO_NVIDIA)
+									270.*|260.*|256.*|195.*|190.53|173.14.3*|173.14.2*|96.43.1*|96.43.2*|71.86.1[345]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.7
 										;;
 									*)
