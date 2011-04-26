@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.12
-####  Date: April 24 2011
+####  version: 4.17.13
+####  Date: April 26 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -758,7 +758,7 @@ driver_support_tests()
 								;;
 							28)
 								case $DRIVER_DEFAULT in
-									270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+									270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*)
@@ -770,7 +770,7 @@ driver_support_tests()
 								;;
 							29)
 								case $DRIVER_DEFAULT in
-									270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+									270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -782,7 +782,7 @@ driver_support_tests()
 								;;
 							30)
 								case $DRIVER_DEFAULT in
-									270.*|260.*|256.*|195.*|190.*|185.*|173.14.2*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+									270.*|260.*|256.*|195.*|190.*|185.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -795,7 +795,7 @@ driver_support_tests()
 							# note: 34 not fully confirmed yet for all drivers/legacy levels
 							31|32|33|34)
 								case $DRIVER_DEFAULT in
-									270.*|260.*|256.*|195.*|190.*|185.*|173.14.2*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+									270.*|260.*|256.*|195.*|190.*|185.*|173.14.[23]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
@@ -805,10 +805,23 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							35|36|37)
+							35|36|37|38)
 								# we'll assume the older drivers don't work here
 								case $DRIVER_DEFAULT in
-									270.*|260.*|256.*|173.14.2*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+									270.*|260.*|173.14.[23]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+										: # do nothing
+										;;
+									*) # use 225 for beta testing errors
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 234 $KERNEL_THIRD
+										fi
+										;;
+								esac
+								;;
+							39)
+								# we'll assume the older drivers don't work here
+								case $DRIVER_DEFAULT in
+									270.*|173.14.[3]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
 										: # do nothing
 										;;
 									*) # use 225 for beta testing errors
