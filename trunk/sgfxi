@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.17
-####  Date: May 19 2011
+####  version: 4.17.19
+####  Date: May 24 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -168,11 +168,10 @@ B_TESTING_6='false' # triggers new distro development tests
 # kernel variables strings are now evaluated in kernel_string_info().
 INSTALL_TO_KERNEL=''
 KERNEL_ARCH=''
-KERNEL_BASE='' # like: 2.6
-KERNEL_THIRD='' # like: 19, for math use
-# note the extra cut -d '-' -f 1 test is to dump the doubled 2.6.24 in new kernel strings.
-KERNEL_THREE='' # like: 2.6.19
-KERNEL_VERSION='' # full kernel name
+KERNEL_BASE='' # like: 2.6 or 3
+KERNEL_MATH='' # like: 19, for math use
+KERNEL_NUMBER='' # like: 2.6.19 or 3.19
+KERNEL_FULL='' # full kernel name
 
 # check for 64 bit first
 if [ -n "$( uname -m | grep -o 'x86_64' )" ];then
@@ -464,11 +463,15 @@ driver_support_tests()
 					# fglrx is working on all Debian/Liquorix kernels
 					# for testing/debugging set this re:
 					# http://techpatterns.com/docs/sgfxi-set-test-data.htm
-					case $KERNEL_THIRD in
-						2[5-9]|3[0-1])
-							if [ "$B_IS_APTOSID_KERNEL" == 'true' ];then
-								error_handler 229
-							fi
+					case $KERNEL_BASE in
+						2.6)
+							case $KERNEL_MATH in
+								2[5-9]|3[0-1])
+									if [ "$B_IS_APTOSID_KERNEL" == 'true' ];then
+										error_handler 229
+									fi
+									;;
+							esac
 							;;
 					esac
 
@@ -479,144 +482,148 @@ driver_support_tests()
 							;;
 					esac
 					# now the main support tests...
-					case $KERNEL_THIRD in
-						26)
-							case $DRIVER_DEFAULT in
-								8-4|8-5)
+					case $KERNEL_BASE in
+						2.6)
+							case $KERNEL_MATH in
+								26)
+									case $DRIVER_DEFAULT in
+										8-4|8-5)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								27)
+									case $DRIVER_DEFAULT in
+										8-4|8-5|8-6|8-7|8-8|8-9)
+											if [ "$B_TESTING_" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+										*)
+											: 
+											;;
+									esac
+									;;
+								28)
+									case $DRIVER_DEFAULT in
+										8-4|8-5|8-6|8-7|8-8|8-9)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+										*)
+											: 
+											;;
+									esac
+									;;
+								29)
+									case $DRIVER_DEFAULT in
+										9.2|9-[3-9]|9-1[0-2]|10-*|11-*)
+											: 
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								30)
+									case $DRIVER_DEFAULT in
+										9-8|9-9|9-1[0-2]|10-*|11-*)
+											: 
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								31|32)
+									case $DRIVER_DEFAULT in
+										9-1[0-2]|10-*|11-*)
+											: 
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								33)
+									case $DRIVER_DEFAULT in
+										10-[2-9]|10-1[0-2]|11-*)
+											:
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								34)
+									case $DRIVER_DEFAULT in
+										10-[5-9]|10-1[0-2]|11-*)
+											:
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								35)
+									case $DRIVER_DEFAULT in
+										10-[8-9]|10-1[0-2]|11-*)
+											:
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								36|37)
+									case $DRIVER_DEFAULT in
+										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
+										# patch from Arch works in application, don't know if it really works
+										10-1[0-2]|11-*) 
+											:
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;
+								38)
+									case $DRIVER_DEFAULT in
+										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
+										# patch from Arch works in application, don't know if it really works
+										11-*) 
+											:
+											;;
+										*)
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+											;;
+									esac
+									;;	
+								39|4*)
 									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
+										error_handler 234 $KERNEL_NUMBER
 									fi
 									;;
 							esac
-							;;
-						27)
-							case $DRIVER_DEFAULT in
-								8-4|8-5|8-6|8-7|8-8|8-9)
-									if [ "$B_TESTING_" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-								*)
-									: 
-									;;
-							esac
-							;;
-						28)
-							case $DRIVER_DEFAULT in
-								8-4|8-5|8-6|8-7|8-8|8-9)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-								*)
-									: 
-									;;
-							esac
-							;;
-						29)
-							case $DRIVER_DEFAULT in
-								9.2|9-[3-9]|9-1[0-2]|10-*|11-*)
-									: 
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;
-						30)
-							case $DRIVER_DEFAULT in
-								9-8|9-9|9-1[0-2]|10-*|11-*)
-									: 
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;
-						31|32)
-							case $DRIVER_DEFAULT in
-								9-1[0-2]|10-*|11-*)
-									: 
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;
-						33)
-							case $DRIVER_DEFAULT in
-								10-[2-9]|10-1[0-2]|11-*)
-									:
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;
-						34)
-							case $DRIVER_DEFAULT in
-								10-[5-9]|10-1[0-2]|11-*)
-									:
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;
-						35)
-							case $DRIVER_DEFAULT in
-								10-[8-9]|10-1[0-2]|11-*)
-									:
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;
-						36|37)
-							case $DRIVER_DEFAULT in
-								# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
-								# patch from Arch works in application, don't know if it really works
-								10-1[0-2]|11-*) 
-									:
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;
-						38)
-							case $DRIVER_DEFAULT in
-								# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
-								# patch from Arch works in application, don't know if it really works
-								11-*) 
-									:
-									;;
-								*)
-									if [ "$B_TESTING_3" != 'true' ];then
-										error_handler 234 $KERNEL_THIRD
-									fi
-									;;
-							esac
-							;;	
-						39|4*)
-							if [ "$B_TESTING_3" != 'true' ];then
-								error_handler 234 $KERNEL_THIRD
-							fi
 							;;
 					esac
 					;;
@@ -752,109 +759,113 @@ driver_support_tests()
 						esac
 						# basic version handling and support tests, unless otherwise reported,
 						# $DISTRO_NVIDIA will be supported by default
-						case $KERNEL_THIRD in
-							24) # going to try just 2.6.24 links, see if any issues appear
-								# this doesn't work on debian kernels
-								if [ "$B_IS_APTOSID_KERNEL" == 'true' ];then
-									misc_fixes nvidia-24-link # this might always be needed, all cases?
-								fi
-								;;
-							26)
-								case $DRIVER_DEFAULT in
-									275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
-										: # do nothing
-										;;
-									*)
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
+						case $KERNEL_BASE in
+							2.6)
+								case $KERNEL_MATH in
+									24) # going to try just 2.6.24 links, see if any issues appear
+										# this doesn't work on debian kernels
+										if [ "$B_IS_APTOSID_KERNEL" == 'true' ];then
+											misc_fixes nvidia-24-link # this might always be needed, all cases?
 										fi
 										;;
-								esac
-								;;
-							27)
-								case $DRIVER_DEFAULT in
-									275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
-										: # do nothing
+									26)
+										case $DRIVER_DEFAULT in
+											275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*)
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
-									*)
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
+									27)
+										case $DRIVER_DEFAULT in
+											275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.*.*|100.*.*|96.*.*|71.*.*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*)
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
-								esac
-								;;
-							28)
-								case $DRIVER_DEFAULT in
-									275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
-										: # do nothing
+									28)
+										case $DRIVER_DEFAULT in
+											275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*)
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
-									*)
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
+									29)
+										case $DRIVER_DEFAULT in
+											275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
-								esac
-								;;
-							29)
-								case $DRIVER_DEFAULT in
-									275.*|270.*|260.*|256.*|195.*|190.*|185.*|180.*|177.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
-										: # do nothing
+									30)
+										case $DRIVER_DEFAULT in
+											275.*|270.*|260.*|256.*|195.*|190.*|185.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
-									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
+									# note: 34 not fully confirmed yet for all drivers/legacy levels
+									31|32|33|34)
+										case $DRIVER_DEFAULT in
+											275.*|270.*|260.*|256.*|195.*|190.*|185.*|173.14.[23]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
-								esac
-								;;
-							30)
-								case $DRIVER_DEFAULT in
-									275.*|270.*|260.*|256.*|195.*|190.*|185.*|173.14.[23]*|96.43.1*|71.86.1*|71.86.09|$DISTRO_NVIDIA)
-										: # do nothing
+									35|36|37|38)
+										# we'll assume the older drivers don't work here
+										case $DRIVER_DEFAULT in
+											275.*|270.*|260.*|173.14.[23]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
-									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
-										;;
-								esac
-								;;
-							# note: 34 not fully confirmed yet for all drivers/legacy levels
-							31|32|33|34)
-								case $DRIVER_DEFAULT in
-									275.*|270.*|260.*|256.*|195.*|190.*|185.*|173.14.[23]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
-										: # do nothing
-										;;
-									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
-										;;
-								esac
-								;;
-							35|36|37|38)
-								# we'll assume the older drivers don't work here
-								case $DRIVER_DEFAULT in
-									275.*|270.*|260.*|173.14.[23]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
-										: # do nothing
-										;;
-									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
-										;;
-								esac
-								;;
-							39)
-								# we'll assume the older drivers don't work here
-								case $DRIVER_DEFAULT in
-									275.*|270.*|173.14.[3]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
-										: # do nothing
-										;;
-									*) # use 225 for beta testing errors
-										if [ "$B_TESTING_3" != 'true' ];then
-											error_handler 234 $KERNEL_THIRD
-										fi
+									39)
+										# we'll assume the older drivers don't work here
+										case $DRIVER_DEFAULT in
+											275.*|270.*|173.14.[3]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
 										;;
 								esac
 								;;
@@ -881,231 +892,239 @@ run_driver_patches()
 
 	case $CARD in
 		$NVIDIA)
-			case $KERNEL_THIRD in
-				25)
-					apply_module_patch pre
-					case $DRIVER_DEFAULT in
-						169.12)
-							patchFile='NVIDIA_kernel-169.12-2286310.diff'
-							apply_patch_file $patchFile
+			case $KERNEL_BASE in
+				2.6)
+					case $KERNEL_MATH in
+						25)
+							apply_module_patch pre
+							case $DRIVER_DEFAULT in
+								169.12)
+									patchFile='NVIDIA_kernel-169.12-2286310.diff'
+									apply_patch_file $patchFile
+									;;
+								# patch url: http://www.nvnews.net/vbulletin/showthread.php?t=112452
+								100.14.19)
+									# patch source url:
+									# http://www.nvnews.net/vbulletin/showthread.php?t=112452&highlight=2.6.26
+									# patch author: NiLuJe
+									if [ "$BITS" == '32' ];then
+										patchFile='NVIDIA-x86-100.14.19-kernel-2.6.25-compat.diff'
+									else
+										patchFile='NVIDIA-x86_64-100.14.19-kernel-2.6.25-compat.diff'
+									fi
+									apply_patch_file $patchFile
+									;;
+								96.43.05)
+									patchFile='NVIDIA_kernel-96.43.05-2290218.diff'
+									apply_patch_file $patchFile
+									;;
+							esac
 							;;
-						# patch url: http://www.nvnews.net/vbulletin/showthread.php?t=112452
-						100.14.19)
-							# patch source url:
-							# http://www.nvnews.net/vbulletin/showthread.php?t=112452&highlight=2.6.26
-							# patch author: NiLuJe
-							if [ "$BITS" == '32' ];then
-								patchFile='NVIDIA-x86-100.14.19-kernel-2.6.25-compat.diff'
-							else
-								patchFile='NVIDIA-x86_64-100.14.19-kernel-2.6.25-compat.diff'
+						26)
+							apply_module_patch pre
+		
+							case $DRIVER_DEFAULT in
+								173.14.05)
+									patchFile='NVIDIA_kernel-173.14.05-2419292.diff'
+									apply_patch_file $patchFile
+									;;
+								100.14.19)
+									# patch source url:
+									# http://www.nvnews.net/vbulletin/showthread.php?t=112452&highlight=2.6.26
+									# patch author: NiLuJe, MamiyaOtaru, zander (from nvidia)
+									# patchFile='NVIDIA-100.14.19-kernel-2.6.25+26-compat.diff'
+									patchFile='NVIDIA-100.14.19-for-2.6.26.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						27)
+							apply_module_patch pre
+							case $DRIVER_DEFAULT in
+								177.13)
+									# patch author: zander, nvidia; patch src:
+									# http://www.nvnews.net/vbulletin/showthread.php?t=117209
+									# patch url:
+									# http://www.nvnews.net/vbulletin/attachment.php?attachmentid=32559&d=1218212371
+									patchFile='NVIDIA_kernel-177.13-2627763.diff'
+									apply_patch_file $patchFile
+									;;
+								# patch url: http://www.nvnews.net/vbulletin/showthread.php?t=112452
+								100.14.19)
+									patchFile='NVIDIA-100.14.19-kernel-2.6.27-compat.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						28)
+							case $DRIVER_DEFAULT in
+								177.80)
+									# post 21:http://www.nvnews.net/vbulletin/showthread.php?t=121790
+									patchFile='NVIDIA_2.6.28-177.80-2990799.diff'
+									apply_patch_file $patchFile
+									;;
+								177.82)
+									# post 44: http://www.nvnews.net/vbulletin/showthread.php?t=121790&page=2
+									patchFile='NVIDIA_2.6.28-177.82.diff'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						30)
+							case $DRIVER_DEFAULT in
+								71.86.09)
+									# post 1:  http://www.nvnews.net/vbulletin/showthread.php?t=133990
+									# alt: http://www.nvnews.net/vbulletin/showthread.php?p=1984486
+									patchFile='NVIDIA_96.43.11-2.6.30.diff'
+									apply_patch_file $patchFile
+									;;
+								185.18.*)
+									#http://www.nvnews.net/vbulletin/showthread.php?t=133112
+									patchFile='NVIDIA-185.18.14-2.6.30.diff'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						31)
+							case $DRIVER_DEFAULT in
+								185.18.*)
+									#http://www.nvnews.net/vbulletin/showthread.php?t=133112
+									patchFile='NVIDIA-185.18.14-2.6.30.diff'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						32|33)
+							# test if the /generated directory exists, if it does, then use patch.
+							if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
+								case $DRIVER_DEFAULT in
+									# this is fixed in newest beta, it does auto testing for /generated/
+									195.30)
+										# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
+										patchFile='NVIDIA-195-2.6.33.diff'
+										apply_patch_file $patchFile
+										;;
+									190.53) # won't be needed for new version, it will be fixed
+										# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
+										patchFile='NVIDIA-190.53-2.6.33.diff'
+										apply_patch_file $patchFile
+										;;
+								esac
 							fi
-							apply_patch_file $patchFile
-							;;
-						96.43.05)
-							patchFile='NVIDIA_kernel-96.43.05-2290218.diff'
-							apply_patch_file $patchFile
 							;;
 					esac
-					;;
-				26)
-					apply_module_patch pre
-
-					case $DRIVER_DEFAULT in
-						173.14.05)
-							patchFile='NVIDIA_kernel-173.14.05-2419292.diff'
-							apply_patch_file $patchFile
-							;;
-						100.14.19)
-							# patch source url:
-							# http://www.nvnews.net/vbulletin/showthread.php?t=112452&highlight=2.6.26
-							# patch author: NiLuJe, MamiyaOtaru, zander (from nvidia)
-							# patchFile='NVIDIA-100.14.19-kernel-2.6.25+26-compat.diff'
-							patchFile='NVIDIA-100.14.19-for-2.6.26.patch'
-							apply_patch_file $patchFile
-							;;
-					esac
-					;;
-				27)
-					apply_module_patch pre
-					case $DRIVER_DEFAULT in
-						177.13)
-							# patch author: zander, nvidia; patch src:
-							# http://www.nvnews.net/vbulletin/showthread.php?t=117209
-							# patch url:
-							# http://www.nvnews.net/vbulletin/attachment.php?attachmentid=32559&d=1218212371
-							patchFile='NVIDIA_kernel-177.13-2627763.diff'
-							apply_patch_file $patchFile
-							;;
-						# patch url: http://www.nvnews.net/vbulletin/showthread.php?t=112452
-						100.14.19)
-							patchFile='NVIDIA-100.14.19-kernel-2.6.27-compat.patch'
-							apply_patch_file $patchFile
-							;;
-					esac
-					;;
-				28)
-					case $DRIVER_DEFAULT in
-						177.80)
-							# post 21:http://www.nvnews.net/vbulletin/showthread.php?t=121790
-							patchFile='NVIDIA_2.6.28-177.80-2990799.diff'
-							apply_patch_file $patchFile
-							;;
-						177.82)
-							# post 44: http://www.nvnews.net/vbulletin/showthread.php?t=121790&page=2
-							patchFile='NVIDIA_2.6.28-177.82.diff'
-							apply_patch_file $patchFile
-							;;
-					esac
-					;;
-				30)
-					case $DRIVER_DEFAULT in
-						71.86.09)
-							# post 1:  http://www.nvnews.net/vbulletin/showthread.php?t=133990
-							# alt: http://www.nvnews.net/vbulletin/showthread.php?p=1984486
-							patchFile='NVIDIA_96.43.11-2.6.30.diff'
-							apply_patch_file $patchFile
-							;;
-						185.18.*)
-							#http://www.nvnews.net/vbulletin/showthread.php?t=133112
-							patchFile='NVIDIA-185.18.14-2.6.30.diff'
-							apply_patch_file $patchFile
-							;;
-					esac
-					;;
-				31)
-					case $DRIVER_DEFAULT in
-						185.18.*)
-							#http://www.nvnews.net/vbulletin/showthread.php?t=133112
-							patchFile='NVIDIA-185.18.14-2.6.30.diff'
-							apply_patch_file $patchFile
-							;;
-					esac
-					;;
-				32|33)
-					# test if the /generated directory exists, if it does, then use patch.
-					if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
-						case $DRIVER_DEFAULT in
-							# this is fixed in newest beta, it does auto testing for /generated/
-							195.30)
-								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
-								patchFile='NVIDIA-195-2.6.33.diff'
-								apply_patch_file $patchFile
-								;;
-							190.53) # won't be needed for new version, it will be fixed
-								# http://www.nvnews.net/vbulletin/showthread.php?t=142794&page=2#20
-								patchFile='NVIDIA-190.53-2.6.33.diff'
-								apply_patch_file $patchFile
-								;;
-						esac
-					fi
 					;;
 			esac
 			;;
 		$FGLRX)
-			case $KERNEL_THIRD in
-				25|26)
-					case $DRIVER_DEFAULT in
-# 						8-4|8-5)
-# 							# debian kernls work normally, no patch required
-# 							# note: due to concerns raised, this patch is not going to be used
-# 							if [ "$B_IS_APTOSID_KERNEL" == 'true' ]
-# 							then
-# 								# pre patch link required, just to keep the information for future reference:
-# 								ln -s arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1.0 arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1
-# 								ln -s arch/x86_64/usr/X11R6/lib64/libfglrx_gamma.so.1.0 arch/x86_64/usr/X11R6/lib64/libfglrx_gamma.so.1
-# 								patchFile=''
-# 								#apply_patch_file $patchFile
-# 							fi
-# 							;;
-						8-6)
-							patchFile='0001-catalyst-8.6-linux-2.6.26.patch'
-							apply_patch_file $patchFile
-							patchFile='0002-catalyst-8.6-linux-2.6.26.patch'
-							apply_patch_file $patchFile
-							patchFile='0003-catalyst-8.6-linux-2.6.26.patch'
-							apply_patch_file $patchFile
+			case $KERNEL_BASE in
+				2.6)
+					case $KERNEL_MATH in
+						25|26)
+							case $DRIVER_DEFAULT in
+		# 						8-4|8-5)
+		# 							# debian kernls work normally, no patch required
+		# 							# note: due to concerns raised, this patch is not going to be used
+		# 							if [ "$B_IS_APTOSID_KERNEL" == 'true' ]
+		# 							then
+		# 								# pre patch link required, just to keep the information for future reference:
+		# 								ln -s arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1.0 arch/x86/usr/X11R6/lib/libfglrx_gamma.so.1
+		# 								ln -s arch/x86_64/usr/X11R6/lib64/libfglrx_gamma.so.1.0 arch/x86_64/usr/X11R6/lib64/libfglrx_gamma.so.1
+		# 								patchFile=''
+		# 								#apply_patch_file $patchFile
+		# 							fi
+		# 							;;
+								8-6)
+									patchFile='0001-catalyst-8.6-linux-2.6.26.patch'
+									apply_patch_file $patchFile
+									patchFile='0002-catalyst-8.6-linux-2.6.26.patch'
+									apply_patch_file $patchFile
+									patchFile='0003-catalyst-8.6-linux-2.6.26.patch'
+									apply_patch_file $patchFile
+									;;
+								8-7)
+									# patch url: http://bugs.gentoo.org/attachment.cgi?id=161335
+									# found at: http://bugs.gentoo.org/show_bug.cgi?id=232609
+									patchFile='FGLRX-8.7-2.6.26.patch'
+									# this one is crap, bad hunks
+									#patchFile='FGLRX-0004-Linux-2.6.26.x-kernels-support.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
 							;;
-						8-7)
-							# patch url: http://bugs.gentoo.org/attachment.cgi?id=161335
-							# found at: http://bugs.gentoo.org/show_bug.cgi?id=232609
-							patchFile='FGLRX-8.7-2.6.26.patch'
-							# this one is crap, bad hunks
-							#patchFile='FGLRX-0004-Linux-2.6.26.x-kernels-support.patch'
-							apply_patch_file $patchFile
+						29)
+							case $DRIVER_DEFAULT in
+								9.2|9-3|9-4|9-5|9-6|9-7)
+									# src: http://www.phoronix.com/forums/showthread.php?t=15165
+									patchFile='FGLRX-2.6.29-9.2-5.diff'
+									apply_patch_file $patchFile
+									:
+									;;
+							esac
 							;;
-					esac
-					;;
-				29)
-					case $DRIVER_DEFAULT in
-						9.2|9-3|9-4|9-5|9-6|9-7)
-							# src: http://www.phoronix.com/forums/showthread.php?t=15165
-							patchFile='FGLRX-2.6.29-9.2-5.diff'
-							apply_patch_file $patchFile
-							:
+						30)
+							case $DRIVER_DEFAULT in
+								9-6)
+									if [ "$B_TESTING_3" == 'true' ];then
+										patchFile='FGLRX-2.6.30-9-6.diff'
+										apply_patch_file $patchFile
+									fi
+									;;
+								esac
 							;;
-					esac
-					;;
-				30)
-					case $DRIVER_DEFAULT in
-						9-6)
-							if [ "$B_TESTING_3" == 'true' ];then
-								patchFile='FGLRX-2.6.30-9-6.diff'
-								apply_patch_file $patchFile
+						32)
+							case $DRIVER_DEFAULT in
+								9-11|9-12)
+									patchFile='FGLRX-2.6.32-9-11.diff'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						33)
+							# these handle that /generated/ path change in kernel headers
+							# test if the /generated directory exists, if it does, then use patch.
+							if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
+								case $DRIVER_DEFAULT in
+									10-2)
+										patchFile='FGLRX-2.6.33-10-2.diff'
+										apply_patch_file $patchFile
+										;;
+									10-[3-5])
+										patchFile='FGLRX-2.6.33-10-x.diff'
+										apply_patch_file $patchFile
+										;;
+								esac
 							fi
-							;;
-						esac
-					;;
-				32)
-					case $DRIVER_DEFAULT in
-						9-11|9-12)
-							patchFile='FGLRX-2.6.32-9-11.diff'
-							apply_patch_file $patchFile
-							;;
-					esac
-					;;
-				33)
-					# these handle that /generated/ path change in kernel headers
-					# test if the /generated directory exists, if it does, then use patch.
-					if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
-						case $DRIVER_DEFAULT in
-							10-2)
-								patchFile='FGLRX-2.6.33-10-2.diff'
-								apply_patch_file $patchFile
-								;;
-							10-[3-5])
-								patchFile='FGLRX-2.6.33-10-x.diff'
-								apply_patch_file $patchFile
-								;;
-						esac
-					fi
-					;; 
-				34)
-					# these handle that /generated/ path change in kernel headers
-					# test if the /generated directory exists, if it does, then use patch.
-					if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
-						case $DRIVER_DEFAULT in
-							10-[4-5])
-								patchFile='FGLRX-2.6.33-10-x.diff'
-								apply_patch_file $patchFile
-								patchFile='FGLRX-2.6.34-rc4-10-4.diff'
-								apply_patch_file $patchFile
-								;;
-							10-[6])
-# 								patchFile='FGLRX-2.6.33-10-x.diff' # fails
-# 								apply_patch_file $patchFile
-								patchFile='FGLRX-2.6.34-rc4-10-4.diff' # works
-								apply_patch_file $patchFile
-								;;
-						esac
-					fi
-					;; 
-				36|37)
-					case $DRIVER_DEFAULT in
-						10-1[0-2]) # run this for -11 too maybe it will work
-							patchFile='FGLRX-2.6.36-10-10.diff'
-							apply_patch_file $patchFile
-							patchFile='FGLRX-2.6.36-10-10-makefile-compat.diff'
-							apply_patch_file $patchFile
+							;; 
+						34)
+							# these handle that /generated/ path change in kernel headers
+							# test if the /generated directory exists, if it does, then use patch.
+							if [ -n "$( misc_fixes linux-generated-patch )" -o "$B_TESTING_4" == 'true' ];then
+								case $DRIVER_DEFAULT in
+									10-[4-5])
+										patchFile='FGLRX-2.6.33-10-x.diff'
+										apply_patch_file $patchFile
+										patchFile='FGLRX-2.6.34-rc4-10-4.diff'
+										apply_patch_file $patchFile
+										;;
+									10-[6])
+		# 								patchFile='FGLRX-2.6.33-10-x.diff' # fails
+		# 								apply_patch_file $patchFile
+										patchFile='FGLRX-2.6.34-rc4-10-4.diff' # works
+										apply_patch_file $patchFile
+										;;
+								esac
+							fi
+							;; 
+						36|37)
+							case $DRIVER_DEFAULT in
+								10-1[0-2]) # run this for -11 too maybe it will work
+									patchFile='FGLRX-2.6.36-10-10.diff'
+									apply_patch_file $patchFile
+									patchFile='FGLRX-2.6.36-10-10-makefile-compat.diff'
+									apply_patch_file $patchFile
+									;;
+							esac
 							;;
 					esac
 					;;
@@ -1157,7 +1176,7 @@ set_test_data()
 		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
-		KERNEL_THIRD=36
+		KERNEL_MATH=36
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
@@ -1275,7 +1294,7 @@ error_handler()
 			errorData="You can't use the composite option with this driver: $DRIVER_DEFAULT"
 			;;
 		246)
-			errorData="The driver: $DRIVER_DEFAULT is not currently supported for kernel version 2.6.$KERNEL_THIRD"
+			errorData="The driver: $DRIVER_DEFAULT is not currently supported for kernel version $KERNEL_NUMBER"
 			;;
 		245)
 			errorData2=''
@@ -1312,12 +1331,12 @@ error_handler()
 			errorData="An ATI $CARD error makes them not support your Xorg version $errorExtra\n If you are using less than R500 type card, you can install native radeon drivers with this script.\nUse this syntax to install those and reconfigure xorg.conf: $SCRIPT_NAME -N radeon"
 			;;
 		235)
-			errorData="The driver $DRIVER_DEFAULT requires the 2.6.$errorExtra kernel to run.\nYou are running the $KERNEL_THREE kernel. Please update your kernel now."
+			errorData="The driver $DRIVER_DEFAULT requires the 2.6.$errorExtra kernel to run.\nYou are running the $KERNEL_NUMBER kernel. Please update your kernel now."
 			;;
 		234)
-			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are running the $KERNEL_VERSION kernel. Unable to install your $DRIVER_DEFAULT driver.\nYou can override this test with -! 6 option. If install works, let maintainer know."
+			errorData="The driver $DRIVER_DEFAULT does not support the $errorExtra kernel.\nYou are running the $KERNEL_FULL kernel. Unable to install your $DRIVER_DEFAULT driver.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
-		233) errorData="Creating the fix: $errorExtra for your $DRIVER_DEFAULT and kernel $KERNEL_VERSION failed."
+		233) errorData="Creating the fix: $errorExtra for your $DRIVER_DEFAULT and kernel $KERNEL_FULL failed."
 			;;
 		232)
 			errorData="The kernel for -K option: $errorExtra does not appear to be installed in your system."
@@ -1329,7 +1348,7 @@ error_handler()
 			errorData="Could not detect gcc version: $errorExtra, or it is not installed.\nPlease let the script maintainer know, this may be a bug in the script."
 			;;
 		229)
-			errorData="The driver: $DRIVER_DEFAULT does not work on aptosid/sidux kernels.\nYou are trying to install it to this kernel: $KERNEL_VERSION\nCurrently $FGLRX only works on new non-aptosid kernels."
+			errorData="The driver: $DRIVER_DEFAULT does not work on aptosid/sidux kernels.\nYou are trying to install it to this kernel: $KERNEL_FULL\nCurrently $FGLRX only works on new non-aptosid kernels."
 			;;
 		228)
 			errorData="The option you selected: $errorExtra is not supported."
@@ -1342,10 +1361,10 @@ error_handler()
 			;;
 		# this is only for nvidia latest kernel + beta errors
 		225)
-			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are installing the driver to kernel: $KERNEL_VERSION\nPlease try the beta driver instead. Use this command to install beta drivers\nto either non-current kernel: $SCRIPT_NAME -cB -K $KERNEL_VERSION\nor to current kernel: $SCRIPT_NAME -cB"
+			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are installing the driver to kernel: $KERNEL_FULL\nPlease try the beta driver instead. Use this command to install beta drivers\nto either non-current kernel: $SCRIPT_NAME -cB -K $KERNEL_FULL\nor to current kernel: $SCRIPT_NAME -cB"
 			;;
 		224)
-			errorData="Your system is missing the required kernel header package: $errorExtra\n and it is not currently available in your repos. Cannot continue.\nPlease either update your kernel and kernel headers,\nor find and install kernel headers for $KERNEL_VERSION\nYou can override this test with -! 6 option. If install works, let maintainer know."
+			errorData="Your system is missing the required kernel header package: $errorExtra\n and it is not currently available in your repos. Cannot continue.\nPlease either update your kernel and kernel headers,\nor find and install kernel headers for $KERNEL_FULL\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		223)
 			errorData="The install of the missing deb from your $SM_KERNEL_DOWNLOADS directory:\n$extraData\nhas failed for unknown reasons. Sorry, we did our best."
@@ -1472,7 +1491,7 @@ error_handler()
 			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure.\nA copy of this nvidia error log is also here: $LOG_FILE\nPlease try to reinstall the driver using: sgfxi -f (force override module build)\nbecause sometimes modules cannot be built to new kernels without the source\nbeing patched first, which requires a driver reinstall."
 			;;
 		170)
-			errorData="An nvidia module already exists for $KERNEL_VERSION at path:\n/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nInstalling a driver will remove all previous modules, then you can\nrebuild them with the -! 40 option (see $SCRIPT_NAME -h for more information on that method)."
+			errorData="An nvidia module already exists for $KERNEL_FULL at path:\n/lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nInstalling a driver will remove all previous modules, then you can\nrebuild them with the -! 40 option (see $SCRIPT_NAME -h for more information on that method)."
 			;;
 		169)
 			errorData="No previous $NVIDIA $SCRIPT_NAME run package install detected for -k option module build."
@@ -2145,21 +2164,30 @@ kernel_string_info()
 	# The kernel variables stuff needs to be in a separate function to get data from
 	# either the running kernel or the new installed kernel
 	if [ -n "$INSTALL_TO_KERNEL" ];then
-		KERNEL_VERSION=$INSTALL_TO_KERNEL
+		KERNEL_FULL=$INSTALL_TO_KERNEL
 	else
-		KERNEL_VERSION=$( uname -r ) # full kernel name
+		KERNEL_FULL=$( uname -r ) # full kernel name
 	fi
 
-	if [ -n "$( echo $KERNEL_VERSION | grep -sE "[\.|-]slh\(64\)\?[\.|-]" )" ];then
+	if [ -n "$( echo $KERNEL_FULL | grep -sE "[\.|-]slh\(64\)\?[\.|-]" )" ];then
 		B_IS_APTOSID_KERNEL='true'
 	fi
-	if [ -n "$( grep -si 'CONFIG_XEN=y' /boot/config-$KERNEL_VERSION )" ];then
+	if [ -n "$( grep -si 'CONFIG_XEN=y' /boot/config-$KERNEL_FULL )" ];then
 		B_IS_XEN='true'
 	fi
-	KERNEL_BASE=$( echo $KERNEL_VERSION | cut -d '.' -f 1-2 ) # like: 2.6
-	KERNEL_THREE=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 1-3 ) # like: 2.6.19
-	KERNEL_THIRD=$( echo $KERNEL_VERSION | cut -d '-' -f 1 | cut -d '.' -f 3 ) # like: 19, for math use
-	if [ -n "$( grep -is "PAE" <<< $KERNEL_VERSION )" ];then
+	# note the extra cut -d '-' -f 1 test is to dump the doubled 2.6.24 in legacy kernel strings.
+	# check for new single number syntax, like 3.19
+	if [ -n "$( grep -Es '^[3-9]\.' <<< $KERNEL_FULL )" ];then
+		KERNEL_BASE=$( echo $KERNEL_FULL | cut -d '.' -f 1 ) # like: 3
+		KERNEL_NUMBER=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 1-2 ) # like: 3.19
+		KERNEL_MATH=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 2 ) # like: 19
+	# else check for old 2.6.19 style
+	else
+		KERNEL_BASE=$( echo $KERNEL_FULL | cut -d '.' -f 1-2 ) # like: 2.6
+		KERNEL_NUMBER=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 1-3 ) # like: 2.6.19
+		KERNEL_MATH=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 3 ) # like: 19
+	fi
+	if [ -n "$( grep -is "PAE" <<< $KERNEL_FULL )" ];then
 		FED_KERNEL_PAE='-PAE'
 	fi
 }
@@ -2190,12 +2218,12 @@ check_kernel_headers()
 	
 	case $SYSTEM_BASE in
 		debian|ubuntu)
-			headerName="linux-headers-$KERNEL_VERSION"
+			headerName="linux-headers-$KERNEL_FULL"
 			headerPresent="$( ls ${USRS}$headerName/ 2>/dev/null )"
 			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
-			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}/$KERNEL_VERSION/$headerName*.deb 2>/dev/null )"
+			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}/$KERNEL_FULL/$headerName*.deb 2>/dev/null )"
 		
 			log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
 		
@@ -2218,9 +2246,9 @@ check_kernel_headers()
 			# kernel-PAE-devel-2.6.31.5-127.fc12.i686.rpm
 			local kernelDevel='' develPresent='' kernelWorking=''
 			# need to slice off .PAE from working kernel name/headers name
-			kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_VERSION )
+			kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_FULL )
 			headerName="kernel-headers-$kernelWorking"
-			headerPresent="$( ls ${USRS}kernels/$KERNEL_VERSION/ 2>/dev/null )"
+			headerPresent="$( ls ${USRS}kernels/$KERNEL_FULL/ 2>/dev/null )"
 			# rpm is reporting two names here I think, we'll see, if it's got the
 			# kernel name in it, we'll call it installed.
 			headerInstalled=$( check_package_status "$headerName" 'i' | grep $kernelWorking )
@@ -2238,8 +2266,8 @@ check_kernel_headers()
 		# is highly erratic, arch is not using consistent methods, requires more testing
 		arch)
 			headerName="kernel26-headers"
-			headerPresent="$( ls /lib/modules/$KERNEL_VERSION/build/ 2>/dev/null )"
-			testKernel=$( grep -Esi '^2\.6\.[0-9]{2}-ARCH$' <<< $KERNEL_VERSION )
+			headerPresent="$( ls /lib/modules/$KERNEL_FULL/build/ 2>/dev/null )"
+			testKernel=$( grep -Esi '^2\.6\.[0-9]{2}-ARCH$' <<< $KERNEL_FULL )
 			# 2.6.32-ARCH
 			if [ -z "$headerPresent" ];then
 				# if it's a custom kernel, no package available so die
@@ -2283,10 +2311,15 @@ basic_startup_tests()
 	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" ];then
 		error_handler 249
 	fi
-	# double check only 2.6 series kernels
-	if [ "$KERNEL_BASE" != '2.6' ];then
-		error_handler 243
-	fi
+	# double check only 2.6 or later series kernels
+	case $KERNEL_BASE in
+		2.6|2.8|3|4)
+			: # supported
+			;;
+		*)
+			error_handler 243
+			;;
+	esac
 
 	## basic execute requirements
 	cd $SCRIPT_HOME
@@ -3442,7 +3475,7 @@ create_log()
 	echo "Video Card Type: $CARD_BRAND" >> $LOG_FILE
 	echo "Video Card Number: $CARD_NUMBER" >> $LOG_FILE
 	echo "Xorg Version: $X_VERSION" >> $LOG_FILE
-	echo "Installing driver to kernel: $KERNEL_VERSION" >> $LOG_FILE
+	echo "Installing driver to kernel: $KERNEL_FULL" >> $LOG_FILE
 	if [ -n "$INSTALL_TO_KERNEL" ];then
 		echo "Running install from Kernel: $(uname -r)" >> $LOG_FILE
 	fi
@@ -3465,7 +3498,7 @@ create_log()
 	if [ -f $SM_VALUES ];then
 		echo -e "Begin User Set $SM_VALUES:\n$( cat $SM_VALUES)\nEnd User Set Values" >> $LOG_FILE
 	fi
-	echo -e "INSTALL_TO_KERNEL: $INSTALL_TO_KERNEL\nKERNEL_VERSION: $KERNEL_VERSION\nKERNEL_BASE: $KERNEL_BASE\nKERNEL_THREE: $KERNEL_THREE\nKERNEL_THIRD: $KERNEL_THIRD\nB_IS_XEN: $B_IS_XEN" >> $LOG_FILE
+	echo -e "INSTALL_TO_KERNEL: $INSTALL_TO_KERNEL\nKERNEL_FULL: $KERNEL_FULL\nKERNEL_BASE: $KERNEL_BASE\nKERNEL_NUMBER: $KERNEL_NUMBER\nKERNEL_MATH: $KERNEL_MATH\nB_IS_XEN: $B_IS_XEN" >> $LOG_FILE
 
 	B_LOGGING_STARTED='true'
 }
@@ -4122,16 +4155,16 @@ remove_modprobe_d_blacklist_item()
 update_initramfs()
 {
 	eval $LOGPS
-	local storedNouveau="/boot/initramfs-$KERNEL_VERSION-nouveau.img"
-	local storedRadeon="/boot/initramfs-$KERNEL_VERSION-radeon.img"
-	local startingInitram="/boot/initramfs-$KERNEL_VERSION.img"
+	local storedNouveau="/boot/initramfs-$KERNEL_FULL-nouveau.img"
+	local storedRadeon="/boot/initramfs-$KERNEL_FULL-radeon.img"
+	local startingInitram="/boot/initramfs-$KERNEL_FULL.img"
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			case $1 in
 				remove-nouveau|remove-radeon)
 					if [ -n "$( type -p update-initramfs )" ];then
 						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau/Radeon from initrd... ${N}"
-						update-initramfs -u -k $KERNEL_VERSION
+						update-initramfs -u -k $KERNEL_FULL
 					fi
 					;;
 			esac
@@ -4142,14 +4175,14 @@ update_initramfs()
 					if [ -n "$( type -p dracut )" ];then
 						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}nouveau${S} now...${N}"
 						mv -f $startingInitram $storedNouveau
-						dracut $startingInitram $KERNEL_VERSION
+						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
 				remove-radeon)
 					if [ -n "$( type -p dracut )" ];then
 						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}radeon${S} now...${N}"
 						mv -f $startingInitram $storedRadeon
-						dracut $startingInitram $KERNEL_VERSION
+						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
 				add-nouveau)
@@ -4158,7 +4191,7 @@ update_initramfs()
 						mv -f $storedNouveau $startingInitram 
 					elif [ -n "$( type -p dracut )" ];then
 						echo "${S}Building ${C}initramfs${S} with ${C}nouveau${S} now...${N}"
-						dracut $startingInitram $KERNEL_VERSION
+						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
 				add-radeon)
@@ -4167,7 +4200,7 @@ update_initramfs()
 						mv -f $storedRadeon $startingInitram 
 					elif [ -n "$( type -p dracut )" ];then
 						echo "${S}Building ${C}initramfs${S} with ${C}radeon${S} now...${N}"
-						dracut $startingInitram $KERNEL_VERSION
+						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
 			esac
@@ -4402,7 +4435,7 @@ misc_fixes()
 	local outcome=''
 	case $1 in
 		nvidia-24-link)
-			local headersDir="${USRS}linux-headers-$KERNEL_VERSION/include"
+			local headersDir="${USRS}linux-headers-$KERNEL_FULL/include"
 			# I don't know why the -e/f tests fail, I thought -e means exists at all...
 			if [ -L "$headersDir/asm" -o -e "$headersDir/asm" ];then
 				rm -f $headersDir/asm
@@ -4423,8 +4456,8 @@ misc_fixes()
 			fi
 			;;
 		linux-generated-patch)
-			local generated1="${USRS}$KERNEL_VERSION/include/generated/" 
-			local generated2="/lib/modules/$KERNEL_VERSION/build/include/generated/"
+			local generated1="${USRS}$KERNEL_FULL/include/generated/" 
+			local generated2="/lib/modules/$KERNEL_FULL/build/include/generated/"
 			outcome="$generated1 or $generated2 do not exist"
 			if [ -d "$generated1" -o -d "$generated2" ];then
 				echo 'true'
@@ -4673,14 +4706,14 @@ preinstall_cleanup()
 	fi
 	# some legacy cleanup gunk, this can probably be dumped
 	if [ -f /etc/modutils/1alsa ];then
-		mv /lib/modules/extra/alsa /lib/modules/$KERNEL_VERSION/
+		mv /lib/modules/extra/alsa /lib/modules/$KERNEL_FULL/
 		rm -f /etc/modutils/1alsa
 		if [ -n "$( type -p depmod )" ];then
-			depmod $KERNEL_VERSION -a
+			depmod $KERNEL_FULL -a
 		fi
 	fi
 	log_function_data "nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko 2>/dev/null )"
-	#rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
+	#rm -f /lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
 	# for real driver installs, we need to remove ALL the existing nvidia driver .ko files
 	rm -f /lib/modules/*/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
 	# this is legacy stuff, not currently present
@@ -4836,7 +4869,7 @@ run_driver_installer()
 				esac
 			fi
 			
-			installerArgs="$installerArgs -k $KERNEL_VERSION"
+			installerArgs="$installerArgs -k $KERNEL_FULL"
 			# fresh arch installs may have the single file but no headers in /usr/src
 			# note that this didn't work even though the target file existed
 # 			if [ "$B_USE_DIRECT_KERNEL_HEADER" == 'true' ];then
@@ -4987,18 +5020,18 @@ build_kernel_module_only()
 				x_start_stop_master stop
 			fi
 			echo $LINE
-			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} now (can take a while)...${N}"
+			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_FULL${S} now (can take a while)...${N}"
 			if [ "$2" != 'silent' ];then
-				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a || moduleResult=$?
+				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a || moduleResult=$?
 			else
 				silent=' -s'
-				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_VERSION --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
+				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
 			fi
 			if [ "$moduleResult" -ne 0 ];then
 				log_driver_installer_failure
 				error_handler 171 "$moduleResult"
 			else
-				echo "${S}Build of module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_VERSION${S} was a success!"
+				echo "${S}Build of module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_FULL${S} was a success!"
 				if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 					echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
 					exit 0
@@ -5022,7 +5055,7 @@ test_module_build_ok()
 	local runPackage="$DRIVER_FILE.run" returnValue=0 nvidiaPackages=''
 	local libGlNvidia='' xorgNvidia='' logData=''
 	echo $LINE
-	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_VERSION${N}"
+	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_FULL${N}"
 	echo -n "  ${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
 	if [ ! -f "$SCRIPT_WORKING_DIR/$runPackage" ];then
 		echo "${W}NOT FOUND${N}"
@@ -5106,8 +5139,8 @@ test_module_build_ok()
 # 		echo "${S}Drivers Match${N}"
 # 	fi
 	if [ "$returnValue" -eq 0 ];then
-		echo -n "  ${S}Checking for previous ${C}nVidia${S} driver module for ${C}$KERNEL_VERSION${S}.... ${N}"
-		if [ -f "/lib/modules/$KERNEL_VERSION/kernel/drivers/video/nvidia.ko" ];then
+		echo -n "  ${S}Checking for previous ${C}nVidia${S} driver module for ${C}$KERNEL_FULL${S}.... ${N}"
+		if [ -f "/lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko" ];then
 			echo "${W}PRESENT${N}"
 			returnValue=6
 			logData="${logData}Nvidia module exists: "
@@ -5307,7 +5340,7 @@ clean_dkms()
 apply_module_patch()
 {
 	eval $LOGPS
-	local lmkv="/lib/modules/$KERNEL_VERSION"
+	local lmkv="/lib/modules/$KERNEL_FULL"
 
 	# the debian sid nvidia drivers are now working fine with xen enabled sid kernels
 	if [ "$B_USE_DISTRO_DRIVER" != 'true' ] && [ -d "$lmkv" -a "$B_IS_XEN" == 'true' ];then
@@ -5389,13 +5422,13 @@ install_distro_drivers()
 						install_package 'nvidia-kernel-common'
 						install_package 'nvidia-settings'
 						install_package "$nvidiaSource"
-						echo "${S}Creating  ${C}$DISTRO_NVIDIA${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
-						# m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i $nvidiaSource
+						echo "${S}Creating  ${C}$DISTRO_NVIDIA${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
+						# m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i $nvidiaSource
 						m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_NVIDIA
 						m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_NVIDIA
 						m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_NVIDIA
-						m-a build -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_NVIDIA
-						m-a install -t -f -l $KERNEL_VERSION $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_NVIDIA
+						m-a build -t -f -l $KERNEL_FULL $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_NVIDIA
+						m-a install -t -f -l $KERNEL_FULL $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_NVIDIA
 		
 						#m-a prepare && m-a qa-i nvidia
 						#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
@@ -5481,16 +5514,16 @@ install_distro_drivers()
 					install_package 'fglrx-control'
 					# install_package 'fglrx-amdcccle'
 					install_package 'fglrx-kernel-src'
-					echo "${S}Creating  ${C}$DISTRO_FGLRX${S} kernel module for kernel ${C}$KERNEL_VERSION${S}...${N}"
+					echo "${S}Creating  ${C}$DISTRO_FGLRX${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
 		
 					# damentz suggestion to make sure old module is used
 					# m-a a-i -f fglrx-kernel-src
-					# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_VERSION} a-i fglrx
+					# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i fglrx
 					m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_FGLRX
 					m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_FGLRX
 					m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_FGLRX
-					m-a build -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_FGLRX
-					m-a install -f -l $KERNEL_VERSION fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_FGLRX
+					m-a build -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_FGLRX
+					m-a install -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_FGLRX
 					;;
 				ubuntu)
 					echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
@@ -5515,8 +5548,8 @@ clean_up_fglrx_junk()
 	eval $LOGUS
 	# note that these can't be removed or 3d dies in direct -f install
 	if [ "$B_FGLRX_DIRECT" != 'true' ];then
-		rm -f /lib/modules/$KERNEL_VERSION/kernel/drivers/char/drm/fglrx.*o
-		rm -f /lib/modules/$KERNEL_VERSION/volatile/fglrx.*o
+		rm -f /lib/modules/$KERNEL_FULL/kernel/drivers/char/drm/fglrx.*o
+		rm -f /lib/modules/$KERNEL_FULL/volatile/fglrx.*o
 		# this removes some config stuff that might cause watermarking issues
 		# but this breaks direct install systems so don't remove it in direct install
 		rm -rf /etc/ati
@@ -5613,7 +5646,7 @@ install_fglrx_debs()
 
 		log_function_data "These installation debs have been created: $availableDebs"
 
-		echo "${S}Installing fglrx debs for kernel ${C}$KERNEL_VERSION${S}...${N}"
+		echo "${S}Installing fglrx debs for kernel ${C}$KERNEL_FULL${S}...${N}"
 		# unfreeze/freeze stuff may be required for some legacy type systems
 		if [ -f /etc/frozen-rc.d ];then
 			frozen=1
@@ -5643,10 +5676,10 @@ install_fglrx_debs()
 				fi
 				;;
  			debian)
-				log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_VERSION -f $fgKsrc:"
-				CC=$CC m-a build  -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
-				log_function_data "Now to: m-a install  -l $KERNEL_VERSION -f $fgKsrc:"
-				m-a install -l $KERNEL_VERSION -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
+				log_function_data "Done installing debs created, now to: m-a build  -l $KERNEL_FULL -f $fgKsrc:"
+				CC=$CC m-a build  -l $KERNEL_FULL -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $fgKsrc
+				log_function_data "Now to: m-a install  -l $KERNEL_FULL -f $fgKsrc:"
+				m-a install -l $KERNEL_FULL -f $fgKsrc 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $fgKsrc
 				
 				# note: note with dkms
 			:
@@ -5691,7 +5724,7 @@ final_install_steps()
 
 	echo "${S}Finalizing install...${N}"
 	process_xvmc
-	depmod $KERNEL_VERSION -a # Probe all modules
+	depmod $KERNEL_FULL -a # Probe all modules
 
 	case $CARD in
 		$NVIDIA)
@@ -7115,7 +7148,7 @@ get_options()
 	done
 	#in case -n is used too - note: this will never be true, have to fix this one
 	if [ "$B_NATIVE_DRIVER" == "true" -a -n "$INSTALL_TO_KERNEL" ];then
-		echo "${W}WARNING: -n will uninstall binary drivers to all the kernels, not just $KERNEL_VERSION${N}"
+		echo "${W}WARNING: -n will uninstall binary drivers to all the kernels, not just $KERNEL_FULL${N}"
 	fi
 }
 
