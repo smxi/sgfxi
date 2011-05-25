@@ -183,9 +183,9 @@ fi
 # this handles the 1.x syntax used by newer xorg versions
 # it also handles the change in ID text they did with 1.4
 # slicing out parts prior to parentheses: X.Org X Server 1.7.7
-X_VERSION=$( X -version 2>&1 | grep 'X Window System' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]' )
+X_VERSION=$( X -version 2>&1 | grep 'X Window System' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]+' )
 if [ -z "$X_VERSION" ];then
-	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]' )
+	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]+' )
 fi
 CC=''
 GL=''
