@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.19
+####  version: 4.17.20
 ####  Date: May 24 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -4088,7 +4088,7 @@ remove_grub_nomodeset_blacklist_item()
 	if [ -n "$grubFiles" ];then
 		if [ -n "$( grep -Eis '('$searchReplace1')' $grubFiles )" ];then
 			echo -n "${S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
-			sed -ri 's/[[:space:]]s('$searchReplace1')//ig' $grubFiles
+			sed -ri 's/[[:space:]]('$searchReplace1')//ig' $grubFiles
 			log_function_data "file updated to remove $1 blacklist: $grubFiles"
 			echo "${S}Removed${N}"
 			returnValue=0
