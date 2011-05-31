@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.21
-####  Date: May 30 2011
+####  version: 4.17.22
+####  Date: May 31 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -6866,8 +6866,28 @@ show_options()
 get_options()
 {
 	local opt=''
+	
+	case $1 in
+		--help|-h)
+			if tty > /dev/null ;then
+				show_options
+			else
+				echo "You cannot use the $SCRIPT_NAME help option in an IRC client!"
+				exit 1
+			fi
+			;;
+		--version|-v)
+			# if showing in irc, kill the colors
+			if ! tty > /dev/null ;then
+				SCRIPT_COLORS=0
+				set_script_colors
+			fi
+			print_information
+			exit 0
+			;;
+	esac
 
-	while getopts AbBcCdDeEfFGhHj:kK:L:nN:o:pP:QrRsStUvWXxYzZ!: opt
+	while getopts AbBcCdDeEfFGHj:kK:L:nN:o:pP:QrRsStUWXxYzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -7008,9 +7028,6 @@ get_options()
 				;;
 			U) B_FORCE_UPDATE='true'
 				;;
-			v) print_information
-				exit 0
-				;;
 			W) B_SKIP_WGET='true'
 				START_OPTIONS=$START_OPTIONS' -W'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already.\n"
@@ -7036,8 +7053,6 @@ get_options()
 			Z) B_SKIP_CONNECT='true'
 				START_OPTIONS=$START_OPTIONS' -ZW'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Z - Deprecated, use -R to skip script update; use -W to skip all downloads.\n"
-				;;
-			h) show_options
 				;;
 			H)	show_options 'full'
 				;;
