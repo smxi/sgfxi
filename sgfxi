@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.20
-####  Date: May 24 2011
+####  version: 4.17.21
+####  Date: May 30 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -183,9 +183,9 @@ fi
 # this handles the 1.x syntax used by newer xorg versions
 # it also handles the change in ID text they did with 1.4
 # slicing out parts prior to parentheses: X.Org X Server 1.7.7
-X_VERSION=$( X -version 2>&1 | grep 'X Window System' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]+' )
+X_VERSION=$( X -version 2>&1 | grep 'X Window System' | cut -d '(' -f 1 | grep -Eo '[1237]\.[0-9]+' )
 if [ -z "$X_VERSION" ];then
-	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | cut -d '(' -f 1 | grep -Eo '[127]\.[0-9]+' )
+	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | cut -d '(' -f 1 | grep -Eo '[1237]\.[0-9]+' )
 fi
 CC=''
 GL=''
@@ -2674,7 +2674,7 @@ compare_numbers()
 	# echo $1 $2
 	# first we need to determine what the base system is using for decimal indicator
 	local returnValue=''
-	local decimalType=$( echo 1 | awk '{total = 1 / 2; print total}' | egrep -o '(\.|,)' )
+	local decimalType=$( echo 1 | awk '{total = 1 / 2; print total}' | grep -Eo '(\.|,)' )
 
 	# next we'll get the raw data and transate it if required
 	local numOne=$( cut -d '.' -f 1-2 <<< $1 | tr '.' $decimalType )
