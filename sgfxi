@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.23
-####  Date: June 5 2011
+####  version: 4.17.24
+####  Date: June 6 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -180,12 +180,18 @@ else
 	BITS="32"
 fi
 
+X_VERSION=''
 # this handles the 1.x syntax used by newer xorg versions
 # it also handles the change in ID text they did with 1.4
 # slicing out parts prior to parentheses: X.Org X Server 1.7.7
-X_VERSION=$( X -version 2>&1 | grep 'X Window System' | cut -d '(' -f 1 | grep -Eo '[1237]\.[0-9]+' )
-if [ -z "$X_VERSION" ];then
-	X_VERSION=$( X -version 2>&1 | grep 'X.Org X Server' | cut -d '(' -f 1 | grep -Eo '[1237]\.[0-9]+' )
+if [ -n "$( type -p X )" ];then
+	X_VERSION=$( X -version 2>&1 | grep -Eis -m 1 '^(X.Org X Server|X Window System)' | cut -d '(' -f 1 | grep -Eo '[1237]\.[0-9]+' )
+# some users only want to be running a very light xorg, which won't have X, only Xorg
+# Tested and works Debian/Arch
+elif [ -n "$( type -p Xorg )" ];then
+	# X.Org X Server 1.7.7
+	# xorg-server 2:1.7.7-7 (Julien Cristau <jcristau@debian.org>)
+	X_VERSION=$( Xorg -version 2>&1 | grep -Eis -m 1 '^(X\.org|xorg)' | cut -d ':' -f 2 | cut -d '(' -f 1 | grep -Eo '[1237]\.[0-9]+' )
 fi
 CC=''
 GL=''
