@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.26
-####  Date: June 15 2011
+####  version: 4.17.27
+####  Date: June 21 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -888,7 +888,9 @@ driver_support_tests()
 									39)
 										# we'll assume the older drivers don't work here
 										case $DRIVER_DEFAULT in
-											275.*|270.*|173.14.[3]*|96.43.1*|71.86.1*|$DISTRO_NVIDIA)
+											# note that the current 96xx can be patched if xorg version
+											# is old, 1.7, but that's an unusual case
+											275.*|270.*|173.14.[3]*|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -904,7 +906,7 @@ driver_support_tests()
 								case $KERNEL_MATH in
 									0)
 										case $DRIVER_DEFAULT in
-											275.*|270.*|173.14.[3]*|96.43.1*|$DISTRO_NVIDIA)
+											275.*|270.*|173.14.[3]*|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
