@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.31
+####  version: 4.17.32
 ####  Date: July 15 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -3025,17 +3025,20 @@ update_package_manager()
 list_installed_packages()
 {
 	eval $LOGUS
-	local packageList=''
+	local packageList='' excludes=$2
+	if [ -z "$excludes" ];then
+		excludes='blanketyblank'
+	fi
 	
 	case $APT_TYPE in
 		apt-get|aptitude)
-			packageList=$( dpkg -l | awk '{print $2}' | grep -Ei "$1" | grep -Ev "$2" )
+			packageList=$( dpkg -l | awk '{print $2}' | grep -Ei "$1" | grep -Ev "$excludes" )
 			;;
 		pacman)
-			packageList=$( pacman -Q | awk '{print $1}' | grep -Ei "$1" | grep -Ev "$2" )
+			packageList=$( pacman -Q | awk '{print $1}' | grep -Ei "$1" | grep -Ev "$excludes" )
 			;;
 		yum)
-			packageList=$( rpm -qa | awk '{print $1}' | grep -Ei "$1" | grep -Ev "$2" )
+			packageList=$( rpm -qa | awk '{print $1}' | grep -Ei "$1" | grep -Ev "$excludes" )
 			;;
 	esac
 	log_function_data "packageList: $packageList"
@@ -4797,7 +4800,7 @@ preinstall_cleanup()
 	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit)' )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
-		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)')
+		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)' )
 	fi
 	
 	if [ -n "$oldNvidia" ];then
