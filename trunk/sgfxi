@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.28
-####  Date: July 1 2011
+####  version: 4.17.29
+####  Date: July 15 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -4746,6 +4746,7 @@ preinstall_cleanup()
 	eval $LOGPS
 	local oldNvidia='' divertedPackages='' installer='nvidia-installer' oldFglrx=''
 	local fglrxUninstaller='/usr/share/ati/fglrx-uninstall.sh'
+	local bNvidiaError='false' bFglrxError='false'
 
 	echo "${S}Running preinstall cleanup...${N}"
 	# this is not set as a path if native driver install
@@ -4812,12 +4813,15 @@ preinstall_cleanup()
 		esac
 		case $APT_TYPE in
 			apt-get|aptitude)
-				dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE
+				dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
 				;;
 			pacman|yum)
 				remove_package "$oldNvidia" '' 'no-loop'
 				;;
 		esac
+	fi
+	if [ "$bNvidiaError" == 'true' ];then
+		error_handler 190 "$oldNvidia" 
 	fi
 	# this might need more work to not remove if X failed to stop
 	remove_module 'nvidia'
@@ -4834,14 +4838,16 @@ preinstall_cleanup()
 	if [ -n "$oldFglrx" ];then
 		case $APT_TYPE in
 			apt-get|aptitude)
-				dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE
+				dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE || bFglrxError='true'
 				;;
 			pacman|yum)
 				remove_package "$oldFglrx" '' 'no-loop'
 				;;
 		esac
 	fi
-	
+	if [ "$bFglrxError" == 'true' ];then
+		error_handler 190 "$oldFglrx"
+	fi
 	# this is present in some installs, debian etch default for instance
 	case $SYSTEM_BASE in
 		debian|ubuntu)
