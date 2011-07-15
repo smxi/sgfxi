@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.30
+####  version: 4.17.31
 ####  Date: July 15 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -4797,7 +4797,7 @@ preinstall_cleanup()
 	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit)' )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
-		nvidiaGlxExtras=$( list_installed_packages '(glx-alternatives-mesa|glx-diversions')
+		nvidiaGlxExtras=$( list_installed_packages '(glx-alternatives-mesa|glx-diversions)')
 	fi
 	
 	if [ -n "$oldNvidia" ];then
