@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.32
-####  Date: July 15 2011
+####  version: 4.17.33
+####  Date: July 16 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -4032,13 +4032,13 @@ add_grub_nomodeset_blacklist_item()
 	local returnValue=1 activeFile='No'
 	local noModesetString='nomodeset'
 	local noModesetString2="$1.modeset=0"
-	local moduleSearch1="nomodeset|rdblacklist=$1|$1.blacklist=1"
-	local moduleSearch2="$1.modeset=0"
+	local moduleSearch1="nomodeset|rdblacklist=nouveau|rdblacklist=radeon|nouveau.blacklist=1|radeon.blacklist=1"
+	local moduleSearch2="nouveau.modeset=0|radeon.modeset=0"
 	local grubFiles=$( get_active_grub_files )
 
 	case $SYSTEM_BASE in
 		fedora)
-			noModesetString="rdblacklist=$1"
+			noModesetString="rdblacklist=$1 nomodeset"
 			;;
 	esac
 	
