@@ -3927,15 +3927,17 @@ set_modesetting_off()
 	case $1 in
 		nouveau|radeon)
 			case $SYSTEM_BASE in
-				arch)
-					if [ "$2" == 'failed' ];then
-						echo $LINE
-						echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
-						echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
-						echo "This is because its not possible to remove ${C}$1${S} from a running system.${N}"
-						print_hec
-					fi
-					;;
+				# note that the nvidia installer now requires blacklisting a priori, so 
+				# just treat arch like the other distros
+# 				arch)
+# 					if [ "$2" == 'failed' ];then
+# 						echo $LINE
+# 						echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
+# 						echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
+# 						echo "This is because its not possible to remove ${C}$1${S} from a running system.${N}"
+# 						print_hec
+# 					fi
+# 					;;
 				*)
 					# only act if blacklist/nomodeset was added
 					add_grub_nomodeset_blacklist_item $1
