@@ -4347,7 +4347,7 @@ reboot_now_question()
 	done
 	eval $LOGPE
 	if [ "$bRepeat" == 'true' ];then
-		reboot_now_question
+		reboot_now_question "$@"
 	fi
 }
 
