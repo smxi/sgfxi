@@ -752,7 +752,7 @@ driver_support_tests()
 						# driver=71.86.13;wget --spider http://download.nvidia.com/XFree86/Linux-x86/$driver/NVIDIA-Linux-x86-$driver-pkg0.run 
 						# default download site for nvidia, return http://us.download if problems
 						case $DRIVER_DEFAULT in
-							275.19|190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[134]|71.86.09)
+							190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[134]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
 								;;
 							275.19)
