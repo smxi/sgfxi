@@ -4866,7 +4866,11 @@ preinstall_cleanup()
 	if [ -n "$oldFglrx" ];then
 		case $APT_TYPE in
 			apt-get|aptitude)
-				dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE || bFglrxError='true'
+				if [ "$B_TESTING_6" != 'true' ];then
+					dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE || bFglrxError='true'
+				else
+					remove_package "$oldFglrx" '' 'no-loop'
+				fi
 				;;
 			pacman|yum)
 				remove_package "$oldFglrx" '' 'no-loop'
