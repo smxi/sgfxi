@@ -4769,14 +4769,6 @@ preinstall_cleanup()
 			depmod $KERNEL_FULL -a
 		fi
 	fi
-	log_function_data "nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko 2>/dev/null )"
-	#rm -f /lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
-	# for real driver installs, we need to remove ALL the existing nvidia driver .ko files
-	rm -f /lib/modules/*/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
-	# this is legacy stuff, not currently present
-	rm -f /lib/modules/*/volatile/nvidia.ko >/dev/null 1>> $LOG_FILE 2>> $LOG_FILE
-	rm -f /usr/local/bin/nvidia-settings /usr/local/bin/nvidia-xconfig 1>> $LOG_FILE 2>> $LOG_FILE
-	rm -f /tmp/.X0-lock
 
 	## nvidia uninstallers, for systems where nvidia has been installed once at least
 	# both files should be present in case of previous nvidia install
@@ -4791,10 +4783,20 @@ preinstall_cleanup()
 		fi
 	fi
 	## NVIDIA removal...
-	# double check, clean up anything left after uninstaller runs
-	rm -f ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-	rm -f ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-	rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+	log_function_data "nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko 2>/dev/null )"
+	if [ "$B_TESTING_6" != 'true' ];then
+		#rm -f /lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
+		# for real driver installs, we need to remove ALL the existing nvidia driver .ko files
+		rm -f /lib/modules/*/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
+		# this is legacy stuff, not currently present
+		rm -f /lib/modules/*/volatile/nvidia.ko >/dev/null 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -f /usr/local/bin/nvidia-settings /usr/local/bin/nvidia-xconfig 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -f /tmp/.X0-lock
+		# double check, clean up anything left after uninstaller runs
+		rm -f ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -f ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+	fi
 	if [ -n "$installError" ];then
 		error_handler 192 $installError
 	fi
@@ -4879,7 +4881,9 @@ preinstall_cleanup()
 		bash $fglrxUninstaller
 	fi
 	remove_module 'fglrx'
-	clean_dkms 
+	if [ "$B_TESTING_6" != 'true' ];then
+		clean_dkms
+	fi
 	eval $LOGPE
 }
 
