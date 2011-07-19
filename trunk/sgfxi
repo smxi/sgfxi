@@ -4787,7 +4787,7 @@ preinstall_cleanup()
 		fi
 	fi
 	## NVIDIA removal...
-	log_function_data "Pre Remove: nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko )"
+	log_function_data "Pre Remove: nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko 2>/dev/null )"
 	
 	if [ -n "$installError" ];then
 		error_handler 192 $installError
@@ -4834,7 +4834,7 @@ preinstall_cleanup()
 		error_handler 190 "$oldNvidia" 
 	fi
 # 	if [ "$B_TESTING_6" != 'true' ];then
-		log_function_data "Post Purge/Remove: nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko )"
+		log_function_data "Post Purge/Remove: nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko 2>/dev/null )"
 		#rm -f /lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
 		# for real driver installs, we need to remove ALL the existing nvidia driver .ko files
 		rm -f /lib/modules/*/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
