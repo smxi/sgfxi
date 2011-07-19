@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.37
+####  version: 4.17.38
 ####  Date: July 18 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -3050,13 +3050,18 @@ list_installed_packages()
 }
 
 # $1 - package(s) to remove; $2 - extra information; $3 - no-loop: remove all at once
+# $4 optional: extra args
 remove_package()
 {
 	eval $LOGUS
-	local response='' package='' purge='' extraInfo="$2"
+	local response='' package='' purge='' extraInfo="$2" doYes=''
 	case $APT_TYPE in
 		aptitude|apt-get)
 			purge='purge'
+			case $4 in
+				y) doYes='-y'
+					;;
+			esac
 			;;
 		pacman)
 			purge='-R'
@@ -3076,13 +3081,13 @@ remove_package()
 	echo $MLINE
 	if [ "$3" == 'no-loop' ];then
 		echo "${S}Removing ${C}$1${S}...${N}"
-		$APT_TYPE $purge $1 || error_handler 190 "$1"
+		$APT_TYPE $purge $doYes $1 || error_handler 190 "$1"
 	else
 		for package in $1
 		do
 			if [ -n "$( check_package_status  "$package" 'i' )" ];then
 				echo "${S}Removing ${C}$package${S}...${N}"
-				$APT_TYPE $purge $package || error_handler 190 "$package"
+				$APT_TYPE $purge $doYes $package || error_handler 190 "$package"
 			else
 				echo "${S}The package ${C}$package${S} is not installed, continuing...${N}"
 			fi
