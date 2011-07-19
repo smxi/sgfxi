@@ -3059,7 +3059,7 @@ remove_package()
 		aptitude|apt-get)
 			purge='purge'
 			case $4 in
-				y) doYes='-y'
+				yes) doYes='-y'
 					;;
 			esac
 			;;
@@ -4831,7 +4831,7 @@ preinstall_cleanup()
 				if [ "$B_TESTING_6" != 'true' ];then
 					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
 				else
-					remove_package "$oldNvidia" '' 'no-loop'
+					remove_package "$oldNvidia" '' 'no-loop' 'yes'
 				fi
 				;;
 			pacman|yum)
@@ -4874,7 +4874,7 @@ preinstall_cleanup()
 				if [ "$B_TESTING_6" != 'true' ];then
 					dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE || bFglrxError='true'
 				else
-					remove_package "$oldFglrx" '' 'no-loop'
+					remove_package "$oldFglrx" '' 'no-loop' 'yes'
 				fi
 				;;
 			pacman|yum)
