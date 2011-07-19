@@ -4710,11 +4710,14 @@ prep_install()
 	# Note: you can set --extract $FG_WORKING_DIR to hard code this name
 
 	echo "${S}Preparing driver install...${N}"
-	if [ "$B_TESTING_6" != 'true' ];then
-		if [ -f $EDV -a ! -f /etc/sidux-version -a ! -f /etc/aptosid-version ];then
-			m-a -i prepare
-		fi
-	fi
+	# this is causing aptitude to queue some signals that then make aptitude
+	# try to reinstall all of the debian packages next time: aptitude install 
+	# is run, for example, on smxi kernel install. So turning that off for now.
+# 	if [ "$B_TESTING_6" != 'true' ];then
+# 		if [ -f $EDV -a ! -f /etc/sidux-version -a ! -f /etc/aptosid-version ];then
+# 			m-a -i prepare
+# 		fi
+# 	fi
 
 	if [ -x "$ubgv" -a "$bUpdateGcc" != 'true' ];then
 		export CC=$ubgv
