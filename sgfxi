@@ -4787,20 +4787,8 @@ preinstall_cleanup()
 		fi
 	fi
 	## NVIDIA removal...
-	log_function_data "nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko 2>/dev/null )"
-	if [ "$B_TESTING_6" != 'true' ];then
-		#rm -f /lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
-		# for real driver installs, we need to remove ALL the existing nvidia driver .ko files
-		rm -f /lib/modules/*/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
-		# this is legacy stuff, not currently present
-		rm -f /lib/modules/*/volatile/nvidia.ko >/dev/null 1>> $LOG_FILE 2>> $LOG_FILE
-		rm -f /usr/local/bin/nvidia-settings /usr/local/bin/nvidia-xconfig 1>> $LOG_FILE 2>> $LOG_FILE
-		rm -f /tmp/.X0-lock
-		# double check, clean up anything left after uninstaller runs
-		rm -f ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-		rm -f ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-		rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-	fi
+	log_function_data "Pre Remove: nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko )"
+	
 	if [ -n "$installError" ];then
 		error_handler 192 $installError
 	fi
@@ -4845,6 +4833,20 @@ preinstall_cleanup()
 	if [ "$bNvidiaError" == 'true' ];then
 		error_handler 190 "$oldNvidia" 
 	fi
+# 	if [ "$B_TESTING_6" != 'true' ];then
+		log_function_data "Post Purge/Remove: nvidia.ko files: \n$( ls /lib/modules/*/kernel/drivers/video/nvidia.ko )"
+		#rm -f /lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
+		# for real driver installs, we need to remove ALL the existing nvidia driver .ko files
+		rm -f /lib/modules/*/kernel/drivers/video/nvidia.ko 1>> $LOG_FILE 2>> $LOG_FILE
+		# this is legacy stuff, not currently present
+		rm -f /lib/modules/*/volatile/nvidia.ko >/dev/null 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -f /usr/local/bin/nvidia-settings /usr/local/bin/nvidia-xconfig 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -f /tmp/.X0-lock
+		# double check, clean up anything left after uninstaller runs
+		rm -f ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -f ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+# 	fi
 	# this might need more work to not remove if X failed to stop
 	remove_module 'nvidia'
 	if [ "$B_NATIVE_DRIVER" != 'true' -a "$CARD" == "$NVIDIA" ];then
@@ -4885,9 +4887,11 @@ preinstall_cleanup()
 		bash $fglrxUninstaller
 	fi
 	remove_module 'fglrx'
-	if [ "$B_TESTING_6" != 'true' ];then
+	# this should no longer be required with new dkms, which removes itself fine above,
+	# but leaving this here for now for legacy dkms
+# 	if [ "$B_TESTING_6" != 'true' ];then
 		clean_dkms
-	fi
+# 	fi
 	eval $LOGPE
 }
 
@@ -5813,11 +5817,14 @@ final_install_steps()
 	case $CARD in
 		$NVIDIA)
 			# this needs to be cleaned up a bit
-			if [ "$B_TESTING_6" != 'true' ];then
-				mkdir -p /etc/udev/rules.d
-				rm -f /etc/udev/nvidia.rules /etc/udev/rules.d/nvidia.rules
-				ldconfig # Configure Dynamic Linker Run Time Bindings.
-# 				remove_module 'nouveau'
+			if [ -e /etc/udev/nvidia.rules ];then
+				rm -f /etc/udev/nvidia.rules
+			fi
+			if [ -e /etc/udev/rules.d/nvidia.rules ];then
+				rm -f /etc/udev/rules.d/nvidia.rules
+			fi
+			ldconfig # Configure Dynamic Linker Run Time Bindings.
+			# remove_module 'nouveau'
 			fi
 			;;
 		$FGLRX)
