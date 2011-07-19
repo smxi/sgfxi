@@ -5825,7 +5825,6 @@ final_install_steps()
 			fi
 			ldconfig # Configure Dynamic Linker Run Time Bindings.
 			# remove_module 'nouveau'
-			fi
 			;;
 		$FGLRX)
 			##  clean up install parts
