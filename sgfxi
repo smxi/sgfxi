@@ -4823,7 +4823,11 @@ preinstall_cleanup()
 		esac
 		case $APT_TYPE in
 			apt-get|aptitude)
-				dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
+				if [ "$B_TESTING_6" != 'true' ];then
+					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
+				else
+					remove_package "$oldNvidia" '' 'no-loop'
+				fi
 				;;
 			pacman|yum)
 				remove_package "$oldNvidia" '' 'no-loop'
