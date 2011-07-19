@@ -5805,10 +5805,12 @@ final_install_steps()
 	case $CARD in
 		$NVIDIA)
 			# this needs to be cleaned up a bit
-			mkdir -p /etc/udev/rules.d
-			rm -f /etc/udev/nvidia.rules /etc/udev/rules.d/nvidia.rules
-			ldconfig # Configure Dynamic Linker Run Time Bindings.
-# 			remove_module 'nouveau'
+			if [ "$B_TESTING_6" != 'true' ];then
+				mkdir -p /etc/udev/rules.d
+				rm -f /etc/udev/nvidia.rules /etc/udev/rules.d/nvidia.rules
+				ldconfig # Configure Dynamic Linker Run Time Bindings.
+# 				remove_module 'nouveau'
+			fi
 			;;
 		$FGLRX)
 			##  clean up install parts
