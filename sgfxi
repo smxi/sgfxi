@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.36
+####  version: 4.17.37
 ####  Date: July 18 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -5488,23 +5488,29 @@ install_distro_drivers()
 					esac
 					# start the install
 					if [ "$LEGACY_LEVEL" -ne 0 ];then
-						echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
-						install_package 'nvidia-kernel-common'
-						install_package 'nvidia-settings'
-						install_package "$nvidiaSource"
-						echo "${S}Creating  ${C}$DISTRO_NVIDIA${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
-						# m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i $nvidiaSource
-						m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_NVIDIA
-						m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_NVIDIA
-						m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_NVIDIA
-						m-a build -t -f -l $KERNEL_FULL $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_NVIDIA
-						m-a install -t -f -l $KERNEL_FULL $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_NVIDIA
-		
-						#m-a prepare && m-a qa-i nvidia
-						#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
-						echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
-						install_package "$nvidiaGlx"
-						add_module 'nvidia'
+						if [ "$B_TESTING_6" != 'true' ];then
+							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
+							install_package 'nvidia-kernel-common'
+							install_package 'nvidia-settings'
+							install_package "$nvidiaSource"
+							echo "${S}Creating  ${C}$DISTRO_NVIDIA${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
+							# m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i $nvidiaSource
+							m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_NVIDIA
+							m-a prepare $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_NVIDIA
+							m-a clean $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_NVIDIA
+							m-a build -t -f -l $KERNEL_FULL $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_NVIDIA
+							m-a install -t -f -l $KERNEL_FULL $nvidiaSource 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_NVIDIA
+			
+							#m-a prepare && m-a qa-i nvidia
+							#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
+							echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
+							install_package "$nvidiaGlx"
+							add_module 'nvidia'
+						else
+							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components (BETA)...${N}"
+							install_package "nvidia-settings $nvidiaGlx"
+							add_module 'nvidia'
+						fi
 					fi
 					;;
 				fedora)
