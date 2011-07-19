@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.38
-####  Date: July 18 2011
+####  version: 4.17.39
+####  Date: July 19 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -4828,11 +4828,14 @@ preinstall_cleanup()
 		esac
 		case $APT_TYPE in
 			apt-get|aptitude)
-				if [ "$B_TESTING_6" != 'true' ];then
-					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
-				else
+				# note: aptitude fails to note the removal of these packages if dpkg is used
+				# this is a new behavior, relatively, but it means that the same tool that
+				# installs package must remove it.
+# 				if [ "$B_TESTING_6" != 'true' ];then
+# 					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
+# 				else
 					remove_package "$oldNvidia" '' 'no-loop' 'yes'
-				fi
+# 				fi
 				;;
 			pacman|yum)
 				remove_package "$oldNvidia" '' 'no-loop'
@@ -4871,11 +4874,11 @@ preinstall_cleanup()
 	if [ -n "$oldFglrx" ];then
 		case $APT_TYPE in
 			apt-get|aptitude)
-				if [ "$B_TESTING_6" != 'true' ];then
-					dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE || bFglrxError='true'
-				else
+# 				if [ "$B_TESTING_6" != 'true' ];then
+# 					dpkg --purge $oldFglrx 1>> $LOG_FILE 2>> $LOG_FILE || bFglrxError='true'
+# 				else
 					remove_package "$oldFglrx" '' 'no-loop' 'yes'
-				fi
+# 				fi
 				;;
 			pacman|yum)
 				remove_package "$oldFglrx" '' 'no-loop'
