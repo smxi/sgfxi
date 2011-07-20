@@ -5636,6 +5636,7 @@ install_distro_drivers()
 					if [ -n "$ubGlx" ];then
 						install_package "$nvidiaModal"
 					fi
+					install_package "nvidia-settings"
 					install_package "$nvidiaGlx"
 					;;
 				*)
