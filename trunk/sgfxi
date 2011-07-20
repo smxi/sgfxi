@@ -4850,11 +4850,11 @@ preinstall_cleanup()
 				# note: aptitude fails to note the removal of these packages if dpkg is used
 				# this is a new behavior, relatively, but it means that the same tool that
 				# installs package must remove it.
-				if [ "$B_TESTING_6" == 'true' ];then
-					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
-				else
+# 				if [ "$B_TESTING_6" == 'true' ];then
+# 					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
+# 				else
 					remove_package "$oldNvidia" '' 'no-loop' 'yes'
-				fi
+# 				fi
 				;;
 			pacman|yum)
 				remove_package "$oldNvidia" '' 'no-loop'
