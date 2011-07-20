@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.40
+####  version: 4.17.41
 ####  Date: July 19 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -4763,7 +4763,7 @@ preinstall_cleanup()
 	eval $LOGPS
 	local oldNvidia='' divertedPackages='' installer='nvidia-installer' oldFglrx=''
 	local fglrxUninstaller='/usr/share/ati/fglrx-uninstall.sh'
-	local bNvidiaError='false' bFglrxError='false' nvidiaGlxExtras=''
+	local bNvidiaError='false' bFglrxError='false' nvidiaGlxExtras='' extraPackageBan=''
 
 	echo "${S}Running preinstall cleanup...${N}"
 	# this is not set as a path if native driver install
@@ -4797,11 +4797,17 @@ preinstall_cleanup()
 	if [ -n "$installError" ];then
 		error_handler 192 $installError
 	fi
-
+	# ubuntu-desktop depends on nvidia-common
+	case $SYSTEM_BASE in
+		ubuntu)
+			extraPackageBan='|nvidia-common'
+			;;
+	esac
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
-	oldNvidia=$( list_installed_packages 'nvidia' '(modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit)' )
+	
+	oldNvidia=$( list_installed_packages 'nvidia' "(modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
 		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)' )
