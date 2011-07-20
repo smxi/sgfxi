@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.43
+####  version: 4.17.44
 ####  Date: July 20 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -5493,7 +5493,7 @@ install_distro_drivers()
 {
 	eval $LOGPS
 	local nvidiaGlx='' nvidiaSource='' nvidiaModal='' nvidiaUtils=''
-	local akmodNvidia='' drvNvidia1='' drvNvidia2='' 
+	local akmodNvidia='' drvNvidia1='' drvNvidia2='' ubGlx='-glx'
 
 	clean_up_fglrx_junk
 
@@ -5611,23 +5611,31 @@ install_distro_drivers()
 					fi
 					;;
 				ubuntu)
+					# note: new ubuntus dropped the -glx string, and current nvidia is
+					# just called 'current'
+					if [ -n "$( check_package_status 'nvidia-current' 'c' )" ];then
+						ubGlx=''
+						NV_UB_CURRENT='current'
+					fi
 					# dependencies handle the rest of this
 					case $LEGACY_LEVEL in
 						1)	:
 							# this has already been error handled.
 							;;
-						2)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_2"
+						2)	nvidiaGlx="nvidia${ubGlx}-$NV_UB_LEGACY_2"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_2-modaliases"
 							;;
-						3)	nvidiaGlx="nvidia-glx-$NV_UB_LEGACY_3"
+						3)	nvidiaGlx="nvidia${ubGlx}-$NV_UB_LEGACY_3"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_3-modaliases"
 							;;
-						*)	nvidiaGlx="nvidia-glx-$NV_UB_CURRENT"
+						*)	nvidiaGlx="nvidia${ubGlx}-$NV_UB_CURRENT"
 							nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
 							;;
 					esac
 					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
-					install_package "$nvidiaModal"
+					if [ -n "$ubGlx" ];then
+						install_package "$nvidiaModal"
+					fi
 					install_package "$nvidiaGlx"
 					;;
 				*)
