@@ -6159,7 +6159,7 @@ start_stop_x()
 		# have to retest dm for null for fedora here
 		# upstart in ubuntu, commands like: start gdm; stop gdm; restart gdm
 		if [ -n "$( type -p $1 )" -a -n "$DISPLAY_MANAGER" ];then
-			dmanCommand="$1 $dman"
+			dmanCommand="$1 $DISPLAY_MANAGER"
 		elif [ -x $startPath$DISPLAY_MANAGER -a -n "$DISPLAY_MANAGER" ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
 		elif [ -n "$gdmCommand" ];then
