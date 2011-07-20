@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.41
-####  Date: July 19 2011
+####  version: 4.17.42
+####  Date: July 20 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -6130,8 +6130,11 @@ start_stop_x()
 	if [ -z "$DISPLAY_MANAGER" -a "$bSkipLoop" != 'true' ];then
 		for dman in $displayManagers
 		do
-			# arch, debian, ubuntu
-			if [ -x $startPath$dman  ];then
+			# upstart in ubuntu, commands like: start gdm; stop gdm; restart gdm
+			if [ -n "$( type -p $1 )" ];then
+				dmanCommand="$1 $dman"
+			# arch, debian
+			elif [ -x $startPath$dman  ];then
 				dmanCommand="$serviceControl$dman $1"
 			else
 				dmanCommand=''
@@ -6154,7 +6157,10 @@ start_stop_x()
 		done
 	else
 		# have to retest dm for null for fedora here
-		if [ -x $startPath$DISPLAY_MANAGER -a -n "$DISPLAY_MANAGER" ];then
+		# upstart in ubuntu, commands like: start gdm; stop gdm; restart gdm
+		if [ -n "$( type -p $1 )" ];then
+			dmanCommand="$1 $dman"
+		elif [ -x $startPath$DISPLAY_MANAGER -a -n "$DISPLAY_MANAGER" ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
 		elif [ -n "$gdmCommand" ];then
 			dmanCommand=$gdmCommand # init 3 for fedora
