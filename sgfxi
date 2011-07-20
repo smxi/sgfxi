@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.42
+####  version: 4.17.43
 ####  Date: July 20 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -6131,7 +6131,7 @@ start_stop_x()
 		for dman in $displayManagers
 		do
 			# upstart in ubuntu, commands like: start gdm; stop gdm; restart gdm
-			if [ -n "$( type -p $1 )" ];then
+			if [ -n "$( type -p $1 )" -a -n "$( type -p $dman )" ];then
 				dmanCommand="$1 $dman"
 			# arch, debian
 			elif [ -x $startPath$dman  ];then
@@ -6158,7 +6158,7 @@ start_stop_x()
 	else
 		# have to retest dm for null for fedora here
 		# upstart in ubuntu, commands like: start gdm; stop gdm; restart gdm
-		if [ -n "$( type -p $1 )" ];then
+		if [ -n "$( type -p $1 )" -a -n "$DISPLAY_MANAGER" ];then
 			dmanCommand="$1 $dman"
 		elif [ -x $startPath$DISPLAY_MANAGER -a -n "$DISPLAY_MANAGER" ];then
 			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
