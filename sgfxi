@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.39
+####  version: 4.17.40
 ####  Date: July 19 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -4812,7 +4812,11 @@ preinstall_cleanup()
 			oldNvidia="$oldNvidia $nvidiaGlxExtras"
 		fi
 # 		if [ "$B_TESTING_6" == 'true' ];then
-			# this is present in some installs, debian etch default for instance
+			# this is present in some installs, debian squeeze for example
+			# this is also a bug in debian: 
+			# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594737
+			# http://forums.debian.net/viewtopic.php?f=10&t=55518
+			# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=597443
 			case $SYSTEM_BASE in
 				debian)
 					if [ "$SYSTEM_CODENAME" != 'testing' -a "$SYSTEM_CODENAME" != 'sid' ];then
