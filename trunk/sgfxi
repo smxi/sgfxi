@@ -4819,6 +4819,7 @@ preinstall_cleanup()
 						GL='/usr/lib/xorg/modules/extensions/libglx.so'
 						for package in $( dpkg-divert --list | grep "diversion of $GL" | awk '{print $7}' | grep -v -e fglrx-driver -e xorg-driver-fglrx )
 						do
+							echo "${S}Running diversion removal for: ${C}$package${N}"
 							dpkg-divert --package $package --remove $GL  1>> $LOG_FILE 2>> $LOG_FILE
 						done
 					fi
