@@ -4811,6 +4811,20 @@ preinstall_cleanup()
 		if [ -n "$nvidiaGlxExtras" ];then
 			oldNvidia="$oldNvidia $nvidiaGlxExtras"
 		fi
+		if [ "$B_TESTING_6" == 'true' ];then
+			# this is present in some installs, debian etch default for instance
+			case $SYSTEM_BASE in
+				debian)
+					if [ "$SYSTEM_CODENAME" != 'testing' -a "$SYSTEM_CODENAME" != 'sid' ];then
+						GL='/usr/lib/xorg/modules/extensions/libglx.so'
+						for package in $( dpkg-divert --list | grep "diversion of $GL" | awk '{print $7}' | grep -v -e fglrx-driver -e xorg-driver-fglrx )
+						do
+							dpkg-divert --package $package --remove $GL  1>> $LOG_FILE 2>> $LOG_FILE
+						done
+					fi
+					;;
+			esac
+		fi
 		case $SYSTEM_BASE in
 			# libgl will break the removal of nvidia, odd packaging decision, so need to reinstall it.
 			# this is a weird way to handle the nvidia/libgl dependency, it's almost a loop if you
@@ -4831,11 +4845,11 @@ preinstall_cleanup()
 				# note: aptitude fails to note the removal of these packages if dpkg is used
 				# this is a new behavior, relatively, but it means that the same tool that
 				# installs package must remove it.
-# 				if [ "$B_TESTING_6" != 'true' ];then
-# 					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
-# 				else
+				if [ "$B_TESTING_6" == 'true' ];then
+					dpkg --purge $oldNvidia  1>> $LOG_FILE 2>> $LOG_FILE || bNvidiaError='true'
+				else
 					remove_package "$oldNvidia" '' 'no-loop' 'yes'
-# 				fi
+				fi
 				;;
 			pacman|yum)
 				remove_package "$oldNvidia" '' 'no-loop'
@@ -4892,7 +4906,7 @@ preinstall_cleanup()
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			GL='/usr/X11R6/lib/libGL.so.1.2'
-			for package in $( dpkg-divert --list | grep "diversion of $GL" | cut -d ' ' -f 7 | grep -v -e fglrx-driver -e xorg-driver-fglrx )
+			for package in $( dpkg-divert --list | grep "diversion of $GL" | awk '{print $7}' | grep -v -e fglrx-driver -e xorg-driver-fglrx )
 			do
 				dpkg-divert --package $package --remove $GL  1>> $LOG_FILE 2>> $LOG_FILE
 			done
