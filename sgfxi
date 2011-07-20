@@ -3001,7 +3001,7 @@ install_package()
 	# then install the package with all options
 	log_function_data "Install command for $APT_TYPE: $install - Extra args: $optionalArgs"
 	echo "${S}Updating required package ${C}$1${S} now...${N}"
-	$APT_TYPE $install $useUntrusted $WITHOUT_RECOMMENDS $doYes $optionalArgs $1$distroVersion || error_handler 200 $1
+	$APT_TYPE $install $useUntrusted $WITHOUT_RECOMMENDS $doYes $optionalArgs $1$distroVersion || error_handler 200 "$1"
 	eval $LOGUE
 }
 
@@ -4811,7 +4811,7 @@ preinstall_cleanup()
 		if [ -n "$nvidiaGlxExtras" ];then
 			oldNvidia="$oldNvidia $nvidiaGlxExtras"
 		fi
-		if [ "$B_TESTING_6" == 'true' ];then
+# 		if [ "$B_TESTING_6" == 'true' ];then
 			# this is present in some installs, debian etch default for instance
 			case $SYSTEM_BASE in
 				debian)
@@ -4824,7 +4824,7 @@ preinstall_cleanup()
 					fi
 					;;
 			esac
-		fi
+# 		fi
 		case $SYSTEM_BASE in
 			# libgl will break the removal of nvidia, odd packaging decision, so need to reinstall it.
 			# this is a weird way to handle the nvidia/libgl dependency, it's almost a loop if you
@@ -5550,7 +5550,7 @@ install_distro_drivers()
 							add_module 'nvidia'
 						else
 							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components (BETA)...${N}"
-							install_package "nvidia-settings $nvidiaGlx"
+							install_package "nvidia-settings $nvidiaGlx" 
 							add_module 'nvidia'
 						fi
 					fi
