@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.44
-####  Date: July 20 2011
+####  version: 4.17.45
+####  Date: July 22 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -2362,15 +2362,10 @@ basic_startup_tests()
 	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" ];then
 		error_handler 249
 	fi
-	# double check only 2.6 or later series kernels
-	case $KERNEL_BASE in
-		2.6|2.8|3|4)
-			: # supported
-			;;
-		*)
-			error_handler 243
-			;;
-	esac
+	# double check only 2.6 or newer series kernels, note double [[ and <
+	if [[ "$KERNEL_BASE" < 2.6 ]];then
+		error_handler 243
+	fi
 
 	## basic execute requirements
 	cd $SCRIPT_HOME
