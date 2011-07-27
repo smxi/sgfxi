@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.46
-####  Date: July 25 2011
+####  version: 4.17.47
+####  Date: July 26 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -2353,6 +2353,13 @@ check_root()
 
 basic_startup_tests()
 {
+	## basic execute requirements
+	cd $SCRIPT_HOME
+	check_root
+	# this allows users to update in x, for example, to see latest drivers
+	if [ "$B_FORCE_UPDATE" == 'true' ];then
+		check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD" 'default server'
+	fi
 	check_set_distro
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
@@ -2366,17 +2373,9 @@ basic_startup_tests()
 	if [[ "$KERNEL_BASE" < 2.6 ]];then
 		error_handler 243
 	fi
-
-	## basic execute requirements
-	cd $SCRIPT_HOME
-	check_root
+	
 	cleanup_update_files
 	check_script_depends
-
-	# this allows users to update in x, for example, to see latest drivers
-	if [ "$B_FORCE_UPDATE" == 'true' ];then
-		check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD" 'default server'
-	fi
 
 	# only support current systems, xorg >= 7.1/1.x
 	if [ -z "$X_VERSION" ];then
