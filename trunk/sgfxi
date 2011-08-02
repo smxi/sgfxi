@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.49
-####  Date: July 28 2011
+####  version: 4.17.50
+####  Date: August 2 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -210,7 +210,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='275.21:173.14.31:96.43.20:71.86.15'
+NV_VERSIONS='280.13:173.14.31:96.43.20:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -218,7 +218,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='280.11:::'
+NV_VERSIONS_BETA=':::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -227,7 +227,8 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:280.04"
+NV_TESTING="$NV_VERSIONS_BETA:"
+# stable primary: 280.13
 # stable primary: 275.09.07 275.19 275.21
 # stable primary: 270.41.06 270.41.19 
 # stable primary: 260.19.12 260.19.21 260.19.29 260.19.36 260.19.44
