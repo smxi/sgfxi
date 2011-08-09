@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.52
-####  Date: August 7 2011
+####  version: 4.17.53
+####  Date: August 9 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -4757,12 +4757,13 @@ preinstall_cleanup()
 {
 	eval $LOGPS
 	local oldNvidia='' divertedPackages='' installer='nvidia-installer' oldFglrx=''
-	local fglrxUninstaller='/usr/share/ati/fglrx-uninstall.sh'
+	local fglrxUninstaller='/usr/share/ati/fglrx-uninstall.sh' useForce=''
 	local bNvidiaError='false' bFglrxError='false' nvidiaGlxExtras='' extraPackageBan=''
 	
 	# yep, you guessed it, another stupid pointless amd/ati change. Discipline guys....
-	if [ ! -e "$fglrxUninstaller" -a -e /usr/share/ati/amd-uninstall.sh ];then
+	if [ -e /usr/share/ati/amd-uninstall.sh ];then
 		fglrxUninstaller='/usr/share/ati/amd-uninstall.sh'
+		useForce='--force'
 	fi
 	
 	echo "${S}Running preinstall cleanup...${N}"
@@ -4926,7 +4927,8 @@ preinstall_cleanup()
 	esac
 	# then confirm that it's truly not installed in case of manual direct install
 	if [ -f "$fglrxUninstaller" ];then
-		bash $fglrxUninstaller
+		log_function_data "Using fglrx uninstaller: $fglrxUninstaller force: $useForce"
+		bash $fglrxUninstaller $useForce
 	fi
 	remove_module 'fglrx'
 	# this should no longer be required with new dkms, which removes itself fine above,
