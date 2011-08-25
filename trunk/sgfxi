@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.55
-####  Date: August 24 2011
+####  version: 4.17.56
+####  Date: August 25 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -408,6 +408,24 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
+						1.12)
+							case $DRIVER_DEFAULT in
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
+									;;
+							esac
+							;;
+						1.11)
+							case $DRIVER_DEFAULT in
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
+									;;
+							esac
+							;;
 						1.10)
 							case $DRIVER_DEFAULT in
 								11-[4-9]|11-1[0-2]|12-*) 
@@ -683,6 +701,27 @@ driver_support_tests()
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
 						case $X_VERSION in
+							1.12)
+								case $DRIVER_DEFAULT in
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
+							1.11)
+								case $DRIVER_DEFAULT in
+# 									285.*)
+# 										: # this is speculative but let's see if it works
+# 										;;
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
 							1.10)
 								case $DRIVER_DEFAULT in
 									# not positive about legacy drivers yet
