@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.57
-####  Date: August 28 2011
+####  version: 4.17.58
+####  Date: August 29 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -125,6 +125,7 @@ B_FORCE_NO_COMPOSITE='false'
 B_FORCE_UPDATE='false'
 B_GET_LIVE_DRIVERS='false'
 B_GUI_MODE='false'
+B_SET_IGNOREABI='false'
 B_IS_APTOSID_KERNEL='false'
 B_IS_XEN='false'
 B_KERNEL_MODULE_ONLY='false'
@@ -712,7 +713,8 @@ driver_support_tests()
 								;;
 							1.11)
 								case $DRIVER_DEFAULT in
-									285.*|280.*|$DISTRO_NVIDIA)
+									285.03|280.*|$DISTRO_NVIDIA)
+										B_SET_IGNOREABI='true'
 										: # this is speculative but let's see if it works
 										;;
 									*)
@@ -6452,6 +6454,42 @@ create_section_device()
 	create_driver_entry
 }
 
+create_section_extensions()
+{
+	eval $LOGUS
+	# if this section is not present, create it
+	if [ "$( grep -Esc 'Section[ \t]*"Extensions"' $EXXC )" -eq 0 ];then
+		echo  >> $EXXC
+		echo -e '\nSection "Extensions"' >> $EXXC
+		echo 'EndSection' >> $EXXC
+	fi
+	eval $LOGUE
+}
+ 
+create_section_serverflags()
+{
+	eval $LOGUS
+	# if this section is not present, create it
+	if [ "$( grep -Esic 'Section[ \t]*"ServerFlags"' $EXXC )" -eq 0 ];then
+		echo  >> $EXXC
+		echo -e 'Section "ServerFlags"' >> $EXXC
+		echo 'EndSection' >> $EXXC
+		echo  >> $EXXC
+	fi
+	eval $LOGUE
+}
+
+# args: $1 - the flag to set
+set_server_flag()
+{
+	eval $LOGUS
+	create_section_serverflags
+	if [ -z "$( grep -Eis '^[[:space:]]*Option[[:space:]]+"'$1'"[[:space:]]+"true"' $EXXC )" ];then
+		perl -pi -e 's/^([\s]*Section\s*"'$1'")/\1\n\tOption      "ignoreABI"\t"true"\n/' $EXXC
+	fi
+	eval $LOGUE
+}
+
 # some rough code, will write driver / pciid if required,this is mainly for systems
 # that are using the new xorg, and may not have a driver/busid entry.
 # if all goes well, will only create a driver / busid entry if missing
@@ -6586,12 +6624,9 @@ check_extensions()
 	s/^[\s]*#*[\s]*Option\s*"Render".*\n?//;
 	s/^[\s]*#*[\s]*Option\s*"AIGLX".*\n?//;
 	s/^[\s]*#*[\s]*Option\s*"Aiglx".*\n?//' $EXXC
-
-	# if this section is not present, create it
-	if [ "$( grep -sc 'Extensions' $EXXC )" -eq 0 ];then
-		echo -e '\nSection "Extensions"' >> $EXXC
-		echo 'EndSection' >> $EXXC
-	fi
+	
+	create_section_extensions
+	
 	# rebuild the extensions now
 	perl -pi -e 's/^([\s]*Section\s*"Extensions")/\1\n'$compComment'\tOption      "Composite"\t"'$compState'"\n'$rendComment'\tOption      "RENDER"\t"'$rendState'"'$aiglxString'/' $EXXC
 	eval $LOGUE
@@ -6629,6 +6664,7 @@ clear_prep_xorg()
 	s/^.*ColorTiling.*\n?//;
 	s/^.*EnablePageFlip.*\n?//;
 	s/^.*TexturedXrender.*\n?//;
+	s/^.*ignoreABI.*\n?//;
 	s/^.*AccelMethod.*\n?//' $EXXC
 
 	# turn on dri again for fglrx/intel, it's off for nvidia
@@ -6687,6 +6723,9 @@ update_xorg()
 	clear_prep_xorg # bring xorg.conf to default condition
 	check_extensions
 	remove_modelines
+	if [ "$B_SET_IGNOREABI" == 'true' ];then
+		set_server_flag 'ignoreABI'
+	fi
 
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
 		case $CARD in
