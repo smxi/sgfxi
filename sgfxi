@@ -6484,7 +6484,7 @@ set_server_flag()
 {
 	eval $LOGUS
 	create_section_serverflags
-	if [ -z "$( grep -Eis '^[[:space:]]*Option[[:space:]]+"'$1'"[[:space:]]+"true"' $EXXC )" ];then
+	if [ -z "$( grep -Eis '^[[:space:]]*Option[[:space:]]+"'$1'"[[:space:]]+' $EXXC )" ];then
 		perl -pi -e 's/^([\s]*Section\s*"ServerFlags")/\1\n\tOption      "'$1'"\t"true"\n/' $EXXC
 	fi
 	eval $LOGUE
