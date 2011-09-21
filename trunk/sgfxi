@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.59
-####  Date: August 30 2011
+####  version: 4.17.60
+####  Date: September 20 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA:"
 # stable primary: 280.13
-# stable primary: 275.09.07 275.19 275.21
+# stable primary: 275.09.07 275.19 275.21 275.28
 # stable primary: 270.41.06 270.41.19 
 # stable primary: 260.19.12 260.19.21 260.19.29 260.19.36 260.19.44
 # stable primary: 256.35 256.44 256.53 
@@ -244,7 +244,7 @@ NV_TESTING="$NV_VERSIONS_BETA:"
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
 #                  173.14.22 173.14.25 173.14.28 173.14.30
-NV_OTHERS='275.19:275.09.07:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.30:173.14.25:169.12:100.14.19:96.43.18:96.43.19:96.43.17:96.43.16:71.86.14:71.86.13:71.86.11'
+NV_OTHERS='275.28:275.19:275.09.07:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.30:173.14.25:169.12:100.14.19:96.43.18:96.43.19:96.43.17:96.43.16:71.86.14:71.86.13:71.86.11'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -713,7 +713,7 @@ driver_support_tests()
 								;;
 							1.11)
 								case $DRIVER_DEFAULT in
-									285.03|280.*|$DISTRO_NVIDIA)
+									285.03|280.*|275.28|$DISTRO_NVIDIA)
 										B_SET_IGNOREABI='true'
 										: # this is speculative but let's see if it works
 										;;
@@ -797,7 +797,7 @@ driver_support_tests()
 							190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[134]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
 								;;
-							285.03|280.13|275.19)
+							285.03|280.13|275.*)
 								NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
 								;;
 							*)
@@ -6489,7 +6489,6 @@ set_server_flag()
 	fi
 	eval $LOGUE
 }
-
 
 # some rough code, will write driver / pciid if required,this is mainly for systems
 # that are using the new xorg, and may not have a driver/busid entry.
