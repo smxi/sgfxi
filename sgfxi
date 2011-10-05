@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.62
+####  version: 4.17.63
 ####  Date: October 4 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
@@ -421,6 +421,9 @@ driver_support_tests()
 							;;
 						1.11)
 							case $DRIVER_DEFAULT in
+								11-1[0-2]|12-*) 
+									: # all other drivers fail to support xorg >= 1.9
+									;;
 								*)
 									if [ "$B_TESTING_3" != 'true' ];then
 										error_handler 226
@@ -667,6 +670,17 @@ driver_support_tests()
 								0)
 									case $DRIVER_DEFAULT in
 										11-[6-9]|11-1[0-2]|12-*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								1)
+									case $DRIVER_DEFAULT in
+										11-[8-9]|11-1[0-2]|12-*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1273,14 +1287,14 @@ set_test_data()
 		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
-		KERNEL_MATH=36
+#		KERNEL_MATH=36
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
 # 		# 'sid' 'testing' 'stable' 'etch'
 #		SYSTEM_BASE='debian'
 # 		SYSTEM_CODENAME='testing'
-		X_VERSION='1.7' # override for patching etc
+#		X_VERSION='1.11' # override for patching etc
 # leave this at first character or errors in updater tools will occur
 :
 	fi
