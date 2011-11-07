@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.66
-####  Date: November 6 2011
+####  version: 4.17.67
+####  Date: November 7 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -219,7 +219,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='290.03:::'
+NV_VERSIONS_BETA='290.06:::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -231,7 +231,8 @@ NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 NV_TESTING="$NV_VERSIONS_BETA:"
 # stable primary: 285.05.09
 # stable primary: 280.13
-# stable primary: 275.09.07 275.19 275.21 275.28
+# stable primary: 275.09.07 275.19 275.21 
+# lt stable primary: 275.28 275.36
 # stable primary: 270.41.06 270.41.19 
 # stable primary: 260.19.12 260.19.21 260.19.29 260.19.36 260.19.44
 # stable primary: 256.35 256.44 256.53 
@@ -245,7 +246,7 @@ NV_TESTING="$NV_VERSIONS_BETA:"
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
 #                  173.14.22 173.14.25 173.14.28 173.14.30
-NV_OTHERS='280.13:275.28:275.36:275.09.07:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.30:173.14.25:169.12:100.14.19:96.43.18:96.43.19:96.43.17:96.43.16:71.86.14:71.86.13:71.86.11'
+NV_OTHERS='280.13:275.36:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.30:173.14.25:169.12:100.14.19:96.43.18:96.43.19:96.43.17:96.43.16:71.86.14:71.86.13:71.86.11'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
