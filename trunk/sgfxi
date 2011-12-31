@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.70
-####  Date: November 22 2011
+####  version: 4.17.71
+####  Date: December 30 2011
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2011
 ####  Code contributions copyright: Latino 2008
@@ -85,7 +85,7 @@ SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads"
 SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 
 # script global data
-NON_DEBIAN_PATTERN='(deb-ats|deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
+NON_DEBIAN_PATTERN='(deb-ats|deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|siduction|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
 
 APT_TYPE='apt-get'
 CARD='' # card type: fglrx or nvidia
@@ -2599,7 +2599,9 @@ check_set_distro()
 			X_NAME='X'
 			# these will be used for various advanced tests in some components
 			if [ -z "$DISTRIB_ID" ];then
-				if [ -f /etc/aptosid-version ];then
+				if [ -f /etc/siduction-version ];then
+					DISTRIB_ID='siduction'
+				elif [ -f /etc/aptosid-version ];then
 					DISTRIB_ID='aptosid'
 				elif [ -f /etc/sidux-version ];then
 					DISTRIB_ID='sidux'
@@ -3197,6 +3199,7 @@ update_to_nonfree_sources()
 	local eas='/etc/apt/sources.list'
 	local easdl='/etc/apt/sources.list.d/debian.list'
 	local eassl='/etc/apt/sources.list.d/aptosid.list'
+	
 	local aptProx='' 
 	local ubRestricted='' ubMultiverse='' ubUniverse=''
 	local yumFreeRepo='' yumNonFreeRepo='' yumList='' bRepoAdded='false'
@@ -3214,7 +3217,7 @@ update_to_nonfree_sources()
 				done
 			
 				if [ "$isFree" -eq 0 ];then
-					for i in $eas $easdl $eassl
+					for i in $eas $easdl
 					do
 						if [ -f "$i" ];then
 							# I'm going to assume if the user has proxy stuff set up, they know what
@@ -4346,7 +4349,7 @@ reboot_now_question()
 	local opt='' options='' initText='' initLevel=''
 	
 	case $DISTRIB_ID in
-		fedora|aptosid|sidux|mepis|antix)
+		fedora|aptosid|sidux|mepis|antix|siduction)
 			initLevel=3
 			;;
 		*)
