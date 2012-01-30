@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.75
-####  Date: January 25 2012
+####  version: 4.17.76
+####  Date: January 29 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -6201,7 +6201,7 @@ start_x_question()
 start_stop_x()
 {
 	eval $LOGUS
-	local displayManagers='entrance gdm gdm3 kdm slim wdm xdm' dman='' success=''
+	local displayManagers='entrance gdm gdm3 kdm nodm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
