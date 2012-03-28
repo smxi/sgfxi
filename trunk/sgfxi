@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.84
-####  Date: March 27 2012
+####  version: 4.17.85
+####  Date: March 28 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -276,8 +276,8 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # other options: nothing now
 # http://support.amd.com/us/gpudownload/embedded/Pages/embedded_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='12-2:12-1:12-1'
-FG_DEFAULT='12-2'
+FG_VERSIONS='12-3:12-2:12-1'
+FG_DEFAULT='12-3'
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
