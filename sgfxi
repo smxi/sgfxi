@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.85
-####  Date: March 28 2012
+####  version: 4.17.86
+####  Date: April 3 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -274,7 +274,8 @@ NV_PKG_NO=''
 NV_64_ARCH='' # if nvidia changes file name use this
 
 # other options: nothing now
-# http://support.amd.com/us/gpudownload/embedded/Pages/embedded_linux.aspx
+# zip file only: http://support.amd.com/us/gpudownload/embedded/Pages/embedded_linux.aspx
+# actual run: http://support.amd.com/us/gpudownload/linux/Pages/radeon_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
 FG_VERSIONS='12-3:12-2:12-1'
 FG_DEFAULT='12-3'
@@ -749,6 +750,9 @@ driver_support_tests()
 						case $X_VERSION in
 							1.12)
 								case $DRIVER_DEFAULT in
+									295.33|$DISTRO_NVIDIA)
+										:
+										;;
 									*)
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 226
