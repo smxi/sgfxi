@@ -1027,7 +1027,7 @@ driver_support_tests()
 										;;
 									2)
 										case $DRIVER_DEFAULT in
-											295.*|290.*|285.05.09|173.14.[3]*|96.43.[2]*|$DISTRO_NVIDIA)
+											295.*|290.*|285.05.09|173.14.[3][0-9]|96.43.[2]*|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
