@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.87
-####  Date: April 9 2012
+####  version: 4.17.88
+####  Date: April 10 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -4944,7 +4944,7 @@ preinstall_cleanup()
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
 	
-	oldNvidia=$( list_installed_packages 'nvidia' "(modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
+	oldNvidia=$( list_installed_packages 'nvidia' "(libgl1-nvidia-glx-ia32|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
 		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)' )
@@ -5330,7 +5330,7 @@ test_module_build_ok()
 	fi
 	if [ "$returnValue" -eq 0 ];then
 		echo -n "  ${S}Checking for distribution ${C}nVidia${S} driver packages.... ${N}"
-		nvidiaPackages=$( list_installed_packages 'nvidia' '(modalias|libvdpau)' )
+		nvidiaPackages=$( list_installed_packages 'nvidia' '(libgl1-nvidia-glx-ia32|modalias|libvdpau)' )
 		if [ -n "$nvidiaPackages" ];then
 			echo "${W}PRESENT${N}"
 			returnValue=2
