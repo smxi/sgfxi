@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.86
-####  Date: April 3 2012
+####  version: 4.17.87
+####  Date: April 9 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -1900,7 +1900,7 @@ detect_card_version()
 					;;
 				# This is for the GeForce FX 5xxx series. Not sure about the quadro fx series:
 				# 004d 004e 09d0 009d 00cd 00ce 00fe 019d 019e
-				004d|004e|09d0|009d|00cd|00ce|00fe|019d|019e|00fa|00fb|00fc|031a|031b|0301|0302|0311|0312|0314|0320|0321|0322|0323|0324|0325|0326|0327|0328|0329|032c|032d|0330|0331|0332|0333|0334|0341|0342|0343|0344|0347|0348)
+				004d|004e|09d0|009d|00cd|00ce|00fe|019d|019e|00fa|00fb|00fc|031a|031b|0301|0302|0308|0309|0311|0312|0314|0319|0320|0321|0322|0323|0324|0325|0326|0327|0328|0329|032c|032d|0330|0331|0332|0333|0334|0341|0342|0343|0344|0347|0348)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-3' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-3' 'set-exists' )
 					LEGACY_LEVEL=3
