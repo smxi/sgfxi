@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.91
+####  version: 4.17.92
 ####  Date: May 2 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
@@ -429,7 +429,7 @@ driver_support_tests()
 					case $X_VERSION in
 						1.12)
 							case $DRIVER_DEFAULT in
-								12-[5-9]|12-1[0-2])
+								12-[5-9]|12-1[0-2]|13-*)
 									:
 									;;
 								*)
@@ -441,7 +441,7 @@ driver_support_tests()
 							;;
 						1.11)
 							case $DRIVER_DEFAULT in
-								11-1[0-2]|12-*) 
+								11-1[0-2]|12-*|13-*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -453,7 +453,7 @@ driver_support_tests()
 							;;
 						1.10)
 							case $DRIVER_DEFAULT in
-								11-[4-9]|11-1[0-2]|12-*) 
+								11-[4-9]|11-1[0-2]|12-*|13-*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -465,7 +465,7 @@ driver_support_tests()
 							;;
 						1.9)
 							case $DRIVER_DEFAULT in
-								10-1[0-2]|11-*|12-*) 
+								10-1[0-2]|11-*|12-*|13-*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -477,7 +477,7 @@ driver_support_tests()
 							;;
 						1.8|7.6)
 							case $DRIVER_DEFAULT in
-								10-[7-9]|10-1[0-2]|11-*|12-*) # update when 1.8 is actually supported
+								10-[7-9]|10-1[0-2]|11-*|12-*|13-*) # update when 1.8 is actually supported
 									: # all other drivers fail to support xorg >= 1.8
 									;;
 								*)
@@ -489,7 +489,7 @@ driver_support_tests()
 							;;
 						1.7|7.5)
 							case $DRIVER_DEFAULT in
-								10-[4-9]|10-1[0-2]|11-*|12-*)
+								10-[4-9]|10-1[0-2]|11-*|12-*|13-*)
 									: # all other drivers fail to support xorg >= 1.7
 									;;
 								*)
@@ -501,7 +501,7 @@ driver_support_tests()
 							;;
 						1.6|7.[3-4])
 							case $DRIVER_DEFAULT in
-								9-[4-9]|9-1[0-2]|10-*|11-*|12-*)
+								9-[4-9]|9-1[0-2]|10-*|11-*|12-*|13-*)
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -712,6 +712,17 @@ driver_support_tests()
 								2)
 									case $DRIVER_DEFAULT in
 										12-*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								3)
+									case $DRIVER_DEFAULT in
+										12-[4-9]|12-1[0-2])
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
