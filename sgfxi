@@ -1386,14 +1386,15 @@ set_test_data()
 		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 2.6.25 here
-#		KERNEL_MATH=36
+		KERNEL_BASE=3
+		KERNEL_MATH=3
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
 # 		# 'sid' 'testing' 'stable' 'etch'
 #		SYSTEM_BASE='debian'
 # 		SYSTEM_CODENAME='testing'
-#		X_VERSION='1.11' # override for patching etc
+		X_VERSION='1.11' # override for patching etc
 # leave this at first character or errors in updater tools will occur
 :
 	fi
