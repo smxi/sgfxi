@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.96
-####  Date: May 19 2012
+####  version: 4.17.97
+####  Date: May 22 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -6141,6 +6141,7 @@ start_x_question()
 	local ia32Alert='echo -e "\n${M}You should probably (re)install ${C}$ia32libs${M} (even if already installed)\nif you use applications that depend on them in your ${C}64 bit${M} system,\nfor example ${C}Wine${M}.${N}"'
 	local ia32Install='echo -e "${C}$iaOpt${M} - Install ${C}$ia32libs${M} libs."'
 	local fgGlxOpt='' fgGlx='' fgGlxAlert='' fgGlxInstall=''
+	local nvGlxOpt='' nvGlx='' nvGlxAlert='' nvGlxInstall=''
 	local startXopt='' startXText='' rebootOpt='' rebootText=''
 
 	case $BITS in
@@ -6158,6 +6159,11 @@ start_x_question()
 					fgGlxInstall='echo -e "${C}$fgGlxOpt${M} - Install ${C}$fgGlx${M}."'
 					;;
 				$NVIDIA)
+					# not using this now until issue is confirmed by user
+# 					nvGlxOpt='install-nvidia-glx'
+# 					nvGlx='libgl1-nvidia-glx-ia32'
+# 					nvGlxAlert='echo -e "\n${M}You might want to (re)install ${C}$nvGlx${M} (even if already installed)\nif you have problems with your ${C}64 bit nVidia${M} driver/apps.${N}"'
+# 					nvGlxInstall='echo -e "${C}$nvGlxOpt${M} - Install ${C}$nvGlx${M}."'
 					:
 					;;
 			esac
@@ -6184,14 +6190,16 @@ start_x_question()
 	echo "${S}Your driver install is now finished. You have the following options:"
 	eval $ia32Alert
 	eval $fgGlxAlert
+	eval $nvGlxAlert
 	echo $LINE
 	eval $ia32Install
 	eval $fgGlxInstall
+	eval $nvGlxInstall
 	eval $startXText
 	eval $rebootText
 	echo "${C}quit${M} - Quit now, to do something else before starting your desktop.${N}"
 	echo $LINE
-	options="$iaOpt $fgGlxOpt $startXopt $rebootOpt quit"
+	options="$iaOpt $fgGlxOpt $nvGlxOpt $startXopt $rebootOpt quit"
 	select opt in $options
 	do
 		case $opt in
@@ -6218,6 +6226,21 @@ start_x_question()
 					log_function_data "Final Step: Installed: $fgGlx"
 				else
 					echo "${E}The packages ${C}$fgGlx${E} are only installable in ${C}64 bit + ATI fglrx${E} systems.${N}"
+				fi
+				# repeat the question for users so they can start x now if they want.
+				bRepeat='true'
+				;;
+			install-nvidia-glx)
+				if [ "$BITS" == '64' -a "$CARD" == $NVIDIA ];then
+					echo "${S}Installing packages ${C}$nvGlx${S} now...${N}"
+					for package in $nvGlx
+					do
+						install_package $package '' 'reinstall'
+					done
+
+					log_function_data "Final Step: Installed: $nvGlx"
+				else
+					echo "${E}The packages ${C}$nvGlx${E} are only installable in ${C}64 bit + nvidia${E} systems.${N}"
 				fi
 				# repeat the question for users so they can start x now if they want.
 				bRepeat='true'
