@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.17.97
-####  Date: May 22 2012
+####  version: 4.18.1
+####  Date: June 5 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -99,7 +99,7 @@ SYSTEM_CODENAME=''
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
-NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|cyrix|fbdev|glint|i128|i740|intel|i810|imstt|mach64|mga|neomagic|nsc|nv|openchrome|nouveau|radeon|radeonhd|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|via|voodoo|vmware|v4l'
+NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|fbdev|geode|glide|glint|i128|i740|intel|imstt|mach64|mga|neomagic|nsc|openchrome|nouveau|r128|radeon|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|via|voodoo|vmware|v4l'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
 SCRIPT_COLORS=1
@@ -215,7 +215,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='295.53:173.14.34:96.43.20:71.86.15'
+NV_VERSIONS='295.53:173.14.35:96.43.20:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -249,7 +249,7 @@ NV_TESTING="$NV_VERSIONS_BETA:302.07"
 # stable legacy 1: 71.86.06 71.86.09 71.86.11 71.86.13 71.86.14 71.86.15
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
-#                  173.14.22 173.14.25 173.14.28 173.14.30 173.14.31 173.14.34
+#                  173.14.22 173.14.25 173.14.28 173.14.30 173.14.31 173.14.35
 NV_OTHERS='295.49:295.40:295.33:295.20:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.31:173.14.25:169.12:100.14.19:96.43.18:96.43.19:96.43.17:96.43.16:71.86.14:71.86.13:71.86.11'
 
 # distro legacies (default to Debian packages):
@@ -416,6 +416,19 @@ driver_support_tests()
 								;;
 						esac
 					fi
+					# no 
+					if [ "$LEGACY_LEVEL" -eq 2 -a "$B_USE_DISTRO_DRIVER" != 'true' ];then
+						case $DRIVER_DEFAULT in
+							8-*|9-*|10-*|11-*|12-[1-5])
+								: # these drivers are fine
+								;;
+							*)
+								if [ "$B_TESTING_3" != 'true' ];then
+									error_handler 212
+								fi
+								;;
+						esac
+					fi
 					case $DRIVER_DEFAULT in
 						12-*|13-*|14-*|15-*)
 							FGLRX_PACKAGE_PREFIX='amd'
@@ -430,8 +443,12 @@ driver_support_tests()
 					case $X_VERSION in
 						1.12)
 							case $DRIVER_DEFAULT in
-								12-[5-9]|12-1[0-2]|13-*)
-									:
+								12-[6-9]|12-1[0-2]|13-*)
+									if [ "$LEGACY_LEVEL" -lt 3 ];then
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 212
+										fi
+									fi
 									;;
 								*)
 									if [ "$B_TESTING_3" != 'true' ];then
@@ -701,7 +718,7 @@ driver_support_tests()
 									;;
 								1)
 									case $DRIVER_DEFAULT in
-										11-[8-9]|11-1[0-2]|12-*)
+										11-[8-9]|11-1[0-2]|12-*|13-*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -712,7 +729,7 @@ driver_support_tests()
 									;;
 								2)
 									case $DRIVER_DEFAULT in
-										12-*)
+										12-*|13-*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -723,7 +740,18 @@ driver_support_tests()
 									;;
 								3)
 									case $DRIVER_DEFAULT in
-										12-[4-9]|12-1[0-2])
+										12-[4-9]|12-1[0-2]|13-*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								4)
+									case $DRIVER_DEFAULT in
+										12-[7-9]|12-1[0-2]|13-*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1374,6 +1402,7 @@ set_test_data()
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
 		CARD_DATA=1002:9442 # fake ati post x2000 card
+# 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
@@ -1609,6 +1638,9 @@ error_handler()
 			;;
 		213)
 			errorData="$SCRIPT_NAME cannot locate any /boot/grub/ config files. Unable to continue.\n$SCRIPT_NAME requires grub config files: /boot/grub/menu.lst or /boot/grub/grub.cfg\n$SCRIPT_NAME does not support lilo or unmounted /boot partitions.\nThe action: $errorExtra cannot be done without an active Grub on your system."
+			;;
+		212)
+			errorData="AMD has dropped Catalyst/FGLRX support for HD2xxx-4xxx series cards as of 12-6.\nYou should have bought Nvidia if you wanted a long term working non free driver, sorry.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		# specific install issues
 		200)
@@ -2006,6 +2038,9 @@ detect_card_version()
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
 						B_USE_DISTRO_DRIVER='true'
 					fi
+					;;
+				94*|95*|97*)
+					LEGACY_LEVEL=2
 					;;
 				*)
 					# if no working driver via standard ati installer. Here we're also handling
@@ -3800,7 +3835,7 @@ log_writer()
 install_native_driver()
 {
 	eval $LOGPS
-	local xorgBase='' xorgNv='nv' xorgAti='ati' xorgIntel='intel'
+	local xorgBase='' xorgNv='nouveau' xorgAti='ati' xorgIntel='intel'
 	local xorgDriver='' driver='' currentlyInstalled='' xorgCore=''
 	local driverInstall='' experimentalText='' libMesaGlx=''
 	local extraAtiPackage1='' bSkipInstall='false'
@@ -6706,7 +6741,7 @@ update_xorgconf_driver_version()
 				driverName='intel'
 				;;
 			$NVIDIA)
-				driverName='nv'
+				driverName='nouveau'
 				;;
 		esac
 
@@ -7140,10 +7175,10 @@ show_options()
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
 	echo "   n to show current nvidia support status; f to show current fglrx support status;"
 	echo "   v to show current latest local + remote $SCRIPT_NAME svn/server version information."
-	echo "-n Automatically installs correct native xorg nv, intel, or ati driver for your system."
+	echo "-n Automatically installs correct native xorg nvidia, intel, or ati/amd driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
-	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf"
-	echo "-N Force install of specific xorg driver. Syntax: $SCRIPT_NAME -N <driver> Ex: $SCRIPT_NAME -N radeonhd"
+	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf. For radeon/noveau, also preps."
+	echo "-N Force install of specific xorg driver. Syntax: $SCRIPT_NAME -N <driver> Ex: $SCRIPT_NAME -N radeon"
 	echo -n "   Supported Xorg drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nativeVersions )
