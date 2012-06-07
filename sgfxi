@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.18.1
-####  Date: June 5 2012
+####  version: 4.18.2
+####  Date: June 7 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -4506,7 +4506,7 @@ reboot_now_question()
 		echo "${S}If your desktop fails to start properly after you reboot, you may need to do one of two things:"
 		echo "1 - move your xorg.conf file to a temporary new file name, like: "
 		echo "    ${C}mv /etc/X11/xorg.conf /etc/X11/xorg.conf-holder${S}"
-		echo "    then restart your gdm/kdm/xdm/slim desktop login manager. If X then starts, you're fine."
+		echo "    then restart your desktop login manager (like gdm,xdm,kdm). If X then starts, you're fine."
 		echo "2 - Add the grub kernel option: ${C}nomodeset${S}"
 		echo "    at grub load, using the edit (e) method in grub, then boot with that. This will allow"
 		echo "    you to at least run $SCRIPT_NAME to install the non-free driver."
@@ -6317,7 +6317,7 @@ start_x_question()
 start_stop_x()
 {
 	eval $LOGUS
-	local displayManagers='entrance gdm gdm3 kdm nodm slim wdm xdm' dman='' success=''
+	local displayManagers='entrance gdm gdm3 kdm lightdm nodm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
