@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.18.3
-####  Date: June 14 2012
+####  version: 4.18.4
+####  Date: June 16 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -215,7 +215,7 @@ DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 VERSIONS=''
 OTHER_VERSIONS=''
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='295.59:173.14.35:96.43.20:71.86.15'
+NV_VERSIONS='302.17:173.14.35:96.43.20:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -223,7 +223,7 @@ NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='302.11:::'
+NV_VERSIONS_BETA=':::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # ge4xx cards
@@ -232,8 +232,8 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA:302.07"
-# stable primary: 295.49 295.53 295.59
+NV_TESTING="$NV_VERSIONS_BETA:302.11"
+# stable primary: 295.49 295.53 295.59 302.17
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59
@@ -250,7 +250,7 @@ NV_TESTING="$NV_VERSIONS_BETA:302.07"
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
 #                  173.14.22 173.14.25 173.14.28 173.14.30 173.14.31 173.14.35
-NV_OTHERS='295.53:295.49:295.40:295.33:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.31:173.14.25:169.12:100.14.19:96.43.18:96.43.19:96.43.17:96.43.16:71.86.14:71.86.13:71.86.11'
+NV_OTHERS='295.59:295.53:295.49:295.40:295.33:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.31:173.14.25:169.12:100.14.19:96.43.18:96.43.19:96.43.17:96.43.16:71.86.14:71.86.13:71.86.11'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
