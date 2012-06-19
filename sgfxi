@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='295.59:173.14.35:96.43.20:71.86.15'
+NV_VERSIONS='302.17:173.14.35:96.43.20:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
