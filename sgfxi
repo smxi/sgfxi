@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.18.11
-####  Date: August 7 2012
+####  version: 4.18.12
+####  Date: August 15 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # other stuff: nothing now: these legacies are prerelease status for now
-NV_VERSIONS='304.32:173.14.35:96.43.20:71.86.15'
+NV_VERSIONS='304.37:173.14.35:96.43.20:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # ge4xx cards
@@ -235,10 +235,11 @@ NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA::"
-# stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.32
+# stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59
+# lt stable primary: 304.37
+# lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
 # stable primary: 260.19.12 260.19.21 260.19.29 260.19.36 260.19.44
 # stable primary: 256.35 256.44 256.53 
