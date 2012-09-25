@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.19.01
-####  Date: September 16 2012
+####  version: 4.19.02
+####  Date: September 24 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # other stuff: nothing now. Using same driver for legacy 4 and current until 304 branch is not current stable
-NV_VERSIONS='304.48:304.48:173.14.36:96.43.23:71.86.15'
+NV_VERSIONS='304.51:304.51:173.14.36:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -237,7 +237,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_TESTING="$NV_VERSIONS_BETA::"
-# stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43
+# stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
 # lt stable primary: 304.37 304.43 
@@ -289,7 +289,7 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # zip file only: http://support.amd.com/us/gpudownload/embedded/Pages/embedded_linux.aspx
 # actual run: http://support.amd.com/us/gpudownload/linux/Pages/radeon_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='12.8:12-6:12-4'
+FG_VERSIONS='12.8:12-7:12-6'
 FG_DEFAULT='12-8'
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
@@ -297,7 +297,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
 # :9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4
-FG_OTHERS='12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='12.8:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
 FG_DISTRIB_CODENAME=''
@@ -453,6 +453,22 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
+						1.13)
+							case $DRIVER_DEFAULT in
+								12-1[0-2]|13-*)
+									if [ "$LEGACY_LEVEL" -lt 3 ];then
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 212
+										fi
+									fi
+									;;
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
+									;;
+							esac
+							;;
 						1.12)
 							case $DRIVER_DEFAULT in
 								12-[6-9]|12-1[0-2]|13-*)
@@ -603,7 +619,7 @@ driver_support_tests()
 									;;
 								29)
 									case $DRIVER_DEFAULT in
-										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12-*)
+										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12-*|13-*)
 											: 
 											;;
 										*)
@@ -615,7 +631,7 @@ driver_support_tests()
 									;;
 								30)
 									case $DRIVER_DEFAULT in
-										9-8|9-9|9-1[0-2]|10-*|11-*|12-*)
+										9-8|9-9|9-1[0-2]|10-*|11-*|12-*|13-*)
 											: 
 											;;
 										*)
@@ -627,7 +643,7 @@ driver_support_tests()
 									;;
 								31|32)
 									case $DRIVER_DEFAULT in
-										9-1[0-2]|10-*|11-*|12-*)
+										9-1[0-2]|10-*|11-*|12-*|13-*)
 											: 
 											;;
 										*)
@@ -639,7 +655,7 @@ driver_support_tests()
 									;;
 								33)
 									case $DRIVER_DEFAULT in
-										10-[2-9]|10-1[0-2]|11-*|12-*)
+										10-[2-9]|10-1[0-2]|11-*|12-*|13-*)
 											:
 											;;
 										*)
@@ -651,7 +667,7 @@ driver_support_tests()
 									;;
 								34)
 									case $DRIVER_DEFAULT in
-										10-[5-9]|10-1[0-2]|11-*|12-*)
+										10-[5-9]|10-1[0-2]|11-*|12-*|13-*)
 											:
 											;;
 										*)
@@ -663,7 +679,7 @@ driver_support_tests()
 									;;
 								35)
 									case $DRIVER_DEFAULT in
-										10-[8-9]|10-1[0-2]|11-*|12-*)
+										10-[8-9]|10-1[0-2]|11-*|12-*|13-*)
 											:
 											;;
 										*)
@@ -677,7 +693,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										10-1[0-2]|11-*|12-*) 
+										10-1[0-2]|11-*|12-*|13-*) 
 											:
 											;;
 										*)
@@ -691,7 +707,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										11-*|12-*) 
+										11-*|12-*|13-*) 
 											:
 											;;
 										*)
@@ -703,7 +719,7 @@ driver_support_tests()
 									;;	
 								39)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12*)
+										11-[6-9]|11-1[0-2]|12*|13-*)
 											:
 											;;
 										*)
@@ -719,7 +735,7 @@ driver_support_tests()
 							case $KERNEL_MATH in
 								0)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12-*)
+										11-[6-9]|11-1[0-2]|12-*|13-*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -764,6 +780,17 @@ driver_support_tests()
 								4)
 									case $DRIVER_DEFAULT in
 										12-[7-9]|12-1[0-2]|13-*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								5)
+									case $DRIVER_DEFAULT in
+										12-9|12-1[0-2]|13-*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1440,11 +1467,11 @@ set_test_data()
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
 # 		CARD_DATA=1002:9442 # fake ati hd2000-hd4xxx
-# 		CARD_DATA=1002:9805 # fake ati hd 6250 card
+		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
-		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
+# 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
