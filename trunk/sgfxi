@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.19.04
-####  Date: October 18 2012
+####  version: 4.19.05
+####  Date: October 22 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -290,15 +290,16 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # zip file only: http://support.amd.com/us/gpudownload/embedded/Pages/embedded_linux.aspx
 # actual run: http://support.amd.com/us/gpudownload/linux/Pages/radeon_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
-FG_VERSIONS='12.8:12-7:12-6'
-FG_DEFAULT='12-8'
+# note, as distrissingly usual, amd AGAIN has changed their driver name syntax. 
+FG_VERSIONS='12.10:12-7:12-6'
+FG_DEFAULT='12.10'
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
 FG_TESTING=''
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
 # :9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4
-FG_OTHERS='12.8:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='12-10:12.8:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
 FG_DISTRIB_CODENAME=''
@@ -443,11 +444,14 @@ driver_support_tests()
 						esac
 					fi
 					case $DRIVER_DEFAULT in
-						12-*|13-*|14-*|15-*)
-							FGLRX_PACKAGE_PREFIX='amd'
+						12.1[0-2]|13.*|14.*|15.*)
+							FGLRX_PACKAGE_PREFIX='amd-driver-installer-catalyst'
+							;;
+						12-[1-9])
+							FGLRX_PACKAGE_PREFIX='amd-driver-installer'
 							;;
 						*)
-							FGLRX_PACKAGE_PREFIX='ati'
+							FGLRX_PACKAGE_PREFIX='ati-driver-installer'
 							;;
 					esac
 					# test for >= xorg 1.6 support, using a whitelist of current drivers
@@ -456,7 +460,7 @@ driver_support_tests()
 					case $X_VERSION in
 						1.13)
 							case $DRIVER_DEFAULT in
-								12-1[0-2]|13-*)
+								12.1[0-2]|13.*)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -472,7 +476,7 @@ driver_support_tests()
 							;;
 						1.12)
 							case $DRIVER_DEFAULT in
-								12-[6-9]|12-1[0-2]|13-*)
+								12-[6-9]|12.1[0-2]|13.*)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -488,7 +492,7 @@ driver_support_tests()
 							;;
 						1.11)
 							case $DRIVER_DEFAULT in
-								11-1[0-2]|12-*|13-*) 
+								11-1[0-2]|12-*|12.*|13.*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -500,7 +504,7 @@ driver_support_tests()
 							;;
 						1.10)
 							case $DRIVER_DEFAULT in
-								11-[4-9]|11-1[0-2]|12-*|13-*) 
+								11-[4-9]|11-1[0-2]|12-*|12.*|13.*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -509,10 +513,10 @@ driver_support_tests()
 									fi
 									;;
 							esac
-							;;
+							;; 
 						1.9)
 							case $DRIVER_DEFAULT in
-								10-1[0-2]|11-*|12-*|13-*) 
+								10-1[0-2]|11-*|12-*|12.*|13.*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -524,7 +528,7 @@ driver_support_tests()
 							;;
 						1.8|7.6)
 							case $DRIVER_DEFAULT in
-								10-[7-9]|10-1[0-2]|11-*|12-*|13-*) # update when 1.8 is actually supported
+								10-[7-9]|10-1[0-2]|11-*|12-*|12.*|13.*) # update when 1.8 is actually supported
 									: # all other drivers fail to support xorg >= 1.8
 									;;
 								*)
@@ -536,7 +540,7 @@ driver_support_tests()
 							;;
 						1.7|7.5)
 							case $DRIVER_DEFAULT in
-								10-[4-9]|10-1[0-2]|11-*|12-*|13-*)
+								10-[4-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
 									: # all other drivers fail to support xorg >= 1.7
 									;;
 								*)
@@ -548,7 +552,7 @@ driver_support_tests()
 							;;
 						1.6|7.[3-4])
 							case $DRIVER_DEFAULT in
-								9-[4-9]|9-1[0-2]|10-*|11-*|12-*|13-*)
+								9-[4-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -620,7 +624,7 @@ driver_support_tests()
 									;;
 								29)
 									case $DRIVER_DEFAULT in
-										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12-*|13-*)
+										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
 											: 
 											;;
 										*)
@@ -632,7 +636,7 @@ driver_support_tests()
 									;;
 								30)
 									case $DRIVER_DEFAULT in
-										9-8|9-9|9-1[0-2]|10-*|11-*|12-*|13-*)
+										9-8|9-9|9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
 											: 
 											;;
 										*)
@@ -644,7 +648,7 @@ driver_support_tests()
 									;;
 								31|32)
 									case $DRIVER_DEFAULT in
-										9-1[0-2]|10-*|11-*|12-*|13-*)
+										9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
 											: 
 											;;
 										*)
@@ -656,7 +660,7 @@ driver_support_tests()
 									;;
 								33)
 									case $DRIVER_DEFAULT in
-										10-[2-9]|10-1[0-2]|11-*|12-*|13-*)
+										10-[2-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
 											:
 											;;
 										*)
@@ -668,7 +672,7 @@ driver_support_tests()
 									;;
 								34)
 									case $DRIVER_DEFAULT in
-										10-[5-9]|10-1[0-2]|11-*|12-*|13-*)
+										10-[5-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
 											:
 											;;
 										*)
@@ -680,7 +684,7 @@ driver_support_tests()
 									;;
 								35)
 									case $DRIVER_DEFAULT in
-										10-[8-9]|10-1[0-2]|11-*|12-*|13-*)
+										10-[8-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
 											:
 											;;
 										*)
@@ -694,7 +698,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										10-1[0-2]|11-*|12-*|13-*) 
+										10-1[0-2]|11-*|12-*|12.*|13.*) 
 											:
 											;;
 										*)
@@ -708,7 +712,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										11-*|12-*|13-*) 
+										11-*|12-*|12.*|13.*) 
 											:
 											;;
 										*)
@@ -720,7 +724,7 @@ driver_support_tests()
 									;;	
 								39)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12*|13-*)
+										11-[6-9]|11-1[0-2]|12*|12.*|13.*)
 											:
 											;;
 										*)
@@ -736,7 +740,7 @@ driver_support_tests()
 							case $KERNEL_MATH in
 								0)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12-*|13-*)
+										11-[6-9]|11-1[0-2]|12-*|12.*|13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -747,7 +751,7 @@ driver_support_tests()
 									;;
 								1)
 									case $DRIVER_DEFAULT in
-										11-[8-9]|11-1[0-2]|12-*|13-*)
+										11-[8-9]|11-1[0-2]|12-*|12.*|13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -758,7 +762,7 @@ driver_support_tests()
 									;;
 								2)
 									case $DRIVER_DEFAULT in
-										12-*|13-*)
+										12-*|12.*|13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -769,7 +773,7 @@ driver_support_tests()
 									;;
 								3)
 									case $DRIVER_DEFAULT in
-										12-[4-9]|12-1[0-2]|13-*)
+										12-[4-9]|12-1[0-2]|12.*|13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -780,7 +784,7 @@ driver_support_tests()
 									;;
 								4)
 									case $DRIVER_DEFAULT in
-										12-[7-9]|12-1[0-2]|13-*)
+										12-[7-9]|12-1[0-2]|12.*|13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -791,7 +795,7 @@ driver_support_tests()
 									;;
 								5)
 									case $DRIVER_DEFAULT in
-										12-9|12-1[0-2]|13-*)
+										12-9|12-1[0-2]|12.*|13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -4870,7 +4874,7 @@ set_download_info()
 		$FGLRX)
 			# set driver package name
 			# DRIVER_FILE="ati-driver-installer-$DRIVER_DEFAULT-$CPU"
-			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-driver-installer-$DRIVER_DEFAULT-x86.x86_64"
+			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_DEFAULT-x86.x86_64"
 			# set download path
 			downloadUrl='http://www2.ati.com/drivers/linux/'
 			;;
