@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.19.05
-####  Date: October 22 2012
+####  version: 4.20.00
+####  Date: October 24 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -236,7 +236,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_TESTING="$NV_VERSIONS_BETA::"
+NV_BETA="$NV_VERSIONS_BETA::"
 # stable primary: 304.60
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
@@ -294,7 +294,9 @@ NV_64_ARCH='' # if nvidia changes file name use this
 FG_VERSIONS='12.10:12-7:12-6'
 FG_DEFAULT='12.10'
 FG_LEGACY='' # no legacy for ati + xorg >= 7.1
-FG_TESTING=''
+# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
+# http://www2.ati.com/drivers/linux/amd-driver-installer-catalyst-12.10-x86.x86_64.zip
+FG_DEFAULT_BETA='12.11'
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
@@ -307,7 +309,7 @@ DRIVER_INSTALL=''
 DRIVER_DEFAULT=''
 DRIVER_OVERRIDE=''
 DRIVER_QUAD=''
-DRIVER_TESTING=''
+DRIVER_BETA=''
 # 0 - unsupported completely by any non-free driver
 # 1 - nvidia oldest card versions supported / fglrx < x2000 cards
 # 2 - nvidia midrange legacy card versions supported
@@ -1999,11 +2001,11 @@ detect_card_version()
 	cardNumber=$( echo $CARD_DATA | cut -d ':' -f2 )
 	case $cardBrand in
 		10de|12d2)
-			# these will also assign dynamic betas to $NV_TESTING prior to sending it
-			# to the master DRIVER_TESTING for support tests right after
+			# these will also assign dynamic betas to $NV_BETA prior to sending it
+			# to the master DRIVER_BETA for support tests right after
 			DRIVER_DEFAULT=$( assign_standard_or_beta_driver 'default' 'driver' )
 			B_BETA_EXISTS=$( assign_standard_or_beta_driver 'default' 'set-exists' )
-			DRIVER_TESTING=$NV_TESTING
+			DRIVER_BETA=$NV_BETA
 			VERSIONS=$NV_VERSIONS
 			OTHER_VERSIONS=$NV_OTHERS
 			CARD_NUMBER=$cardNumber
@@ -2085,7 +2087,7 @@ detect_card_version()
 			;;
 		1002)
 			DRIVER_DEFAULT=$FG_DEFAULT
-			DRIVER_TESTING=$FG_TESTING
+			DRIVER_BETA=$FG_DEFAULT_BETA
 			VERSIONS=$FG_VERSIONS
 			OTHER_VERSIONS=$FG_OTHERS
 			CARD_NUMBER=$cardNumber
@@ -2142,6 +2144,8 @@ detect_card_version()
 					# the monthly releases, so users can do an experimental test if needed
 					# if [ "$B_DISTRO_FLAG" == 'true' -a "$B_TESTING_1" != 'true' ]
 					LEGACY_LEVEL=100
+					DRIVER_DEFAULT=$( assign_standard_or_beta_driver 'default' 'driver' )
+					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'default' 'set-exists' )
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
 						B_USE_DISTRO_DRIVER='true'
 					fi
@@ -2168,67 +2172,77 @@ assign_standard_or_beta_driver()
 	local betaDriver='' stableDriver='' liveBetas=''
 	local betaCurrent='' beta304='' beta173='' beta96='' beta71=''
 	
-	# only run this the first time it's called
-	if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
-		liveBetas=$( get_live_nvidia_betas )
-		betaCurrent=$( cut -d ':' -f 1 <<< "$liveBetas" )
-		beta304=$( cut -d ':' -f 2 <<< "$liveBetas" )
-		beta173=$( cut -d ':' -f 3 <<< "$liveBetas" )
-		beta96=$( cut -d ':' -f 4 <<< "$liveBetas" )
-		beta71=$( cut -d ':' -f 5 <<< "$liveBetas" )
-		## assign live defaults if required
-		if [ -n "$betaCurrent" ];then
-			if [ -z "$NV_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $NV_DEFAULT_BETA )" -eq 0 ];then
-				NV_DEFAULT_BETA=$betaCurrent
-				NV_TESTING="$NV_TESTING:$betaCurrent"
+	case $CARD in
+		$NVIDIA)
+			# only run this the first time it's called
+			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
+				liveBetas=$( get_live_nvidia_betas )
+				betaCurrent=$( cut -d ':' -f 1 <<< "$liveBetas" )
+				beta304=$( cut -d ':' -f 2 <<< "$liveBetas" )
+				beta173=$( cut -d ':' -f 3 <<< "$liveBetas" )
+				beta96=$( cut -d ':' -f 4 <<< "$liveBetas" )
+				beta71=$( cut -d ':' -f 5 <<< "$liveBetas" )
+				## assign live defaults if required
+				if [ -n "$betaCurrent" ];then
+					if [ -z "$NV_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $NV_DEFAULT_BETA )" -eq 0 ];then
+						NV_DEFAULT_BETA=$betaCurrent
+						NV_BETA="$NV_BETA:$betaCurrent"
+					fi
+				fi
+				if [ -n "$beta304" ];then
+					if [ -z "$NV_LEGACY_BETA_4" -o "$( compare_numbers $beta304 $NV_LEGACY_BETA_4 )" -eq 0 ];then
+						NV_LEGACY_BETA_4=$beta304
+						NV_BETA="$NV_BETA:$beta304"
+					fi
+				fi
+				if [ -n "$beta173" ];then
+					if [ -z "$NV_LEGACY_BETA_3" -o "$( compare_numbers $beta173 $NV_LEGACY_BETA_3 )" -eq 0 ];then
+						NV_LEGACY_BETA_3=$beta173
+						NV_BETA="$NV_BETA:$beta173"
+					fi
+				fi
+				if [ -n "$beta96" ];then
+					if [ -z "$NV_LEGACY_BETA_2" -o "$( compare_numbers $beta96 $NV_LEGACY_BETA_2 )" -eq 0 ];then
+						NV_LEGACY_BETA_2=$beta96
+						NV_BETA="$NV_BETA:$beta96"
+					fi
+				fi
+				if [ -n "$beta71" ];then
+					if [ -z "$NV_LEGACY_BETA_1" -o "$( compare_numbers $beta71 $NV_LEGACY_BETA_1 )" -eq 0 ];then
+						NV_LEGACY_BETA_1=$beta71
+						NV_BETA="$NV_BETA:$beta71"
+					fi
+				fi
 			fi
-		fi
-		if [ -n "$beta304" ];then
-			if [ -z "$NV_LEGACY_BETA_4" -o "$( compare_numbers $beta304 $NV_LEGACY_BETA_4 )" -eq 0 ];then
-				NV_LEGACY_BETA_4=$beta304
-				NV_TESTING="$NV_TESTING:$beta304"
-			fi
-		fi
-		if [ -n "$beta173" ];then
-			if [ -z "$NV_LEGACY_BETA_3" -o "$( compare_numbers $beta173 $NV_LEGACY_BETA_3 )" -eq 0 ];then
-				NV_LEGACY_BETA_3=$beta173
-				NV_TESTING="$NV_TESTING:$beta173"
-			fi
-		fi
-		if [ -n "$beta96" ];then
-			if [ -z "$NV_LEGACY_BETA_2" -o "$( compare_numbers $beta96 $NV_LEGACY_BETA_2 )" -eq 0 ];then
-				NV_LEGACY_BETA_2=$beta96
-				NV_TESTING="$NV_TESTING:$beta96"
-			fi
-		fi
-		if [ -n "$beta71" ];then
-			if [ -z "$NV_LEGACY_BETA_1" -o "$( compare_numbers $beta71 $NV_LEGACY_BETA_1 )" -eq 0 ];then
-				NV_LEGACY_BETA_1=$beta71
-				NV_TESTING="$NV_TESTING:$beta71"
-			fi
-		fi
-	fi
 
-	case $1 in
-		default)
-			betaDriver=$NV_DEFAULT_BETA
-			stableDriver=$NV_DEFAULT
+			case $1 in
+				default)
+					betaDriver=$NV_DEFAULT_BETA
+					stableDriver=$NV_DEFAULT
+					;;
+				legacy-1)
+					betaDriver=$NV_LEGACY_BETA_1
+					stableDriver=$NV_LEGACY_1
+					;;
+				legacy-2)
+					betaDriver=$NV_LEGACY_BETA_2
+					stableDriver=$NV_LEGACY_2
+					;;
+				legacy-3)
+					betaDriver=$NV_LEGACY_BETA_3
+					stableDriver=$NV_LEGACY_3
+					;;
+				legacy-4)
+					betaDriver=$NV_LEGACY_BETA_4
+					stableDriver=$NV_LEGACY_4
+					;;
+			esac
 			;;
-		legacy-1)
-			betaDriver=$NV_LEGACY_BETA_1
-			stableDriver=$NV_LEGACY_1
-			;;
-		legacy-2)
-			betaDriver=$NV_LEGACY_BETA_2
-			stableDriver=$NV_LEGACY_2
-			;;
-		legacy-3)
-			betaDriver=$NV_LEGACY_BETA_3
-			stableDriver=$NV_LEGACY_3
-			;;
-		legacy-4)
-			betaDriver=$NV_LEGACY_BETA_4
-			stableDriver=$NV_LEGACY_4
+		$FGLRX)
+			if [ -n "$FG_DEFAULT_BETA" ];then
+				betaDriver=$FG_DEFAULT_BETA
+				stableDriver=$FG_DEFAULT
+			fi
 			;;
 	esac
 
@@ -4707,7 +4721,7 @@ check_supported_driver()
 {
 	eval $LOGUS
 	local isGood='' pattern='[0-9]{4}'
-	local drivers="$DRIVER_DEFAULT:$VERSIONS:$DRIVER_TESTING:$OTHER_VERSIONS:$DRIVER_QUAD"
+	local drivers="$DRIVER_DEFAULT:$VERSIONS:$DRIVER_BETA:$OTHER_VERSIONS:$DRIVER_QUAD"
 
 	if [ -n "$DRIVER_OVERRIDE" ];then
 		isGood=$( echo $drivers | grep "$DRIVER_OVERRIDE" )
@@ -4778,15 +4792,15 @@ set_driver_install_version()
 	# this is only true if use beta flag true and beta driver exists
 	if [ "$B_USE_BETA" == 'true' ];then
 		case $CARD in
-			$NVIDIA)
+			$NVIDIA|$FGLRX)
 				if [ "$B_BETA_EXISTS" == 'true' ];then
-					betaDriverText="\n${M}This is the latest ${C}Nvidia Beta driver${M} for your card type.${N}\n"
+					betaDriverText="\n${M}This is the latest ${C}$CARD Beta driver${M} for your card type.${N}\n"
 				else
-					betaDriverText="\n${M}There is ${C}no current beta driver${M} for your ${C}nVidia${M} card type.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
+					betaDriverText="\n${M}There is ${C}no current beta driver${M} for your ${C}$CARD${M} card type.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
 				fi
 				;;
-			$FGLRX)
-				betaDriverText="\n${M}There is no ${C}beta fglrx driver${M} for your ${C}ATI${M} card.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
+			*)
+				betaDriverText="\n${M}There is no ${C}beta driver${M} for your ${C}$CARD${M} card.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
 				;;
 		esac
 	fi
@@ -4863,7 +4877,7 @@ misc_fixes()
 set_download_info()
 {
 	eval $LOGPS
-	local packageName='' downloadUrl='' response='' moduleTest=0
+	local packageName='' downloadUrl='' response='' moduleTest=0 fgBetaPost=''
 	# http://us.download.nvidia.com/XFree86/Linux-x86/275.19/NVIDIA-Linux-x86-275.19.run
 	case $CARD in
 		$NVIDIA)
@@ -4874,9 +4888,13 @@ set_download_info()
 		$FGLRX)
 			# set driver package name
 			# DRIVER_FILE="ati-driver-installer-$DRIVER_DEFAULT-$CPU"
-			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_DEFAULT-x86.x86_64"
-			# set download path
-			downloadUrl='http://www2.ati.com/drivers/linux/'
+			if [ "$B_USE_BETA" == 'true' ];then
+				fgBetaPost='beta-'
+				downloadUrl='http://www2.ati.com/drivers/beta/'
+			else
+				downloadUrl='http://www2.ati.com/drivers/linux/'
+			fi
+			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_DEFAULT-${fgBetaPost}x86.x86_64"
 			;;
 	esac
 
@@ -7230,7 +7248,7 @@ show_options()
 	local fgDefault=$FG_DEFAULT
 	local fgVersions=$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
 	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
-	local fgTesting='' nvTesting='' testingText='' fgDebianSid=''
+	local fgBeta='' nvBeta='' betaText='' fgDebianSid=''
 	local counter=0 driverCount=0 bSkipOutput=''
 	driverCount=$( wc -w <<< $nativeVersions )
 
@@ -7240,14 +7258,14 @@ show_options()
 		fgDebianSid='echo -e "fglrx:  default: '$fgDefault'		supported-drivers: '$fgVersions'"'
 	fi
 
-	if [ -n "$NV_TESTING" -a "$NV_TESTING" != "$NV_DEFAULT" ];then
-		nvTesting='echo -e "nvidia: '$( echo $NV_TESTING | tr ':' ' ' | sed 's/[[:space:]][[:space:]]/ /g' )'"'
+	if [ -n "$NV_BETA" -a "$NV_BETA" != "$NV_DEFAULT" ];then
+		nvBeta='echo -e "nvidia: '$( echo $NV_BETA | tr ':' ' ' | sed 's/[[:space:]][[:space:]]/ /g' )'"'
 	fi
-	if [ -n "$FG_TESTING" -a "$FG_TESTING" != "$FG_DEFAULT" ];then
-		fgTesting='echo -e "fgrlx:\t'$FG_TESTING'"'
+	if [ -n "$FG_DEFAULT_BETA" -a "$FG_DEFAULT_BETA" != "$FG_DEFAULT" ];then
+		fgBeta='echo -e "fgrlx:\t'$FG_DEFAULT_BETA'"'
 	fi
-	if [ -n "$fgTesting" -o -n "$nvTesting" ];then
-		testingText='echo "The following drivers are available for testing purposes:"'
+	if [ -n "$fgBeta" -o -n "$nvBeta" ];then
+		betaText='echo "The following beta drivers are available:"'
 	fi
 	if [ -n "$NV_QUAD" -a "$NV_QUAD" != "$NV_DEFAULT" ];then
 		nvQuadText='echo -e "Nvidia Quadroplex driver (automatically selected if you have a Quad card): '$nvQuad'"'
@@ -7313,15 +7331,15 @@ show_options()
 		esac
 	done
 	eval $nvQuadText
-	eval $testingText
-	eval $nvTesting
-	eval $fgTesting
+	eval $betaText
+	eval $nvBeta
+	eval $fgBeta
 	echo $PLINE
 	echo "Script Options:"
 	echo "-A Run the install non-interactively. Will not restart x at end."
 	echo "-b Enable tripleBuffer (nvidia only). triplebuffer can reduce 3d performance on cards"
 	echo "   with low graphics memory (64 mB or less). Default is disabled/off."
-	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta driver (nVidia cards only)."
+	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta driver (nVidia/AMD cards only)."
 	echo "   If no beta driver is available, the current stable driver for your card type is used."
 	echo "   (Also checks nvidia for live latest beta information, and replaces script defaults with newer if present)"
 	echo "-c Force use of Xorg composite mode. Beryl/Compiz requires this for 3d. Old nvidia/ATI/Intel "
