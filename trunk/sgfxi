@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.01
-####  Date: November 6 2012
+####  version: 4.20.02
+####  Date: November 8 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -85,7 +85,7 @@ SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads"
 SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 
 # script global data
-NON_DEBIAN_PATTERN='(deb-ats|deb-mep|deb-mm|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|siduction|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
+NON_DEBIAN_PATTERN='(deb-ats|deb-mep|deb-mm|deb-multimedia|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|siduction|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
 
 APT_TYPE='apt-get'
 CARD='' # card type: fglrx or nvidia
