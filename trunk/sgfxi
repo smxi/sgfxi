@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.02
-####  Date: November 8 2012
+####  version: 4.20.03
+####  Date: November 13 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # other stuff: nothing now. Using same driver for legacy 4 and current until 304 branch is not current stable
-NV_VERSIONS='304.64:304.64:173.14.36:96.43.23:71.86.15'
+NV_VERSIONS='310.19:304.64:173.14.36:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -226,7 +226,7 @@ NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='310.14::::'
+NV_VERSIONS_BETA='::::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # ge4xx cards
@@ -237,7 +237,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA::"
-# stable primary: 304.60 304.64
+# stable primary: 304.60 304.64 310.19
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
@@ -258,7 +258,7 @@ NV_BETA="$NV_VERSIONS_BETA::"
 #                  173.14.22 173.14.25 173.14.28 173.14.30 173.14.31 173.14.35 173.14.36
 # stabel legacy 4: 304 series
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='304.60:304.51:304.43:304.37:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='304.64:304.60:304.51:304.43:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -1191,6 +1191,20 @@ driver_support_tests()
 												;;
 										esac
 										;;
+									7)
+										case $DRIVER_DEFAULT in
+											# note that patches are needed for rc 3.3 kernels, we'll wait
+											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
+											310.*|304.6*|173.14.[3][6-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
 								esac
 								;;
 						esac # end KERNEL_BASE
@@ -1488,12 +1502,12 @@ set_test_data()
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
 # 		CARD_DATA=1002:9442 # fake ati hd2000-hd4xxx
-		CARD_DATA=1002:9805 # fake ati hd 6250 card
+# 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 # 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
-# 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
+		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
