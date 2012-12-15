@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.05
-####  Date: December 14 2012
+####  version: 4.20.06
+####  Date: December 15 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -336,6 +336,7 @@ EAR='/etc/arch-release'
 EDV='/etc/debian_version'
 EFR='/etc/fedora-release'
 ELR='/etc/lsb-release'
+ELRC='/etc/lsb-release-crunchbang'
 GRUB1='/boot/grub/menu.lst'
 GRUB1_FED='/boot/grub/grub.conf'
 GRUB2='/boot/grub/grub.cfg'
@@ -2794,7 +2795,7 @@ check_connection()
 ## have to be root or out of x to get basic failure information
 check_set_distro()
 {
-	local lsbData='' workingId=''
+	local lsbOsrData='' workingId=''
 	local isStable='' isTesting='' isUnstable=''
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 	
@@ -2851,12 +2852,17 @@ check_set_distro()
 		error_handler 252
 	fi
 	
-	# ideally all distros would use lsb-release, but sadly they don't. 
+	# ideally all distros would use lsb/os-release, but sadly they don't. 
 	if [ -s $ELR ];then
-		lsbData="$( cat $ELR )"
-		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
-		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
-		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+		lsbOsrData="$( cat $ELR )"
+		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+	elif [ -s $EOR ];then
+		lsbOsrData="$( cat $EOR | sed 's/\"//g )"
+		# DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+		DISTRIB_ID=$( grep '^ID' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' | tr '/' '-' )
+		# DISTRIB_RELEASE=$( grep '^PRETTY_NAME' <<< "$lsbOsrData" | awk '{print $NF}' | tr '[A-Z]' '[a-z]' | tr '/' '-'  )
 	fi
 	
 	case $workingId in
@@ -2879,16 +2885,19 @@ check_set_distro()
 			fi
 
 			# set system type. This test will never be perfect, but it's a good approximation
-			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
+			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze"-o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
 				if [ -n "$isEtch" ];then
 					FG_DISTRIB_CODENAME='etch'
 					SYSTEM_CODENAME='etch'
 				elif [ -n "$isLenny" ];then
 					FG_DISTRIB_CODENAME='lenny' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='lenny'
+				elif [ -n "$isSqueeze" ];then
+					FG_DISTRIB_CODENAME='squeeze' # note: 'stable' breaks the installer
+					SYSTEM_CODENAME='squeeze'
 				else
-					FG_DISTRIB_CODENAME='squeeze'
-					SYSTEM_CODENAME='stable'
+					FG_DISTRIB_CODENAME='wheezy'
+					SYSTEM_CODENAME='wheezy'
 				fi
 			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isWheezy" -o "$isTesting" -gt 0 ];then
 				FG_DISTRIB_CODENAME='sid'
@@ -2899,7 +2908,8 @@ check_set_distro()
 			fi
 			X_NAME='X'
 			# these will be used for various advanced tests in some components
-			if [ -z "$DISTRIB_ID" ];then
+			# commented out because debian  now uses os-release by default
+# 			if [ -z "$DISTRIB_ID" ];then
 				if [ -f /etc/siduction-version ];then
 					DISTRIB_ID='siduction'
 				elif [ -f /etc/aptosid-version ];then
@@ -2908,8 +2918,10 @@ check_set_distro()
 					DISTRIB_ID='sidux'
 				elif [ -f /etc/antix-version ];then
 					DISTRIB_ID='antix'
+				elif [ -f /etc/lsb-release-crunchbang ];then
+					DISTRIB_ID='crunchbang'
 				fi
-			fi
+# 			fi
 			;;
 		fedora)
 			APT_TYPE='yum'
@@ -2961,6 +2973,9 @@ check_set_distro()
 			SYSTEM_BASE='ubuntu'
 			SYSTEM_CODENAME=$DISTRIB_CODENAME
 			X_NAME='X'
+			if [ -f /etc/lsb-release-crunchbang ];then
+				DISTRIB_ID='crunchbang-ubuntu'
+			fi
 			;;
 		*)
 			## basic system requirements for this script to run, first so user doesn't
