@@ -2858,10 +2858,10 @@ check_set_distro()
 		DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
 		DISTRIB_ID=$( grep 'DISTRIB_ID' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
 		DISTRIB_RELEASE=$( grep 'DISTRIB_RELEASE' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
-	elif [ -s $EOR ];then
-		lsbOsrData="$( cat $EOR | sed 's/\"//g )"
-		# DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
-		DISTRIB_ID=$( grep '^ID' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' | tr '/' '-' )
+# 	elif [ -s $EOR ];then
+# 		lsbOsrData="$( cat $EOR )"
+# 		# DISTRIB_CODENAME=$( grep 'DISTRIB_CODENAME' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' )
+# 		DISTRIB_ID=$( grep '^ID' <<< "$lsbOsrData" | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' | tr '/' '-' )
 		# DISTRIB_RELEASE=$( grep '^PRETTY_NAME' <<< "$lsbOsrData" | awk '{print $NF}' | tr '[A-Z]' '[a-z]' | tr '/' '-'  )
 	fi
 	
