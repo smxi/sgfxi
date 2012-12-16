@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.07
-####  Date: December 15 2012
+####  version: 4.20.08
+####  Date: December 16 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -1246,67 +1246,6 @@ run_driver_patches()
 			case $KERNEL_BASE in
 				2.6)
 					case $KERNEL_MATH in
-						25)
-							apply_module_patch pre
-							case $DRIVER_DEFAULT in
-								169.12)
-									patchFile='NVIDIA_kernel-169.12-2286310.diff'
-									apply_patch_file $patchFile
-									;;
-								# patch url: http://www.nvnews.net/vbulletin/showthread.php?t=112452
-								100.14.19)
-									# patch source url:
-									# http://www.nvnews.net/vbulletin/showthread.php?t=112452&highlight=2.6.26
-									# patch author: NiLuJe
-									if [ "$BITS" == '32' ];then
-										patchFile='NVIDIA-x86-100.14.19-kernel-2.6.25-compat.diff'
-									else
-										patchFile='NVIDIA-x86_64-100.14.19-kernel-2.6.25-compat.diff'
-									fi
-									apply_patch_file $patchFile
-									;;
-								96.43.05)
-									patchFile='NVIDIA_kernel-96.43.05-2290218.diff'
-									apply_patch_file $patchFile
-									;;
-							esac
-							;;
-						26)
-							apply_module_patch pre
-		
-							case $DRIVER_DEFAULT in
-								173.14.05)
-									patchFile='NVIDIA_kernel-173.14.05-2419292.diff'
-									apply_patch_file $patchFile
-									;;
-								100.14.19)
-									# patch source url:
-									# http://www.nvnews.net/vbulletin/showthread.php?t=112452&highlight=2.6.26
-									# patch author: NiLuJe, MamiyaOtaru, zander (from nvidia)
-									# patchFile='NVIDIA-100.14.19-kernel-2.6.25+26-compat.diff'
-									patchFile='NVIDIA-100.14.19-for-2.6.26.patch'
-									apply_patch_file $patchFile
-									;;
-							esac
-							;;
-						27)
-							apply_module_patch pre
-							case $DRIVER_DEFAULT in
-								177.13)
-									# patch author: zander, nvidia; patch src:
-									# http://www.nvnews.net/vbulletin/showthread.php?t=117209
-									# patch url:
-									# http://www.nvnews.net/vbulletin/attachment.php?attachmentid=32559&d=1218212371
-									patchFile='NVIDIA_kernel-177.13-2627763.diff'
-									apply_patch_file $patchFile
-									;;
-								# patch url: http://www.nvnews.net/vbulletin/showthread.php?t=112452
-								100.14.19)
-									patchFile='NVIDIA-100.14.19-kernel-2.6.27-compat.patch'
-									apply_patch_file $patchFile
-									;;
-							esac
-							;;
 						28)
 							case $DRIVER_DEFAULT in
 								177.80)
@@ -1368,10 +1307,15 @@ run_driver_patches()
 				3)
 					case $KERNEL_MATH in
 						7)
-							apply_module_patch pre
 							case $DRIVER_DEFAULT in
 								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
+								313.09|310.*)
+									run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA_304_60-64_3.7.patch'
+									apply_patch_file $patchFile
+									;;
 								304.6[04])
+									run_prepatch_fixes '3.7-path-fix'
 									patchFile='NVIDIA_304_60-64_3.7.patch'
 									apply_patch_file $patchFile
 									;;
@@ -1496,7 +1440,6 @@ run_driver_patches()
 				3)
 					case $KERNEL_MATH in
 						7)
-# 							apply_module_patch pre
 # 							case $DRIVER_DEFAULT in
 # 								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
 # 								304.6[04])
@@ -1515,6 +1458,69 @@ run_driver_patches()
 	# this is for dev testing of patches or fixes
 	if [ "$B_TESTING_4" == 'true' ];then
 		: # doing nothing for now
+	fi
+	eval $LOGPE
+}
+
+# arg: $1 - which fix to run
+run_prepatch_fixes()
+{
+	eval $LOGPS
+	local path1='' path2='' file1='' file2='' outcome=''
+
+	# assume that distro drivers have the fixes done
+	if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
+		case $1 in
+			3.7-path-fix)
+				file1='version.h'
+				path1="/usr/src/linux-headers-$KERNEL_FULL/include/generated/uapi/linux/$file1"
+				path2= "/usr/src/linux-headers-$KERNEL_FULL/include/linux/"
+				echo "${S}Running pre-install patch for kernel header ${C}uapi${S} path tweak...${N}"
+				if [ -e $path1 ];then
+					if [ -d $path2 ];then
+						if [ ! -e $path2$file1 ];then
+							ln -s $path1 $path2$file1
+							outcome="${S}Link created here: ${C}$path2$file1${N}"
+						else
+							outcome="${E}Target file/directory already exists: ${C}$path2$file1${E} not found. Unable to patch for uapi!!${N}"
+						fi
+					else
+						outcome="${E}Target directory ${C}$path2${E} not found. Unable to patch for ${C}uapi${E}!!${N}"
+					fi
+				else
+					outcome="${E}Path ${C}uapi${E} not found. Driver install may fail!!${N}"
+				fi
+				log_function_data "$outcome"
+				echo "$outcome"
+				;;
+		esac
+	fi
+	eval $LOGPE
+}
+
+# not used currently
+# arg: $1 - pre/post
+run_patch_fixes()
+{
+	eval $LOGPS
+	local lmkv="/lib/modules/$KERNEL_FULL"
+
+	# the debian sid nvidia drivers are now working fine with xen enabled sid kernels
+	if [ "$B_USE_DISTRO_DRIVER" != 'true' ] && [ -d "$lmkv" -a "$B_IS_XEN" == 'true' ];then
+		# patch source: http://blog.creonfx.com/linux/how-to-install-nvidia-driver-on-2625-2-debian-kernel-with-xen
+		cd $lmkv
+		case $1 in
+			pre)
+				echo "${S}Running pre-install module patches (this might take a while)...${N}"
+				grep 'CONFIG_XEN' . -Rl 2> /dev/null | xargs -i sed -i -e 's/CONFIG_XEN/CONFIG_LUPO/g' {}
+				export IGNORE_XEN_PRESENCE=1
+				;;
+			post)
+				echo "${S}Reverting pre-install module patches (this might take a while)...${N}"
+				grep 'CONFIG_LUPO' . -Rl 2> /dev/null | xargs -i sed -i -e 's/CONFIG_LUPO/CONFIG_XEN/g' {}
+				;;
+		esac
+		cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
 	fi
 	eval $LOGPE
 }
@@ -5447,8 +5453,6 @@ run_driver_installer()
 # 				installerArgs="$installerArgs --kernel-source-path=$KERNEL_HEADER_DIRECT"
 # 			fi
 			./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
-			# reverting the patched stuff before anything else happens
-			apply_module_patch post
 			install_libvdpau
 			# only do a final removal of nouveau if the install succeeded
 # 			remove_module 'nouveau' 
@@ -5902,33 +5906,6 @@ clean_dkms()
 			log_function_data "fglrx dmakms entry found and commented out"
 			sed -i 's/fglrx-kernel-source/#fglrx-kernel-source/' $eddma
 		fi
-	fi
-	eval $LOGPE
-}
-
-# arg: $1 - pre/post Undoing the patches in case the xen stuff is needed later
-# as of 2.6.25-2, debian kernels are compiled with xen, which breaks nvidia currently
-apply_module_patch()
-{
-	eval $LOGPS
-	local lmkv="/lib/modules/$KERNEL_FULL"
-
-	# the debian sid nvidia drivers are now working fine with xen enabled sid kernels
-	if [ "$B_USE_DISTRO_DRIVER" != 'true' ] && [ -d "$lmkv" -a "$B_IS_XEN" == 'true' ];then
-		# patch source: http://blog.creonfx.com/linux/how-to-install-nvidia-driver-on-2625-2-debian-kernel-with-xen
-		cd $lmkv
-		case $1 in
-			pre)
-				echo "${S}Running pre-install module patches (this might take a while)...${N}"
-				grep 'CONFIG_XEN' . -Rl 2> /dev/null | xargs -i sed -i -e 's/CONFIG_XEN/CONFIG_LUPO/g' {}
-				export IGNORE_XEN_PRESENCE=1
-				;;
-			post)
-				echo "${S}Reverting pre-install module patches (this might take a while)...${N}"
-				grep 'CONFIG_LUPO' . -Rl 2> /dev/null | xargs -i sed -i -e 's/CONFIG_LUPO/CONFIG_XEN/g' {}
-				;;
-		esac
-		cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
 	fi
 	eval $LOGPE
 }
