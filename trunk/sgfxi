@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.08
+####  version: 4.20.10
 ####  Date: December 16 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
@@ -1309,15 +1309,15 @@ run_driver_patches()
 						7)
 							case $DRIVER_DEFAULT in
 								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
-								313.09|310.*)
-									run_prepatch_fixes '3.7-path-fix'
-									patchFile='NVIDIA-uapi-310-313_kernel-3.7.patch'
-									apply_patch_file $patchFile
-									;;
 								304.6[04])
 									run_prepatch_fixes '3.7-path-fix'
 									patchFile='NVIDIA_304_60-64_3.7.patch'
 									apply_patch_file $patchFile
+									;;
+								313.09|310.*)
+									run_prepatch_fixes '3.7-path-fix'
+									# patchFile='NVIDIA-uapi-310-313_kernel-3.7.patch'
+									# apply_patch_file $patchFile
 									;;
 							esac
 							;;
@@ -1482,13 +1482,13 @@ run_prepatch_fixes()
 							ln -s $path1 $path2$file1
 							outcome="${S}Link created here: ${C}$path2$file1${N}"
 						else
-							outcome="${E}Target file/directory already exists: ${C}$path2$file1${E} not found. Unable to patch for uapi!!${N}"
+							outcome="$S}Target file exists: ${C}$path2$file1${S} for uapi!!${N}"
 						fi
 					else
 						outcome="${E}Target directory ${C}$path2${E} not found. Unable to patch for ${C}uapi${E}!!${N}"
 					fi
 				else
-					outcome="${E}Path ${C}uapi${E} not found. Driver install may fail!!${N}"
+					outcome="${E$path1${E} not found.\not found. Driver install may fail!!${N}"
 				fi
 				log_function_data "$outcome"
 				echo "$outcome"
@@ -1542,7 +1542,7 @@ set_test_data()
 # 		# note: devs: double check this output to make sure it's your user name
 		username=$( getent passwd 1000|cut -d \: -f1 )
 		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
-		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev"
+		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/# INSTALL_DIRECTORY='' # for stuff like patches etcxi/dev"
 		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/"
 # 		PATCH_DOWNLOAD='http://smxi.org/sg/'
 		cd $SCRIPT_HOME
@@ -1553,7 +1553,7 @@ set_test_data()
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
@@ -2806,7 +2806,7 @@ check_set_distro()
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 	
 	# make sure that it's a debian/arch/ubuntu based system
-	# note that mint/ubuntu have file /etc/debian_version so we nee careful hreful here
+	# note that mint/ubuntu have file /etc/debian_ so we need to be careful hreful here
 	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
 		workingId='ubuntu'
 	# mint test, note that for new lmde we are treating it as pure debian
@@ -5973,7 +5973,7 @@ install_distro_drivers()
 					# start the install
 					if [ "$LEGACY_LEVEL" -ne 0 ];then
 						if [ "$B_TESTING_6" != 'true' ];then
-							echo "${S}Installing ${C}$DISTRO_NVIDIA${S}ents...${Ns...${N}"
+							echo "${S}Installing ${C}$NVIDIA${S} components...${Ns...${N}"
 							install_package 'nvidia-kernel-common'
 							install_package 'nvidia-settings'
 							install_package "$nvidiaSource"
