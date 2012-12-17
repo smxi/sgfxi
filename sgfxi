@@ -1311,13 +1311,13 @@ run_driver_patches()
 								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
 								313.09|310.*)
 									run_prepatch_fixes '3.7-path-fix'
-									patchFile='NVIDIA_304_60-64_3.7.patch'
+									patchFile='NVIDIA-uapi-310-313_kernel-3.7.patch'
 									apply_patch_file $patchFile
 									;;
 								304.6[04])
 									run_prepatch_fixes '3.7-path-fix'
-# 									patchFile='NVIDIA_304_60-64_3.7.patch'
-# 									apply_patch_file $patchFile
+									patchFile='NVIDIA_304_60-64_3.7.patch'
+									apply_patch_file $patchFile
 									;;
 							esac
 							;;
@@ -2806,7 +2806,7 @@ check_set_distro()
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 	
 	# make sure that it's a debian/arch/ubuntu based system
-	# note that mint/ubuntu have file /etc/debian_version so we need to bul hreful here
+	# note that mint/ubuntu have file /etc/debian_version so we nee careful hreful here
 	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
 		workingId='ubuntu'
 	# mint test, note that for new lmde we are treating it as pure debian
@@ -5973,7 +5973,7 @@ install_distro_drivers()
 					# start the install
 					if [ "$LEGACY_LEVEL" -ne 0 ];then
 						if [ "$B_TESTING_6" != 'true' ];then
-							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} compo.${Ns...${N}"
+							echo "${S}Installing ${C}$DISTRO_NVIDIA${S}ents...${Ns...${N}"
 							install_package 'nvidia-kernel-common'
 							install_package 'nvidia-settings'
 							install_package "$nvidiaSource"
