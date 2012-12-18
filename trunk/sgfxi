@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.10
-####  Date: December 16 2012
+####  version: 4.20.11
+####  Date: December 17 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -3951,6 +3951,8 @@ create_log()
 	echo "DISTRIB_CODENAME: $DISTRIB_CODENAME" >> $LOG_FILE
 	echo "DISTRIB_ID: $DISTRIB_ID" >> $LOG_FILE
 	echo "DISTRIB_RELEASE: $DISTRIB_RELEASE" >> $LOG_FILE
+SIS: $SIS" >> $LOG_FILE 
+	echo "BITS: $BITS" ELEASE" >> $LOG_FILE
 	echo "FG_DISTRIB_CODENAME: $FG_DISTRIB_CODENAME" >> $LOG_FILE
 	echo "FG_DISTRIB_ID: $FG_DISTRIB_ID" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
@@ -5972,8 +5974,8 @@ install_distro_drivers()
 					esac
 					# start the install
 					if [ "$LEGACY_LEVEL" -ne 0 ];then
-						if [ "$B_TESTING_6" != 'true' ];then
-							echo "${S}Installing ${C}$NVIDIA${S} components...${Ns...${N}"
+						if [STING_6" != 'true' ];then
+							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${Ns...${N}"
 							install_package 'nvidia-kernel-common'
 							install_package 'nvidia-settings'
 							install_package "$nvidiaSource"
