@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.11
-####  Date: December 17 2012
+####  version: 4.20.12
+####  Date: December 19 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -5262,7 +5262,7 @@ preinstall_cleanup()
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
 	
-	oldNvidia=$( list_installed_packages 'nvidia' "(libgl1-nvidia-glx-ia32|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
+	oldNvidia=$( list_installed_packages 'nvidiakwinnvidiahack|dia' "(libgl1-nvidia-glx-ia32|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
 		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)' )
@@ -5646,7 +5646,7 @@ test_module_build_ok()
 	fi
 	if [ "$returnValue" -eq 0 ];then
 		echo -n "  ${S}Checking for distribution ${C}nVidia${S} driver packages.... ${N}"
-		nvidiaPackages=$( list_installed_packages 'nvidia' '(libgl1-nvidia-glx-ia32|modalias|libvdpau)' )
+		nvidiaPackages=$( list_installed_packages 'nvidiakwinnvidiahack|dia' '(libgl1-nvidia-glx-ia32|modalias|libvdpau)' )
 		if [ -n "$nvidiaPackages" ];then
 			echo "${W}PRESENT${N}"
 			returnValue=2
@@ -5973,8 +5973,8 @@ install_distro_drivers()
 							;;
 					esac
 					# start the install
-					if [ "$LEGACY_LEVEL" -ne 0 ];then
-						if [STING_6" != 'true' ];then
+					if [ "$LEVEL" -ne 0 ];then
+						if [ "$B_TESTING_6" != 'true' ];then
 							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${Ns...${N}"
 							install_package 'nvidia-kernel-common'
 							install_package 'nvidia-settings'
