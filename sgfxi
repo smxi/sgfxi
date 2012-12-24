@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.12
-####  Date: December 19 2012
+####  version: 4.20.13
+####  Date: December 24 2012
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2012
 ####  Code contributions copyright: Latino 2008
@@ -2937,7 +2937,10 @@ check_set_distro()
 			FG_DISTRIB_CODENAME=''
 			SYSTEM_BASE='fedora'
 			if [ -f "$EFR" ];then
-				DISTRIB_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*\((.*)\)/\1/i' )
+				DISTRIB_CODENAME=$'^DISTRIB_CODENAME' $EFR | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' | awk '{print $1}' )
+				SYSTEM_CODENAME=$DISTRIB_CODENAME
+# 				DISTRIB_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*\((.*)\)/\1/i' )
+# 1/i' )
 				SYSTEM_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*[[:space:]]([0-9]+)[[:space:]]\(.*\)/\1/i' )
 			fi
 			X_NAME='X'
@@ -5966,14 +5969,14 @@ install_distro_drivers()
 							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_3-source"
 							;;
 						4)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_4"
-							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_4-source"
+							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGAurce"
 							;;
 						*)	nvidiaGlx='nvidia-glx'
 							nvidiaSource='nvidia-kernel-source'
 							;;
 					esac
 					# start the install
-					if [ "$LEVEL" -ne 0 ];then
+					if [ "$LEGACY_LEVEL" -ne 0 ];then
 						if [ "$B_TESTING_6" != 'true' ];then
 							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${Ns...${N}"
 							install_package 'nvidia-kernel-common'
