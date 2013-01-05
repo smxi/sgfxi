@@ -7412,11 +7412,12 @@ show_options()
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (default); -j 2 (pale); -j 3 (earthy); -j 4 (dark - for light console background)"
 	echo "-k Build kernel module either for current kernel or another kernel (with -K <kernel )version"
-	echo "   Can be run in X. Simply builds the kernel module for that kernel, and does not remove"
-	echo "   any other modules or drivers, or update $EXXC. Requires previous install"
-	echo "   with sgfxi of the same driver to work. This feature only supports nVidia drivers."
-	ecThis (-k) is the default script behavior, so there should never be a reason to run sgfxi with"
-	echo "   -k. The -f option overrides this default behavior and forces a full reinstall of the driverdrivers."
+	echo "   Can be r (if not in X and installing to current kernel). Simply builds the kernel"
+	echo "   module for that kernel, and does not remove any other modules or drivers, or update $EXXC."
+	echo "   Requires previous install with $SCRIPT_NAME of the same driver to work. This feature only"
+	echo "   supports nVidia drivers.  $SCRIPT_NAME defaults to building modules for kernels automatically."
+	echo "   The -f option overrides this default behavior and forces a full reinstall of the driverd "
+	echo "   -f and -k are absolutely incompatible, and must never be used together!rivers."
 	echo "   Hint: sgfxi -! 40 will install modules to all your non-running kernels automatically!"
 	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SCRIPT_NAME -K 2.6.25-2"
 	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu  only)."
@@ -7458,12 +7459,12 @@ show_options()
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
-	echo "-W Skip all wget downExpert Use Only! Only use this to reinstall a driver that "
-	echo "   has already been downloaded using $SCRIPT_NAME at least once previously. Because using"
-	echo "   this option can have unknown or unintended consequences, only use it if you are following"
-	echo "   instructions to do so. $SCRIPT_NAME always saves its driver downloads by default in all cases,"
-	echo "   so using -W will not change that behavior, but it may stop other key downloads, like patches."
-	echo "   The standard use for this is to download the driver file in X, then exit, and install it out of Xiously."
+	echo "-W Skip all wget downExpert Use Only! Only use this to (re)install a driver that has already "
+	echo "   been downloaded using $SCRIPT_NAME previously. Because using this option can have unknown or unintended"
+	echo "   consequences, only use it if you are following instructions to do so. $SCRIPT_NAME always saves its "
+	echo "   driver downloads by default in all cases, so using -W will not change that behavior , but it may stop"
+	echo "   other key downloads, like patches. The standard use for this is to download the driver file in X,"
+	echo "   then exit, and install it out of Xiously."
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
 	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if no Expert use onlyot in X."
@@ -7612,7 +7613,7 @@ get_options()
 				fi
 				;;
 			k)	B_KERNEL_MODULE_ONLY='true'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -k - building nvidia kernel module using previously installed driver\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINTBuilding nvidia kernel module using previously installed driver\n      Permits building a module for an alternate kernel while in X. driver\n"
 				START_OPTIONS=$START_OPTIONS" -k "
 				;;
 			K)	INSTALL_TO_KERNEL="$OPTARG"
@@ -7689,7 +7690,7 @@ get_options()
 				;;
 			W) B_SKIP_WGET='true'
 				START_OPTIONS=$START_OPTIONS' -W'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded a Not recommended!lready.\n"
 				;;
 			x) B_NO_XVMC='true' # because two flags are required to use nvidia xvmc, this is fine
 				START_OPTIONS=$START_OPTIONS' -x'
