@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.14
+####  version: 4.20.15
 ####  Date: January 5 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -1893,6 +1893,8 @@ error_handler()
 			;;
 		167)
 			errorData="You have used the -! 33 override option but the $errorExtra module action reports as failed\n.$SCRIPT_NAME is unable to continue in this scenario.\nPlease blacklist/unblacklist your $errorExtra manually then run $SCRIPT_NAME again."
+		66)
+			errorData="The options ($errorExtra) you used are not compatible, and create internal $SCRIPT_NAME conflicts.\nPlease correct this error and startPT_NAME again."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -2802,11 +2804,11 @@ check_connection()
 check_set_distro()
 {
 	local lsbOsrData='' workingId=''
-	local isStable='' isTesting='' isUnstable=''
+	local isStable='' isTesting=''able=''
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 	
 	# make sure that it's a debian/arch/ubuntu based system
-	# note that mint/ubuntu have file /etc/debian_ so we need to be careful hreful here
+	# note that mint/ubuntu have file /etc/debian_version so we need to be careful hreful here
 	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
 		workingId='ubuntu'
 	# mint test, note that for new lmde we are treating it as pure debian
@@ -5966,10 +5968,10 @@ install_distro_drivers()
 							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
 							;;
 						3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
-							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_3-source"
+							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_3-source"
 							;;
 						4)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_4"
-							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGAurce"
+							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_4-source"
 							;;
 						*)	nvidiaGlx='nvidia-glx'
 							nvidiaSource='nvidia-kernel-source'
@@ -7408,6 +7410,7 @@ show_options()
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
 	echo "-f Force option. Forces (re)install of your driver, bydefault module check/build/re check/build (nVidia only)."
+   Note; -f cannot be used with -k because they contradict each other! only)."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
 	echo "   -j 1 (default); -j 2 (pale); -j 3 (earthy); -j 4 (dark - for light console background)"
@@ -7416,8 +7419,7 @@ show_options()
 	echo "   module for that kernel, and does not remove any other modules or drivers, or update $EXXC."
 	echo "   Requires previous install with $SCRIPT_NAME of the same driver to work. This feature only"
 	echo "   supports nVidia drivers.  $SCRIPT_NAME defaults to building modules for kernels automatically."
-	echo "   The -f option overrides this default behavior and forces a full reinstall of the driverd "
-	echo "   -f and -k are absolutely incompatible, and must never be used together!rivers."
+	echo "   The -f option overrides this default behavior and forces a full reinstall of the driverdrivers."
 	echo "   Hint: sgfxi -! 40 will install modules to all your non-running kernels automatically!"
 	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SCRIPT_NAME -K 2.6.25-2"
 	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu  only)."
@@ -7820,10 +7822,13 @@ get_options()
 			*) show_options err
 				;;
 		esac
+if [ "$B_FORCE_OPTION" == 'true' -a "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+		error_handler 166 "-k and -f"
+	fic
 	done
 	#in case -n is used too - note: this will never be true, have to fix this one
 	if [ "$B_NATIVE_DRIVER" == "true" -a -n "$INSTALL_TO_KERNEL" ];then
-		echo "${W}WARNING: -n will uninstall binary drivers to all the kernels, not just $KERNEL_FULL${N}"
+		echo "${W}WARNING: -n will uninstall binary drivers to all the kernels, not just $KERNEL_FULL${N	N}"
 	fi
 }
 
