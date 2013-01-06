@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.15
-####  Date: January 5 2013
+####  version: 4.20.16
+####  Date: January 6 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -1208,7 +1208,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											313.*|310.*|304.6[04]|173.14.[3][6-9]|$DISTRO_NVIDIA)
+											313.*|310.*|304.6*|173.14.[3][6-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1308,6 +1308,12 @@ run_driver_patches()
 					case $KERNEL_MATH in
 						7)
 							case $DRIVER_DEFAULT in
+								# patch from kmathern: http://techpatterns.com/forums/about2234-10.html
+								173.14.36)
+									run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA_173.14.36_3.7.patch'
+									apply_patch_file $patchFile
+									;;
 								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
 								304.6[04])
 									run_prepatch_fixes '3.7-path-fix'
@@ -1552,7 +1558,7 @@ set_test_data()
 # 		CARD_DATA=1002:9442 # fake ati hd2000-hd4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
-# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
+# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
@@ -2796,15 +2802,14 @@ check_connection()
 	local ua='-U s-tools/sgfxi-data.connection-test'
 	
 	wget $ua -q -t 1 -T 2 --spider $checkUrl || result=$?
-	echo $result
-}
+	echo $r
 
-## basic system requirements for this script to run, first so user doesn't
-## have to be root or out of x to get basic failure information
+	*)
+			## basic system requirements for this script to run, first so user d## have to be root or out of x to get basic failure information
 check_set_distro()
 {
 	local lsbOsrData='' workingId=''
-	local isStable='' isTesting=''able=''
+	local isStable='' isTesting='' isUnstable=''
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 	
 	# make sure that it's a debian/arch/ubuntu based system
@@ -5963,12 +5968,12 @@ install_distro_drivers()
 							# if the two lines below don't work, comment them and uncomment the ones above
 							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
 							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
-							;;
+	;
 						2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
 							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
 							;;
 						3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
-							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_3-source"
+							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_3-source"
 							;;
 						4)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_4"
 							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_4-source"
