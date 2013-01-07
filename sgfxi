@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.16
-####  Date: January 6 2013
+####  version: 4.20.17
+####  Date: January 7 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -810,6 +810,17 @@ driver_support_tests()
 								6)
 									case $DRIVER_DEFAULT in
 										12-9|12-1[0-2]|12.*|13.*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								7)
+									case $DRIVER_DEFAULT in
+										13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -2794,7 +2805,7 @@ get_current_runlevel()
 	echo $currentRunlevel
 }
 
-# this is a quick / dirty check so sgfxi can know if a user system
+# this is a quick / dirty check so sgfxi can know if a utem
 # has a live connection or not. This is mainly for logging/debugging
 check_connection()
 {
@@ -2802,7 +2813,8 @@ check_connection()
 	local ua='-U s-tools/sgfxi-data.connection-test'
 	
 	wget $ua -q -t 1 -T 2 --spider $checkUrl || result=$?
-	echo $r
+	echo $result
+}
 
 	*)
 			## basic system requirements for this script to run, first so user d## have to be root or out of x to get basic failure information
@@ -5963,12 +5975,12 @@ install_distro_drivers()
 					;;
 				debian)
 					case $LEGACY_LEVEL in
-						1)	# nvidiaGlx='nvidia-glx-legacy'
+						1)	# nvidiaGlx='nvidiegacy'
 							# nvidiaSource='nvidia-kernel-legacy-source'
 							# if the two lines below don't work, comment them and uncomment the ones above
 							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
 							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
-	;
+							;;
 						2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
 							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
 							;;
