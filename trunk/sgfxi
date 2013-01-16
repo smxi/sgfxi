@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.17
-####  Date: January 7 2013
+####  version: 4.20.18
+####  Date: January 16 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # other stuff: nothing now. Using same driver for legacy 4 and current until 304 branch is not current stable
-NV_VERSIONS='310.19:304.64:173.14.36:96.43.23:71.86.15'
+NV_VERSIONS='313.18:304.64:173.14.36:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -237,7 +237,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA::"
-# stable primary: 304.60 304.64 310.19
+# stable primary: 304.60 304.64 310.19 313.18
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
@@ -1569,7 +1569,7 @@ set_test_data()
 # 		CARD_DATA=1002:9442 # fake ati hd2000-hd4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
-# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drers)
+# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
@@ -2805,7 +2805,7 @@ get_current_runlevel()
 	echo $currentRunlevel
 }
 
-# this is a quick / dirty check so sgfxi can know if a utem
+# this is a quick / dirty check so sgfxi can ka user system
 # has a live connection or not. This is mainly for logging/debugging
 check_connection()
 {
@@ -5975,7 +5975,7 @@ install_distro_drivers()
 					;;
 				debian)
 					case $LEGACY_LEVEL in
-						1)	# nvidiaGlx='nvidiegacy'
+						1)	# nvidiaidia-glx-legacy'
 							# nvidiaSource='nvidia-kernel-legacy-source'
 							# if the two lines below don't work, comment them and uncomment the ones above
 							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
