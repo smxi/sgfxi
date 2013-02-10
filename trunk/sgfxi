@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.22
-####  Date: February 8 2013
+####  version: 4.20.23
+####  Date: February 10 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -257,8 +257,9 @@ NV_BETA="$NV_VERSIONS_BETA::"
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
 #                  173.14.22 173.14.25 173.14.28 173.14.30 173.14.31 173.14.35 173.14.36
 # stabel legacy 4: 304.64 
+# beta: 310.14
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='310.32:304.64:304.60:304.51:304.43:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='313.09:310.32:310.19:310.14:304.64:304.60:304.51:304.43:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -2799,10 +2800,9 @@ basic_startup_tests()
 		error_handler 243
 	fi
 	
-	cleanup_update_files
-	check_script_depends
+	cleanup_update	check_script_depends
 
-	# onlyt current systems, xorg >= 7.1/1.x
+	# only support current systems, xorg >= 7.1/1.x
 	if [ -z "$X_VERSION" ];then
 		error_handler 242
 	fi
@@ -5965,9 +5965,11 @@ install_distro_drivers()
 {
 	eval $LOGPS
 	local nvidiaGlx='' nvidiaSource='' nvidiaModal='' nvidiaUtils=''
-	local akmodNvidia='' drvNvidia1='' drvNvidia2='' ubGlx='-glx'
+	local akmodNvidia='' drvNvidia1='' drvNvidia2=x='-glx'
 
-	clean_up_fglrx_junk $CARD in
+	clean_up_fglrx_junk
+
+	case $CARD in
 		$NVIDIA)
 			case $SYSTEM_BASE in
 				arch)					fi
