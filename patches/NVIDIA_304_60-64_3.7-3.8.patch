@@ -1,0 +1,46 @@
+--- a/kernel/conftest.sh
++++ b/kernel/conftest.sh
+@@ -127,6 +127,7 @@ build_cflags() {
+         if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]; then
+             MACH_CFLAGS="$MACH_CFLAGS -I$HEADERS/asm-x86/mach-default"
+             MACH_CFLAGS="$MACH_CFLAGS -I$SOURCES/arch/x86/include/asm/mach-default"
++            MACH_CFLAGS="$MACH_CFLAGS -I$HEADERS/arch/x86/include/uapi"
+         elif [ "$ARCH" = "arm" ]; then
+             MACH_CFLAGS="$MACH_CFLAGS -I$SOURCES/arch/arm/mach-tegra/include -D__LINUX_ARM_ARCH__=7"
+         fi
+@@ -138,6 +139,7 @@ build_cflags() {
+         if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]; then
+             MACH_CFLAGS="$MACH_CFLAGS -I$HEADERS/asm-x86/mach-default"
+             MACH_CFLAGS="$MACH_CFLAGS -I$SOURCES/arch/x86/include/asm/mach-default"
++            MACH_CFLAGS="$MACH_CFLAGS -I$HEADERS/arch/x86/include/uapi"
+         elif [ "$ARCH" = "arm" ]; then
+             MACH_CFLAGS="$MACH_CFLAGS -I$SOURCES/arch/arm/mach-tegra/include -D__LINUX_ARM_ARCH__=7"
+         fi
+@@ -147,9 +149,12 @@ build_cflags() {
+     fi
+ 
+     CFLAGS="$BASE_CFLAGS $MACH_CFLAGS $OUTPUT_CFLAGS -I$HEADERS $AUTOCONF_CFLAGS"
++    CFLAGS="$CFLAGS -I$HEADERS -I$HEADERS/uapi"
+ 
+     if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]; then
+-        CFLAGS="$CFLAGS -I$SOURCES/arch/x86/include -I$OUTPUT/arch/x86/include/generated"
++        CFLAGS="$CFLAGS -I$SOURCES/arch/x86/include"
++        CFLAGS="$CFLAGS -I$OUTPUT/arch/x86/include/generated"
++        CFLAGS="$CFLAGS -I$OUTPUT/arch/x86/include/generated/uapi"
+     elif [ "$ARCH" = "arm" ]; then
+         CFLAGS="$CFLAGS -I$SOURCES/arch/arm/include -I$OUTPUT/arch/arm/include/generated"
+     fi
+--- a/kernel/nv-mmap.c
++++ b/kernel/nv-mmap.c
+@@ -463,7 +463,11 @@ int nv_kern_mmap(
+         NV_PRINT_AT(NV_DBG_MEMINFO, at);
+         nv_vm_list_page_count(&at->page_table[i], pages);
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
++        vma->vm_flags |= (VM_IO | VM_LOCKED | (VM_DONTEXPAND | VM_DONTDUMP));
++#else
+         vma->vm_flags |= (VM_IO | VM_LOCKED | VM_RESERVED);
++#endif
+ 
+ #if defined(VM_DRIVER_PAGES)
+         vma->vm_flags |= VM_DRIVER_PAGES;
