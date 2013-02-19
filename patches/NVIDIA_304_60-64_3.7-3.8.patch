@@ -1,5 +1,5 @@
---- a/kernel/conftest.sh
-+++ b/kernel/conftest.sh
+--- kernel/conftest.sh
++++ kernel/conftest.sh
 @@ -127,6 +127,7 @@ build_cflags() {
          if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]; then
              MACH_CFLAGS="$MACH_CFLAGS -I$HEADERS/asm-x86/mach-default"
@@ -30,8 +30,8 @@
      elif [ "$ARCH" = "arm" ]; then
          CFLAGS="$CFLAGS -I$SOURCES/arch/arm/include -I$OUTPUT/arch/arm/include/generated"
      fi
---- a/kernel/nv-mmap.c
-+++ b/kernel/nv-mmap.c
+--- kernel/nv-mmap.c
++++ kernel/nv-mmap.c
 @@ -463,7 +463,11 @@ int nv_kern_mmap(
          NV_PRINT_AT(NV_DBG_MEMINFO, at);
          nv_vm_list_page_count(&at->page_table[i], pages);
