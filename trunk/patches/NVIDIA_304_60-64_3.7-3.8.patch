@@ -31,8 +31,8 @@
          CFLAGS="$CFLAGS -I$SOURCES/arch/arm/include -I$OUTPUT/arch/arm/include/generated"
      fi
      
---- a/kernel/conftest.sh
-+++ b/kernel/conftest.sh
+--- kernel/conftest.sh
++++ kernel/conftest.sh
 @@ -1703,7 +1703,7 @@ case "$6" in
                  SUBLEVEL=$(grep "^SUBLEVEL =" $MAKEFILE | cut -d " " -f 3)
  
