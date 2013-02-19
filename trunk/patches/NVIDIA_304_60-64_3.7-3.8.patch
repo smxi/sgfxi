@@ -30,9 +30,7 @@
      elif [ "$ARCH" = "arm" ]; then
          CFLAGS="$CFLAGS -I$SOURCES/arch/arm/include -I$OUTPUT/arch/arm/include/generated"
      fi
-     
---- kernel/conftest.sh
-+++ kernel/conftest.sh
+
 @@ -1703,7 +1703,7 @@ case "$6" in
                  SUBLEVEL=$(grep "^SUBLEVEL =" $MAKEFILE | cut -d " " -f 3)
  
