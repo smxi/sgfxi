@@ -30,6 +30,19 @@
      elif [ "$ARCH" = "arm" ]; then
          CFLAGS="$CFLAGS -I$SOURCES/arch/arm/include -I$OUTPUT/arch/arm/include/generated"
      fi
+     
+--- a/kernel/conftest.sh
++++ b/kernel/conftest.sh
+@@ -1703,7 +1703,7 @@ case "$6" in
+                 SUBLEVEL=$(grep "^SUBLEVEL =" $MAKEFILE | cut -d " " -f 3)
+ 
+                 if [ -n "$PATCHLEVEL" -a $PATCHLEVEL -ge 6 \
+-                        -a -n "$SUBLEVEL" -a $SUBLEVEL -le 5 ]; then
++                        -a -n "$SUBLEVEL" -a $SUBLEVEL -le 6 ]; then
+                     SELECTED_MAKEFILE=Makefile.kbuild
+                     RET=0
+                 fi
+                 
 --- kernel/nv-mmap.c
 +++ kernel/nv-mmap.c
 @@ -463,7 +463,11 @@ int nv_kern_mmap(
