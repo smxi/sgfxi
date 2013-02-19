@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.23
-####  Date: February 10 2013
+####  version: 4.20.24
+####  Date: February 19 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -257,7 +257,7 @@ NV_BETA="$NV_VERSIONS_BETA::"
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 
 #                  173.14.22 173.14.25 173.14.28 173.14.30 173.14.31 173.14.35 173.14.36
 # stabel legacy 4: 304.64 
-# beta: 310.14
+# beta/others: 310.14 313.09
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
 NV_OTHERS='313.09:310.32:310.19:310.14:304.64:304.60:304.51:304.43:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
@@ -1355,10 +1355,17 @@ run_driver_patches()
 									patchFile='NVIDIA_304_60-64_3.7.patch'
 									apply_patch_file $patchFile
 									;;
-								313.*|310.*)
+								# requires patch to run on kernels > 3.7.5 but 313.18 patch does not work
+								310.*)
 									run_prepatch_fixes '3.7-path-fix'
-									# patchFile='NVIDIA-uapi-310-313_kernel-3.7.patch'
+									#patchFile='NVIDIA-uapi-313.18_kernel-3.7-8.patch'
 									# apply_patch_file $patchFile
+									;;
+								# patch url: https://bugs.gentoo.org/show_bug.cgi?id=447566
+								313.*)
+									run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA-uapi-313.18_kernel-3.7-8.patch'
+									apply_patch_file $patchFile
 									;;
 							esac
 							;;
@@ -1590,7 +1597,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -2791,7 +2798,7 @@ basic_startup_tests()
 	if [ -z "$( which Xorg )" ];then
 		error_handler 244
 	fi
-	# make sure xorg.conf exists, with xorg > 1.4 exception to handle null xorg.conf
+	# makxorg.conf exists, with xorg > 1.4 exception to handle null xorg.conf
 	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" ];then
 		error_handler 249
 	fi
@@ -2800,7 +2807,8 @@ basic_startup_tests()
 		error_handler 243
 	fi
 	
-	cleanup_update	check_script_depends
+	cleanup_update_files
+	check_script_depends
 
 	# only support current systems, xorg >= 7.1/1.x
 	if [ -z "$X_VERSION" ];then
@@ -5957,7 +5965,7 @@ clean_dkms()
 	eval $LOGPE
 }
 
-### -------------------------------------------------------------------
+### ------------------------------------------------------------
 ### distro fglrx/nvidia driver installer
 ### -------------------------------------------------------------------
 
@@ -5965,7 +5973,7 @@ install_distro_drivers()
 {
 	eval $LOGPS
 	local nvidiaGlx='' nvidiaSource='' nvidiaModal='' nvidiaUtils=''
-	local akmodNvidia='' drvNvidia1='' drvNvidia2=x='-glx'
+	local akmodNvidia='' drvNvidia1='' drvNvidia2='' ubGlx='-glx'
 
 	clean_up_fglrx_junk
 
