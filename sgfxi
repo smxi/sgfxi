@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.25
+####  version: 4.20.26
 ####  Date: February 19 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -832,7 +832,19 @@ driver_support_tests()
 								7)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-# 										13.*)
+										13.1)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								8)
+									case $DRIVER_DEFAULT in
+										# amd release notes say it only supports kernel 3.5, but that's probably wrong
+# 										)
 # 											: # do nothing
 # 											;;
 										*) # use 225 for beta testing errors
@@ -1490,14 +1502,15 @@ run_driver_patches()
 					;;
 				3)
 					case $KERNEL_MATH in
-						7)
-# 							case $DRIVER_DEFAULT in
-# 								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
-# 								304.6[04])
-# 									patchFile='NVIDIA_304_60-64_3.7.patch'
-# 									apply_patch_file $patchFile
-# 									;;
-# 							esac
+						7|8)
+							case $DRIVER_DEFAULT in
+								#patch url: http://catalyst.apocalypsus.net/files/arch-fglrx-3.7.patch
+								12.10|13.1)
+									run_prepatch_fixes '3.7-path-fix'
+									patchFile='FGLRX-12.10-3.7.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
 							:
 							;;
 					esac
@@ -1600,7 +1613,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -1622,7 +1635,7 @@ set_test_data()
 # 		# check for specific system base tests, can be:
 # 		# 'sid' 'testing' 'stable' 'etch'
 #		SYSTEM_BASE='debian'
-# 		SYSTEM_CODENAME='testing'
+# 		SYSTEM_CODENAME='te# sting'
 		X_VERSION='1.11' # override for patching etc
 # leave this at first character or errors in updater tools will occur
 :
@@ -2358,8 +2371,8 @@ assign_standard_or_beta_driver()
 			;;
 		$FGLRX)
 			if [ -n "$FG_DEFAULT_BETA" ];then
-				betaDriver=$FG_DEFAULT_BETA
-				stableDriver=$FG_DEFAULT
+				betaDriver=$FG_DEFAULT_Bfi
+			stableDriver=$FG_DEFAULTT
 			fi
 			;;
 	esac
@@ -2777,7 +2790,7 @@ check_kernel_headers()
 
 ### -------------------------------------------------------------------
 ### startup and tools testing
-### -------------------------------------------------------------------
+### ------------------------------------------------------------
 
 # note that we want this to print with no root error
 check_root()
@@ -2792,7 +2805,8 @@ basic_startup_tests()
 	## basic execute requirements
 	cd $SCRIPT_HOME
 	check_root
-	# this allows users to update in x, for example, to see latest drivers"$B_FORCE_UPDATE" == 'true' ];then
+	# this allows users to update in x, for example, to see latest drivers
+	if [ "$B_FORCE_UPDATE" == 'true' ];then
 		check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD" 'default server'
 	fi
 	check_set_distro
@@ -5950,7 +5964,7 @@ clean_dkms()
 		rm -rf /var/lib/dkms/fglrx 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 	if [ -d /var/lib/dkms/nvidia ];then
-		log_function_data "nvidia dkms directories found and deleted"
+		log_function_data "nvidia dkms directound and deleted"
 		rm -rf /var/lib/dkms/nvidia 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 	# handle the dmakms stuff too if present
@@ -5959,7 +5973,7 @@ clean_dkms()
 			log_function_data "nvidia dmakms entry found and commented out"
 			sed -i 's/nvidia-kernel-source/#nvidia-kernel-source/' $eddma
 		fi
-		if [ -n " -Esi '^[[:space:]]*fglrx-kernel-source' $eddma )" ];then
+		if [ -n "$( grep -Esi '^[[:space:]]*fglrx-kernel-source' $eddma )" ];then
 			log_function_data "fglrx dmakms entry found and commented out"
 			sed -i 's/fglrx-kernel-source/#fglrx-kernel-source/' $eddma
 		fi
