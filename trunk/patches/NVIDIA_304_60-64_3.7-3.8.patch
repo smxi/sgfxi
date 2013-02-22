@@ -1,5 +1,20 @@
 --- kernel/conftest.sh
 +++ kernel/conftest.sh
+@@ -20,6 +20,7 @@
+ ISYSTEM=`$CC -print-file-name=include 2> /dev/null`
+ SOURCES=$4
+ HEADERS=$SOURCES/include
++HEADERSA=$SOURCES/include/uapi
+ OUTPUT=$5
+ XEN_PRESENT=1
+
+@@ -118,7 +119,7 @@
+         fi
+     fi
+
+-    CFLAGS="$CFLAGS $OUTPUT_CFLAGS -I$HEADERS $AUTOCONF_CFLAGS"
++    CFLAGS="$CFLAGS $OUTPUT_CFLAGS -I$HEADERS -I$HEADERSA $AUTOCONF_CFLAGS"
+
 @@ -127,6 +127,7 @@ build_cflags() {
          if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]; then
              MACH_CFLAGS="$MACH_CFLAGS -I$HEADERS/asm-x86/mach-default"
