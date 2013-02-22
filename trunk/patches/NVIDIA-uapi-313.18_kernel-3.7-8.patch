@@ -1,4 +1,6 @@
 # patch source: https://bugs.gentoo.org/show_bug.cgi?id=447566
+# patch two from:
+##https://bugs.gentoo.org/447566
 
 --- kernel/conftest.sh
 +++ kernel/conftest.sh
@@ -26,3 +28,20 @@
              #
              # We are either looking at a configured kernel source
              # tree or at headers shipped for a specific kernel.
+@@ -1697,13 +1697,15 @@
+                 # kernel older than 2.6.6, that's all we require to
+                 # build the module.
+                 #
++                VERSION=$(grep "^VERSION =" $MAKEFILE | cut -d " " -f 3)
+                 PATCHLEVEL=$(grep "^PATCHLEVEL =" $MAKEFILE | cut -d " " -f 3)
+                 SUBLEVEL=$(grep "^SUBLEVEL =" $MAKEFILE | cut -d " " -f 3)
+ 
+-                if [ -n "$PATCHLEVEL" -a $PATCHLEVEL -ge 6 \
++                if [ -n "$VERSION" -a $VERSION -ge 3 ] || \
++                   [ -n "$PATCHLEVEL" -a $PATCHLEVEL -ge 6 \
+                         -a -n "$SUBLEVEL" -a $SUBLEVEL -le 5 ]; then
+                     SELECTED_MAKEFILE=Makefile.kbuild
+                     RET=0
+                 fi
+             fi
+         fi
