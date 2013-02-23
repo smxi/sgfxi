@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.27
+####  version: 4.20.28
 ####  Date: February 23 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -1398,7 +1398,7 @@ run_driver_patches()
 								# current patch: https://447566.bugs.gentoo.org/attachment.cgi?id=338262
 								304.6[04])
 									run_prepatch_fixes '3.7-path-fix'
-									patchFile='NVIDIA_304_60-64_3.7-3.8.patch'
+									patchFile='NVIDIA_304.64-3.8.patch'
 									apply_patch_file $patchFile
 									;;
 								# patch url: https://bugs.gentoo.org/show_bug.cgi?id=447566
@@ -1643,7 +1643,7 @@ set_test_data()
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
