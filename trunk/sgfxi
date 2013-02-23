@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.26
-####  Date: February 19 2013
+####  version: 4.20.27
+####  Date: February 23 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -832,7 +832,7 @@ driver_support_tests()
 								7)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										13.1)
+										13.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1353,7 +1353,38 @@ run_driver_patches()
 					;;
 				3)
 					case $KERNEL_MATH in
-						7|8)
+						7)
+							case $DRIVER_DEFAULT in
+								# patch from kmathern: http://techpatterns.com/forums/about2234-10.html
+								# current live patch: https://447566.bugs.gentoo.org/attachment.cgi?id=336106
+								173.14.36)
+									run_prepatch_fixes '3.7-path-fix'
+									# patchFile='NVIDIA_173.14.36_3.7.patch'
+									patchFile='NVIDIA_173.14.36_3.7.patch'
+									apply_patch_file $patchFile
+									;;
+								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
+								# current patch: https://447566.bugs.gentoo.org/attachment.cgi?id=338262
+								304.6[04])
+									run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA_304_60_3.7.patch'
+									apply_patch_file $patchFile
+									;;
+								# requires patch to run on kernels > 3.7.5 but 313.18 patch does not work
+								310.*)
+									run_prepatch_fixes '3.7-path-fix'
+									#patchFile='NVIDIA-uapi-313.18_kernel-3.7-8.patch'
+									# apply_patch_file $patchFile
+									;;
+								# patch url: https://bugs.gentoo.org/show_bug.cgi?id=447566
+								313.18)
+									run_prepatch_fixes '3.7-path-fix'
+									# patchFile='NVIDIA-uapi-310-313_kernel-3.7.patch'
+									# apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						8)
 							case $DRIVER_DEFAULT in
 								# patch from kmathern: http://techpatterns.com/forums/about2234-10.html
 								# current live patch: https://447566.bugs.gentoo.org/attachment.cgi?id=336106
@@ -1370,16 +1401,10 @@ run_driver_patches()
 									patchFile='NVIDIA_304_60-64_3.7-3.8.patch'
 									apply_patch_file $patchFile
 									;;
-								# requires patch to run on kernels > 3.7.5 but 313.18 patch does not work
-								310.*)
-									run_prepatch_fixes '3.7-path-fix'
-									#patchFile='NVIDIA-uapi-313.18_kernel-3.7-8.patch'
-									# apply_patch_file $patchFile
-									;;
 								# patch url: https://bugs.gentoo.org/show_bug.cgi?id=447566
-								313.*)
+								313.18)
 									run_prepatch_fixes '3.7-path-fix'
-									patchFile='NVIDIA-uapi-313.18_kernel-3.7-8.patch'
+									patchFile='NVIDIA_313.18-3.8.patch'
 									apply_patch_file $patchFile
 									;;
 							esac
@@ -1526,6 +1551,7 @@ run_driver_patches()
 	eval $LOGPE
 }
 
+# ln -s /usr/src/linux/include/generated/uapi/linux/version.h /usr/src/linux/include/linux/version.h
 # arg: $1 - which fix to run
 run_prepatch_fixes()
 {
@@ -1613,7 +1639,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -2757,7 +2783,7 @@ check_kernel_headers()
 				install_package "$headerName"
 			fi
 			kernelDevel="kernel$FED_KERNEL_PAE-devel-$kernelWorking"
-			develPresent=$( check_package_status "$kernelDevel" 'i' )
+			develPresent=$( check_package_stkernelDevel" 'i' )
 			if [ -z "$develPresent" ];then
 				install_package "$kernelDevel"
 			fi
@@ -2787,12 +2813,9 @@ check_kernel_headers()
 	esac
 	eval $LOGUE
 }
-
-### -------------------------------------------------------------------
-### startup and tools testing
-### ------------------------------------------------------------
-
-# note that we want this to print with no root error
+section
+### -------------------------------------------------------------### startup and tools testingsection
+### ----------------------------------------------------------------note that we want this to print with no root error
 check_root()
 {
 	if [ "$(whoami)" != 'root' -a "$B_PRINT_VER" != 'true' ];then
@@ -5027,7 +5050,7 @@ misc_fixes()
 set_download_info()
 {
 	eval $LOGPS
-	local packageName='' downloadUrl='' response='' moduleTest=0 fgBetaPost=''
+	local packageName='' downloadUrl='' response='' modulePost=''
 	# http://us.download.nvidia.com/XFree86/Linux-x86/275.19/NVIDIA-Linux-x86-275.19.run
 	case $CARD in
 		$NVIDIA)
@@ -5038,7 +5061,7 @@ set_download_info()
 		$FGLRX)
 			# set driver package name
 			# DRIVER_FILE="ati-driver-installer-$DRIVER_DEFAULT-$CPU"
-			if [ "$B_USE_BETA" == 'true' ];then
+			if [ "$B_USE_BETA" == 'true' ];th# note: need beta* because amd releases numbered betas within a month release ];then
 				fgBetaPost='beta-'
 				downloadUrl='http://www2.ati.com/drivers/beta/'
 			else
@@ -5923,7 +5946,7 @@ add_module()
 	local outcome='unset' 
 	
 	echo -n "${S}Adding module${C} $1${S}...... ${N}"
-	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
+	modprob> $LOG_FILE 2>> $LOG_FILE
 	if [ "$?" -ne 0 ];then
 		echo "${W}FAILED${N}"
 		echo "${M}Error adding ${C}$1${M} module after installation."
@@ -5964,7 +5987,7 @@ clean_dkms()
 		rm -rf /var/lib/dkms/fglrx 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 	if [ -d /var/lib/dkms/nvidia ];then
-		log_function_data "nvidia dkms directound and deleted"
+		log_function_data "nvidia dkms directories found and deleted"
 		rm -rf /var/lib/dkms/nvidia 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 	# handle the dmakms stuff too if present
