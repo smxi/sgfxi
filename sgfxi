@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.28
-####  Date: February 23 2013
+####  version: 4.20.29
+####  Date: February 25 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -1391,7 +1391,7 @@ run_driver_patches()
 								173.14.36)
 									run_prepatch_fixes '3.7-path-fix'
 									# patchFile='NVIDIA_173.14.36_3.7.patch'
-									patchFile='NVIDIA-173.14.36-kernel-3.7-3.8.patch'
+									patchFile='NVIDIA-173.14.36-3.8.patch'
 									apply_patch_file $patchFile
 									;;
 								#patch url: http://www.lwfinger.com/nvidia_patches/patch_nvidia_304_60.run_for_3.7
@@ -1643,7 +1643,7 @@ set_test_data()
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
@@ -1655,7 +1655,7 @@ set_test_data()
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 3-7 here
 		KERNEL_BASE=3
-		KERNEL_MATH=7
+		KERNE8_MATH=7
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
