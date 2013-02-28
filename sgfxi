@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.29
-####  Date: February 25 2013
+####  version: 4.20.30
+####  Date: February 28 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -1380,7 +1380,8 @@ run_driver_patches()
 								313.18)
 									run_prepatch_fixes '3.7-path-fix'
 									# patchFile='NVIDIA-uapi-310-313_kernel-3.7.patch'
-									# apply_patch_file $patchFile
+									patchFile='NVIDIA_313.18-3.8.patch'
+									apply_patch_file $patchFile
 									;;
 							esac
 							;;
@@ -1655,7 +1656,7 @@ set_test_data()
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 3-7 here
 		KERNEL_BASE=3
-		KERNE8_MATH=7
+		KERNE7_MATH=7
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
@@ -2783,7 +2784,7 @@ check_kernel_headers()
 				install_package "$headerName"
 			fi
 			kernelDevel="kernel$FED_KERNEL_PAE-devel-$kernelWorking"
-			develPresent=$( check_package_stkernelDevel" 'i' )
+			develPr( check_package_status "$kernelDevel" 'i' )
 			if [ -z "$develPresent" ];then
 				install_package "$kernelDevel"
 			fi
@@ -5945,8 +5946,8 @@ add_module()
 
 	local outcome='unset' 
 	
-	echo -n "${S}Adding module${C} $1${S}...... ${N}"
-	modprob> $LOG_FILE 2>> $LOG_FILE
+	echo -n "${S}Adding module${C} $1... ${N}"
+	modprobe $1 1>> $LOG_FILE 2>> $LOG_FILE
 	if [ "$?" -ne 0 ];then
 		echo "${W}FAILED${N}"
 		echo "${M}Error adding ${C}$1${M} module after installation."
