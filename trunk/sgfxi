@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.31
+####  version: 4.20.32
 ####  Date: March 4 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -1255,7 +1255,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											313.*|310.*|304.6*|173.14.[3][6-9]|$DISTRO_NVIDIA)
+											313.*|310.*|304.[689][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2786,8 +2786,7 @@ check_kernel_headers()
 		fedora)
 			# fedora 12 headers: /usr/src/kernels/$(uname -r)
 			# kernel-PAE-devel-2.6.31.5-127.fc12.i686.rpm
-			local kernelDevel='' develPresent='' kernelWorking=''
-			# nslice off .PAE from working kernel name/headers name
+			local kernelDevel='' develPresent='' kernelWorking='need to slice off .PAE from working kernel name/headers name
 			kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_FULL )
 			headerName="kernel-headers-$kernelWorking"
 			headerPresent="$( ls ${USRS}kernels/$KERNEL_FULL/ 2>/dev/null )"
@@ -5931,7 +5930,7 @@ remove_module()
 	fi
 	log_function_data "operation outcome: $outcome"
 	# going to run this for all cases, not just failure, maybe that will work better
-	# also, there is an override to skip grub tet user has to have handled nouveau/
+	# also, there is an override to skipests, but user has to have handled nouveau/
 	# kms blacklisting manually
 	if [ "$B_SKIP_GRUB_TEST" == 'true' ];then
 		if [ "$outcome" == 'failed' ];then
