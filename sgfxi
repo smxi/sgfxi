@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.32
-####  Date: March 4 2013
+####  version: 4.20.33
+####  Date: March 5 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # other stuff: nothing now. Using same driver for legacy 4 and current until 304 branch is not current stable
-NV_VERSIONS='313.18:304.84:173.14.36:96.43.23:71.86.15'
+NV_VERSIONS='313.26:304.84:173.14.36:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -237,7 +237,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA::"
-# stable primary: 304.60 304.64 310.19 313.18
+# stable primary: 304.60 304.64 310.19 313.18 313.26
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
@@ -259,7 +259,7 @@ NV_BETA="$NV_VERSIONS_BETA::"
 # stabel legacy 4: 304.64 304.84
 # beta/others: 310.14 313.09
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='313.09:310.32:310.19:310.14:304.84:304.64:304.60:304.51:304.43:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='313.18:313.09:310.32:310.19:310.14:304.84:304.64:304.60:304.51:304.43:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -883,7 +883,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.14)
 								case $DRIVER_DEFAULT in
-									313.18|31[3-9].[2-9][0-9]|304.[89][0-9]|$DISTRO_NVIDIA)
+									313.*|31[3-9].[2-9][0-9]|304.[89][0-9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -2786,7 +2786,8 @@ check_kernel_headers()
 		fedora)
 			# fedora 12 headers: /usr/src/kernels/$(uname -r)
 			# kernel-PAE-devel-2.6.31.5-127.fc12.i686.rpm
-			local kernelDevel='' develPresent='' kernelWorking='need to slice off .PAE from working kernel name/headers name
+			local kernelDevel='' develPresent='' keking=''
+			# need to slice off .PAE from working kernel name/headers name
 			kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_FULL )
 			headerName="kernel-headers-$kernelWorking"
 			headerPresent="$( ls ${USRS}kernels/$KERNEL_FULL/ 2>/dev/null )"
@@ -5930,7 +5931,7 @@ remove_module()
 	fi
 	log_function_data "operation outcome: $outcome"
 	# going to run this for all cases, not just failure, maybe that will work better
-	# also, there is an override to skipests, but user has to have handled nouveau/
+	# also, there is an oveo skip grub tests, but user has to have handled nouveau/
 	# kms blacklisting manually
 	if [ "$B_SKIP_GRUB_TEST" == 'true' ];then
 		if [ "$outcome" == 'failed' ];then
