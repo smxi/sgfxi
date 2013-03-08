@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.33
-####  Date: March 5 2013
+####  version: 4.20.34
+####  Date: March 8 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -472,9 +472,25 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
+						1.14)
+							case $DRIVER_DEFAULT in
+								13.[2-9]|14.*)
+									if [ "$LEGACY_LEVEL" -lt 3 ];then
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 212
+										fi
+									fi
+									;;
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
+									;;
+							esac
+							;;
 						1.13)
 							case $DRIVER_DEFAULT in
-								12.1[0-2]|13.*)
+								12.1[0-2]|13.*|14.*)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -490,7 +506,7 @@ driver_support_tests()
 							;;
 						1.12)
 							case $DRIVER_DEFAULT in
-								12-[6-9]|12.1[0-2]|13.*)
+								12-[6-9]|12.1[0-2]|13.*|14.*)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -506,7 +522,7 @@ driver_support_tests()
 							;;
 						1.11)
 							case $DRIVER_DEFAULT in
-								11-1[0-2]|12-*|12.*|13.*) 
+								11-1[0-2]|12-*|12.*|13.*|14.*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -518,7 +534,7 @@ driver_support_tests()
 							;;
 						1.10)
 							case $DRIVER_DEFAULT in
-								11-[4-9]|11-1[0-2]|12-*|12.*|13.*) 
+								11-[4-9]|11-1[0-2]|12-*|12.*|13.*|14.*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -530,7 +546,7 @@ driver_support_tests()
 							;; 
 						1.9)
 							case $DRIVER_DEFAULT in
-								10-1[0-2]|11-*|12-*|12.*|13.*) 
+								10-1[0-2]|11-*|12-*|12.*|13.*|14.*) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -542,7 +558,7 @@ driver_support_tests()
 							;;
 						1.8|7.6)
 							case $DRIVER_DEFAULT in
-								10-[7-9]|10-1[0-2]|11-*|12-*|12.*|13.*) # update when 1.8 is actually supported
+								10-[7-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*) # update when 1.8 is actually supported
 									: # all other drivers fail to support xorg >= 1.8
 									;;
 								*)
@@ -554,7 +570,7 @@ driver_support_tests()
 							;;
 						1.7|7.5)
 							case $DRIVER_DEFAULT in
-								10-[4-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
+								10-[4-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
 									: # all other drivers fail to support xorg >= 1.7
 									;;
 								*)
@@ -566,7 +582,7 @@ driver_support_tests()
 							;;
 						1.6|7.[3-4])
 							case $DRIVER_DEFAULT in
-								9-[4-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
+								9-[4-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -638,7 +654,7 @@ driver_support_tests()
 									;;
 								29)
 									case $DRIVER_DEFAULT in
-										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
+										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
 											: 
 											;;
 										*)
@@ -650,7 +666,7 @@ driver_support_tests()
 									;;
 								30)
 									case $DRIVER_DEFAULT in
-										9-8|9-9|9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
+										9-8|9-9|9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
 											: 
 											;;
 										*)
@@ -662,7 +678,7 @@ driver_support_tests()
 									;;
 								31|32)
 									case $DRIVER_DEFAULT in
-										9-1[0-2]|10-*|11-*|12-*|12.*|13.*)
+										9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
 											: 
 											;;
 										*)
@@ -674,7 +690,7 @@ driver_support_tests()
 									;;
 								33)
 									case $DRIVER_DEFAULT in
-										10-[2-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
+										10-[2-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
 											:
 											;;
 										*)
@@ -686,7 +702,7 @@ driver_support_tests()
 									;;
 								34)
 									case $DRIVER_DEFAULT in
-										10-[5-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
+										10-[5-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
 											:
 											;;
 										*)
@@ -698,7 +714,7 @@ driver_support_tests()
 									;;
 								35)
 									case $DRIVER_DEFAULT in
-										10-[8-9]|10-1[0-2]|11-*|12-*|12.*|13.*)
+										10-[8-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
 											:
 											;;
 										*)
@@ -712,7 +728,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										10-1[0-2]|11-*|12-*|12.*|13.*) 
+										10-1[0-2]|11-*|12-*|12.*|13.*|14.*) 
 											:
 											;;
 										*)
@@ -726,7 +742,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										11-*|12-*|12.*|13.*) 
+										11-*|12-*|12.*|13.*|14.*) 
 											:
 											;;
 										*)
@@ -738,7 +754,7 @@ driver_support_tests()
 									;;	
 								39)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12*|12.*|13.*)
+										11-[6-9]|11-1[0-2]|12*|12.*|13.*|14.*)
 											:
 											;;
 										*)
@@ -754,7 +770,7 @@ driver_support_tests()
 							case $KERNEL_MATH in
 								0)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12-*|12.*|13.*)
+										11-[6-9]|11-1[0-2]|12-*|12.*|13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -765,7 +781,7 @@ driver_support_tests()
 									;;
 								1)
 									case $DRIVER_DEFAULT in
-										11-[8-9]|11-1[0-2]|12-*|12.*|13.*)
+										11-[8-9]|11-1[0-2]|12-*|12.*|13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -776,7 +792,7 @@ driver_support_tests()
 									;;
 								2)
 									case $DRIVER_DEFAULT in
-										12-*|12.*|13.*)
+										12-*|12.*|13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -787,7 +803,7 @@ driver_support_tests()
 									;;
 								3)
 									case $DRIVER_DEFAULT in
-										12-[4-9]|12-1[0-2]|12.*|13.*)
+										12-[4-9]|12-1[0-2]|12.*|13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -798,7 +814,7 @@ driver_support_tests()
 									;;
 								4)
 									case $DRIVER_DEFAULT in
-										12-[7-9]|12-1[0-2]|12.*|13.*)
+										12-[7-9]|12-1[0-2]|12.*|13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -809,7 +825,7 @@ driver_support_tests()
 									;;
 								5)
 									case $DRIVER_DEFAULT in
-										12-9|12-1[0-2]|12.*|13.*)
+										12-9|12-1[0-2]|12.*|13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -820,7 +836,7 @@ driver_support_tests()
 									;;
 								6)
 									case $DRIVER_DEFAULT in
-										12-9|12-1[0-2]|12.*|13.*)
+										12-9|12-1[0-2]|12.*|13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -832,7 +848,7 @@ driver_support_tests()
 								7)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										13.*)
+										13.*|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -844,8 +860,8 @@ driver_support_tests()
 								8)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-# 										)
-# 											: # do nothing
+										14.*)
+											: # do nothing
 # 											;;
 										*) # use 225 for beta testing errors
 											if [ "$B_TESTING_3" != 'true' ];then
@@ -2776,7 +2792,7 @@ check_kernel_headers()
 				echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
 				install_package "$headerName"
 			elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFile" ];then
-				echo "${S}Installing missing kernel header package ${C}$headerName${S}"
+				echo "${S}Instmissing kernel header package ${C}$headerName${S}"
 				echo "using your archived header package: ${C}$headerFile${N}"
 				dpkg -i $headerFile || error_handler 223 "$headerFile"
 			elif [ -z "$headerInstalled" -a -z "$headerAvailable" -a "$B_TESTING_5" != 'true' ];then
@@ -2786,7 +2802,7 @@ check_kernel_headers()
 		fedora)
 			# fedora 12 headers: /usr/src/kernels/$(uname -r)
 			# kernel-PAE-devel-2.6.31.5-127.fc12.i686.rpm
-			local kernelDevel='' develPresent='' keking=''
+			local kernelDevel='' develPresent='' kernelWorking=''
 			# need to slice off .PAE from working kernel name/headers name
 			kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_FULL )
 			headerName="kernel-headers-$kernelWorking"
@@ -5918,7 +5934,7 @@ remove_module()
 			echo "${W}FAILED${N}"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
 			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
-			outcome='failed' 
+			oufailed' 
 		else
 			# working that if removal fails, module should not be removed, this might not be
 			# correct though. Especially not for future nouveau, radeonhd, 
@@ -5931,7 +5947,7 @@ remove_module()
 	fi
 	log_function_data "operation outcome: $outcome"
 	# going to run this for all cases, not just failure, maybe that will work better
-	# also, there is an oveo skip grub tests, but user has to have handled nouveau/
+	# also, there is an override to skip grub tests, but user has to have handled nouveau/
 	# kms blacklisting manually
 	if [ "$B_SKIP_GRUB_TEST" == 'true' ];then
 		if [ "$outcome" == 'failed' ];then
