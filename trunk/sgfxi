@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.37
+####  version: 4.20.38
 ####  Date: March 26 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -2360,8 +2360,8 @@ detect_card_version()
 # args: $1 - default/legacy-[1-3]; $2 - set-exists/driver
 assign_standard_or_beta_driver()
 {
-	local betaDriver='' stableDriver='' liveBetas=''
-	local betaCurrent='' beta304='' beta173='' beta96='' beta71=''
+	local betaDriver='' stableDriver='' liveB betaVersion='' remoteVersioNo=''
+	local betaCurrent='' beta304='' beta173='' beta96='' beta71='' localVersionNo beta71=''
 	
 	case $CARD in
 		$NVIDIA)
@@ -2433,11 +2433,14 @@ assign_standard_or_beta_driver()
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
 				liveBetas=$( gebeta_drivers )
 				if [ -n "$liveBetas" ];then
-					betaCurrent=$( cut -d '-' -f 1 <<< $liveBetas )
-					betaVersion=$( cut -d '-' -f 2 <<< $liveBetas )
-					if [ -z "$FG_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $FG_DEFAULT_BETA )" -eq 0 ];then
+					betaCurrent=$( cut -d '-' -f 1 <<< "$liveBetas" )
+					betaVersion=$( cut -d '-' -f 2 <<< "$liveBetas" )
+					remoteVersionNo=$( sed -r 's/beta([0-9]+)/\1/' <<< "$liveBetas" )
+					localVersionNo=$( sed -r 's/beta([0-9]+)/\1/' <<< "$FG_DEFAULT_BETA" )
+					if [ -z "$FG_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $FG_DEFAULT_BETA )" -eq 0 ] || \
+					[ -n "$remoteVersionNo" -a -n "$localVersionNo" -a "$( compare_numbers $remoteVersionNo $localVersionNo )" -eq 0  ];then
 						FG_DEFAULT_BETA=$betaCurrent
-						FG_BETA_VERSION=$liveBetas
+						FG_BETA_VERSION=$betaVersion
 					fi
 				fi
 			fi
@@ -2787,7 +2790,7 @@ test_install_kernel_version()
 }
 
 # this handles a case where there's a kernel header mismatch or
-# when they are simply missing, the former is strange, the latter normal
+they are simply missing, the former is strange, the latter normal
 check_kernel_headers()
 {
 	eval $LOGUS
@@ -2798,7 +2801,7 @@ check_kernel_headers()
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			headerName="linux-headers-$KERNEL_FULL"
-			headerPresent="$( ls ${USRS}$headerName/ 2>/dev"
+			headerPresent="$( ls ${USRS}$headerName/ 2>/dev/null )"
 			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
@@ -5905,7 +5908,7 @@ install_modules_to_all_kernels()
 			for kernel in $kernels
 			do
 				echo -n "${S}Checking ${C}$kernel${S} in ${C}$grubFile${S}.... ${N}"
-				kernelInGrub=$( grep -Eis "^[[:space:]]*(kernel|linux).*$kernel" $grubFile )
+				kernelInGrub=$( grep -Eis "^[[:space:]]*(kernel|l$kernel" $grubFile )
 				if [ -n "$kernelInGrub" ];then
 					echo "${M}Confirmed${N}"
 					kernelsConfirmed="$kernelsConfirmed $kernel"
@@ -5918,7 +5921,8 @@ install_modules_to_all_kernels()
 			# arch has unreliable kernel naming, not following uname -r, ie: kernel26.img
 			kernelsConfirmed=$kernels 
 			;;
-	esa -n "$kernelsConfirmed" ];then
+	esac
+	if [ -n "$kernelsConfirmed" ];then
 		# support other drivers being used if desired
 		if [ -n "$DRIVER_OVERRIDE" ];then
 			otherDriver=" -o $DRIVER_OVERRIDE"
