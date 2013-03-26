@@ -850,7 +850,7 @@ driver_support_tests()
 								7)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										13.*|14.*)
+										12.10|13.1|13.[3-9]|13.1[0-2]|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -862,7 +862,7 @@ driver_support_tests()
 								8)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										14.*)
+										13.[3-9]|13.1[0-2]|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -2798,8 +2798,8 @@ check_kernel_headers()
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			headerName="linux-headers-$KERNEL_FULL"
-			headerPresent="$( ls ${USRS}$headerName/ 2>/dev/null )"
-			headerInstalled=$( check_package "$headerName" 'i' )
+			headerPresent="$( ls ${USRS}$headerName/ 2>/dev"
+			headerInstalled=$( check_package_status "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
 			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}/$KERNEL_FULL/$headerName*.deb 2>/dev/null )"
@@ -5918,9 +5918,8 @@ install_modules_to_all_kernels()
 			# arch has unreliable kernel naming, not following uname -r, ie: kernel26.img
 			kernelsConfirmed=$kernels 
 			;;
-	esac
-	if [ -n "$kernelsConfirmed" ];then
-		# suther drivers being used if desired
+	esa -n "$kernelsConfirmed" ];then
+		# support other drivers being used if desired
 		if [ -n "$DRIVER_OVERRIDE" ];then
 			otherDriver=" -o $DRIVER_OVERRIDE"
 		fi
