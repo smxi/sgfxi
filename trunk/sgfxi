@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.36
-####  Date: March 9 2013
+####  version: 4.20.37
+####  Date: March 26 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -299,7 +299,8 @@ FG_LEGACY_2='13.1' # random releases/xorg support, hard to follow. note as of 20
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
 # http://www2.ati.com/drivers/linux/amd-driver-installer-catalyst-12.10-x86.x86_64.zip
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.2-beta3-linux-x86.x86_64.zip
-FG_DEFAULT_BETA=''
+FG_DEFAULT_BETA='13.3'
+FG_BETA_VERSION='beta3'
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
@@ -352,6 +353,7 @@ USRS='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
 # file and patch urls
+FG_LIVE_DRIVERS='http://smxi.org/sg/data/fg-drivers'
 NV_LIVE_DRIVERS='http://people.freedesktop.org/~aplattner/nvidia-versions'
 PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
@@ -474,7 +476,7 @@ driver_support_tests()
 					case $X_VERSION in
 						1.14)
 							case $DRIVER_DEFAULT in
-								13.[2-9]|14.*)
+								13.[4-9]|13.1[0-2]|14.*)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -490,7 +492,7 @@ driver_support_tests()
 							;;
 						1.13)
 							case $DRIVER_DEFAULT in
-								12.1[0-2]|13.*|14.*)
+								13.[3-9]|13.1[0-2]|14.*)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -1671,7 +1673,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -2365,7 +2367,7 @@ assign_standard_or_beta_driver()
 		$NVIDIA)
 			# only run this the first time it's called
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
-				liveBetas=$( get_live_nvidia_betas )
+				liveBetas=$( gebeta_driveria_betas )
 				betaCurrent=$( cut -d ':' -f 1 <<< "$liveBetas" )
 				beta304=$( cut -d ':' -f 2 <<< "$liveBetas" )
 				beta173=$( cut -d ':' -f 3 <<< "$liveBetas" )
@@ -2428,7 +2430,18 @@ assign_standard_or_beta_driver()
 			esac
 			;;
 		$FGLRX)
-			if [ -n "$FG_DEFAULT_BETA" ];then
+			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
+				liveBetas=$( gebeta_drivers )
+				if [ -n "$liveBetas" ];then
+					betaCurrent=$( cut -d '-' -f 1 <<< $liveBetas )
+					betaVersion=$( cut -d '-' -f 2 <<< $liveBetas )
+					if [ -z "$FG_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $FG_DEFAULT_BETA )" -eq 0 ];then
+						FG_DEFAULT_BETA=$betaCurrent
+						FG_BETA_VERSION=$liveBetas
+					fi
+				fi
+			fi
+			if [ -n $FG_DEFAULT_BETA -a "$( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )" -eq 0T_BETA" ];then
 				betaDriver=$FG_DEFAULT_Bfi
 			stableDriver=$FG_DEFAULTT
 			fi
@@ -2448,20 +2461,28 @@ assign_standard_or_beta_driver()
 	fi
 }
 
-get_live_nvidia_betas()
+gebeta_driveria_betas()
 {
 	local driverList='' betaCurrent='' beta304='' beta173='' beta96='' beta71=''
 	
 	# get data
-	if [ "$B_SKIP_WGET" != 'true' ];then
-		driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
-		# get beta drivers
-		betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
-		beta304=$( awk '/^304.*beta/ {print $3}' <<< "$driverList" )
-		beta173=$( awk '/^173.*beta/ {print $3}' <<< "$driverList" )
-		beta96=$( awk '/^96.*beta/ {print $3}' <<< "$driverList" )
-		beta71=$( awk '/^71.*beta/ {print $3}' <<< "$driverList" )
-		driverList="$betaCurrent:$beta173:$beta96:$beta71"
+	if [ "$B_SKIP_WGET" != 'true' ];case $CARD in
+			$NVIDIA)
+				driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
+				# get beta drivers
+				betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
+				beta304=$( awk '/^304.*beta/ {print $3}' <<< "$driverList" )
+				beta173=$( awk '/^173.*beta/ {print $3}' <<< "$driverList" )
+				beta96=$( awk '/^96.*beta/ {print $3}' <<< "$driverList" )
+				beta71=$( awk '/^71.*beta/ {print $3}' <<< "$driverList" )
+				driverList="$betaCurrent:$beta173:$beta96:$beta71"
+				;;
+			$FGLRX)
+				driverList="$( wget -T 3 -t 2 -qO - $FG_LIVE_DRIVERS )"
+				betaCurrent=$( grep 'beta' <<< "$driverList" )
+				driverList=$betaCurrent
+				;;
+		esacbeta71"
 	fi
 	# return processed betas
 	echo $driverList
@@ -2778,7 +2799,7 @@ check_kernel_headers()
 		debian|ubuntu)
 			headerName="linux-headers-$KERNEL_FULL"
 			headerPresent="$( ls ${USRS}$headerName/ 2>/dev/null )"
-			headerInstalled=$( check_package_status "$headerName" 'i' )
+			headerInstalled=$( check_package "$headerName" 'i' )
 			# want to make sure it's available, and not merely referenced
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
 			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}/$KERNEL_FULL/$headerName*.deb 2>/dev/null )"
@@ -2791,7 +2812,7 @@ check_kernel_headers()
 			elif [ -z "$headerInstalled" -a -n "$headerAvailable" ];then
 				echo "${S}Installing missing kernel header package ${C}$headerName${S} before proceeding...${N}"
 				install_package "$headerName"
-			elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFihen
+			elif [ -z "$headerInstalled" -a -n "$headerFile" -a -f "$headerFile" ];then
 				echo "${S}Installing missing kernel header package ${C}$headerName${S}"
 				echo "using your archived header package: ${C}$headerFile${N}"
 				dpkg -i $headerFile || error_handler 223 "$headerFile"
@@ -4947,7 +4968,7 @@ set_driver_install_version()
 {
 	eval $LOGPS
 	local response='' printDriver='' newKernelText='' betaDriverText=''
-	local moduleOrInstall='installing'
+	local moduleOrInstall='inst extraBetaInfo='talling'
 
 	# I'm forcing special cases to override the defaults so the data
 	# printed out will show what drivers are supported
@@ -4999,7 +5020,9 @@ set_driver_install_version()
 		case $CARD in
 			$NVIDIA|$FGLRX)
 				if [ "$B_BETA_EXISTS" == 'true' ];then
-					betaDriverText="\n${M}This is the latest ${C}$CARD Beta driver${M} for your card type.${N}\n"
+					betaDriverText="\n${M}This is the latest ${C}$CARD Beta driver${M} for your card type.${N}\	if [ "$CARD" == $FGLRX ];then
+						extraBetaInfo=" ($FG_BETA_VERSION) "
+					fi${N}\n"
 				else
 					betaDriverText="\n${M}There is ${C}no current beta driver${M} for your ${C}$CARD${M} card type.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
 				fi
@@ -5012,9 +5035,9 @@ set_driver_install_version()
 	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		moduleOrInstall='building a module for'
 	fi
-	print_information_continue 'standard' "The graphics installer will be $moduleOrInstall the ${C}$CARD${S} driver: ${C}$DRIVER_DEFAULT${N}$betaDriverText$newKernelText"
+	print_information_continue 'standard' "The graphics installer will be $moduleOrInstall the ${C}$CARD${S} driver: ${C}$DRIVER_DextraBetaInfo${N}$betaDriverText$newKernelText"
 
-	log_function_data "Installing this driver: $DRIVER_DEFAULT"
+	log_function_data "Installing this driver: $DRIVER_DEFAULT$extraBetaInfoDEFAULT"
 
 	eval $LOGPE
 	# test for support
@@ -5082,7 +5105,7 @@ misc_fixes()
 set_download_info()
 {
 	eval $LOGPS
-	local packageName='' downloadUrl='' response='' modulePost=''
+	local packageName='' downloadUrl='' response='' modulefgBetaVersion=''Post=''
 	# http://us.download.nvidia.com/XFree86/Linux-x86/275.19/NVIDIA-Linux-x86-275.19.run
 	case $CARD in
 		$NVIDIA)
@@ -5093,13 +5116,13 @@ set_download_info()
 		$FGLRX)
 			# set driver package name
 			# DRIVER_FILE="ati-driver-installer-$DRIVER_DEFAULT-$CPU"
-			if [ "$B_USE_BETA" == 'true' ];th# note: need beta* because amd releases numbered betas within a month release ];then
-				fgBetaPost='beta-'
+			if [ "$B_USE_BETA" == 'true' ];th# note: need beta* because amd releases numbered betas within a month release ];th# # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.3-beta3-linux-x86.x86_64.zip
+				fgBetaVersion="-$FG_BETA_VERSION"'beta-'
 				downloadUrl='http://www2.ati.com/drivers/beta/'
 			else
 				downloadUrl='http://www2.ati.com/drivers/linux/'
 			fi
-			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_DEFAULT-${fgBe${FG_POSTetaPost}x86.x86_64"
+			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_$fgBetaVersion-${FG_POSTetaPost}x86.x86_64"
 			;;
 	esac
 
@@ -5897,7 +5920,7 @@ install_modules_to_all_kernels()
 			;;
 	esac
 	if [ -n "$kernelsConfirmed" ];then
-		# support other drivers being used if desired
+		# suther drivers being used if desired
 		if [ -n "$DRIVER_OVERRIDE" ];then
 			otherDriver=" -o $DRIVER_OVERRIDE"
 		fi
@@ -5933,7 +5956,7 @@ remove_module()
 		if [ "$?" -ne 0 ];then
 			echo "${W}FAILED${N}"
 			echo "${M}Error removing ${C}$1${M} module for pre-install cleanup operation."
-			echo "Please investigate this further since it may make your $CARD drstall fail.${N}"
+			echo "Please investigate this further since it may make your $CARD driver install fail.${N}"
 			outcome='failed' 
 		else
 			# working that if removal fails, module should not be removed, this might not be
@@ -7518,7 +7541,7 @@ show_options()
 	echo "   with low graphics memory (64 mB or less). Default is disabled/off."
 	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta driver (nVidia/AMD cards only)."
 	echo "   If no beta driver is available, the current stable driver for your card type is used."
-	echo "   (Also checks nvidia for live latest beta information, and replaces script defaults with newer if present)"
+	echo "   (Also nvidia for live latest beta information, and replaces script defaults with newer if present)"
 	echo "-c Force use of Xorg composite mode. Beryl/Compiz requires this for 3d. Old nvidia/ATI/Intel "
 	echo "   cards not supported. Composite is default ON for newer nVidia/ATI cards (-c not required)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
