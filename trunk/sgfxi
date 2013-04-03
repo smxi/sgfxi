@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.38
-####  Date: March 26 2013
+####  version: 4.20.39
+####  Date: April 3 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,8 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # other stuff: nothing now. Using same driver for legacy 4 and current until 304 branch is not current stable
-NV_VERSIONS='313.26:304.84:173.14.37:96.43.23:71.86.15'
+# 304.88, 310.44, 313.30 fix buffer overflow issue
+NV_VERSIONS='313.30:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -237,11 +238,11 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA::"
-# stable primary: 304.60 304.64 310.19 313.18 313.26
+# stable primary: 304.60 304.64 310.19 313.18 313.26 313.30
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40
+# lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
 # stable primary: 260.19.12 260.19.21 260.19.29 260.19.36 260.19.44
@@ -256,10 +257,10 @@ NV_BETA="$NV_VERSIONS_BETA::"
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 # ends there, xorg 11/12 support
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
 #                  173.14.31 173.14.35 173.14.36 173.14.37
-# stabel legacy 4: 304.64 304.84
+# stabel legacy 4: 304.64 304.84 304.88
 # beta/others: 310.14 313.09
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='313.18:313.09:310.40:310.32:310.19:304.84:304.64:304.60:304.51:304.43:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='313.26:313.18:313.09:310.44:310.40:304.84:304.64:304.60:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -901,7 +902,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.14)
 								case $DRIVER_DEFAULT in
-									313.*|31[3-9].[2-9][0-9]|304.[89][0-9]|310.4[0-9]|173.14.3[789]|$DISTRO_NVIDIA)
+									313.*|31[4-9].[0-9][0-9]|304.[89][0-9]|310.[4-9][0-9]|173.14.3[789]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -2786,11 +2787,8 @@ test_install_kernel_version()
 	# it passed the test
 	else
 		kernel_string_info
-	fi
-}
-
 # this handles a case where there's a kernel header mismatch or
-they are simply missing, the former is strange, the latter normal
+# when they are simply missing, the former is strange, the latter normal
 check_kernel_headers()
 {
 	eval $LOGUS
@@ -5907,8 +5905,8 @@ install_modules_to_all_kernels()
 			# make sure the kernels are real, not fake as found in /lib/modules vmware added...
 			for kernel in $kernels
 			do
-				echo -n "${S}Checking ${C}$kernel${S} in ${C}$grubFile${S}.... ${N}"
-				kernelInGrub=$( grep -Eis "^[[:space:]]*(kernel|l$kernel" $grubFile )
+				echo -n "${S}Checking ${C}$kernel${S} in ${C}$grubF.... ${N}"
+				kernelInGrub=$( grep -Eis "^[[:space:]]*(kernel|linux).*$kernel" $grubFile )
 				if [ -n "$kernelInGrub" ];then
 					echo "${M}Confirmed${N}"
 					kernelsConfirmed="$kernelsConfirmed $kernel"
