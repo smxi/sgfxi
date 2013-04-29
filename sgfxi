@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.40
-####  Date: April 9 2013
+####  version: 4.20.41
+####  Date: April 29 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -293,20 +293,20 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # actual run: http://support.amd.com/us/gpudownload/linux/Pages/radeon_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
 # note, as distrissingly usual, amd AGAIN has changed their driver name syntax. 
-FG_VERSIONS='13.1:12.10:12-7'
-FG_DEFAULT='13.1'
+FG_VERSIONS='13.4:13.1:12.10'
+FG_DEFAULT='13.4'
 # http://www2.ati.com/drivers/legacy/amd-driver-installer-catalyst-13.1-legacy-linux-x86.x86_64.zip
-FG_LEGACY_2='13.1' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
+FG_LEGACY_2='13.4' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
 # http://www2.ati.com/drivers/linux/amd-driver-installer-catalyst-12.10-x86.x86_64.zip
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.2-beta3-linux-x86.x86_64.zip
-FG_DEFAULT_BETA='13.3'
-FG_BETA_VERSION='beta3'
+FG_DEFAULT_BETA=''
+FG_BETA_VERSION=''
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
 # :9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4
-FG_OTHERS='13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='13.4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 
 # fg legacy 2: 12-6 13.1
 # set to sid/lenny/etch
@@ -455,7 +455,10 @@ driver_support_tests()
 						esac
 					fi
 					case $DRIVER_DEFAULT in
-						12.1[0-2]|13.*|14.*|15.*)
+						13.[4-9]|13.1[0-2]|14.*|15.*)
+							FGLRX_PACKAGE_PREFIX='amd-catalyst'
+							;;
+						12.1[0-2]|13.[0-3])
 							FGLRX_PACKAGE_PREFIX='amd-driver-installer-catalyst'
 							;;
 						12-[1-9])
@@ -477,7 +480,7 @@ driver_support_tests()
 					case $X_VERSION in
 						1.14)
 							case $DRIVER_DEFAULT in
-								13.[4-9]|13.1[0-2]|14.*)
+								13.[5-9]|13.1[0-2]|14.*)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -863,7 +866,7 @@ driver_support_tests()
 								8)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										13.[3-9]|13.1[0-2]|14.*)
+										13.[5-9]|13.1[0-2]|14.*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -2460,7 +2463,7 @@ assign_standard_or_beta_driver()
 					fi
 				fi
 			fi
-			if [ -n $FG_DEFAULT_BETA -a "$( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )" -eq 0T_BETA" ];then
+			if [ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )" -eq 0T_BETA" ];then
 				betaDriver=$FG_DEFAULT_Bfi
 			stableDriver=$FG_DEFAULTT
 			fi
@@ -2778,9 +2781,10 @@ kernel_string_info()
 	if [ -n "$( grep -Es '^[3-9]\.' <<< $KERNEL_FULL )" ];then
 		KERNEL_BASE=$( echo $KERNEL_FULL | cut -d '.' -f 1 ) # like: 3
 		KERNEL_NUMBER=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 1-2 ) # like: 3.19
-		KERNEL_MATH=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 2 ) # like: 19
+		KERNEL_MATH=$( echo $KERNEL_FULL | cu' -f 1 | cut -d '.' -f 2 ) # like: 19
 	# else check for old 2.6.19 style
-	eERNEL_BASE=$( echo $KERNEL_FULL | cut -d '.' -f 1-2 ) # like: 2.6
+	else
+		KERNEL_BASE=$( echo $KERNEL_FULL | cut -d '.' -f 1-2 ) # like: 2.6
 		KERNEL_NUMBER=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 1-3 ) # like: 2.6.19
 		KERNEL_MATH=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 3 ) # like: 19
 	fi
@@ -5893,12 +5897,14 @@ test_module_build_ok()
 			echo "${S}None Detected${N}"
 		fi
 	fi
-	log_function_data "returnValue: $returnValue\nError Data: $logData"
+	log_function_data "returnValue: $returnValue\nError Dataata"
 	return "$returnValue"
 	eval $LOGPE
 }
 
-install_modules_to_all_kernels(eck_root
+install_modules_to_all_kernels()
+{
+	check_root
 	local kernels=$(ls /lib/modules | grep -v "$( uname -r )" )
 	local otherDriver='' kernel='' grubFile='' kernelInGrub='' kernelsConfirmed=''
 	if [ -f "$GRUB2" ];then
