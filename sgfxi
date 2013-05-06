@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.42
-####  Date: May 2 2013
+####  version: 4.20.43
+####  Date: May 5 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -3002,16 +3002,17 @@ check_set_distro()
 		local isEtch=$( grep -is '^4.' <<< "$edvContent" )
 		local isLenny=$( grep -is '^5.' <<< "$edvContent" )
 		local isSqueeze=$( grep -Eis '^(squeeze|6\.)' <<< "$edvContent" )
-		local isWheezy=$( grep -Eis '^(wheezy|7\.)' <<< "$edvContent" )
+		local isWheezy=$( grep -Eis '^(wheezy|7\.)' <<< "$edvConte	local isJessie=$( grep -Eis '^(jessie|8\.)' <<< "$edvContent" )
+nt" )
 	
 		# first tests sources
-		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(stable|squeeze|lenny|etch)' )
-		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(wheezy|testing)' )
-		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
+		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(wheezy(stable|squeeze|lenny|etch)' )
+		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -jessie(wheezy|testing)' )
+		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstabe)' )
 	
 		# then test conf for default version
-		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny|squeeze)"' <<< "$eaaContent" )
-		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|wheezy)"' <<< "$eaaContent" )
+		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny||wheezy)"' <<< "$eaaContent" )
+		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|jessie|wheezy)"' <<< "$eaaContent" )
 		local isUnstableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(sid|unstable)"' <<< "$eaaContent" )
 	# arch tests
 	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
@@ -3055,7 +3056,7 @@ check_set_distro()
 			fi
 
 			# set system type. This test will never be perfect, but it's a good approximation
-			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
+			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o WheezySqueeze" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
 				if [ -n "$isEtch" ];then
 					FG_DISTRIB_CODENAME='etch'
 					SYSTEM_CODENAME='etch'
@@ -3064,12 +3065,14 @@ check_set_distro()
 					SYSTEM_CODENAME='lenny'
 				elif [ -n "$isSqueeze" ];then
 					FG_DISTRIB_CODENAME='squeeze' # note: 'stable' breaks the installer
-					SYSTEM_CODENAME='squeeze'
-				else
-					FG_DISTRIB_CODENAME='wheezy'
+					SYSTEM_CODENAME='squeeze'if [ -n "$isWheezy" ];then
+					FG_DISTRIB_CODENAME='wheezy' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='wheezy'
+				else
+					FG_DISTRIB_CODENAME='stable'
+					SYSTEM_CODENAME='stable'
 				fi
-			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isWheezy" -o "$isTesting" -gt 0 ];then
+			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isJessiesWheezy" -o "$isTesting" -gt 0 ];then
 				FG_DISTRIB_CODENAME='sid'
 				SYSTEM_CODENAME='testing'
 			else
@@ -5887,8 +5890,7 @@ test_module_build_ok()
 	if [ "$returnValue" -eq 0 ];then
 		echo -n "  ${S}Checking for previous ${C}nVidia${S} driver module for ${C}$KERNEL_FULL${S}.... ${N}"
 		if [ -f "/lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko" ];then
-			echo "${W}PRESENT${N}"
-			returnValue=6
+			echo "${W}PRESENT${N}turnValue=6
 			logData="${logData}Nvidia module exists: "
 			if [ "$1" == 'error' ];then
 				error_handler 170
@@ -5897,7 +5899,7 @@ test_module_build_ok()
 			echo "${S}None Detected${N}"
 		fi
 	fi
-	log_function_data "returnValue: $returnValue\nError Dataata"
+	log_function_data "returnValue: $returnValue\nError Data: $logData"
 	return "$returnValue"
 	eval $LOGPE
 }
