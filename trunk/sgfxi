@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.43
-####  Date: May 5 2013
+####  version: 4.20.44
+####  Date: May 23 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -216,9 +216,8 @@ VERSIONS=''
 OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
-# other stuff: nothing now. Using same driver for legacy 4 and current until 304 branch is not current stable
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='319.17:304.88:173.14.37:96.43.23:71.86.15'
+NV_VERSIONS='319.23:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -238,11 +237,11 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA::"
-# stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17
+# stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44
+# lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
 # stable primary: 260.19.12 260.19.21 260.19.29 260.19.36 260.19.44
@@ -260,7 +259,7 @@ NV_BETA="$NV_VERSIONS_BETA::"
 # stabel legacy 4: 304.64 304.84 304.88
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='313.30:313.26:313.18:313.09:310.44:310.40:304.84:304.64:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='319.17:313.30:313.26:313.18:310.44:310.40:304.84:304.64:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -1692,9 +1691,9 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
-# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
+# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
@@ -2376,7 +2375,7 @@ detect_card_version()
 }
 
 # this is only for nVidia cards so no need to do testing
-# args: $1 - default/legacy-[1-3]; $2 - set-exists/driver
+# args: $1 - default/leg4cy-[1-3]; $2 - set-exists/driver
 assign_standard_or_beta_driver()
 {
 	local betaDriver='' stableDriver='' liveB betaVersion='' remoteVersioNo=''
