@@ -878,12 +878,12 @@ driver_support_tests()
 											fi
 									esac
 									;;
-								8)
+								9)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										13[.-][6-9]|13[.-]1[0-2]|14[.-]*)
-											: # do nothing
-											;;
+# 										13[.-][6-9]|13[.-]1[0-2]|14[.-]*)
+# 											: # do nothing
+# 											;;
 										*) # use 225 for beta testing errors
 											if [ "$B_TESTING_3" != 'true' ];then
 												error_handler 234 $KERNEL_NUMBER
@@ -2773,7 +2773,7 @@ uninstall_script()
 	local opt=''
 	local options="yes-uninstall-everything return-main-menu"
 	echo $LINE
-	echo "${S}Are you sure you want to totally uninstall ${C}$SCRIPT_NAME$cho "This will remove $SCRIPT_NAME and all its components permanently!"
+	echo "${S}Are you sure you want to totally uninstall ${C}$SCRIPT_NAM	echo "This will remove $SCRIPT_NAME and all its components permanently!"
 	echo $LINE
 	echo "${S}Enter a number for your selection and hit enter"
 	echo $LINE
@@ -5888,7 +5888,7 @@ test_module_build_ok()
 	if [ "$returnValue" -eq 0 ];then
 		# really readlink /usr/lib/$( readlink /usr/lib/libGL.so )
 		libGlNvidia=$( readlink /usr/lib/libGL.so.1 | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
-		echo -n Checking for installed ${C}nVidia${S} driver.... ${N}" 
+		echo -S}Checking for installed ${C}nVidia${S} driver.... ${N}" 
 		if [ -z "$libGlNvidia" ];then
 			echo "${W}No $SCRIPT_NAME ${C}nVidia${W} Driver Detected${N}"
 			returnValue=3
