@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.44
-####  Date: May 23 2013
+####  version: 4.20.45
+####  Date: June 4 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -299,6 +299,7 @@ FG_LEGACY_2='13.4' # random releases/xorg support, hard to follow. note as of 20
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
 # http://www2.ati.com/drivers/linux/amd-driver-installer-catalyst-12.10-x86.x86_64.zip
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.2-beta3-linux-x86.x86_64.zip
+# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
 FG_DEFAULT_BETA=''
 FG_BETA_VERSION=''
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
@@ -479,7 +480,7 @@ driver_support_tests()
 					case $X_VERSION in
 						1.14)
 							case $DRIVER_DEFAULT in
-								13.[5-9]|13.1[0-2]|14.*)
+								13[.-][5-9]|13[.-]1[0-2]|14[.-]*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -495,7 +496,7 @@ driver_support_tests()
 							;;
 						1.13)
 							case $DRIVER_DEFAULT in
-								13.[3-9]|13.1[0-2]|14.*)
+								13.[3-9]|13.1[0-2]|14.*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -511,7 +512,7 @@ driver_support_tests()
 							;;
 						1.12)
 							case $DRIVER_DEFAULT in
-								12-[6-9]|12.1[0-2]|13.*|14.*)
+								12-[6-9]|12.1[0-2]|13[.-]*|14[.-]*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -527,7 +528,7 @@ driver_support_tests()
 							;;
 						1.11)
 							case $DRIVER_DEFAULT in
-								11-1[0-2]|12-*|12.*|13.*|14.*) 
+								11-1[0-2]|12-*|12.*|13[.-]*|14[.-]*|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -539,7 +540,7 @@ driver_support_tests()
 							;;
 						1.10)
 							case $DRIVER_DEFAULT in
-								11-[4-9]|11-1[0-2]|12-*|12.*|13.*|14.*) 
+								11-[4-9]|11-1[0-2]|12-*|12.*|13[.-]*|14[.-]*|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -551,7 +552,7 @@ driver_support_tests()
 							;; 
 						1.9)
 							case $DRIVER_DEFAULT in
-								10-1[0-2]|11-*|12-*|12.*|13.*|14.*) 
+								10-1[0-2]|11-*|12-*|12.*|13[.-]*|14[.-]*|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -563,7 +564,7 @@ driver_support_tests()
 							;;
 						1.8|7.6)
 							case $DRIVER_DEFAULT in
-								10-[7-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*) # update when 1.8 is actually supported
+								10-[7-9]|10-1[0-2]|11-*|12-*|12.*|13[.-]*|14[.-]*|$DISTRO_FGLRX) # update when 1.8 is actually supported
 									: # all other drivers fail to support xorg >= 1.8
 									;;
 								*)
@@ -575,7 +576,7 @@ driver_support_tests()
 							;;
 						1.7|7.5)
 							case $DRIVER_DEFAULT in
-								10-[4-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
+								10-[4-9]|10-1[0-2]|11-*|12-*|12.*|13[.-]*|14[.-]*|$DISTRO_FGLRX)
 									: # all other drivers fail to support xorg >= 1.7
 									;;
 								*)
@@ -587,7 +588,7 @@ driver_support_tests()
 							;;
 						1.6|7.[3-4])
 							case $DRIVER_DEFAULT in
-								9-[4-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
+								9-[4-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13[.-]*|14[.-]*|$DISTRO_FGLRX)
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -659,7 +660,7 @@ driver_support_tests()
 									;;
 								29)
 									case $DRIVER_DEFAULT in
-										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
+										9.2|9-[3-9]|9-1[0-2]|10-*|11-*|12[.-]*|13[.-]*|14[.-]*)
 											: 
 											;;
 										*)
@@ -671,7 +672,7 @@ driver_support_tests()
 									;;
 								30)
 									case $DRIVER_DEFAULT in
-										9-8|9-9|9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
+										9-8|9-9|9-1[0-2]|10-*|11-*|12[.-]*|13[.-]*|14[.-]*)
 											: 
 											;;
 										*)
@@ -683,7 +684,7 @@ driver_support_tests()
 									;;
 								31|32)
 									case $DRIVER_DEFAULT in
-										9-1[0-2]|10-*|11-*|12-*|12.*|13.*|14.*)
+										9-1[0-2]|10-*|11-*|12[.-]*|13[.-]*|14[.-]*)
 											: 
 											;;
 										*)
@@ -695,7 +696,7 @@ driver_support_tests()
 									;;
 								33)
 									case $DRIVER_DEFAULT in
-										10-[2-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
+										10-[2-9]|10-1[0-2]|11-*|12[.-]*|13[.-]*|14[.-]*)
 											:
 											;;
 										*)
@@ -707,7 +708,7 @@ driver_support_tests()
 									;;
 								34)
 									case $DRIVER_DEFAULT in
-										10-[5-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
+										10-[5-9]|10-1[0-2]|11-*|12[.-]*|13[.-]*|14[.-]*)
 											:
 											;;
 										*)
@@ -719,7 +720,7 @@ driver_support_tests()
 									;;
 								35)
 									case $DRIVER_DEFAULT in
-										10-[8-9]|10-1[0-2]|11-*|12-*|12.*|13.*|14.*)
+										10-[8-9]|10-1[0-2]|11-*|12[.-]*|13[.-]*|14[.-]*)
 											:
 											;;
 										*)
@@ -733,7 +734,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										10-1[0-2]|11-*|12-*|12.*|13.*|14.*) 
+										10-1[0-2]|11-*|12[.-]*|13[.-]*|14[.-]*) 
 											:
 											;;
 										*)
@@ -747,7 +748,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										11-*|12-*|12.*|13.*|14.*) 
+										11-*|12-*|12[.-]*|13[.-]*|14[.-]*) 
 											:
 											;;
 										*)
@@ -759,7 +760,7 @@ driver_support_tests()
 									;;	
 								39)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12*|12.*|13.*|14.*)
+										11-[6-9]|11-1[0-2]|12[.-]*|13[.-]*|14[.-]*)
 											:
 											;;
 										*)
@@ -775,7 +776,7 @@ driver_support_tests()
 							case $KERNEL_MATH in
 								0)
 									case $DRIVER_DEFAULT in
-										11-[6-9]|11-1[0-2]|12-*|12.*|13.*|14.*)
+										11-[6-9]|11-1[0-2]|12[.-]*|13[.-]*|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -786,7 +787,7 @@ driver_support_tests()
 									;;
 								1)
 									case $DRIVER_DEFAULT in
-										11-[8-9]|11-1[0-2]|12-*|12.*|13.*|14.*)
+										11-[8-9]|11-1[0-2]|12[.-]*|13[.-]*|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -797,7 +798,7 @@ driver_support_tests()
 									;;
 								2)
 									case $DRIVER_DEFAULT in
-										12-*|12.*|13.*|14.*)
+										12[.-]*|13[.-]*|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -808,7 +809,7 @@ driver_support_tests()
 									;;
 								3)
 									case $DRIVER_DEFAULT in
-										12-[4-9]|12-1[0-2]|12.*|13.*|14.*)
+										12-[4-9]|12-1[0-2]|12.*|13[.-]*|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -819,7 +820,7 @@ driver_support_tests()
 									;;
 								4)
 									case $DRIVER_DEFAULT in
-										12-[7-9]|12-1[0-2]|12.*|13.*|14.*)
+										12-[7-9]|12-1[0-2]|12.*|13[.-]*|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -830,7 +831,7 @@ driver_support_tests()
 									;;
 								5)
 									case $DRIVER_DEFAULT in
-										12-9|12-1[0-2]|12.*|13.*|14.*)
+										12-9|12-1[0-2]|12.*|13[.-]*|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -841,7 +842,7 @@ driver_support_tests()
 									;;
 								6)
 									case $DRIVER_DEFAULT in
-										12-9|12-1[0-2]|12.*|13.*|14.*)
+										12-9|12-1[0-2]|12.*|13[.-]*|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -853,7 +854,7 @@ driver_support_tests()
 								7)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										12.10|13.1|13.[3-9]|13.1[0-2]|14.*)
+										12.10|13.1|13[.-][3-9]|13[.-]1[0-2]|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -865,7 +866,19 @@ driver_support_tests()
 								8)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										13.[4-9]|13.1[0-2]|14.*)
+										13[.-][4-9]|13[.-]1[0-2]|14[.-]*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								8)
+									case $DRIVER_DEFAULT in
+										# amd release notes say it only supports kernel 3.5, but that's probably wrong
+										13[.-][6-9]|13[.-]1[0-2]|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1691,9 +1704,9 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
-# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drers)
+# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
@@ -2379,7 +2392,7 @@ detect_card_version()
 assign_standard_or_beta_driver()
 {
 	local betaDriver='' stableDriver='' liveB betaVersion='' remoteVersioNo=''
-	local betaCurrent='' beta304='' beta173='' beta96='' beta71='' localVersionNo beta71=''
+	local betaCurrent='' beta304='' beta173='' beta96='' beta71='' localVersionNo betalocal amdBetaVersion beta71=''
 	
 	case $CARD in
 		$NVIDIA)
@@ -2450,19 +2463,23 @@ assign_standard_or_beta_driver()
 		$FGLRX)
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
 				liveBetas=$( gebeta_drivers )
+				amdBetaVersion=$( sed 's/-/./g' <<< $FG_DEFAULT_BETA)
 				if [ -n "$liveBetas" ];then
 					betaCurrent=$( cut -d '-' -f 1 <<< "$liveBetas" )
 					betaVersion=$( cut -d '-' -f 2 <<< "$liveBetas" )
 					remoteVersionNo=$( sed -r 's/beta([0-9]+)/\1/' <<< "$liveBetas" )
 					localVersionNo=$( sed -r 's/beta([0-9]+)/\1/' <<< "$FG_DEFAULT_BETA" )
-					if [ -z "$FG_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $FG_DEFAULT_BETA )" -eq 0 ] || \
-					[ -n "$remoteVersionNo" -a -n "$localVersionNo" -a "$( compare_numbers $remoteVersionNo $localVersionNo )" -eq 0  ];then
+					
+					echo $FG_DEFAULT_BETA  $amdBetaVersion 
+					if [ -z "$FG_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $amdBetaVersion )" -eq 0 ] || \
+					[ -n "$remoteVersionNo" -a -n "$localVersionNo" \
+					-a "$( compare_numbers $remoteVersionNo $localVersionNo )" -eq 0  ];then
 						FG_DEFAULT_BETA=$betaCurrent
 						FG_BETA_VERSION=$betaVersion
 					fi
 				fi
 			fi
-			if [ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )" -eq 0T_BETA" ];then
+			if [ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $amdBetaVersion $FG_DEFAULT )" -eq 0T_BETA" ];then
 				betaDriver=$FG_DEFAULT_Bfi
 			stableDriver=$FG_DEFAULTT
 			fi
@@ -2761,7 +2778,7 @@ uninstall_script()
 
 kernel_string_info()
 {
-	# The kernel variables stuff needs to be in a separate function to get data from
+	# The kernel variables stuff needs to be in a separate functiet data from
 	# either the running kernel or the new installed kernel
 	if [ -n "$INSTALL_TO_KERNEL" ];then
 		KERNEL_FULL=$INSTALL_TO_KERNEL
@@ -2780,7 +2797,7 @@ kernel_string_info()
 	if [ -n "$( grep -Es '^[3-9]\.' <<< $KERNEL_FULL )" ];then
 		KERNEL_BASE=$( echo $KERNEL_FULL | cut -d '.' -f 1 ) # like: 3
 		KERNEL_NUMBER=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 1-2 ) # like: 3.19
-		KERNEL_MATH=$( echo $KERNEL_FULL | cu' -f 1 | cut -d '.' -f 2 ) # like: 19
+		KERNEL_MATH=$( echo $KERNEL_FULL | cut -d '-' -f 1 | cut -d '.' -f 2 ) # like: 19
 	# else check for old 2.6.19 style
 	else
 		KERNEL_BASE=$( echo $KERNEL_FULL | cut -d '.' -f 1-2 ) # like: 2.6
@@ -5141,6 +5158,8 @@ set_download_info()
 			# set driver package name
 			# DRIVER_FILE="ati-driver-installer-$DRIVER_DEFAULT-$CPU"
 			if [ "$B_USE_BETA" == 'true' ];th# note: need beta* because amd releases numbered betas within a month release ];th# # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.3-beta3-linux-x86.x86_64.zip
+				# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
+				# amd-catalyst-13.6-beta-linux-x86.x86_64.run
 				fgBetaVersion="-$FG_BETA_VERSION"'beta-'
 				downloadUrl='http://www2.ati.com/drivers/beta/'
 			else
@@ -5264,7 +5283,7 @@ download_extract_driver()
 			# here we want to end up with a directory name like: fglrx-install-9-6 
 			if [ "$extension" == 'zip' ];then
 				# note, contents of zip file are not named the same as say version 12-8, rather: 8.982
-				runPackage=$( unzip -l ./$downloadPackage | grep -E 'amd-driver-installer.*.run' | awk '{print $NF}' )
+				runPackage=$( unzip -l ./$downloadPackage | grep -(catalyst|driver-installer)?.*.run$r.*.run' | awk '{print $NF}' )
 				# echo $runPackage run
 				if [ ! -f $runPackage ];then
 					unzip ./$downloadPackage
@@ -5864,7 +5883,7 @@ test_module_build_ok()
 		xorgNvidia=$( readlink /usr/lib/xorg/modules/extensions/libglx.so | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
 		# installedDriver=$( bash $SCRIPT_WORKING_DIR/$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 		if [ -z "$xorgNvidia" ];then
-			echo "${C}Xorg${W} Updated${N}"
+			echo "${C}Xorg${W} ${N}"
 			returnValue=5
 			logData="${logData}Xorg updated: "
 			if [ "$1" == 'error' ];then
@@ -5889,7 +5908,8 @@ test_module_build_ok()
 	if [ "$returnValue" -eq 0 ];then
 		echo -n "  ${S}Checking for previous ${C}nVidia${S} driver module for ${C}$KERNEL_FULL${S}.... ${N}"
 		if [ -f "/lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko" ];then
-			echo "${W}PRESENT${N}turnValue=6
+			echo "${W}PRESENT${N}"
+			returnValue=6
 			logData="${logData}Nvidia module exists: "
 			if [ "$1" == 'error' ];then
 				error_handler 170
