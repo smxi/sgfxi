@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.46
+####  version: 4.20.47
 ####  Date: June 4 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -292,10 +292,10 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # actual run: http://support.amd.com/us/gpudownload/linux/Pages/radeon_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
 # note, as distrissingly usual, amd AGAIN has changed their driver name syntax. 
-FG_VERSIONS='13.4:13.1:12.10'
-FG_DEFAULT='13.4'
+FG_VERSIONS='13-4:13.1:12.10'
+FG_DEFAULT='13-4'
 # http://www2.ati.com/drivers/legacy/amd-driver-installer-catalyst-13.1-legacy-linux-x86.x86_64.zip
-FG_LEGACY_2='13.4' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
+FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
 # http://www2.ati.com/drivers/linux/amd-driver-installer-catalyst-12.10-x86.x86_64.zip
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.2-beta3-linux-x86.x86_64.zip
