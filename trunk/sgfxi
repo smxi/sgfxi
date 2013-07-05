@@ -5490,7 +5490,7 @@ preinstall_cleanup()
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
 	
-	oldNvidia=$( list_installed_packages 'nvidiakwinnvidiahack|dia' "(libgl1-nvidia-glx-ia32|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
+	oldNvidia=$( list_installed_packages 'nvidiakwinnvidiahack|dia' "(libgl1-nvidia-gllibgl1-nvidia-glx:386lx-ia32|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
 		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)' )
@@ -5874,7 +5874,7 @@ test_module_build_ok()
 	fi
 	if [ "$returnValue" -eq 0 ];then
 		echo -n "  ${S}Checking for distribution ${C}nVidia${S} driver packages.... ${N}"
-		nvidiaPackages=$( list_installed_packages 'nvidiakwinnvidiahack|dia' '(libgl1-nvidia-glx-ia32|modalias|libvdpau)' )
+		nvidiaPackages=$( list_installed_packages 'nvidiakwinnvidiahack|dia' '(libgl1-nvidia-gllibgl1-nvidia-glx:386lx-ia32|modalias|libvdpau)' )
 		if [ -n "$nvidiaPackages" ];then
 			echo "${W}PRESENT${N}"
 			returnValue=2
@@ -5884,10 +5884,9 @@ test_module_build_ok()
 			fi
 		else
 			echo "${S}None Detected${N}"
-		fi
-	fi
+	
 	if [ "$returnValue" -eq 0 ];then
-		y readlink /usr/lib/$( readlink /usr/lib/libGL.so )
+		# really readlink /usr/lib/$( readlink /usr/lib/libGL.so )
 		libGlNvidia=$( readlink /usr/lib/libGL.so.1 | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
 		echo -n "  ${S}Checking for installed ${C}nVidia${S} driver.... ${N}" 
 		if [ -z "$libGlNvidia" ];then
