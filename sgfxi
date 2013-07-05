@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.48
-####  Date: July 1 2013
+####  version: 4.20.49
+####  Date: July 5 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -6666,10 +6666,12 @@ start_x_question()
 					fgGlxInstall='echo -e "${C}$fgGlxOpt${M} - Install ${C}$fgGlx${M}."'
 					;;
 				$NVIDIA)
-					# not using this now until issue is confirmed by user
-# 					nvGlxOpt='install-nvidia-glx'
-# 					nvGlx='libgl1-nvidia-glx-ia32'
-# 					nvGlxAlert='echo -e "\n${M}You might want to (re)install ${C}$nvGlx${M} (even if already installed)\nif you have problems with your ${C}64 bit nVidia${M} driver/apps.${N}"'
+					# not using this now until issue is confirmed b					nvGlxOpt='install-nvidia-glx'
+					# note, this was the old package name
+					# nvGlx='libgl1-nvidia-glx-ia32'
+					nvGlx='libgl1-nvidia-glx:i386'
+a32'
+# 					nvGlxAlert='echo -e "\n${M}You might want to (re)install ${C}$nvGlx${M} (even if already installed)\nif you have problems with your ${C}64 bit nVidia${M} driver/apps.N}"'
 # 					nvGlxInstall='echo -e "${C}$nvGlxOpt${M} - Install ${C}$nvGlx${M}."'
 					:
 					;;
