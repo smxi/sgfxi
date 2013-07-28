@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.50
-####  Date: July 5 2013
+####  version: 4.20.51
+####  Date: July 28 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='319.23:304.88:173.14.37:96.43.23:71.86.15'
+NV_VERSIONS='319.32:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -237,7 +237,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA::"
-# stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23
+# stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
@@ -259,7 +259,7 @@ NV_BETA="$NV_VERSIONS_BETA::"
 # stabel legacy 4: 304.64 304.84 304.88
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='319.17:313.30:313.26:313.18:310.44:310.40:304.84:304.64:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='319.23:319.17:313.30:313.26:313.18:310.44:310.40:304.84:304.64:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -1332,6 +1332,21 @@ driver_support_tests()
 												;;
 										esac
 										;;
+									10)
+										case $DRIVER_DEFAULT in
+											# note that patches are needed for rc 3.3 kernels, we'll wait
+											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
+											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
+											325.*|319.[3-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
 								esac
 								;;
 						esac # end KERNEL_BASE
@@ -1473,6 +1488,30 @@ run_driver_patches()
 								313.18)
 									run_prepatch_fixes '3.7-path-fix'
 									patchFile='NVIDIA_313.18-3.8.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						10)
+							case $DRIVER_DEFAULT in
+								# patch from kmathern: 
+								# current live patch: http://techpatterns.com/forums/about2308.html
+								173.14.37)
+									#run_prepatch_fixes '3.7-path-fix'
+									# patchFile='NVIDIA_173.14.36_3.7.patch'
+									patchFile='NVIDIA-173.14.37-3.10.patch'
+									apply_patch_file $patchFile
+									;;
+								#patch url: https://bugzilla.kernel.org/attachment.cgi?id=102881
+								319.32)
+									#run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA-319.32-3.10.patch'
+									apply_patch_file $patchFile
+									;;
+								# patch url: 
+								325.08)
+									#run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA-325.08-3.10.patch'
 									apply_patch_file $patchFile
 									;;
 							esac
@@ -1721,9 +1760,8 @@ set_test_data()
 # 		# if you want to test for/without aptosid kernels, set to null '' or # 'true'
 		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
-# 		# ie: 3-# 		KERNEL_BASE=3
-# BASE=3
-		KERNE7_MATH=7
+# 		# ie: 3-		KERNEL_BASE=3
+		KERNEL_MATH=10_MATH=7
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
@@ -2718,7 +2756,7 @@ clean_script_data()
 	backupFiles=$( ls $EXXC-bu* $EXXC.1st* 2>/dev/null )
 	backupFilesCount=$( wc -w <<< $backupFiles )
 	echo "${S}The following ${C}$SCRIPT_NAME${S} data exists for possible cleanup in your system"
-	echo "$SCRIPT_WORKING_DIR: ${C}$downloadDirectorySize${S}"
+	echo "$SCRIPT__DIR: ${C}$downloadDirectorySize${S}"
 	echo "$EXXC-bu* backup files: ${C}$backupFilesCount${S}"
 	echo $LINE
 	echo "${C}1 - remove-video-driver-downloads${S} - Delete ALL video driver downloads."
@@ -2768,7 +2806,7 @@ clean_script_data()
 	fi
 }
 
-uninstall_s
+uninstall_script()
 {
 	local opt=''
 	local options="yes-uninstall-everything return-main-menu"
@@ -5836,7 +5874,7 @@ build_kernel_module_only()
 				log_driver_installer_failure
 				error_handler 171 "$moduleResult"
 			else
-				echo "${S}Build of module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_FULL${S} was a success!"
+				echo "${S}Build of module ${C}$DRIVER_DEFAULor kernel ${C}$KERNEL_FULL${S} was a success!"
 				if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 					echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
 					exit 0
@@ -5874,7 +5912,7 @@ test_module_build_ok()
 	fi
 	if [ "$returnValue" -eq 0 ];then
 		echo -n "  ${S}Checking for distribution ${C}nVidia${S} driver packages.... ${N}"
-		nvidiaPackages=$( list_installed_packages 'nvidiakwinnvidiahack|dia' '(libgl1-nvidia-gllibgl1-nvidia-glx:386lx-ia32|modalias|libvdpau)' )
+		nvidiaPackages=$( list_installed_packages 'nvidia' '(libkwinnvidiahack|libgl1-nvidia-glx-ia32|libgl1-nvidia-glx:386|modalias|libvdpau)' )
 		if [ -n "$nvidiaPackages" ];then
 			echo "${W}PRESENT${N}"
 			returnValue=2
@@ -5884,7 +5922,8 @@ test_module_build_ok()
 			fi
 		else
 			echo "${S}None Detected${N}"
-i
+		fi
+	fi
 	if [ "$returnValue" -eq 0 ];then
 		# really readlink /usr/lib/$( readlink /usr/lib/libGL.so )
 		libGlNvidia=$( readlink /usr/lib/libGL.so.1 | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
