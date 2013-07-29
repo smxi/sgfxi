@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.51
-####  Date: July 28 2013
+####  version: 4.20.52
+####  Date: July 29 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -1337,7 +1337,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.[3-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
+											325.*|319.[3-9][0-9]|304.[89][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1502,13 +1502,20 @@ run_driver_patches()
 									patchFile='NVIDIA-173.14.37-3.10.patch'
 									apply_patch_file $patchFile
 									;;
+								#patch url: https://devtalk.nvidia.com/default/topic/549532/linux-3-10-incompatibility-in-function-lsquo-nv_i2c_del_adapter-rsquo-error-void-value-not-igno/
+								# rjmx post 13
+								304.88)
+									#run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA-304.88-3.10.patch'
+									apply_patch_file $patchFile
+									;;
 								#patch url: https://bugzilla.kernel.org/attachment.cgi?id=102881
 								319.32)
 									#run_prepatch_fixes '3.7-path-fix'
 									patchFile='NVIDIA-319.32-3.10.patch'
 									apply_patch_file $patchFile
 									;;
-								# patch url: 
+								# patch url: https://devtalk.nvidia.com/cmd/default/download-comment-attachment/58795/
 								325.08)
 									#run_prepatch_fixes '3.7-path-fix'
 									patchFile='NVIDIA-325.08-3.10.patch'
@@ -1750,7 +1757,7 @@ set_test_data()
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
@@ -2745,7 +2752,7 @@ clean_script_data()
 
 	local downloadDirectorySize='' backupFiles='' backupFilesCount=''
 	local opt='' bRepeat='false'
-	local options="remove-video-driver-downloads delete-xorg.conf-backup-files uninstall-$SCRIPT_NAME quit" 
+	local options="remove-video-driver-downloads delete-xorg.conf-backup-files uninstall-$SCRIPTuit" 
 	
 	echo $MLINE
 	echo "${M}$SCRIPT_NAME cleanup tool"
@@ -2756,7 +2763,7 @@ clean_script_data()
 	backupFiles=$( ls $EXXC-bu* $EXXC.1st* 2>/dev/null )
 	backupFilesCount=$( wc -w <<< $backupFiles )
 	echo "${S}The following ${C}$SCRIPT_NAME${S} data exists for possible cleanup in your system"
-	echo "$SCRIPT__DIR: ${C}$downloadDirectorySize${S}"
+	echo "$SCRIPT_WORKING_DIR: ${C}$downloadDirectorySize${S}"
 	echo "$EXXC-bu* backup files: ${C}$backupFilesCount${S}"
 	echo $LINE
 	echo "${C}1 - remove-video-driver-downloads${S} - Delete ALL video driver downloads."
@@ -5865,7 +5872,7 @@ build_kernel_module_only()
 			echo $LINE
 			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_FULL${S} now (can take a while)...${N}"
 			if [ "$2" != 'silent' ];then
-				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a || moduleResult=$?
+				bash $SCRIPT_WORKING_DIR/$runPackagnt -N --kernel-name=$KERNEL_FULL --kernel-module-only -a || moduleResult=$?
 			else
 				silent=' -s'
 				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
@@ -5874,7 +5881,7 @@ build_kernel_module_only()
 				log_driver_installer_failure
 				error_handler 171 "$moduleResult"
 			else
-				echo "${S}Build of module ${C}$DRIVER_DEFAULor kernel ${C}$KERNEL_FULL${S} was a success!"
+				echo "${S}Build of module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_FULL${S} was a success!"
 				if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 					echo "Script will exit now and you can do what you want, the module is working for that kernel.${N}"
 					exit 0
