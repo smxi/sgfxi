@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.54
+####  version: 4.20.55
 ####  Date: August 16 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -894,10 +894,20 @@ driver_support_tests()
 									;;
 								9)
 									case $DRIVER_DEFAULT in
-										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-# 										13[.-][6-9]|13[.-]1[0-2]|14[.-]*)
-# 											: # do nothing
-# 											;;
+										13[.-][8-9]|13[.-]1[0-2]|14[.-]*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								10)
+									case $DRIVER_DEFAULT in
+										13[.-][8-9]|13[.-]1[0-2]|14[.-]*)
+											: # do nothing
+											;;
 										*) # use 225 for beta testing errors
 											if [ "$B_TESTING_3" != 'true' ];then
 												error_handler 234 $KERNEL_NUMBER
@@ -2739,11 +2749,11 @@ create_data_storage()
 {
 	local nvidiaPackages='' fglrxPackages='' bMoved='false'
 	# don't run this in case of user set test paths
-	if [ ! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
+	if [ ! -d "$WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
 		echo $LINE
 		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
 		mkdir -p $SCRIPT_WORKING_DIR
-		rm -f ${USRS}nohup.out &>/d # sometimes these get left over...
+		rm -f ${USRS}nohup.out &>/dev/null # sometimes these get left over...
 		rm -rf /usr/src/nvidia-installer &>/dev/null # this can cause weirdness so dump it
 		nvidiaPackages=$( ls ${USRS} 2>/dev/null | grep -Esi '^nvidia' )
 		nvidiaPackages=$( echo $nvidiaPackages )
@@ -5836,14 +5846,14 @@ install_libvdpau()
 			libVdPau=''
 			;;
 		# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=558369
-		# note: until the sid break for nvidia-libvdpau1/nvidia-libvdpau1-driver is fixed...
+		# note: until the sid break dia-libvdpau1/nvidia-libvdpau1-driver is fixed...
 # 		debian)
 # 			libVdPau='nvidia-libvdpau1-driver'
 # 			;;
 	esac
 	
 	if [ "$B_TESTING_5" != 'true' -a -n "$libVdPau" -a "$LEGACY_LEVEL" -gt 3 ];then
-		if [ -heck_package_status "$libVdPau" 'i' )" ];then
+		if [ -z "$( check_package_status "$libVdPau" 'i' )" ];then
 			if [ -n "$( check_package_status "$libVdPau" 'c' )" ];then
 				install_package "$libVdPau"
 			fi
