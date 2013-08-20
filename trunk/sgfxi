@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.55
-####  Date: August 16 2013
+####  version: 4.20.56
+####  Date: August 20 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -314,8 +314,8 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip 
 # http://www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
 
-FG_DEFAULT_BETA='13-6'
-FG_BETA_VERSION='beta'
+FG_DEFAULT_BETA='13.8'
+FG_BETA_VERSION='beta2'
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
@@ -2749,7 +2749,7 @@ create_data_storage()
 {
 	local nvidiaPackages='' fglrxPackages='' bMoved='false'
 	# don't run this in case of user set test paths
-	if [ ! -d "$WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
+	if [ ! -d "_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
 		echo $LINE
 		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
 		mkdir -p $SCRIPT_WORKING_DIR
@@ -5846,7 +5846,7 @@ install_libvdpau()
 			libVdPau=''
 			;;
 		# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=558369
-		# note: until the sid break dia-libvdpau1/nvidia-libvdpau1-driver is fixed...
+		# note: until the sid breakidia-libvdpau1/nvidia-libvdpau1-driver is fixed...
 # 		debian)
 # 			libVdPau='nvidia-libvdpau1-driver'
 # 			;;
