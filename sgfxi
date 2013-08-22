@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.56
-####  Date: August 20 2013
+####  version: 4.20.57
+####  Date: August 22 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,9 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
+NV_VERSIONS='325.15:304.108:173.14.37:96.43.23:71.86.15'
+# in case the new ones don't support 3.10 kernel
+# NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # ge4xx cards
@@ -236,11 +238,13 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_BETA="$NV_VERSIONS_BETA:325.08::"
+NV_BETA="$NV_VERSIONS_BETA:::"
+# stable primary: 325.15
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
+# lt stable primary: 319.49
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
@@ -256,10 +260,10 @@ NV_BETA="$NV_VERSIONS_BETA:325.08::"
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 # ends there, xorg 11/12 support
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
 #                  173.14.31 173.14.35 173.14.36 173.14.37
-# stabel legacy 4: 304.64 304.84 304.88
+# stabel legacy 4: 304.64 304.84 304.88 304.108
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='319.32:319.23:313.30:313.26:313.18:310.44:310.40:304.84:304.64:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='319.49:319.32:313.30:313.26:313.18:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -944,7 +948,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.14)
 								case $DRIVER_DEFAULT in
-									325.*|319.*|313.*|31[4-9].[0-9][0-9]|304.[89][0-9]|310.[4-9][0-9]|173.14.3[789]|$DISTRO_NVIDIA)
+									325.*|319.*|313.*|31[4-9].[0-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|310.[4-9][0-9]|173.14.3[789]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -956,7 +960,7 @@ driver_support_tests()
 								;;
 							1.13)
 								case $DRIVER_DEFAULT in
-									325.*|319.*|313.*|310.*|304.[3-9][0-9]|173.14.3[6-9]|$DISTRO_NVIDIA)
+									325.*|319.*|313.*|310.*|304.[3-9][0-9]|304.[1-9][0-9][0-9]|173.14.3[6-9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -1316,7 +1320,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.*|313.*|310.*|304.[689][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
+											325.*|319.*|313.*|310.*|304.[689][0-9]|304.[1-9][0-9][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1331,7 +1335,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.*|313.*|310.*|304.[89][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
+											325.*|319.*|313.*|310.*|304.[89][0-9]|304.[1-9][0-9][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1346,7 +1350,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.*|313.*|310.*|304.[89][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
+											325.*|319.*|313.*|310.*|304.[89][0-9]|304.[1-9][0-9][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1361,7 +1365,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.[3-9][0-9]|304.[89][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
+											325.*|319.[3-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2737,8 +2741,7 @@ cleanup_update_files()
 	if [ -f $slxorg ];then
 		rm -f $slxorg # clean up old xorg lib file
 	fi
-	if [ -d /usr/src/kernel-downloads -a ! -d $SM_KERNEL_DOWNLOADS  ];then
-		mv -f /usr/src/kernel-downloads $SM_KERNEL_DOWNLOADS
+	if [ -d /usr/src/kernel-downloads -a ! -d $SM_KERNEL_DOWNLOADS  ]	mv -f /usr/src/kernel-downloads $SM_KERNEL_DOWNLOADS
 	fi
 	
 	eval $LOGUE
@@ -2749,7 +2752,7 @@ create_data_storage()
 {
 	local nvidiaPackages='' fglrxPackages='' bMoved='false'
 	# don't run this in case of user set test paths
-	if [ ! -d "_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
+	if [ ! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
 		echo $LINE
 		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
 		mkdir -p $SCRIPT_WORKING_DIR
@@ -5827,7 +5830,7 @@ run_driver_installer()
 		log_driver_installer_failure
 		error_handler 245 $installError
 	fi
-	case $CARD in
+CARD in
 		$FGLRX)
 			:
 			;;
@@ -5846,7 +5849,7 @@ install_libvdpau()
 			libVdPau=''
 			;;
 		# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=558369
-		# note: until the sid breakidia-libvdpau1/nvidia-libvdpau1-driver is fixed...
+		# note: until the sid break for nvidia-libvdpau1/nvidia-libvdpau1-driver is fixed...
 # 		debian)
 # 			libVdPau='nvidia-libvdpau1-driver'
 # 			;;
