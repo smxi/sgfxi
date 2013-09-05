@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.57
-####  Date: August 22 2013
+####  version: 4.20.58
+####  Date: September 4 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -217,7 +217,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='325.15:304.108:173.14.37:96.43.23:71.86.15'
+NV_VERSIONS='325.15:304.108:173.14.38:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -259,11 +259,11 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable legacy 1: 71.86.06 71.86.09 71.86.11 71.86.13 71.86.14 71.86.15
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 # ends there, xorg 11/12 support
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
-#                  173.14.31 173.14.35 173.14.36 173.14.37
+#                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38
 # stabel legacy 4: 304.64 304.84 304.88 304.108
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='319.49:319.32:313.30:313.26:313.18:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:173.14.35:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='319.49:319.32:313.30:313.26:313.18:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -948,7 +948,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.14)
 								case $DRIVER_DEFAULT in
-									325.*|319.*|313.*|31[4-9].[0-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|310.[4-9][0-9]|173.14.3[789]|$DISTRO_NVIDIA)
+									325.*|319.*|313.*|31[4-9].[0-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|310.[4-9][0-9]|173.14.3[7-9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -1350,7 +1350,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.*|313.*|310.*|304.[89][0-9]|304.[1-9][0-9][0-9]|173.14.[3][6-9]|$DISTRO_NVIDIA)
+											325.*|319.*|313.*|310.*|304.[89][0-9]|304.[1-9][0-9][0-9]|173.14.[3-9][6-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2741,7 +2741,8 @@ cleanup_update_files()
 	if [ -f $slxorg ];then
 		rm -f $slxorg # clean up old xorg lib file
 	fi
-	if [ -d /usr/src/kernel-downloads -a ! -d $SM_KERNEL_DOWNLOADS  ]	mv -f /usr/src/kernel-downloads $SM_KERNEL_DOWNLOADS
+	if [ -d /usr/src/kernel-downloads -a ! -d $SM_KERNEL_DOWNLOADen
+		mv -f /usr/src/kernel-downloads $SM_KERNEL_DOWNLOADS
 	fi
 	
 	eval $LOGUE
@@ -5829,8 +5830,7 @@ run_driver_installer()
 	if [ "$installError" -gt 0 ];then
 		log_driver_installer_failure
 		error_handler 245 $installError
-	fi
-CARD in
+se $CARD in
 		$FGLRX)
 			:
 			;;
