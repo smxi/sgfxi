@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.60
+####  version: 4.20.61
 ####  Date: September 19 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -1380,7 +1380,7 @@ driver_support_tests()
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.[4-9][0-9]|$DISTRO_NVIDIA)
+											325.*|319.[4-9][0-9]|304.1[0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1573,6 +1573,11 @@ run_driver_patches()
 								325.15|319.49)
 									#run_prepatch_fixes '3.7-path-fix'
 									patchFile='NVIDIA_325.19-3.11.patch'
+									apply_patch_file $patchFile
+									;;
+								304.108)
+									#run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA_304.108-3.11.patch'
 									apply_patch_file $patchFile
 									;;
 							esac
@@ -2720,10 +2725,10 @@ reset_using_live_driver_data()
 			NV_LEGACY_BETA_3=$( awk '{print $14}' <<< "$nvidiaBeta" ) # 5xxx cards
 			NV_LEGACY_BETA_4=$( awk '{print $18}' <<< "$nvidiaBeta" ) # 5xxx cards
 			
-			# DEFAULT: 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
+			# D 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
 			# fglrx drivers
 			FG_DEFAULT=$( awk '{print $2}' <<< "$fglrxDefault" )
-			FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDe)
+			FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDefault" )
 		fiesponse
 	fi
 }
@@ -5827,11 +5832,12 @@ run_driver_installer()
 # 			remove_module 'nouveau' 
 			;;
 		$FGLRX)
-			distroId=$FG_DISTRIB_ID
+			distroId=$FG_DIS
 			distroCodeName=$FG_DISTRIB_CODENAME
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
-				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeNa	log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
+				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
+				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 				fglrxNumber='2'
 			else
 				echo $MLINE
