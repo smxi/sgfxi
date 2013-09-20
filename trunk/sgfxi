@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.59
+####  version: 4.20.60
 ####  Date: September 19 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -1360,12 +1360,27 @@ driver_support_tests()
 												;;
 										esac
 										;;
-									10|11)
+									10)
 										case $DRIVER_DEFAULT in
 											# note that patches are needed for rc 3.3 kernels, we'll wait
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
-											325.*|319.[3-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
+											325.*|319.[4-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									11)
+										case $DRIVER_DEFAULT in
+											# note that patches are needed for rc 3.3 kernels, we'll wait
+											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
+											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
+											325.*|319.[4-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1547,6 +1562,17 @@ run_driver_patches()
 								325.08)
 									#run_prepatch_fixes '3.7-path-fix'
 									patchFile='NVIDIA-325.08-3.10.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						11)
+							case $DRIVER_DEFAULT in
+								# patch url: http://cvs.rpmfusion.org/viewvc/*checkout*/rpms/nvidia-kmod/devel/kernel_v3.11.patch?revision=1.2&root=nonfree
+								# https://devtalk.nvidia.com/default/topic/602829/-solved-nvidia-linux-3-11-compatibility-error-lsquo-num_physpages-rsquo-undeclared-first-use-i/
+								325.15|319.49)
+									#run_prepatch_fixes '3.7-path-fix'
+									patchFile='NVIDIA_325.19-3.11.patch'
 									apply_patch_file $patchFile
 									;;
 							esac
@@ -1791,11 +1817,11 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
@@ -1806,7 +1832,7 @@ set_test_data()
 		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 3-		KERNEL_BASE=3
-		KERNEL_MATH=10_MATH=7
+		KERNEL_MATH=11_MATH=7
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
@@ -2697,15 +2723,14 @@ reset_using_live_driver_data()
 			# DEFAULT: 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
 			# fglrx drivers
 			FG_DEFAULT=$( awk '{print $2}' <<< "$fglrxDefault" )
-			FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDefault" )
-		fi
+			FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDe)
+		fiesponse
 	fi
 }
 
-### -------------------------------------------------------------------
-### general script utilities
-### -------------------------------------------------------------------
+### -----------------------------------------------------------------general script utilities######
 
+### -------------------------------------------------------------
 # args: $1 - get/set; $2 - prefname
 get_set_prefs()
 {
@@ -2742,7 +2767,7 @@ cleanup_update_files()
 	local all_files="" slxorg='sgfxi-lib-xorg'
 
 	# Note: if  * is in "" the wildcard does not work
-	# /dev/null handles case wherep or original file exists
+	# /dev/null handles case where no temp or original file exists
 	all_files=$( ls "${SCRIPT_NAME}."* 2> /dev/null )
 	# make sure stuff exists, rm files
 	if [ -n "$all_files" ];then
@@ -5806,8 +5831,7 @@ run_driver_installer()
 			distroCodeName=$FG_DISTRIB_CODENAME
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
-				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeName"
-				log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
+				installerArgs="$DRIVER_DEFAULT --buildpkg $distroId/$distroCodeNa	log_function_data "dist-id/dist-codename: $distroId/$distroCodeName"
 				fglrxNumber='2'
 			else
 				echo $MLINE
@@ -5830,7 +5854,7 @@ run_driver_installer()
 	# 			export XTYPE='X.Org'
 	# 		fi
 			# note: there's a bug in fglrx that apparently will show no error return on failure
-# 			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG>> $LOG_FILE
+# 			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 1>> $LOG_FILE 2>> $LOG_FILE
 			# ati just made the installer interactive, so can't log the data for now...
 			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$installer $installerArgs 
 			installError="$?"
