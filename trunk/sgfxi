@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.61
-####  Date: September 19 2013
+####  version: 4.20.62
+####  Date: October 2 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -244,7 +244,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 319.49
+# lt stable primary: 319.49 319.60
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
@@ -263,7 +263,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stabel legacy 4: 304.64 304.84 304.88 304.108
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='319.49:319.32:313.30:313.26:313.18:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='319.49:313.30:313.26:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -318,7 +318,9 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip 
 # http://www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
 
-FG_DEFAULT_BETA='13.8'
+# older betas: 13.8 beta2
+
+FG_DEFAULT_BETA='13.10'
 FG_BETA_VERSION='beta2'
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
@@ -907,9 +909,20 @@ driver_support_tests()
 											fi
 									esac
 									;;
-								10|11)
+								10)
 									case $DRIVER_DEFAULT in
 										13[.-][8-9]|13[.-]1[0-2]|14[.-]*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								11)
+									case $DRIVER_DEFAULT in
+										13[.-][9]|13[.-]1[0-2]|14[.-]*)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1822,11 +1835,11 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
@@ -2601,7 +2614,7 @@ assign_standard_or_beta_driver()
 					# now convert to numbered
 					betaCurrentWorking=$( sed 's/-/./g' <<< "$betaCurrent"  )
 					if [ -n "$( grep -E 'beta[0-9]' <<< "$liveBetas" )" ];then
-						betaCurrentVersionWorking=$( sed -r 's/beta([0-9]+)/\1/' <<< "$liveBetas" )
+						betaCurrentVersionWorking=$( sed -r 's/.*-beta([0-9]+)/\1/' <<< "$liveBetas" )
 					fi
 					defaultBetaWorking=$( sed 's/-/./g' <<< $FG_DEFAULT_BETA | sed 's/-/./g' )
 					if [ -n "$( grep -E 'beta[0-9]' <<< "$FG_BETA_VERSION" )" ];then
@@ -2627,11 +2640,18 @@ assign_standard_or_beta_driver()
 					fi
 				fi
 			fi
-			if [ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $defaultBetaWorking $FG_DEFAULT )" -eq 0T_BETA" ];then
-				betaDriver=$FG_DEFAULT_Bfi
+			# two cases, if the remote beta version is greater than default driver, or if local version is graater than default
+			if [ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $defaultBetaWorking $FG_DEFAULT )" -eq 0T_ || \
+			[ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )" -eq 0 ];then
+				betaDriver=$FG_DEFAULT_BETA
+				# echo yest2
+			fi
 			if [ "$bDebugger" == 'true' ];then
+				echo "dbw > fd: $( compare_numbers $defaultBetaWorking $FG_DEFAULT )"
+				echo "fdb > fd: $( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )"
 				echo "FDB:$FG_DEFAULT_BETA:"
 				echo "FBV:$FG_BETA_VERSION:"
+				echo "FD:$FG_DEFAULT:"
 				echo "bd:$betaDriver:"
 				echo "End assign_standard_or_beta_driver"LT_Bfi
 			stableDriver=$FG_DEFAULTT
@@ -2655,6 +2675,9 @@ assign_standard_or_beta_driver()
 					;;
 				$FGLRX)
 					DRIVER_DEFAULT=$stableDriver
+					# explicitly unset these to clear out any sgfxi attempt to use beta stuff internally
+					FG_BETA_VERSION=''
+					B_USE_BETA='false'
 					;;
 			esaceDriver
 		fi
@@ -2710,8 +2733,7 @@ reset_using_live_driver_data()
 		# local values as an acceptable failsafe default.
 		if [ -n "$driverList" ];then
 			# DEFAULT: 306.23 :: LEGACY 4: 304.23 ::  LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
-			NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefault" )
-			NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
+			NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefa			NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
 			NV_LEGACY_2=$( awk '{print $10}' <<< "$nvidiaDefault" ) # ge4xx cards
 			NV_LEGACY_3=$( awk '{print $14}' <<< "$nvidiaDefault" ) # 5xxx cards
 			NV_LEGACY_4=$( awk '{print $18}' <<< "$nvidiaDefault" ) # 6/7xxx cards
@@ -2725,7 +2747,7 @@ reset_using_live_driver_data()
 			NV_LEGACY_BETA_3=$( awk '{print $14}' <<< "$nvidiaBeta" ) # 5xxx cards
 			NV_LEGACY_BETA_4=$( awk '{print $18}' <<< "$nvidiaBeta" ) # 5xxx cards
 			
-			# D 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
+			# DEFAULT: 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
 			# fglrx drivers
 			FG_DEFAULT=$( awk '{print $2}' <<< "$fglrxDefault" )
 			FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDefault" )
@@ -3479,49 +3501,121 @@ check_driver_install_tools()
 # return codes: 0 - $1 > $2; 1 - $1 == $2; 2 - $1 < $2
 # note: this also works for one dot, like 3.4, and for 0 dot, like 3
 # note: this function will always be sent . type numbers, and it handles any
-# localization re decimal indicators internally, otherwise it's too much of a pain.
+# localization re decimal indicators internally, otherwise it's too much of a# Handles cases like 13.10 > 13.9 as well, ie, 10>9a pain.
 compare_numbers()
 {
 	eval $LOGUS
 	## DEBUGGER
 	# echo $1 $2
 	# first we need to determine what the base system is using for decimal indicator
-	local returnValue=''
+	local returnV test1='' test2='' test3='' # these two will be only tested if test1 is 1
+	local oneTwo=0 oneThree=0 twoTwo=0 twoThree=0
+	local b_debug='falseValue=''
 	local decimalType=$( echo 1 | awk '{total = 1 / 2; print total}' | grep -Eo '(\.|,)' )
 
-	# next we'll get the raw data and transate it if required
-	local numOne=$( cut -d '.' -f 1-2 <<< $1 | tr '.' $decimalType )
-	local subOne=$( cut -d '.' -f 3 <<< $1 )
-	if [ -z "$subOne" ];then
-		subOne=0
+	# next we'll get the raw data and transanto separate numbers, this also handles cases
+	# like 13.10 is greater than 13.9 for versions
+	local oneOne=$( cut -d '.' -f 1 <<< $1 | tr '.' $decimalType )
+	local twoOne=$( cut -d '.' -f 1 <<< $2 | tr '.' $decimalType )
+	if [ -z "$oneOne" ];then
+		oneOne=0
 	fi
-	local numTwo=$( cut -d '.' -f 1-2 <<< $2 | tr '.' $decimalType )
-	local subTwo=$( cut -d '.' -f 3 <<< $2 )
-	if [ -z "$subTwo" ];then
-		subTwo=0
+	if [ -z "$twoOne" ];then
+		twoOne=0
 	fi
-	local test1=$( echo $numOne $numTwo | awk '{if ( $1 > $2 ) print 0;else print 1}' )
-	local test2=$( echo $numOne $numTwo | awk '{if ( $1 == $2 ) print 0;else print 1}' )
-	local test3=$( echo $subOne $subTwo | awk '{if ( $1 > $2 ) print 0;else print 1}' )
-	local test4=$( echo $subOne $subTwo | awk '{if ( $1 == $2 ) print 0;else print 1}' )
-# 	 echo -e "test1 $test1\ntest2 $test2\ntest3 $test3\ntest4 $test4"
+	
+	test1=$( echo $oneOne $twoOne | awk '{
+		if ( $1 > $2 ) {
+			print 0
+		}
+		else if ($1 == $2) {
+			print 1
+		}
+		else {
+			print 2
+		}
+	}' )
+	# only do more tests if first numbers are equal
+	if [ "$test1" -eq 1 ];then
+		oneTwo=$( cut -d '.' -f 2 <<< $1 | tr '.' $decimalType )
+		twoTwo=$( cut -d '.' -f 2 <<< $2 | tr '.' $decimalType )
+		if [ -z "$oneTwo" ];then
+			oneTwo=0
+		fi
+		if [ -z "$twoTwo" ];then
+			twoTwo=0
+		fi
+		
+		test2=$( echo $oneTwo $twoTwo | awk '{
+			if ( $1 > $2 ) {
+				print 0
+			}
+			else if ($1 == $2) {
+				print 1
+			}
+			else {
+				print 2
+			}
+		}' )
+		# only do more tests if second numbers are equal
+		if [ "$test2" -eq 1 ];then
+			oneThree=$( cut -d '.' -f 3 <<< $1 )
+			twoThree=$( cut -d '.' -f 3 <<< $2 )
+			if [ -z "$oneThree" ];then
+				oneThree=0
+			fi
+			if [ -z "$twoThree" ];then
+				twoThree=0
+			fi
+			test3=$( echo $oneThree $twoThree | awk '{
+				if ( $1 > $2 ) {
+					print 0
+				}
+				else if ($1 == $2) {
+					print 1
+				}
+				else {
+					print 2
+				}
+			}' )
+		fi
+	fi
 
-	# first case, x > y, and not equal
+	if [ "$b_debug" == 'true' ];then
+		echo "oneOne: $oneOne"
+		echo "oneTwo: $oneTwo"
+		echo "oneThree: $oneThree"
+		echo "twoOne: $twoOne"
+		echo "twoTwo: $twoTwo"
+		echo "twoThree: $twoThree"
+		echo -e "test1 $test1\ntest2 $test2\ntest3 $test3"
+	fi
+
+	# first case, $1 > $2
 	if [ "$test1" -eq 0 ];then
 		returnValue=0
-	# second case, x = y
-	elif [ "$test2" -eq 0 ];then # only when x = y, 3.2 = 3.2
+	# second case, $1 == $2
+	elif [ "$test1" -eq 1 ];then # only when x = y, 3.2 = 3.2
 		# sub number a > b
-		if [ "$test3" -eq 0 ];then
+		if [ "$test2" -eq 0 ];then
 			returnValue=0
 		# sub number a = b
-		elif [ "$test4" -eq 0 ];then
+		elif [ "$test2" -eq 1 ];then
+			if [ "$test3" -eq 0 ];then
+				returnValue=0
+			# sub number a = b
+			elif [ "$test3" -eq 1 ];then
+				returnValue=1
+			# sub number a < b
+			else
+				returnValue=2
+			fi
 			returnValue=1
 		# sub number a < b
 		else
 			returnValue=2
 		fi
-	# if the x is less than y
+	# $1 < $2 than y
 	else
 		returnValue=2
 	fi
@@ -3531,7 +3625,7 @@ compare_numbers()
 	eval $LOGUE
 }
 ## DEBUGGER
-# compare_numbers 195 195.53 ;exit
+# compare_nu3.10 13.9 195.53 ;exit
 
 # for smxi launch in X
 launch_from_X()
@@ -5786,9 +5880,7 @@ run_driver_installer()
 		$NVIDIA)
 			if [ -d $xModPath -a -d $xLibPath ];then
 				# --x-library-path=$xLibPath
-				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPath"
-				
-			else
+				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPath"		else
 				installerArgs="-s -N"
 			fi
 			if [ "$B_GUI_MODE" == 'true' ];then
@@ -5832,7 +5924,7 @@ run_driver_installer()
 # 			remove_module 'nouveau' 
 			;;
 		$FGLRX)
-			distroId=$FG_DIS
+			distroId=$FG_DISTRIB_ID
 			distroCodeName=$FG_DISTRIB_CODENAME
 			installer='ati-installer.sh'
 			if [ "$B_FGLRX_DIRECT" != 'true' ];then
