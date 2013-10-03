@@ -2641,7 +2641,7 @@ assign_standard_or_beta_driver()
 				fi
 			fi
 			# two cases, if the remote beta version is greater than default driver, or if local version is graater than default
-			if [ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $defaultBetaWorking $FG_DEFAULT )" -eq 0T_ || \
+			if [ -n "$defaultBetaWorking" -a "$( compare_numbers $defaultBetaWorking $FG_DEFAULT )" -eq 0T_ || \
 			[ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )" -eq 0 ];then
 				betaDriver=$FG_DEFAULT_BETA
 				# echo yest2
@@ -2733,7 +2733,8 @@ reset_using_live_driver_data()
 		# local values as an acceptable failsafe default.
 		if [ -n "$driverList" ];then
 			# DEFAULT: 306.23 :: LEGACY 4: 304.23 ::  LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
-			NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefa			NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
+			NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaD )
+			NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
 			NV_LEGACY_2=$( awk '{print $10}' <<< "$nvidiaDefault" ) # ge4xx cards
 			NV_LEGACY_3=$( awk '{print $14}' <<< "$nvidiaDefault" ) # 5xxx cards
 			NV_LEGACY_4=$( awk '{print $18}' <<< "$nvidiaDefault" ) # 6/7xxx cards
@@ -5880,7 +5881,8 @@ run_driver_installer()
 		$NVIDIA)
 			if [ -d $xModPath -a -d $xLibPath ];then
 				# --x-library-path=$xLibPath
-				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPath"		else
+				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPa	
+			else
 				installerArgs="-s -N"
 			fi
 			if [ "$B_GUI_MODE" == 'true' ];then
