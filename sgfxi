@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.64
-####  Date: October 4 2013
+####  version: 4.20.65
+####  Date: October 8 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -1581,6 +1581,11 @@ run_driver_patches()
 							;;
 						11)
 							case $DRIVER_DEFAULT in
+								# patch url: https://devtalk.nvidia.com/default/topic/616962/331-13-beta-drivers-feedback-thread/?offset=15
+								331.13)
+									patchFile='NVIDIA-331.13-3.11.patch'
+									apply_patch_file $patchFile
+									;;
 								# patch url: http://cvs.rpmfusion.org/viewvc/*checkout*/rpms/nvidia-kmod/devel/kernel_v3.11.patch?revision=1.2&root=nonfree
 								# https://devtalk.nvidia.com/default/topic/602829/-solved-nvidia-linux-3-11-compatibility-error-lsquo-num_physpages-rsquo-undeclared-first-use-i/
 								325.15|319.49)
@@ -1835,7 +1840,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -2727,11 +2732,11 @@ reset_using_live_driver_data()
 		local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
 		local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
 		local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
-		local fglrxDefault=$( grep -iA 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
+		local fglrxDefault=$( g 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
 		
 		# reset script locals with remote values, but only if wget succeeded, otherwise use script
 		# local values as an acceptable failsafe default.
-		if [ -n "$dst" ];then
+		if [ -n "$driverList" ];then
 			# DEFAULT: 306.23 :: LEGACY 4: 304.23 ::  LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
 			NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefault" )
 			NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
