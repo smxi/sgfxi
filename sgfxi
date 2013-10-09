@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.65
-####  Date: October 8 2013
+####  version: 4.20.66
+####  Date: October 9 2013
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -321,7 +321,7 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 # older betas: 13.8 beta2
 
 FG_DEFAULT_BETA='13.10'
-FG_BETA_VERSION='beta2'
+FG_BETA_VERSION='betav1'
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
@@ -1600,6 +1600,15 @@ run_driver_patches()
 									;;
 							esac
 							;;
+# 						12)
+# 							case $DRIVER_DEFAULT in
+# 								# patch url: https://devtalk.nvidia.com/default/topic/616962/331-13-beta-drivers-feedback-thread/?offset=15
+# 								331.13)
+# 									patchFile='NVIDIA-331.13-3.12.patch'
+# 									apply_patch_file $patchFile
+# 									;;
+# 							esac
+# 							;;
 					esac
 					;;
 			esac
@@ -1840,7 +1849,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -2615,15 +2624,15 @@ assign_standard_or_beta_driver()
 						betaCurrent=$( cut -d '-' -f 1 <<< "$liveBetas" )
 						betaVersion=$( cut -d '-' -f 2 <<< "$liveBetas" )
 					fi
-					
+					# http://www2.ati.com/drivers/beta/amd-catalyst-13.11-betav1-linux-x86.x86_64.zip
 					# now convert to numbered
 					betaCurrentWorking=$( sed 's/-/./g' <<< "$betaCurrent"  )
-					if [ -n "$( grep -E 'beta[0-9]' <<< "$liveBetas" )" ];then
-						betaCurrentVersionWorking=$( sed -r 's/.*-beta([0-9]+)/\1/' <<< "$liveBetas" )
+					if [ -n "$( grep -E 'beta[v]?[0-9]' <<< "$liveBetas" )" ];then
+						betaCurrentVersionWorking=$( sed -r 's/.*-beta[v]?([0-9]+)/\1/' <<< "$liveBetas" )
 					fi
-					defaultBetaWorking=$( sed 's/-/./g' <<< $FG_DEFAULT_BETA | sed 's/-/./g' )
-					if [ -n "$( grep -E 'beta[0-9]' <<< "$FG_BETA_VERSION" )" ];then
-						defaultBetaVersion=$( sed -r 's/beta([0-9]+)/\1/' <<< "$FG_BETA_VERSION" )
+					defaultBetaWorking=$( sed 's/-/./g' <<< $FG_DEFAULT_BETA )
+					if [ -n "$( grep -E 'beta[v]?[0-9]' <<< "$FG_BETA_VERSION" )" ];then
+						defaultBetaVersion=$( sed -r 's/beta[v]?([0-9]+)/\1/' <<< "$FG_BETA_VERSION" )
 					fi
 					if [ "$bDebugger" == 'true' ];then
 						echo ""
@@ -2727,12 +2736,12 @@ gebeta_driveria_betas()
 # this is only for -p script printout, and is triggered by: -p -! 121
 reset_using_live_driver_data()
 {
-	if [ "$B_SKIP_WGET" != 'true' ];then
+	if [ "_WGET" != 'true' ];then
 		local uaFull="-U s-tools/sgfxi-data.tool-data" 
 		local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
 		local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
 		local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
-		local fglrxDefault=$( g 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
+		local fglrxDefault=$( grep -iA 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
 		
 		# reset script locals with remote values, but only if wget succeeded, otherwise use script
 		# local values as an acceptable failsafe default.
@@ -5832,7 +5841,7 @@ run_driver_installer()
 
 	# this was set in prep_install()
 	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
-	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT${S} (this might take a while)...${N}"
+	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT$is might take a while)...${N}"
 
 	log_function_data "driver: $DRIVER_DEFAULT"
 
@@ -5841,7 +5850,8 @@ run_driver_installer()
 		$NVIDIA)
 			if [ -d $xModPath -a -d $xLibPath ];then
 				# --x-library-path=$xLibPath
-				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPa	
+				installerArgs="-s -N --x-module-path=$xModPath --x-library-path=$xLibPath"
+				
 			else
 				installerArgs="-s -N"
 			fi
