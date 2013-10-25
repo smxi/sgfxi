@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.66
-####  Date: 2013-10-09
+####  version: 4.20.67
+####  Date: 2013-10-25
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -228,7 +228,7 @@ NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='331.13::::'
+NV_VERSIONS_BETA='331.17::::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # ge4xx cards
@@ -238,7 +238,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_BETA="$NV_VERSIONS_BETA:::"
+NV_BETA="$NV_VERSIONS_BETA:331.13::"
 # stable primary: 325.15
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
@@ -433,7 +433,60 @@ fi
 ########################################################################
 
 ### -------------------------------------------------------------------
-### driver+kernel support tests, and patch handlers:
+### test data - only for dev/debugging purposes
+### -------------------------------------------------------------------
+
+#----
+
+# only for debugging purposes
+set_test_data()
+{
+	local username=''
+
+	if [ "$B_TESTING_1" == 'true' ];then # set testing directories etc
+## NOTE: it's important to start all comments in here at first character for cleanup updater
+#		# this is required for testing to make sure we always are starting with true
+#		# latest script versions
+
+# 		# note: devs: double check this output to make sure it's your user name
+		username=$( getent passwd 1000|cut -d \: -f1 )
+		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
+		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/# INSTALL_DIRECTORY='' # for stuff like patches etcxi/dev"
+		LOG_FILE_DIR="/home/$username/bin/scripts/sgxi/dev/"
+# 		PATCH_DOWNLOAD='http://smxi.org/sg/'
+		cd $SCRIPT_HOME
+		rm -f $SCRIPT_NAME.log
+# 		# sgfxi doesn't support any legacy ATI stuff
+# 		CARD_DATA=1002:7280 # fake ati pre x2000 card
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9805 # fake ati hd 6250 card
+# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
+# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
+		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
+# 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
+# 		FG_DEFAULT='8-5'
+# 		NV_DEFAULT='177.80'
+# 		# set system bits to test 32/64 specific behaviors
+# 		BITS=64
+# 		# if you want to test for/without aptosid kernels, set to null '' or # 'true'
+		B_IS_APTOSID_KERNEL='false'
+# 		# to test patches/error handling for a specific kernel major version,
+# 		# ie: 3-		KERNEL_BASE=3
+		KERNEL_MATH=11_MATH=7
+# 		# values: '' or 'true'
+# 		B_IS_XEN='false'
+# 		# check for specific system base tests, can be:
+# 		# 'sid' 'testing' 'stable' 'etch'
+#		SYSTEM_BASE='debian'
+# 		SYSTEM_CODENAME='te# sting'
+		X_VERSION='1.11' # override for patching etc
+# leave this at first character or errors in updater tools will occur
+:
+	}"
+}
+
+### -----------------------------------------------------------------driver+kernel support tests, and patch handlers:
 ### -------------------------------------------------------------------
 
 ## these are first to make it easy to update each new driver release support data
@@ -1582,7 +1635,7 @@ run_driver_patches()
 						11)
 							case $DRIVER_DEFAULT in
 								# patch url: https://devtalk.nvidia.com/default/topic/616962/331-13-beta-drivers-feedback-thread/?offset=15
-								331.13)
+								331.13|331.17)
 									patchFile='NVIDIA-331.13-3.11.patch'
 									apply_patch_file $patchFile
 									;;
@@ -1826,55 +1879,10 @@ run_patch_fixes()
 }
 
 ### -------------------------------------------------------------------
-### primary startup - test data, colors
+### primary stacolors
 ### -------------------------------------------------------------------
 
-# only for debugging purposes
-set_test_data()
-{
-	local username=''
-
-	if [ "$B_TESTING_1" == 'true' ];then # set testing directories etc
-## NOTE: it's important to start all comments in here at first character for cleanup updater
-#		# this is required for testing to make sure we always are starting with true
-#		# latest script versions
-
-# 		# note: devs: double check this output to make sure it's your user name
-		username=$( getent passwd 1000|cut -d \: -f1 )
-		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
-		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/# INSTALL_DIRECTORY='' # for stuff like patches etcxi/dev"
-		LOG_FILE_DIR="/home/$username/bin/scripts/sgxi/dev/"
-# 		PATCH_DOWNLOAD='http://smxi.org/sg/'
-		cd $SCRIPT_HOME
-		rm -f $SCRIPT_NAME.log
-# 		# sgfxi doesn't support any legacy ATI stuff
-# 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
-# 		CARD_DATA=1002:9805 # fake ati hd 6250 card
-# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
-		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
-# 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
-# 		FG_DEFAULT='8-5'
-# 		NV_DEFAULT='177.80'
-# 		# set system bits to test 32/64 specific behaviors
-# 		BITS=64
-# 		# if you want to test for/without aptosid kernels, set to null '' or # 'true'
-		B_IS_APTOSID_KERNEL='false'
-# 		# to test patches/error handling for a specific kernel major version,
-# 		# ie: 3-		KERNEL_BASE=3
-		KERNEL_MATH=11_MATH=7
-# 		# values: '' or 'true'
-# 		B_IS_XEN='false'
-# 		# check for specific system base tests, can be:
-# 		# 'sid' 'testing' 'stable' 'etch'
-#		SYSTEM_BASE='debian'
-# 		SYSTEM_CODENAME='te# sting'
-		X_VERSION='1.11' # override for patching etc
-# leave this at first character or errors in updater tools will occur
-:
-	fi
+#fi
 }
 
 # set global color variables
@@ -2730,13 +2738,11 @@ gebeta_driveria_betas()
 	#	fi
 	# return processed betas
 	echo $driverList
-}
-
-# this is to get the live data for print out only, for apps that might use this
+is is to get the live data for print out only, for apps that might use this
 # this is only for -p script printout, and is triggered by: -p -! 121
 reset_using_live_driver_data()
 {
-	if [ "_WGET" != 'true' ];then
+	if [ "$B_SKIP_WGET" != 'true' ];then
 		local uaFull="-U s-tools/sgfxi-data.tool-data" 
 		local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
 		local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
@@ -5836,12 +5842,12 @@ run_driver_installer()
 	local xModPath='/usr/lib/xorg/modules'
 	local xLibPath='/usr/lib'
 	local installer='nvidia-installer'
-	local distroId='' fglrxNumber='1'
+	locaoId='' fglrxNumber='1'
 	local distroCodeName=''
 
 	# this was set in prep_install()
 	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
-	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT$is might take a while)...${N}"
+	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT${S} (this might take a while)...${N}"
 
 	log_function_data "driver: $DRIVER_DEFAULT"
 
