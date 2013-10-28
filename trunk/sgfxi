@@ -3,12 +3,13 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.20.68
-####  Date: 2013-10-25
+####  version: 4.21.00
+####  Date: 2013-10-27
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
+####  function check_ia32_libs by Steven Barrett (damentz, maintainer of zen/liquorix projects).
 ####  This program is free software; you can redistribute it and/or modify it under
 ####  the terms of the GNU General Public License as published by the Free Software
 ####  Foundation; either version 2 of the License, or (at your option) any later version.
@@ -3120,11 +3121,124 @@ check_kernel_headers()
 	esac
 	eval $LOGUE
 }
-s
-xva"
+s# Nvidia requires for 64 bit ia32 libs installed for 64 bit
+# This will satisfy the nVidia driver and also let the installer 
+# place the 32-bit compatibility files in the correct location, 
+# letting 32-bit applications run properly that depend on OpenGL acceleration.
+check_ia32_libs()
+{
+	eval $LOGUS
+
+	if [ "$BITS" == '64' -a "$CARD" == "$NVIDIA" ];then
+		local ia32Name='' ia32Path=''
+		local ia32Supported='' ia32Present='' ia32Available=''
+		local ia32Installed='' testKernel=''
+		local kernelDevel='' develPresent='' kernelWorking=''
+
+		case $SYSTEM_BASE in
+			debian|ubuntu)
+				ia32Name='ia32-libs'
+				ia32Path='/emul/ia32-linux'
+				
+				echo "${S}Checking for ${C}ia32-lib multiarch${S} support for ${C}nVidia 32-bit compatibility layer${S}...${N}"
+				# first verify that we can do this, ie, that the base system supports architectures. Debian Lenny does not have this capability
+				ia32Supported=$( dpkg --print-foreign-architectures 2>/dev/null || echo 'false' )
+				
+				if [ "$ia32Supported" != 'false' ];then
+					ia32Present=$( dpkg --print-foreign-architectures | grep -o 'i386' )
+					ia32Installed=$( check_package_status "$ia32Name" 'i' )
+					ia32Available=$( check_package_status "$ia32Name" 'c' )
+				fi
+
+				if [ "$ia32Present" == 'i386' -a "$( readlink -f $ia32Path/usr/lib )" == '/usr/lib/i386-linux-gnu' \
+				-a -n "$ia32Installed"  ];then
+					echo "${M}Your system was already compatible with ${C}nVidia's${M} proprietary driver ${C}32-bit compatibility layer${M}.${N}"
+				elif [ "$ia32Supported" != 'false' -a -n "$ia32Available" ];then
+					###############################
+					# Check all the requirements for 32-bit support for nVidia drivers in 64-bit
+					# one by one, correcting any discrepancies if found.
+					###############################
+					# add i386 multi-arch support if missing
+					if [ "$ia32Present" != 'i386' ]; then
+						echo "${S}Missing ${C}i386 multiarch${S} support, adding...${N}"
+						dpkg --add-architecture i386
+					fi
+					# install ia32-libs if missing
+					if [ -z "$ia32Installed" ]; then
+						# force reset to grab the new arch i386 repo data
+						B_UPDATED='false'
+						echo "${S}Installing missing package ${C}$ia32Name${S}...${N}"
+						install_package "$ia32Name"
+					fi
+					# create required /emul directory if missing
+					if [ ! -d "$ia32Path/usr" ]; then
+						echo "${S}Missing ${C}$ia32Path${S}, creating...${N}"
+						mkdir -p $ia32Path/usr
+					fi
+					# fix symlink to multiarch i386 folder if wrong
+					if [ ! -L "$ia32Path/usr/lib" ] && [ "$(readlink -f $ia32Path/usr/lib)" != '/usr/lib/i386-linux-gnu' ]; then
+						if [ -e "$ia32Path/usr/lib" ]; then
+							echo "${S}Not sure what ${C}${ia32Path}/usr/lib${S} is, removing it.${N}"
+							rm -rf $ia32Path/usr/lib
+						fi
+						ln -s /usr/lib/i386-linux-gnu $ia32Path/usr/lib
+						echo "${S}Created symlink at ${C}$ia32Path/usr/lib${S}.${N}"
+					fi
+					echo "${S}Your system is now compatible with ${C}nVidia's${S} proprietary driver ${C}32-bit compatibility layer${S}.${N}"
+				else
+					echo "${M}Your system ${C}$SYSTEM_BASE $SYSTEM_CODENAME${M} is ${C}NOT${M} compatible with ${C}$ia32Name${M}. Continuing with driver install.${N}"
+				fi
+				;;
+# 			fedora)
+# 				# fedora 12 headers: /usr/src/kernels/$(uname -r)
+# 				# kernel-PAE-devel-2.6.31.5-127.fc12.i686.rpm
+# 				
+# 				# need to slice off .PAE from working kernel name/headers name
+# 				kernelWorking=$( sed -r 's/\.PAE//' <<< $KERNEL_FULL )
+# 				ia32Name="kernel-headers-$kernelWorking"
+# 				ia32Present="$( ls ${USRS}kernels/$KERNEL_FULL/ 2>/dev/null )"
+# 				# rpm is reporting two names here I think, we'll see, if it's got the
+# 				# kernel name in it, we'll call it installed.
+# 				ia32Installed=$( check_package_status "$ia32Name" 'i' | grep $kernelWorking )
+# 				# if [ -z "$ia32Present" -a -z "$ia32Installed" ];then
+# 				if [ -z "$ia32Installed" ];then
+# 					install_package "$ia32Name"
+# 				fi
+# 				kernelDevel="kernel$FED_KERNEL_PAE-devel-$kernelWorking"
+# 				develPresent=$( check_package_status "$kernelDevel" 'i' )
+# 				if [ -z "$develPresent" ];then
+# 					install_package "$kernelDevel"
+# 				fi
+# 				;;
+# 			# fresh arch installs do not have the kernel header in /usr/src but this test
+# 			# is highly erratic, arch is not using consistent methods, requires more testing
+# 			arch)
+# 				ia32Name=""
+# 				ia32Present=""
+# 				testKernel=$( grep -Esi '^2\.6\.[0-9]{2}-ARCH$' <<< $KERNEL_FULL )
+# 				# 2.6.32-ARCH
+# 				if [ -z "$ia32Present" ];then
+# 					# if it's a custom kernel, no package available so die
+# 					if [ -n "$testKernel" ];then 
+# 						error_handler 224 "$ia32Name"
+# 					# otherwise let's test for the default, and install it if its missing
+# 					else
+# 						ia32Installed=$( check_package_status "$ia32Name" 'i' )
+# 						if [ -n "$( check_package_status "$ia32Name" 'c' )" ];then
+# 							install_package "$ia32Name"
+# 						else
+# 							error_handler 224 "$ia32Name"
+# 						fi
+# 					fi
+# 				fi
+# 				;;
+		esac
+	fi
+	eval $LOGUEnse
+	fi
 }
 
-### -------------------------------------------------------------### startup and tools testingsection
+### -----------------------------------------------------------------startup and tools testingsection
 ### ----------------------------------------------------------------note that we want this to print with no root error
 check_root()
 {
@@ -5710,7 +5824,7 @@ preinstall_cleanup()
 	## above packages won't be present, better to let nvidia handle uninstalling itself
 	# also can clean out install-binary-gfx packages or nvidia-glx if present
 	
-	oldNvidia=$( list_installed_packages 'nvidiakwinnvidiahack|dia' "(libgl1-nvidia-gllibgl1-nvidia-glx:386lx-ia32|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
+	oldNvidia=$( list_installed_packages 'nvidiakwinnvidiahack|dia' "(libgl1-nvidia-gllibgl1-nvidia-glx:386|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
 		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)' )
@@ -5841,7 +5955,7 @@ preinstall_cleanup()
 }
 
 ## run patch module, then install
-ver_installer()
+run_driver_installer()
 {
 	eval $LOGPS
 	local installError=0 installerArgs='' nothing=''
@@ -8373,7 +8487,7 @@ set_driver_install_version
 
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
-	check_kernel_headers
+	check_kernel_h	check_ia32_lib_headers
 fi
 
 if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
