@@ -113,6 +113,7 @@ X_NAME=''
 B_AUTORUN='false'
 B_BETA_EXISTS='false'
 B_BUILD_KERNEL_MODULES='false'
+B_CHECK_IA32='true' # if users want, they can disable this feature in config file
 B_COMPOSITE='false' 
 B_DEFAULT_NATIVE_DRIVER='false'
 B_DISTRO_FLAG='false'
@@ -126,7 +127,6 @@ B_FORCE_NO_COMPOSITE='false'
 B_FORCE_UPDATE='false'
 B_GET_LIVE_DRIVERS='false'
 B_GUI_MODE='false'
-B_SET_IGNOREABI='false'
 B_IS_APTOSID_KERNEL='false'
 B_IS_XEN='false'
 B_KERNEL_MODULE_ONLY='false'
@@ -139,6 +139,7 @@ B_PRINT_VER='false' # utilities for smxi
 B_REMOVE_MODELINES='false'
 B_RESTORE_DEFAULTS='false'
 # B_RENDER_ACCEL='true' # default use, true
+B_SET_IGNOREABI='false'
 B_SKIP_AUTOSTART='false' # deprecated, not used
 B_SKIP_CONFIG='false'
 B_SKIP_CONNECT='false' # deprecated, not used
@@ -3129,7 +3130,7 @@ check_ia32_libs()
 {
 	eval $LOGUS
 
-	if [ "$BITS" == '64' -a "$CARD" == "$NVIDIA" ];then
+	if [ "$BITS" == '64' -a "$CARD" == "$NVIDIA" -a "$B_CHECK_IA32" == 'true' ];then
 		local ia32Name='' ia32Path=''
 		local ia32Supported='' ia32Present='' ia32Available=''
 		local ia32Installed='' testKernel=''
@@ -3176,7 +3177,8 @@ check_ia32_libs()
 						mkdir -p $ia32Path/usr
 					fi
 					# fix symlink to multiarch i386 folder if wrong
-					if [ ! -L "$ia32Path/usr/lib" ] && [ "$(readlink -f $ia32Path/usr/lib)" != '/usr/lib/i386-linux-gnu' ]; then
+					if [ ! -L "$ia32Path/usr/lib" ] && \
+					[ "$(readlink -f $ia32Path/usr/lib)" != '/usr/lib/i386-linux-gnu' ]; then
 						if [ -e "$ia32Path/usr/lib" ]; then
 							echo "${M}Not sure what ${C}${ia32Path}/usr/lib${M} is, removing it.${N}"
 							rm -rf $ia32Path/usr/lib
@@ -5822,9 +5824,9 @@ preinstall_cleanup()
 	esac
 	## this is just to check after the above un-installer runs, this must be here or the
 	## above packages won't be present, better to let nvidia handle uninstalling itself
-	# also can clean out install-binary-gfx packages or nvidia-glx if present
+	# also can clean out install-binary-gfx packages oa-glx if present
 	
-	oldNvidia=$( list_installed_packages 'nvidiakwinnvidiahack|dia' "(libgl1-nvidia-gllibgl1-nvidia-glx:386|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
+	oldNvidia=$( list_installed_packages 'nvidia' "(libkwinnvidiahack|libgl1-nvidia-glx-ia32|libgl1-nvidia-glx:386|modalias|libvdpau|nvidia-bl-dkms|nvidia-cg-toolkit${extraPackageBan})" )
 	# messy, aptitude at least fails to remove these, which makes the uninstall fail
 	if [ -n "$( grep 'nvidia-installer-cleanup' <<< $oldNvidia )" ];then
 		nvidiaGlxExtras=$( list_installed_packages '(glx-alternative-mesa|glx-diversions)' )
