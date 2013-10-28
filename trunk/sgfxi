@@ -3178,7 +3178,7 @@ check_ia32_libs()
 					# fix symlink to multiarch i386 folder if wrong
 					if [ ! -L "$ia32Path/usr/lib" ] && [ "$(readlink -f $ia32Path/usr/lib)" != '/usr/lib/i386-linux-gnu' ]; then
 						if [ -e "$ia32Path/usr/lib" ]; then
-							echo "${S}Not sure what ${C}${ia32Path}/usr/lib${S} is, removing it.${N}"
+							echo "${M}Not sure what ${C}${ia32Path}/usr/lib${M} is, removing it.${N}"
 							rm -rf $ia32Path/usr/lib
 						fi
 						ln -s /usr/lib/i386-linux-gnu $ia32Path/usr/lib
