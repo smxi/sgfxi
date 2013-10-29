@@ -58,8 +58,8 @@
 ####  -! 4 - triggers B_TESTING_1='true' and B_TESTING_2='true'
 ####  -! 5 - triggers B_TESTING_1='true', B_TESTING_2='true', and B_SKIP_FUNCTION='true'
 ####  -! 6 - triggers B_TESTING_3='true' - overrides xorg/kernel support tests
-####  -! 7 - triggers B_TESTING_5='true' - triggers advanced, beta tests for general script
-####  -! 8 - triggers B_TESTING_4='true' - overrides patch tests
+####  -! 7 - triggers B_TESTING_4='true' - overrides patch tests
+####  -! 8 - triggers B_TESTING_5='true' - triggers advanced, beta tests for general script
 ####  -! 9 - triggers B_TESTING_6='true' - triggers new distro development tests
 ####  -! 10 - triggers an update from the primary dev download server
 ####  -! 11 - triggers an update from svn branch one - if present, of course
@@ -8489,7 +8489,7 @@ set_driver_install_version
 
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
-	check_kernel_h	if [ "$B_TESTING_4" == 'true' ];then
+	check_kernel_h	if [ "$B_TESTING_6" == 'true' ];then
 		check_ia32_libs
 	fiheaders
 fi
