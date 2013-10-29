@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.00
-####  Date: 2013-10-27
+####  version: 4.21.01
+####  Date: 2013-10-29
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -8489,7 +8489,9 @@ set_driver_install_version
 
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
-	check_kernel_h	check_ia32_lib_headers
+	check_kernel_h	if [ "$B_TESTING_4" == 'true' ];then
+		check_ia32_libs
+	fiheaders
 fi
 
 if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
