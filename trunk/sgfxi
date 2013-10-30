@@ -4459,11 +4459,12 @@ print_information_continue()
 		if [ "$B_AUTORUN" != 'true' ];t# this checks to see if it's a supported card/system, and that ia32 stuff is not already installed
 			# only in case where it's supported and not installed / configured will user see this message
 			bShowIa32=$( check_ia32_libs 'test' )
+			bShowIa32=true
 			echo "${M}Please select from the following options:${N}"
-			echo "${C}<enter>${M}     - hit enter key to continue with driver install (${C}default${M})"
+			echo "${C}<enter>${M}     - hit enter key to continue with ${C}$CARD${M} driver install (${C}default${M})"
 			if [ "$bShowIa32" == 'true' ];then
 				echo "${C}i + <enter>${M} - add/configure ${C}ia32-libs-i386${M} before doing the driver install. This lets things"
-				echo "              like ${C}openGL 32 bit${M} apps and ${C}Steam${M} work smoothly with your ${C}64 bit nVidia driver${N}.${N}"
+				echo "              like ${C}openGL 32 bit${M} apps and ${C}Steam${M} work smoothly with your ${C}64 bit $CARD${M} driver.${N}"
 			fi
 			echo "${C}x + <enter>${M} - exit now if there is an error.${N}"
 			read response
@@ -5792,8 +5793,8 @@ prep_install()
 		export CC=$ubgv
 	else
 		# going to try to update gcc to kernel version first before error exit.
-		if [ -n "$( check_package_status "$gccPackage" 'c' )" ];then
-			instalge "$gccPackage"
+		if [ -n "$( check_package_status "$gccP 'c' )" ];then
+			install_package "$gccPackage"
 			# this may not be needed, we'll see how it goes.
 # 			if [ "$( check_package_status "g++-$gccVersion" 'c' )" ];then
 # 				install_package "g++-$gccVersion"
