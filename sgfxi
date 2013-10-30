@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.02
+####  version: 4.21.03
 ####  Date: 2013-10-29
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -3138,7 +3138,7 @@ check_ia32_libs()
 
 		case $SYSTEM_BASE in
 			debian|ubuntu)
-				ia32Name='ia32-libs-i386'
+				ia32Name='ia32-libs-i386:i386'
 				ia32Path='/emul/ia32-linux'
 				
 				echo "${S}Checking for ${C}ia32-lib multiarch${S} support for ${C}nVidia 32-bit compatibility layer${S}...${N}"
@@ -5817,7 +5817,7 @@ preinstall_cleanup()
 
 	## nvidia uninstallers, for systems where nvidia has been installed once at least
 	# both files should be present in case of previous nvidia install
-	if [ -x /usr/bin/$ins];then
+	if [ -x /usr/binller ];then
 		log_function_data 'Using nvidia uninstaller: /usr/bin/'$installer
 		/usr/bin/$installer --uninstall -s -N 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
 	elif [ -f /usr/lib/libnvidia-tls.so.1 ];then
