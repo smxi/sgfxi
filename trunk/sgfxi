@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.04
-####  Date: 2013-10-29
+####  version: 4.21.05
+####  Date: 2013-10-30
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -113,7 +113,7 @@ X_NAME=''
 B_AUTORUN='false'
 B_BETA_EXISTS='false'
 B_BUILD_KERNEL_MODULES='false'
-B_CHECK_IA32='true' # if users want, they can disable this feature in config file
+B_CHECK_IA32='false' # if users want, they can disable this feature in config file
 B_COMPOSITE='false' 
 B_DEFAULT_NATIVE_DRIVER='false'
 B_DISTRO_FLAG='false'
@@ -462,7 +462,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -471,7 +471,7 @@ set_test_data()
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
-# 		# set system bits to test 32/64 specific behaviors
+# 		# set system bits to test 32/64 specific behiors
 # 		BITS=64
 # 		# if you want to test for/without aptosid kernels, set to null '' or # 'true'
 		B_IS_APTOSID_KERNEL='false'
@@ -3126,22 +3126,27 @@ s# Nvidia requires for 64 bit ia32 libs installed for 64 bit
 # This will satisfy the nVidia driver and also let the installer 
 # place the 32-bit compatibility files in the correct location, 
 # letting 32-bit applications run properly that depend on OpenGL acceleration.
+# args: $1 - full/test
 check_ia32_libs()
 {
 	eval $LOGUS
+	
+	local returnValue='false'
 
-	if [ "$BITS" == '64' -a "$CARD" == "$NVIDIA" -a "$B_CHECK_IA32" == 'true' ];then
+	if [ "$BITS" == '64' -a "$CARD" == "$NVIDIA" ];then
 		local ia32Name='' ia32Path='' 
 		local ia32Supported='' ia32Present='' ia32Available=''
 		local ia32Installed='' testKernel=''
 		local kernelDevel='' develPresent='' kernelWorking=''
-
+		#  dpkg -l | grep -E '^ii  libc6:i386'
 		case $SYSTEM_BASE in
 			debian|ubuntu)
 				ia32Name='ia32-libs-i386:i386'
 				ia32Path='/emul/ia32-linux'
 				
-				echo "${S}Checking for ${C}ia32-lib multiarch${S} support for ${C}nVidia 32-bit compatibility layer${S}...${N}"
+				if [ "$1" != 'test' ];then
+					echo "${S}Checking for ${C}ia32-lib multiarch${S} support for ${C}nVidia 32-bit compatibility layer${S}...${N}"
+				fi
 				# first verify that we can do this, ie, that the base system supports architectures. Debian Lenny does not have this capability
 				ia32Supported=$( dpkg --print-foreign-architectures 2>/dev/null || echo 'false' )
 				
@@ -3152,9 +3157,14 @@ check_ia32_libs()
 
 				if [ "$ia32Present" == 'i386' -a "$( readlink -f $ia32Path/usr/lib )" == '/usr/lib/i386-linux-gnu' \
 				-a -n "$ia32Installed"  ];then
-					echo "${M}Your system is compatible with ${C}nVidia's${M} proprietary driver ${C}32-bit compatibility layer${M}.${N}"
-					log_function_data "64 bit nvidia compat already present and configured"
-				elif [ "$ia32Supported" != 'false' ];then
+					if [ "$1" != 'test' ];then
+						echo "${M}Your system is compatible with ${C}nVidia's${M} proprietary driver ${C}32-bit compatibility layer${M}.${N}"
+					fi
+					log_function_data "32 bit nvidia compat already present and configured"
+				elif [ "$ia32Supported" != 'false' -a  "$1" == 'test' ];then
+					returnValue='true'
+					log_function_data "32 bit nvidia supported. Showing install option."
+				elif [ "$ia32Supported" != 'false' -a  "$1" == 'full' ];then
 					###############################
 					# Check all the requirements for 32-bit support for nVidia drivers in 64-bit
 					# one by one, correcting any discrepancies if found.
@@ -3212,7 +3222,9 @@ check_ia32_libs()
 						log_function_data "APT reported error on attempt to -s install $ia32Name."
 					fi
 				else
-					echo "${M}Your system ${C}$SYSTEM_BASE $SYSTEM_CODENAME${M} is ${C}NOT${M} compatible with ${C}$ia32Name${M}. Continuing with driver install.${N}"
+					if [ "$1" != 'test' ];then
+						echo "${M}Your system ${C}$SYSTEM_BASE $SYSTEM_CODENAME${M} is ${C}NOT${M} compatible with ${C}$ia32Name${M}. Continuing with driver install.${N}"
+					fi
 					log_function_data "No dpkg -add-architecture supported."
 				fi
 				;;
@@ -3260,6 +3272,10 @@ check_ia32_libs()
 # 				fi
 # 				;;
 		esac
+	fi
+	
+	if [ "$1" == 'test' ];then
+		echo $returnValue
 	fi
 	eval $LOGUEnse
 	fi
@@ -4431,7 +4447,7 @@ print_information()
 print_information_continue()
 {
 	eval $LOGUS
-	local response=''
+	local resp bShowIa32='falseponse=''
 
 	case $1 in
 		standard|info)
@@ -4440,10 +4456,21 @@ print_information_continue()
 	esac
 
 	if [ "$1" == 'standard' ];then
-		if [ "$B_AUTORUN" != 'true' ];then
-			echo "${M}Hit ${C}<enter>${M} to continue, or  ${C}x + <enter>${M} to exit now if there is an error.${N}"
+		if [ "$B_AUTORUN" != 'true' ];t# this checks to see if it's a supported card/system, and that ia32 stuff is not already installed
+			# only in case where it's supported and not installed / configured will user see this message
+			bShowIa32=$( check_ia32_libs 'test' )
+			echo "${M}Please select from the following options:${N}"
+			echo "${C}<enter>${M}     - hit enter key to continue with driver install (${C}default${M})"
+			if [ "$bShowIa32" == 'true' ];then
+				echo "${C}i + <enter>${M} - add/configure ${C}ia32-libs-i386${M} before doing the driver install. This lets things"
+				echo "              like ${C}openGL 32 bit${M} apps and ${C}Steam${M} work smoothly with your ${C}64 bit nVidia driver${N}.${N}"
+			fi
+			echo "${C}x + <enter>${M} - exit now if there is an error.${N}"
 			read response
 			case $response in
+				i|I)
+					B_CHECK_IA32='true'
+					;;onse in
 				x|X)
 					error_handler 100 $FUNCNAME
 					;;
@@ -5766,7 +5793,7 @@ prep_install()
 	else
 		# going to try to update gcc to kernel version first before error exit.
 		if [ -n "$( check_package_status "$gccPackage" 'c' )" ];then
-			install_package "$gccPackage"
+			instalge "$gccPackage"
 			# this may not be needed, we'll see how it goes.
 # 			if [ "$( check_package_status "g++-$gccVersion" 'c' )" ];then
 # 				install_package "g++-$gccVersion"
@@ -5805,7 +5832,7 @@ preinstall_cleanup()
 	# yep, you guessed it, another stupid pointless amd/ati change. Discipline guys....
 	if [ -e /usr/share/ati/amd-uninstall.sh ];then
 		fglrxUninstaller='/usr/share/ati/amd-uninstall.sh'
-		useForce=''
+		useForce='--force'
 	fi
 	
 	echo "${S}Running preinstall cleanup...${N}"
@@ -8514,8 +8541,8 @@ set_driver_install_version
 
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
-	check_kernel_h	if [ "$B_TESTING_6" == 'true' ];then
-		check_ia32_libs
+	check_kernel_h	if [ "$B_CHECK_IA32" == 'true' ];then
+		check_ia32_libs 'full'
 	fiheaders
 fi
 
