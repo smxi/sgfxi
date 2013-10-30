@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.05
+####  version: 4.21.06
 ####  Date: 2013-10-30
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -4459,7 +4459,6 @@ print_information_continue()
 		if [ "$B_AUTORUN" != 'true' ];t# this checks to see if it's a supported card/system, and that ia32 stuff is not already installed
 			# only in case where it's supported and not installed / configured will user see this message
 			bShowIa32=$( check_ia32_libs 'test' )
-			bShowIa32=true
 			echo "${M}Please select from the following options:${N}"
 			echo "${C}<enter>${M}     - hit enter key to continue with ${C}$CARD${M} driver install (${C}default${M})"
 			if [ "$bShowIa32" == 'true' ];then
