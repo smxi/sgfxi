@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.03
+####  version: 4.21.04
 ####  Date: 2013-10-29
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -3170,38 +3170,46 @@ check_ia32_libs()
 					fi
 					# then check that i386 package exists
 					ia32Available=$( check_package_status "$ia32Name" 'c' )
-
-					# install ia32-libs if missing
-					if [ -z "$ia32Installed" -a -n "$ia32Available" ]; then
-						echo "${S}Installing missing package ${C}$ia32Name${S}...${N}"
-						install_package "$ia32Name"
-					fi
-					# confirm that package is installed, some weird system glitches made install fail
-					ia32Installed=$( check_package_status "$ia32Name" 'i' )
-					if [ -n "$ia32Installed" ];then
-						# create required /emul directory if missing
-						if [ ! -d "$ia32Path/usr" ]; then
-							echo "${S}Missing ${C}$ia32Path${S}, creating...${N}"
-							mkdir -p $ia32Path/usr
-							log_function_data "Created missing $ia32Path/usr directory."
+					
+					# since ia23 has too many dependencies that can break in sid, and have, we need to confirm that
+					# it is working for real even if apt-cache policy reports an install candidate
+					if [ "$( apt-get -s install $ia32Name &>/dev/null || echo 'bad' )" != 'bad' ];then
+						# install ia32-libs if missing
+						if [ -z "$ia32Installed" -a -n "$ia32Available" ]; then
+							echo "${S}Installing missing package ${C}$ia32Name${S}...${N}"
+							install_package "$ia32Name"
 						fi
-						# fix symlink to multiarch i386 folder if wrong
-						if [ ! -L "$ia32Path/usr/lib" ] && \
-						[ "$(readlink -f $ia32Path/usr/lib)" != '/usr/lib/i386-linux-gnu' ]; then
-							if [ -e "$ia32Path/usr/lib" ]; then
-								echo "${M}Not sure what ${C}${ia32Path}/usr/lib${M} is, removing it.${N}"
-								rm -rf $ia32Path/usr/lib
-								log_function_data "Removed mysterious $ia32Path/usr/lib directory."
+						# confirm that package is installed, some weird system glitches made install fail
+						ia32Installed=$( check_package_status "$ia32Name" 'i' )
+						if [ -n "$ia32Installed" ];then
+							# create required /emul directory if missing
+							if [ ! -d "$ia32Path/usr" ]; then
+								echo "${S}Missing ${C}$ia32Path${S}, creating...${N}"
+								mkdir -p $ia32Path/usr
+								log_function_data "Created missing $ia32Path/usr directory."
 							fi
-							ln -s /usr/lib/i386-linux-gnu $ia32Path/usr/lib
-							echo "${S}Created symlink at ${C}$ia32Path/usr/lib${S}.${N}"
-							log_function_data "Created sym link $ia32Path/usr/lib"
+							# fix symlink to multiarch i386 folder if wrong
+							if [ ! -L "$ia32Path/usr/lib" ] && \
+							[ "$(readlink -f $ia32Path/usr/lib)" != '/usr/lib/i386-linux-gnu' ]; then
+								if [ -e "$ia32Path/usr/lib" ]; then
+									echo "${M}Not sure what ${C}${ia32Path}/usr/lib${M} is, removing it.${N}"
+									rm -rf $ia32Path/usr/lib
+									log_function_data "Removed mysterious $ia32Path/usr/lib directory."
+								fi
+								ln -s /usr/lib/i386-linux-gnu $ia32Path/usr/lib
+								echo "${S}Created symlink at ${C}$ia32Path/usr/lib${S}.${N}"
+								log_function_data "Created sym link $ia32Path/usr/lib"
+							fi
+							echo "${S}Your system is now compatible with ${C}nVidia's${S} proprietary driver ${C}32-bit compatibility layer${S}.${N}"
+						else
+							echo "${W}No ${C}$ia32Name${W} installed or present in ${C}APT${W}. Please let the ${C}$SCRIPT_NAME${W} maintainer know."
+							echo "Unable to complete ${C}$NVIDIA 32 bit compatibility layer${W} setup. Continuing to driver install.${N}"
+							log_function_data "Missing $ia32Name package, not installed."
 						fi
-						echo "${S}Your system is now compatible with ${C}nVidia's${S} proprietary driver ${C}32-bit compatibility layer${S}.${N}"
 					else
-						echo "${W}No ${C}$ia32Name${W} installed or present in ${C}APT${W}. Please let the ${C}$SCRIPT_NAME${W} maintainer know."
-						echo "Unable to complete ${C}$NVIDIA 32 bit compatibility layer${W} setup. Continuing to driver install.${N}"
-						log_function_data "Missing $ia32Name package, not installed."
+						echo "${M}There is a problem in ${C}APT${M} currently. Unable to install ${C}$ia32Name${M}. Continuing"
+						echo "Try running ${C}$SCRIPT_NAME${M} again in a day or two and the issue should be resolved.${N}"
+						log_function_data "APT reported error on attempt to -s install $ia32Name."
 					fi
 				else
 					echo "${M}Your system ${C}$SYSTEM_BASE $SYSTEM_CODENAME${M} is ${C}NOT${M} compatible with ${C}$ia32Name${M}. Continuing with driver install.${N}"
@@ -5797,7 +5805,7 @@ preinstall_cleanup()
 	# yep, you guessed it, another stupid pointless amd/ati change. Discipline guys....
 	if [ -e /usr/share/ati/amd-uninstall.sh ];then
 		fglrxUninstaller='/usr/share/ati/amd-uninstall.sh'
-		useForce='--force'
+		useForce=''
 	fi
 	
 	echo "${S}Running preinstall cleanup...${N}"
@@ -5817,7 +5825,7 @@ preinstall_cleanup()
 
 	## nvidia uninstallers, for systems where nvidia has been installed once at least
 	# both files should be present in case of previous nvidia install
-	if [ -x /usr/binller ];then
+	if [ -x /usr/bin/$installer ];then
 		log_function_data 'Using nvidia uninstaller: /usr/bin/'$installer
 		/usr/bin/$installer --uninstall -s -N 1>> $LOG_FILE 2>> $LOG_FILE || installError="$?"
 	elif [ -f /usr/lib/libnvidia-tls.so.1 ];then
