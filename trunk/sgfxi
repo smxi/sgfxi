@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.06
-####  Date: 2013-10-30
+####  version: 4.21.07
+####  Date: 2013-11-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -265,7 +265,7 @@ NV_BETA="$NV_VERSIONS_BETA:331.13::"
 # stabel legacy 4: 304.64 304.84 304.88 304.108
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='319.49:313.30:313.26:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='319.60:319.49:313.30:313.26:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -471,7 +471,7 @@ set_test_data()
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
-# 		# set system bits to test 32/64 specific behiors
+# 		# set system bits to test 32/64 specific beh# iors
 # 		BITS=64
 # 		# if you want to test for/without aptosid kernels, set to null '' or # 'true'
 		B_IS_APTOSID_KERNEL='false'
@@ -1636,23 +1636,27 @@ run_driver_patches()
 									;;
 							esac
 							;;
-						11)
+						11|12)    
 							case $DRIVER_DEFAULT in
-								# patch url: https://devtalk.nvidia.com/default/topic/616962/331-13-beta-drivers-feedback-thread/?offset=15
-								331.13|331.17)
-									patchFile='NVIDIA-331.13-3.11.patch'
+								# old patch url: https://devtalk.nvidia.com/default/topic/616962/331-13-beta-drivers-feedback-thread/?offset=15
+								# old patch: NVIDIA-331.13-3.11.patch
+								## new patch url:  https://devtalk.nvidia.com/default/topic/628864/unix-graphics-announcements-and-news/num_physpages-and-support-for-3-11-and-later-kernels
+								331.13|331.17|325.15)
+									patchFile='NVIDIA-3.11-get_num_physpages_325-331.patch'
 									apply_patch_file $patchFile
 									;;
 								# patch url: http://cvs.rpmfusion.org/viewvc/*checkout*/rpms/nvidia-kmod/devel/kernel_v3.11.patch?revision=1.2&root=nonfree
 								# https://devtalk.nvidia.com/default/topic/602829/-solved-nvidia-linux-3-11-compatibility-error-lsquo-num_physpages-rsquo-undeclared-first-use-i/
-								325.15|319.49)
+								# old patch: NVIDIA_325.19-3.11.patch
+								319.60|319.49)
 									#run_prepatch_fixes '3.7-path-fix'
-									patchFile='NVIDIA_325.19-3.11.patch'
+									patchFile='NVIDIA-3.11-get_num_physpages_319.patch'
 									apply_patch_file $patchFile
 									;;
 								304.108)
 									#run_prepatch_fixes '3.7-path-fix'
-									patchFile='NVIDIA_304.108-3.11.patch'
+									# old patch: NVIDIA_304.108-3.11.patch
+									patchFile='NVIDIA-3.11-get_num_physpages_304.patch'
 									apply_patch_file $patchFile
 									;;
 							esac
@@ -5781,7 +5785,7 @@ prep_install()
 	echo "${S}Preparing driver install...${N}"
 	# this is causing aptitude to queue some signals that then make aptitude
 	# try to reinstall all of the debian packages next time: aptitude install 
-	# is run, for example, on smxi kernel install. So turning that off for now.
+	# is run, for example, on smxi kernel install. So turning f for now.
 # 	if [ "$B_TESTING_6" != 'true' ];then
 # 		if [ -f $EDV -a ! -f /etc/sidux-version -a ! -f /etc/aptosid-version ];then
 # 			m-a -i prepare
@@ -5792,7 +5796,7 @@ prep_install()
 		export CC=$ubgv
 	else
 		# going to try to update gcc to kernel version first before error exit.
-		if [ -n "$( check_package_status "$gccP 'c' )" ];then
+		if [ -n "$( check_package_status "$gccPackage" 'c' )" ];then
 			install_package "$gccPackage"
 			# this may not be needed, we'll see how it goes.
 # 			if [ "$( check_package_status "g++-$gccVersion" 'c' )" ];then
