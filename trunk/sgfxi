@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.07
-####  Date: 2013-11-02
+####  version: 4.21.08
+####  Date: 2013-11-06
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -219,7 +219,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='325.15:304.108:173.14.38:96.43.23:71.86.15'
+NV_VERSIONS='331.20:304.116:173.14.38:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -230,7 +230,7 @@ NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='331.17::::'
+NV_VERSIONS_BETA='::::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # ge4xx cards
@@ -240,13 +240,13 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_BETA="$NV_VERSIONS_BETA:331.13::"
+NV_BETA="$NV_VERSIONS_BETA:331.17::"
 # stable primary: 325.15
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 319.49 319.60
+# lt stable primary: 319.49 319.60 331.20
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
@@ -265,7 +265,7 @@ NV_BETA="$NV_VERSIONS_BETA:331.13::"
 # stabel legacy 4: 304.64 304.84 304.88 304.108
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='319.60:319.49:313.30:313.26:310.44:310.40:304.88:304.84:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='325.15:319.60:313.30:310.44:304.108:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -324,7 +324,7 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
-FG_DEFAULT_BETA='13.10'
+FG_DEFAULT_BETA='13.11'
 FG_BETA_VERSION='beta6' 
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
@@ -462,7 +462,7 @@ set_test_data()
 		rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -1462,6 +1462,21 @@ driver_support_tests()
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
 											331.*|325.*|319.[4-9][0-9]|304.1[0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									12)
+										case $DRIVER_DEFAULT in
+											# note that patches are needed for rc 3.3 kernels, we'll wait
+											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
+											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
+											331.*|325.*|319.[6-9][0-9]|304.1[0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2694,14 +2709,15 @@ assign_standard_or_beta_driver()
 				echo "FBV:$FG_BETA_VERSION:"
 				echo "FD:$FG_DEFAULT:"
 				echo "bd:$betaDriver:"
-				echo "End assign_standard_or_beta_driver"LT_Bfi
-			stableDriver=$FG_DEFAULTT
+				echo "End assign_standard_or_beta_driver"
 			fi
+			stableDriver=$FG_DEFAULT
 			;;
 	esac
 
 	if [ "$2" == 'driver' ];then
-		if [ -n "$betaDriver" -a "$B_USE_BETA" == 'true' ];tcase $CARD in
+		if [ -n "$betaDriver" -a "$B_USE_BETA" == 'true' ];then
+			case $CARD in
 				$NVIDIA)
 					echo $betaDriver
 					;;
@@ -5764,7 +5780,7 @@ prep_install()
 			libMesaGlx='libgl'
 			# -n "$gccVersion" -a 
 			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
-				bUpdateGcc='true'
+				bUpdatrue'
 			fi
 			;;
 		debian)
@@ -5792,7 +5808,7 @@ prep_install()
 	
 	# We now need to do active detection of fglrx-install directory name due to
 	# silly random directory naming schema ati just started with 8.35.5
-	# Note: you can xtract $FG_WORKING_DIR to hard code this name
+	# Note: you can set --extract $FG_WORKING_DIR to hard code this name
 
 	echo "${S}Preparing driver install...${N}"
 	# this is causing aptitude to queue some signals that then make aptitude
