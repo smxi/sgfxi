@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.09
-####  Date: 2013-11-14
+####  version: 4.21.10
+####  Date: 2013-11-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -3092,7 +3092,7 @@ check_kernel_headers()
 			local headerAvailable=$( check_package_status "$headerName" 'c' )
 			local headerFile="$( ls ${SM_KERNEL_DOWNLOADS}/$KERNEL_FULL/$headerName*.deb 2>/dev/null )"
 		
-			log_function_data "headerName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
+			log_function_data "headerPresent: $headerPresent\nheaderName: $headerName\nheaderInstalled: $headerInstalled\nheaderAvailable: $headerAvailable\nheaderFile: $headerFile"
 		
 			# first try direct apt install, then dpkg from smxi downloads, then give up
 			if [ -n "$headerPresent" ];then
@@ -3907,8 +3907,8 @@ check_package_status()
 			# version, ie:  *** 2.13 0 \ 100 /var/lib/dpkg/status is the only value returned
 			poolPackageCount=$( grep -Es "^[[:space:]]*[0-9]{3}"  <<< "$cacheData" | grep -vcE "^[[:space:]]*100[[:space:]]" )
 			
-			packageVersion=$( awk 'BEGIN {IGNORECASE=1} 
-			/'$statusType'/ && !/\(None\)/ {print $2}' <<< "$cacheData" )
+			packageVersion=$
+			/'$statusType'/ && !/(\(None\)|\(none\)\(None\)/ {print $2}' <<< "$cacheData" )
 			
 			# if either none found, or only a local apt version available, return null
 			if [ "$statusType" == 'Candidate:' -a "$poolPackageCount" -eq 0 ];then
@@ -5779,8 +5779,8 @@ prep_install()
 			gccPackage='gcc'
 			libMesaGlx='libgl'
 			# -n "$gccVersion" -a 
-			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
-dateGcc='true'
+			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gon" )" ];then
+				bUpdateGcc='true'
 			fi
 			;;
 		debian)
