@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.10
-####  Date: 2013-11-19
+####  version: 4.21.11
+####  Date: 2013-11-20
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -5703,8 +5703,8 @@ download_extract_driver()
 				downloadPackage=$runPackage
 				;;
 			$FGLRX)
-				# this was needed to avoid some test from ati... not needed anymore last I tried
-				atiRef='--referer=ati.comatiRef='ti.com '
+				# this was needed to avoid some test from still needed due to inconsistent amd site
+				atiRef='--referer=support.eferer=ati.comatiRef='ti.com '
 				# 12-8 was released, maybe on purpose, who knows, with a zipped .run file, why? who knows
 				if wget -q --spider $atiRef$1$zipPackage;then
 					echo "${S}Run package using .zip format. Preparing for zip/unzip procedure...${N}"
@@ -5779,7 +5779,7 @@ prep_install()
 			gccPackage='gcc'
 			libMesaGlx='libgl'
 			# -n "$gccVersion" -a 
-			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gon" )" ];then
+			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPacka | grep "$gccVersion" )" ];then
 				bUpdateGcc='true'
 			fi
 			;;
