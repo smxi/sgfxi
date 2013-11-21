@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.13
+####  version: 4.21.14
 ####  Date: 2013-11-21
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -2493,7 +2493,12 @@ detect_card_version()
 			fi
 			;;
 		1002)
-			DRIVER_DEFAULT=$FG_DEFAULT
+			DRIVER_DEFAULT=$FG_DEFA# short term hack because amd hasn't released a stable driver since 13.4 as of 13.11 beta
+			case $DRIVER_DEFAULT in
+				13.9)
+					B_USE_BETA='true'
+					;;
+			esacDEFAULT
 			DRIVER_BETA=$FG_DEFAULT_BETA
 			VERSIONS=$FG_VERSIONS
 			OTHER_VERSIONS=$FG_OTHERS
@@ -5759,9 +5764,10 @@ download_extract_driver()
 		ackage
 					echo "${S}Run package ${C}$runPackage${S} extracted from: ${C}$downloadPackage${N			log_function_data "fglrx zip extraction of run file failed."
 						fi
-					fige${N}"
+					fi
 				else
 					echo "${S}Run package already extracted, using: ${C}$runPackage${N}"
+				fi
 				if [ "$extractError" -gt 0 ];then
 					echo "${M}Removing bad zip package:${C}$downloadPackage${N}"
 					rm -f $downloadPackage
@@ -8631,13 +8637,13 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 	# for testing/debugging and alt driver/card download testing,
 	# I don't want to remove this stuff from system
 	if [ "$B_SKIP_FUNCTION" != 'true' ];then
-		preinstall_cleanup
+		preinstallp
 	fi
 	
 	## both have same function name, so no detection is required, we did it already
 	if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 		run_driver_installer
-		poaller_steps
+		post_installer_steps
 		if [ "$B_FGLRX_DEB_BUILDER" == 'true' ];then
 			install_fglrx_debs
 		fi
