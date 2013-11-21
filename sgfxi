@@ -2497,6 +2497,7 @@ detect_card_version()
 			case $DRIVER_DEFAULT in
 				13.9)
 					B_USE_BETA='true'
+					log_function_data "Forcing beta driver for current with fglrx"
 					;;
 			esacDEFAULT
 			DRIVER_BETA=$FG_DEFAULT_BETA
@@ -8635,9 +8636,9 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 	fi
 	prep_install
 	# for testing/debugging and alt driver/card download testing,
-	# I don't want to remove this stuff from system
+	# I don't want to remove this stufsystem
 	if [ "$B_SKIP_FUNCTION" != 'true' ];then
-		preinstallp
+		preinstall_cleanup
 	fi
 	
 	## both have same function name, so no detection is required, we did it already
