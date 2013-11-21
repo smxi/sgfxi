@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.14
+####  version: 4.21.15
 ####  Date: 2013-11-21
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -494,6 +494,32 @@ set_test_data()
 ### -------------------------------------------------------------------
 
 ## these are first to make it easy to update each new driver release support data
+
+# forced overrides for fringe / weird cases, these tests will vary. Note that you can't put this in a subshell
+# unless it is only returning a driver, not setting a global flag.
+# args: $1 - driver to test
+driver_version_hacks()
+{
+	eval $LOGUS
+	local driverUsed=$1 bReturnDriver='true'
+	
+	# short term hack because amd hasn't released a stable driver since 13.4 as of 13.11 beta
+	case $driverUsed in
+		13.9)
+			B_USE_BETA='true'
+			bReturnDriver='false'
+			log_function_data "Forcing beta driver for current with fglrx"
+			;;
+	esac
+	
+	# make sure that the call either sets globals OR returns a driver, not both.
+	if [ "$bReturnDriver" == 'true' ];then
+		log_function_data "Driver returned: $driverUsed"
+		echo $driverUsed
+	fi
+	
+	eval $LOGUE
+}
 
 # args: $1- test type
 driver_support_tests()
@@ -2493,13 +2519,8 @@ detect_card_version()
 			fi
 			;;
 		1002)
-			DRIVER_DEFAULT=$FG_DEFA# short term hack because amd hasn't released a stable driver since 13.4 as of 13.11 beta
-			case $DRIVER_DEFAULT in
-				13.9)
-					B_USE_BETA='true'
-					log_function_data "Forcing beta driver for current with fglrx"
-					;;
-			esacDEFAULT
+			DRIVER_DEFAULT=$FG_DEFA# if a hack / driver change is required, this will trigger it
+			driver_version_hacks "$DRIVER_DEFAULT"DEFAULT
 			DRIVER_BETA=$FG_DEFAULT_BETA
 			VERSIONS=$FG_VERSIONS
 			OTHER_VERSIONS=$FG_OTHERS
@@ -2705,7 +2726,7 @@ assign_standard_or_beta_driver()
 				fi
 			fi
 			# two cases, if the remote beta version is greater than default driver, or if local version is graater than default
-			if [ -n "$defaultBetaWorking" -a "$( compare_numbers $defaultBetaWorking $FG_DEFAULT )" -eq 0T_ || \
+			if [ -n "$defaultBetaWorking" -a "$( compare_numbers $defaultBetaWorking $FG_DEFAULT )" -eq 0 ] || \
 			[ -n "$FG_DEFAULT_BETA" -a "$( compare_numbers $FG_DEFAULT_BETA $FG_DEFAULT )" -eq 0 ];then
 				betaDriver=$FG_DEFAULT_BETA
 				# echo yest2
@@ -5753,8 +5774,8 @@ download_extract_driver()
 				# is a real zip file.
 				unzip -l ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
 				if [ "$extractError" -eq 0 ];then
-	 8.982
-				runPackage=$( unzip -l ./$downloadPackage | grep -(catalyst|driver-installer)?.*.run$r.*.run' | awk '{print $NF}'else
+					runPackage=$( unzip -l ./$downloadPackage | grep -E 'amd-(catalyst|driver-installer)?.*.run$' | awk '{print $NF}' )
+				else
 					log_function_data "fglrx zip extraction -l action failed."
 				fi
 				# echo $runPackage run
@@ -5762,8 +5783,8 @@ download_extract_driver()
 					if [ "$extractError" -eq 0 ];then
 						unzip ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
 						if [ "$extractError" -eq 0 ];then
-		ackage
-					echo "${S}Run package ${C}$runPackage${S} extracted from: ${C}$downloadPackage${N			log_function_data "fglrx zip extraction of run file failed."
+							echo "${S}Run package ${C}$runPackage${S} extracted from: ${C}$downloadPackage${N}"
+							log_function_data "fglrx zip extraction of run file failed."
 						fi
 					fi
 				else
@@ -8617,7 +8638,7 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 			build_kernel_module_only 'direct'
 		else
 			# this is going to run either the fglrx or nvidia patch library file function
-			# must be after set_driver_install_version for output of data to smxi
+			# must be after set_driver_install_version for output ofo smxi
 			# note this must occur before binary driver install
 			set_install_directory
 			run_driver_patches
@@ -8636,7 +8657,7 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 	fi
 	prep_install
 	# for testing/debugging and alt driver/card download testing,
-	# I don't want to remove this stufsystem
+	# I don't want to remove this stuff from system
 	if [ "$B_SKIP_FUNCTION" != 'true' ];then
 		preinstall_cleanup
 	fi
