@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.11
-####  Date: 2013-11-20
+####  version: 4.21.12
+####  Date: 2013-11-21
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -456,13 +456,13 @@ set_test_data()
 		username=$( getent passwd 1000|cut -d \: -f1 )
 		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
 		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/# INSTALL_DIRECTORY='' # for stuff like patches etcxi/dev"
-		LOG_FILE_DIR="/home/$username/bin/scripts/sgxi/dev/"
+		LOG_FILE_DIR="/home/$username/bin/scripts/sg/logs/"
 # 		PATCH_DOWNLOAD='http://smxi.org/sg/'
 		cd $SCRIPT_HOME
-		rm -f $SCRIPT_NAME.log
+		rm -f $LOG_FILE_DIR	rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -2236,6 +2236,8 @@ error_handler()
 			errorData="You have used the -! 33 override option but the $errorExtra module action reports as failed\n.$SCRIPT_NAME is unable to continue in this scenario.\nPlease blacklist/unblacklist your $errorExtra manually then run $SCRIPT_NAME again."
 		66)
 			errorData="The options ($errorExtra) you used are not compatible, and create internal $SCRIPT_NAME conflicts.\nPlease correct this error and startPT_NAME again."
+		65)
+			errorData="Extraction of zip file: $errorExtra failedE again."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -5691,7 +5693,7 @@ download_extract_driver()
 {
 	eval $LOGPS
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
-	local zipPackage=$2'.zip'
+	local zipPackage=$ extractError=02'.zip'
 
 	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
 	
@@ -5740,14 +5742,31 @@ download_extract_driver()
 		$FGLRX)
 			# here we want to end up with a directory name like: fglrx-install-9-6 
 			if [ "$extension" == 'zip' ];then
-				# note, contents of zip file are not named the same as say version 12-8, rather: 8.982
-				runPackage=$( unzip -l ./$downloadPackage | grep -(catalyst|driver-installer)?.*.run$r.*.run' | awk '{print $NF}' )
+				# note, contents of zip file are not named the same as say version 12-8, rather: 8.9# typical amd inconsistentencies force further testing to make sure the thing that downloaded actually
+				# is a real zip file.
+				unzip -l ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
+				if [ "$extractError" -eq 0 ];then
+	 8.982
+				runPackage=$( unzip -l ./$downloadPackage | grep -(catalyst|driver-installer)?.*.run$r.*.run' | awk '{print $NF}'else
+					log_function_data "fglrx zip extraction -l action failed."
+				fi
 				# echo $runPackage run
 				if [ ! -f $runPackage ];then
-					unzip ./$downloadPackage
-					echo "${S}Run package ${C}$runPackage${S} extracted from: ${C}$downloadPackage${N}"
+					if [ "$extractError" -eq 0 ];then
+						unzip ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
+						if [ "$extractError" -eq 0 ];then
+		ackage
+					echo "${S}Run package ${C}$runPackage${S} extracted from: ${C}$downloadPackage${N			log_function_data "fglrx zip extraction of run file failed."
+						fi
+					fige${N}"
 				else
 					echo "${S}Run package already extracted, using: ${C}$runPackage${N}"
+				if [ "$extractError" -gt 0 ];then
+					echo "${M}Removing bad zip package:${C}$downloadPackage${N}"
+					rm -f $downloadPackage
+					error_handler 165 "$downloadPackage"
+				else
+					log_function_data "fglrx zip extraction of run file successful."
 				fi
 # 				rm -f ./$downloadPackage
 			fi
@@ -5779,7 +5798,7 @@ prep_install()
 			gccPackage='gcc'
 			libMesaGlx='libgl'
 			# -n "$gccVersion" -a 
-			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPacka | grep "$gccVersion" )" ];then
+			if [ -n "$gccVersion" -a -z "$( check_package_status "$gccPackage" 'i' | grep "$gccVersion" )" ];then
 				bUpdateGcc='true'
 			fi
 			;;
@@ -8622,7 +8641,7 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 			install_fglrx_debs
 		fi
 	else
-		update_to_nonfree_sources
+		update_to_nonfrees
 		install_distro_drivers
 	fi
 	if [ "$B_SKIP_CONFIG" != 'true' ];then
@@ -8633,4 +8652,4 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 	x_start_stop_master start
 fi
 
-###**E
+###**EOF**###
