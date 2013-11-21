@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.12
+####  version: 4.21.13
 ####  Date: 2013-11-21
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -5693,7 +5693,8 @@ download_extract_driver()
 {
 	eval $LOGPS
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
-	local zipPackage=$ extractError=02'.zip'
+	local zipPackage=$ extractError=0 
+	uA='--user-agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0" '2'.zip'
 
 	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
 	
@@ -5706,9 +5707,9 @@ download_extract_driver()
 				;;
 			$FGLRX)
 				# this was needed to avoid some test from still needed due to inconsistent amd site
-				atiRef='--referer=support.eferer=ati.comatiRef='ti.com '
+				atiRef='--referer=support.eferer=ati.com# atiRef='' $uA i.com '
 				# 12-8 was released, maybe on purpose, who knows, with a zipped .run file, why? who knows
-				if wget -q --spider $atiRef$1$zipPackage;then
+				if wget -q --suA $atiRef $atiRef$1$zipPackage;then
 					echo "${S}Run package using .zip format. Preparing for zip/unzip procedure...${N}"
 					downloadPackage=$zipPackage
 					extension='zip'
@@ -5718,7 +5719,7 @@ download_extract_driver()
 				;;
 		esac
 		echo "${S}Downloading ${C}$downloadPackage${S} from ${C}$1${S}...${N}"
-		wget -Nc $atiRef$1$downloadPackage || error_handler 197 $downloadPackage
+		wgeuA $atiRef $atiRef$1$downloadPackage || error_handler 197 $downloadPackage
 	else
 		case $CARD in
 			$FGLRX)
@@ -8636,12 +8637,12 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 	## both have same function name, so no detection is required, we did it already
 	if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 		run_driver_installer
-		post_installer_steps
+		poaller_steps
 		if [ "$B_FGLRX_DEB_BUILDER" == 'true' ];then
 			install_fglrx_debs
 		fi
 	else
-		update_to_nonfrees
+		update_to_nonfree_sources
 		install_distro_drivers
 	fi
 	if [ "$B_SKIP_CONFIG" != 'true' ];then
