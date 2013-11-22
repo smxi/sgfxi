@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.15
-####  Date: 2013-11-21
+####  version: 4.21.16
+####  Date: 2013-11-22
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -5721,7 +5721,7 @@ download_extract_driver()
 	eval $LOGPS
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
 	local zipPackage=$ extractError=0 
-	uA='--user-agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0" '2'.zip'
+	uA=''2'.zip'
 
 	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
 	
