@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.16
-####  Date: 2013-11-22
+####  version: 4.21.17
+####  Date: 2013-11-24
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -93,6 +93,8 @@ CARD='' # card type: fglrx or nvidia
 DISTRIB_CODENAME=''
 DISTRIB_ID=''
 DISTRIB_RELEASE=''
+# this is for the run installers, sometimes we may want to pass them an option/arg in specific cases
+EXTRA_ARGS=''
 FED_KERNEL_PAE=''
 NON_FREE_DRIVER=''
 SYSTEM_BASE=''
@@ -501,7 +503,7 @@ set_test_data()
 driver_version_hacks()
 {
 	eval $LOGUS
-	local driverUsed=$1 bReturnDriver='true'
+	local driverUsed=$1 bReturnDriver='true' results=''
 	
 	# short term hack because amd hasn't released a stable driver since 13.4 as of 13.11 beta
 	case $driverUsed in
@@ -509,6 +511,15 @@ driver_version_hacks()
 			B_USE_BETA='true'
 			bReturnDriver='false'
 			log_function_data "Forcing beta driver for current with fglrx"
+			;;
+		331.*)
+			# new option for 3.12, we think.
+			if [ -n "$( grep -Es '^[[:space:]]*CONFIG_UIDGID_STRICT_TYPE_CHECKS[[:space:]]*=[[:space:]]*y' \
+			/boot/config-${KERNEL_FULL}* )" ];then
+				EXTRA_ARGS='--no-unified-memory'
+			fi
+			bReturnDriver='false'
+			log_function_data "Forcing nvidia installer option: "
 			;;
 	esac
 	
@@ -1503,7 +1514,8 @@ driver_support_tests()
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
 											331.*|325.*|319.[6-9][0-9]|304.1[0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
-												: # do nothing
+												# trigger installer flag if needed
+												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
 											*) # use 225 for beta testing errors
 												if [ "$B_TESTING_3" != 'true' ];then
@@ -5763,14 +5775,14 @@ download_extract_driver()
 	echo "${S}Extracting ${C}$downloadPackage${S}...${N}"
 	case $CARD in
 		$NVIDIA)
-			# extract it, on error delete and call error handling
-			bash ./$runPackage --extract-only 1>> $LOG_FILE 2>> $LOG_FILE
+			# extract it, on error delete and call error handliash ./$runPackage --extract-only 1>> $LOG_FILE 2>> $LOG_FILE
 			errorTemp="$?"
 			;;
 		$FGLRX)
 			# here we want to end up with a directory name like: fglrx-install-9-6 
 			if [ "$extension" == 'zip' ];then
-				# note, contents of zip file are not named the same as say version 12-8, rather: 8.9# typical amd inconsistentencies force further testing to make sure the thing that downloaded actually
+				# note, contents of zip file are not named the same as say version 12-8, rather: 8.982
+				# typical amd inconsistentencies force further testing to make sure the thing that downloaded actually
 				# is a real zip file.
 				unzip -l ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
 				if [ "$extractError" -eq 0 ];then
@@ -6144,7 +6156,7 @@ run_driver_installer()
 				esac
 			fi
 			
-			installerArgs="$installerArgs -k $KERNEL_FULL"
+			installerArgs="$installerArgs -k $KERNEL_FULL $EXTRA_ARGS "
 			# fresh arch installs may have the single file but no headers in /usr/src
 			# note that this didn't work even though the target file existed
 # 			if [ "$B_USE_DIRECT_KERNEL_HEADER" == 'true' ];then
@@ -8630,15 +8642,14 @@ if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	create_data_storage
 	check_run_package_tools
 	set_download_info # also triggers the download / extract function
-	# need to make sure this doesn't run for module build component
-	if [ "$B_SKIP_INSTALL" != 'true' ];then
+	# need to make sure this doesn't run for module build compone[ "$B_SKIP_INSTALL" != 'true' ];then
 		if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 			# this will run by itself because it's just some tests and a module rebuild
 			# when it's done it will simply exit, no reboot or desktop start is required.
 			build_kernel_module_only 'direct'
 		else
 			# this is going to run either the fglrx or nvidia patch library file function
-			# must be after set_driver_install_version for output ofo smxi
+			# must be after set_driver_install_version for output of data to smxi
 			# note this must occur before binary driver install
 			set_install_directory
 			run_driver_patches
