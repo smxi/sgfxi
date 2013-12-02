@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.18
+####  version: 4.21.19
 ####  Date: 2013-12-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -3372,6 +3372,14 @@ check_root()
 		if [ -n "$SUDO_USER" ] ; then
 			error_handler 211
 		fi
+		# this can detect 'sudo su -' if required
+		local startPPID=$( ps -j -fp $PPID 2>/dev/null | awk '/root/ {print $3}' )
+		local startPPPID=$( ps -j -fp $startPPID 2>/dev/null | awk '/root/ {print $3}' )
+		local sudoBase=$( ps -j -fp $startPPPID 2>/dev/null | grep -Eos 'sudo su.*' )
+		# log_function_data "startPPID: $startPPID\nstartPPPID: $startPPPID\nsudoBase: $sudoBase"
+		if [ -n "$sudoBase" ];then
+			echo "${M}Information: Starting $SCRIPT_NAME with: ${C}$sudoBase${N}"
+		fi
 	fi
 }
 
@@ -5740,18 +5748,18 @@ pre_extract_clean_set_up()
 }
 
 # args: $1 download url; $2 package name
-download_extract_driver()
+d_extract_driver()
 {
 	eval $LOGPS
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
-	local zipPackage=$ runZipPackage=$2'.run.zip' extractError=0 
-	local uA=''2'.zip'
+	local zipPackage=$2'.zip' runZipPackage=$2'.run.zip' extractError=0 
+	local uA=''
 
 	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
 	
 	# test for existing downloaded version, then download, error if download fails
 	# have to keep it in a clean if to avoid error
-	if [ ! -f $runPackage -a ! -f $zipP-a ! -f $runZipPackage ];then
+	if [ ! -f $runPackage -a ! -f $zipPackage -a ! -f $runZipPackage ];then
 		case $CARD in
 			$NVIDIA)
 				downloadPackage=$runPackage
@@ -8594,7 +8602,7 @@ fi
 
 set_test_data # this will set other test data for debugging
 
-if [ "$B_PRINT_VER" != 'true' ];then
+if [ "$B_PRINT_VER" != ];then
 	# test for multiple video cards and select only one
 	if [ "$CARD_COUNT" -gt 1 -a "$B_RESTORE_DEFAULTS" != 'true' ];then
 		# handle no xorg.conf with new X situation, only create xorg.conf
@@ -8611,7 +8619,7 @@ if [ "$B_GET_LIVE_DRIVERS" == 'true' -a "$B_PRINT_VER" == 'true' ];then
 	reset_using_live_driver_data
 fi
 
-## this is sepo card can get set first for native installer
+## this is separate so card can get set first for native installer
 set_card
 
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
