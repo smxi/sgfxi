@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.17
-####  Date: 2013-11-24
+####  version: 4.21.18
+####  Date: 2013-12-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -327,6 +327,9 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
 FG_DEFAULT_BETA='13.11'
+# http://www2.ati.com/drivers/beta/amd-catalyst-13.11-beta-v9.4-linux-x86.x86_64.run.zip
+# note: amd release a zip file that contains a space in the name, so I'm not spending 
+# any more of my time on this group of undisciplined incompetents at this point.
 FG_BETA_VERSION='beta6' 
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
@@ -2169,6 +2172,8 @@ error_handler()
 			;;
 		212)
 			errorData="AMD has dropped Catalyst/FGLRX support for HD2xxx-4xxx series cards as of 12-6.\nYou should have bought Nvidia if you wanted a long term working non free driver, sorry.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
+	211)
+			errorData="You cannot start $SCRIPT_NAME with sudo. Please start $SCRIPT_NAME \nproperly as root (use either 'sudo su -' (note the '-' at the end) \nto become root, or login as root directly. If 'sudo su -' does not \nwork, please let the $SCRIPT_NAME maintainer know , and if your system \nhas root locked (why would anyone do that?) then you will have to \nunlock root. \n\nSee your distro manuals or help pages to fix this issue in that \ncase, and also make sure to update any documentation or how-to's \nfor running $SCRIPT_NAME with your distro.  This means you, Ubuntu/Mint users!\n\nTypical signs of sudo failures are respawnings of your desktop while \n$SCRIPT_NAME is runninger know."
 			;;
 		# specific install issues
 		200)
@@ -3358,8 +3363,15 @@ check_ia32_libs()
 ### ----------------------------------------------------------------note that we want this to print with no root error
 check_root()
 {
-	if [ "$(whoami)" != 'root' -a "$B_PRINT_VER" != 'true' ];then
-		error_handler 251
+	if [ "$B_PRINT_VER" != 'true' ];then
+		# if started with sudo, this will pass
+		if [ "$( whoami )" != 'root' ];then
+			error_handler 251
+		fi
+		#Check if started with sudo, not root
+		if [ -n "$SUDO_USER" ] ; then
+			error_handler 211
+		fi
 	fi
 }
 
@@ -5732,23 +5744,28 @@ download_extract_driver()
 {
 	eval $LOGPS
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
-	local zipPackage=$ extractError=0 
-	uA=''2'.zip'
+	local zipPackage=$ runZipPackage=$2'.run.zip' extractError=0 
+	local uA=''2'.zip'
 
 	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
 	
 	# test for existing downloaded version, then download, error if download fails
 	# have to keep it in a clean if to avoid error
-	if [ ! -f $runPackage -a ! -f $zipPackage ];then
+	if [ ! -f $runPackage -a ! -f $zipP-a ! -f $runZipPackage ];then
 		case $CARD in
 			$NVIDIA)
 				downloadPackage=$runPackage
 				;;
 			$FGLRX)
-				# this was needed to avoid some test from still needed due to inconsistent amd site
-				atiRef='--referer=support.eferer=ati.com# atiRef='' $uA i.com '
+				# this was needed to avoid some test from ati... still needed due to inconsistent amd site
+				atiRef='--referer=support.ati.com '
+				# atiRef='' $uA 
 				# 12-8 was released, maybe on purpose, who knows, with a zipped .run file, why? who knows
-				if wget -q --suA $atiRef $atiRef$1$zipPackage;then
+# 				if wget -q --spider $uA $atiRef $1$runZipPackage;then
+# 					echo "${S}Run package using .run.zip format. Preparing for zip/unzip procedure...${N}"
+# 					downloadPackage=$runZipPackage
+# 					extension='zip'
+				if wget -q --spider $uA $atiRef $1$zipPackage;then
 					echo "${S}Run package using .zip format. Preparing for zip/unzip procedure...${N}"
 					downloadPackage=$zipPackage
 					extension='zip'
@@ -5758,13 +5775,16 @@ download_extract_driver()
 				;;
 		esac
 		echo "${S}Downloading ${C}$downloadPackage${S} from ${C}$1${S}...${N}"
-		wgeuA $atiRef $atiRef$1$downloadPackage || error_handler 197 $downloadPackage
+		wget -Nc $uA $atiRef $1$downloadPackage || error_handler 197 $downloadPackage
 	else
 		case $CARD in
 			$FGLRX)
 				if [ -f $zipPackage ];then
 					extension='zip'
 					downloadPackage=$zipPackage
+				elif [ -f $runZipPackage ];then
+					extension='zip'
+					downloadPackage=$runZipPackage
 				elif [ -f $runPackage ];then
 					downloadPackage=$runPackage
 				fi
@@ -5775,7 +5795,8 @@ download_extract_driver()
 	echo "${S}Extracting ${C}$downloadPackage${S}...${N}"
 	case $CARD in
 		$NVIDIA)
-			# extract it, on error delete and call error handliash ./$runPackage --extract-only 1>> $LOG_FILE 2>> $LOG_FILE
+			# extract it, on error delete and call error handling
+			bash ./$runPackage --extract-only 1>> $LOG_FILE 2>> $LOG_FILE
 			errorTemp="$?"
 			;;
 		$FGLRX)
@@ -5785,8 +5806,12 @@ download_extract_driver()
 				# typical amd inconsistentencies force further testing to make sure the thing that downloaded actually
 				# is a real zip file.
 				unzip -l ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
+				# note, amd is clearly being run by total incompetents at this stage, the -v9.4 beta has this file name:
+				# "amd-catalyst-13.11-beta V9.4-linux-x86.x86_64.run" clearly amd is using either budget outsourced labor
+				# or they have no adults in charge (note the space, the upper case V, etc, total lack of any attempt
+				# at basic discipline, really pathetic, sell your amd stock is my advice).
 				if [ "$extractError" -eq 0 ];then
-					runPackage=$( unzip -l ./$downloadPackage | grep -E 'amd-(catalyst|driver-installer)?.*.run$' | awk '{print $NF}' )
+					runPackage=$( unzip -l ./$downloadPackage | grep -E 'amd-(catalyst|driver-installer)?.*.run$' | sed 's/beta[[:space:]]V/beta-v/' | awk '{print $NF}' )
 				else
 					log_function_data "fglrx zip extraction -l action failed."
 				fi
@@ -5794,9 +5819,10 @@ download_extract_driver()
 				if [ ! -f $runPackage ];then
 					if [ "$extractError" -eq 0 ];then
 						unzip ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
+						
 						if [ "$extractError" -eq 0 ];then
 							echo "${S}Run package ${C}$runPackage${S} extracted from: ${C}$downloadPackage${N}"
-							log_function_data "fglrx zip extraction of run file failed."
+							log_function_data "fglrx zip extraction of run file succeeded."
 						fi
 					fi
 				else
@@ -5813,7 +5839,7 @@ download_extract_driver()
 			fi
 			LC_ALL= LC_CTYPE= LC_MESSAGES= LANG= bash ./$runPackage --extract $FG_WORKING_DIR-$DRIVER_DEFAULT 1>> $LOG_FILE 2>> $LOG_FILE
 			errorTemp="$?"
-			if [ -f $zipPackage ];then
+			if [ -f $zipPackage -o -f $runZipPackage ];then
 				rm -f $runPackage
 			fi
 			;;
@@ -8585,7 +8611,7 @@ if [ "$B_GET_LIVE_DRIVERS" == 'true' -a "$B_PRINT_VER" == 'true' ];then
 	reset_using_live_driver_data
 fi
 
-## this is separate so card can get set first for native installer
+## this is sepo card can get set first for native installer
 set_card
 
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
@@ -8633,16 +8659,18 @@ set_driver_install_version
 
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	# make sure user has kernel headers, to avoid running unneeded clean up or prep
-	check_kernel_h	if [ "$B_CHECK_IA32" == 'true' ];then
+	check_kernel_headers
+	if [ "$B_CHECK_IA32" == 'true' ];then
 		check_ia32_libs 'full'
-	fiheaders
+	fi
 fi
 
 if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
 	create_data_storage
 	check_run_package_tools
 	set_download_info # also triggers the download / extract function
-	# need to make sure this doesn't run for module build compone[ "$B_SKIP_INSTALL" != 'true' ];then
+	# need to make sure this doesn't run for module build component
+	if [ "$B_SKIP_INSTALL" != 'true' ];then
 		if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 			# this will run by itself because it's just some tests and a module rebuild
 			# when it's done it will simply exit, no reboot or desktop start is required.
