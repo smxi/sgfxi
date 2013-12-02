@@ -108,6 +108,7 @@ PACKAGE_MANAGER=''
 SCRIPT_COLORS=1
 START_OPTIONS_PRINT='' # for output to user of what options they used
 START_OPTIONS=''
+SUDO_START=''
 WITHOUT_RECOMMENDS=''
 X_NAME=''
 
@@ -3379,6 +3380,7 @@ check_root()
 		# log_function_data "startPPID: $startPPID\nstartPPPID: $startPPPID\nsudoBase: $sudoBase"
 		if [ -n "$sudoBase" ];then
 			echo "${M}Information: Starting $SCRIPT_NAME with: ${C}$sudoBase${N}"
+			SUDO_START=$sudoBase
 		fi
 	fi
 }
@@ -4648,7 +4650,9 @@ SIS: $SIS" >> $LOG_FILE
 	echo "BITS: $BITS" ELEASE" >> $LOG_FILE
 	echo "FG_DISTRIB_CODENAME: $FG_DISTRIB_CODENAME" >> $LOG_FILE
 	echo "FG_DISTRIB_ID: $FG_DISTRIB_ID" >> $LOG_FILE
-	echo "APT_TYPE: $APT_TYPE" >> $LOG_FILE
+	echo "APT_TYPE: $APT_TYPE" >> $LOG# fhis will only show as information to check for 'sudo su -' starts, all others
+	# have exited with error
+	echo "SUDO_START: $SUDO_START" >> $LOG_FILEnew one
 	echo "=========================================================" >> $LOG_FILE
 	echo "X is Running: $( x_is_running )" >> $LOG_FILE
 	echo "Current Runlevel: $( get_current_runlevel )" >> $LOG_FILE
@@ -5740,15 +5744,14 @@ pre_extract_clean_set_up()
 	fi
 
 	# clean up any old stuff that might be left from last install, fglrx stuff
-	# note: with 8.35.x ati switched to a randomly generated directory name
-	# using the format fgrlx-install.FRGDXE
+	# note: with 8.35.x ati switched to a randomly generated directory  using the format fgrlx-install.FRGDXE
 	rm -rf $FG_WORKING_DIR* /tmp/fglrx*
 	rm -f /etc/fglrxrc /etc/fglrxprofiles.csv fglrx*
 	eval $LOGUE
 }
 
 # args: $1 download url; $2 package name
-d_extract_driver()
+download_extract_driver()
 {
 	eval $LOGPS
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
@@ -8596,13 +8599,13 @@ if [ "$B_SKIP_FUNCTION" != 'true' ];then
 fi
 
 ## update everything, restart if not run from smxi
-if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a "$B_PRINT_VER" != 'true'  ];then
+if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a NT_VER" != 'true'  ];then
 	check_update_script $SCRIPT_NAME "$SCRIPT_DOWNLOAD" 'default server'
 fi
 
 set_test_data # this will set other test data for debugging
 
-if [ "$B_PRINT_VER" != ];then
+if [ "$B_PRINT_VER" != 'true' ];then
 	# test for multiple video cards and select only one
 	if [ "$CARD_COUNT" -gt 1 -a "$B_RESTORE_DEFAULTS" != 'true' ];then
 		# handle no xorg.conf with new X situation, only create xorg.conf
