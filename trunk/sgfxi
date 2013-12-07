@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.19
-####  Date: 2013-12-02
+####  version: 4.21.20
+####  Date: 2013-12-07
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -222,7 +222,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='331.20:304.116:173.14.38:96.43.23:71.86.15'
+NV_VERSIONS='331.20:304.116:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -264,7 +264,7 @@ NV_BETA="$NV_VERSIONS_BETA:331.17::"
 # stable legacy 1: 71.86.06 71.86.09 71.86.11 71.86.13 71.86.14 71.86.15
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 # ends there, xorg 11/12 support
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
-#                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38
+#                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38 173.14.39
 # stabel legacy 4: 304.64 304.84 304.88 304.108
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
@@ -1068,6 +1068,19 @@ driver_support_tests()
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
 						case $X_VERSION in
+							1.15)
+								# note: 173.14.39 is last legacy 3/5xxx card branch release so xorg support cuts off here
+								case $DRIVER_DEFAULT in
+									331.*|304.[1-9][0-9][0-9]|173.14.3[9]|$DISTRO_NVIDIA)
+										:
+										;;
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
 							1.14)
 								case $DRIVER_DEFAULT in
 									331.*|325.*|319.*|313.*|31[4-9].[0-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|310.[4-9][0-9]|173.14.3[7-9]|$DISTRO_NVIDIA)
@@ -2694,9 +2707,9 @@ assign_standard_or_beta_driver()
 			;;
 		$FGLlocal defaultBetaWorking='' defaultBetaVersion='' betaCurrentWorking='' betaCurrentVersionWorking=''
 			local bDebugger='false'
-			$FGLRX)
+			
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
-				liveBetas=$( gebeta_drivers )
+				liveBetas=$( get_live_beta_drivers )
 				if [ "$bDebugger" == 'true' ];then
 					echo
 					echo "Start assign_standard_or_beta_driver"
@@ -5734,7 +5747,7 @@ set_download_info()
 # arg: $1 install package to remove
 pre_extract_clean_set_up()
 {
-	eval $LOGUS
+	OGUS
 	# this is only made for binary run packge installs
 	if [ -d "$SCRIPT_WORKING_DIR" ];then
 		cd $SCRIPT_WORKING_DIR
@@ -5744,7 +5757,8 @@ pre_extract_clean_set_up()
 	fi
 
 	# clean up any old stuff that might be left from last install, fglrx stuff
-	# note: with 8.35.x ati switched to a randomly generated directory  using the format fgrlx-install.FRGDXE
+	# note: with 8.35.x ati switched to a randomly generated directory name
+	# using the format fgrlx-install.FRGDXE
 	rm -rf $FG_WORKING_DIR* /tmp/fglrx*
 	rm -f /etc/fglrxrc /etc/fglrxprofiles.csv fglrx*
 	eval $LOGUE
@@ -8589,7 +8603,7 @@ if [ "$B_BUILD_KERNEL_MODULES" == 'true' ];then
 	install_modules_to_all_kernels
 fi
 # Get kernel string stuff, no need to rerun this after it's been set in options
-if [ -z "$INSTALL_TO_KERNEL" ];then
+if [ -z "$INSTALL_TO" ];then
 	kernel_string_info
 fi
 
@@ -8599,7 +8613,7 @@ if [ "$B_SKIP_FUNCTION" != 'true' ];then
 fi
 
 ## update everything, restart if not run from smxi
-if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a NT_VER" != 'true'  ];then
+if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a "$B_PRINT_VER" != 'true'  ];then
 	check_update_script $SCRIPT_NAME "$SCRIPT_DOWNLOAD" 'default server'
 fi
 
