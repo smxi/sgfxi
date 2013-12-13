@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.20
-####  Date: 2013-12-07
+####  version: 4.21.21
+####  Date: 2013-12-13
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -222,7 +222,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='331.20:304.116:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='331.20:304.117:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -243,13 +243,13 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_BETA="$NV_VERSIONS_BETA:331.17::"
-# stable primary: 325.15
+NV_BETA="$NV_VERSIONS_BETA:::"
+# stable primary: 325.15 331.20
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 319.49 319.60 331.20
+# lt stable primary: 319.49 319.60 319.72 331.20
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
@@ -262,13 +262,13 @@ NV_BETA="$NV_VERSIONS_BETA:331.17::"
 # stable primary: 177.82
 # stable primary: 100.14.19 169.12
 # stable legacy 1: 71.86.06 71.86.09 71.86.11 71.86.13 71.86.14 71.86.15
-# stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 # ends there, xorg 11/12 support
+# stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 (ends with xorg 11/12 support)
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
-#                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38 173.14.39
-# stabel legacy 4: 304.64 304.84 304.88 304.108
+#                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38 173.14.39 (ends with xorg 1.15 support)
+# stabel legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='325.15:319.72:319.60:313.30:310.44:304.108:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:173.14.36:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='325.15:319.72:319.60:313.30:310.44:304.116:304.108:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -1071,7 +1071,7 @@ driver_support_tests()
 							1.15)
 								# note: 173.14.39 is last legacy 3/5xxx card branch release so xorg support cuts off here
 								case $DRIVER_DEFAULT in
-									331.*|304.[1-9][0-9][0-9]|173.14.3[9]|$DISTRO_NVIDIA)
+									331.*|304.11[7-9]|304.1[2-9][0-9]|173.14.3[9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -2701,11 +2701,12 @@ assign_standard_or_beta_driver()
 					;;
 				legacy-4)
 					betaDriver=$NV_LEGACY_BETA_4
-					stableDriver=$NV_LEGACY_4
+					stableDriver=ACY_4
 					;;
 			esac
 			;;
-		$FGLlocal defaultBetaWorking='' defaultBetaVersion='' betaCurrentWorking='' betaCurrentVersionWorking=''
+		$FGLRX)
+			local defaultBetaWorking='' defaultBetaVersion='' betaCurrentWorking='' betaCurrentVersionWorking=''
 			local bDebugger='false'
 			
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
@@ -5744,10 +5745,10 @@ set_download_info()
 	fi
 }
 
-# arg: $1 install package to remove
+# arg: $ll package to remove
 pre_extract_clean_set_up()
 {
-	OGUS
+	eval $LOGUS
 	# this is only made for binary run packge installs
 	if [ -d "$SCRIPT_WORKING_DIR" ];then
 		cd $SCRIPT_WORKING_DIR
@@ -8602,8 +8603,8 @@ if [ "$B_BUILD_KERNEL_MODULES" == 'true' ];then
 	check_set_distro ## need to know what it is for some tests
 	install_modules_to_all_kernels
 fi
-# Get kernel string stuff, no need to rerun this after it's been set in options
-if [ -z "$INSTALL_TO" ];then
+# Get kernel string stuff, no need to reruafter it's been set in options
+if [ -z "$INSTALL_TO_KERNEL" ];then
 	kernel_string_info
 fi
 
