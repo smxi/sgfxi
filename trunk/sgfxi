@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.21
-####  Date: 2013-12-13
+####  version: 4.21.22
+####  Date: 2013-12-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -301,8 +301,8 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # actual run: http://support.amd.com/us/gpudownload/linux/Pages/radeon_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
 # note, as distressingly usual, amd AGAIN has changed their driver name syntax. 
-FG_VERSIONS='13.9:13-4:13.1'
-FG_DEFAULT='13.9'
+FG_VERSIONS='13.12:13-4:13.1'
+FG_DEFAULT='13.12'
 # amd has no discipline whatsoever, look at the ridiculous failure to name the f#cking download file
 # consistently release to release, clearly this organization is run by incompetents of the highest order.
 # hint: use real package numbering and you avoid all this 'legacy/beta' nonsense.
@@ -2701,7 +2701,7 @@ assign_standard_or_beta_driver()
 					;;
 				legacy-4)
 					betaDriver=$NV_LEGACY_BETA_4
-					stableDriver=ACY_4
+					stableDriveEGACY_4
 					;;
 			esac
 			;;
@@ -5745,7 +5745,7 @@ set_download_info()
 	fi
 }
 
-# arg: $ll package to remove
+# arg:tall package to remove
 pre_extract_clean_set_up()
 {
 	eval $LOGUS
@@ -5831,7 +5831,7 @@ download_extract_driver()
 				# note, contents of zip file are not named the same as say version 12-8, rather: 8.982
 				# typical amd inconsistentencies force further testing to make sure the thing that downloaded actually
 				# is a real zip file.
-				unzip -l ./$downloadPackage 2>>$LOG_FILE || extractError="$?"
+				unzip -l ./$downloadPackage &>>$LOG_FILE || extractError="$?"
 				# note, amd is clearly being run by total incompetents at this stage, the -v9.4 beta has this file name:
 				# "amd-catalyst-13.11-beta V9.4-linux-x86.x86_64.run" clearly amd is using either budget outsourced labor
 				# or they have no adults in charge (note the space, the upper case V, etc, total lack of any attempt
@@ -8603,7 +8603,7 @@ if [ "$B_BUILD_KERNEL_MODULES" == 'true' ];then
 	check_set_distro ## need to know what it is for some tests
 	install_modules_to_all_kernels
 fi
-# Get kernel string stuff, no need to reruafter it's been set in options
+# Get kernel string stuff, no need to res after it's been set in options
 if [ -z "$INSTALL_TO_KERNEL" ];then
 	kernel_string_info
 fi
