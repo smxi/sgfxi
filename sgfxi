@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.22
-####  Date: 2013-12-19
+####  version: 4.21.23
+####  Date: 2013-12-21
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -336,7 +336,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
 # :9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4
-FG_OTHERS='13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 
 # fg legacy 2: 12-6 13.1
 # set to sid/lenny/etch
@@ -1880,7 +1880,7 @@ run_driver_patches()
 							esac
 							:
 							;;
-						10|11)
+						10)
 							case $DRIVER_DEFAULT in
 								#patch url: http://catalyst.apocalypsus.net/files/arch-fglrx-3.7.patch
 								13.9)
@@ -1890,9 +1890,33 @@ run_driver_patches()
 									;;
 							esac
 							;;
+						11)
+							case $DRIVER_DEFAULT in
+								#patch url: http://catalyst.apocalypsus.net/files/arch-fglrx-3.7.patch
+								13.9)
+									# run_prepatch_fixes '3.7-path-fix'
+									patchFile='FGLRX_13.9-3.10.patch'
+									apply_patch_file $patchFile
+									;;
+								# patch url: http://phoronix.com/forums/showthread.php?91885-AMD-Catalyst-13-12-GPU-Driver-For-Linux-Released&p=381943#post381943
+								13.12)
+									patchFile='FGLRX_13.12-3.11-3.13.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
+						12|13)
+							case $DRIVER_DEFAULT in
+								# patch url: http://phoronix.com/forums/showthread.php?91885-AMD-Catalyst-13-12-GPU-Driver-For-Linux-Released&p=381943#post381943
+								13.12)
+									patchFile='FGLRX_13.12-3.11-3.13.patch'
+									apply_patch_file $patchFile
+									;;
+							esac
+							;;
 					esac
 					;;
-			esac
+			esac 
 			;;
 	esac
 
@@ -2665,7 +2689,7 @@ assign_standard_or_beta_driver()
 				if [ -n "$beta173" ];then
 					if [ -z "$NV_LEGACY_BETA_3" -o "$( compare_numbers $beta173 $NV_LEGACY_BETA_3 )" -eq 0 ];then
 						NV_LEGACY_BETA_3=$beta173
-						NV_BETA="$NV_BETA:$beta173"
+						NV_BETA="$NV_BETA:$b
 					fi
 				fi
 				if [ -n "$beta96" ];then
@@ -2701,7 +2725,7 @@ assign_standard_or_beta_driver()
 					;;
 				legacy-4)
 					betaDriver=$NV_LEGACY_BETA_4
-					stableDriveEGACY_4
+					stableDriver=$NV_LEGACY_4
 					;;
 			esac
 			;;
@@ -5719,7 +5743,7 @@ set_download_info()
 	else
 		case $CARD in
 			$NVIDIA)
-				# leaving in test flags in case something goes wrong in early tests
+				# leaving  flags in case something goes wrong in early tests
 # 				if [ "$B_TESTING_5" == 'true' ];then
 					test_module_build_ok 'return'
 					moduleTest="$?"
@@ -5745,7 +5769,7 @@ set_download_info()
 	fi
 }
 
-# arg:tall package to remove
+# arg: $1 install package to remove
 pre_extract_clean_set_up()
 {
 	eval $LOGUS
@@ -8582,12 +8606,12 @@ get_options()
 		esac
 if [ "$B_FORCE_OPTION" == 'true' -a "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		error_handler 166 "-k and -f"
-	fic
-	done
+	fi
 	#in case -n is used too - note: this will never be true, have to fix this one
 	if [ "$B_NATIVE_DRIVER" == "true" -a -n "$INSTALL_TO_KERNEL" ];then
-		echo "${W}WARNING: -n will uninstall binary drivers to all the kernels, not just $KERNEL_FULL${N	N}"
+		echo "${W}WARNING: -n will uninstall binary drivers to all the kernels, not just $KERNEL_FULL${N}"
 	fi
+	
 }
 
 ########################################################################
@@ -8603,7 +8627,7 @@ if [ "$B_BUILD_KERNEL_MODULES" == 'true' ];then
 	check_set_distro ## need to know what it is for some tests
 	install_modules_to_all_kernels
 fi
-# Get kernel string stuff, no need to res after it's been set in options
+# Get kernel string stuff, no need to rerun this after it's been set in options
 if [ -z "$INSTALL_TO_KERNEL" ];then
 	kernel_string_info
 fi
