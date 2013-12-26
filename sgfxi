@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.23
-####  Date: 2013-12-21
+####  version: 4.21.24
+####  Date: 2013-12-26
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
 ####  Code contributions copyright: Latino 2008
@@ -2211,7 +2211,7 @@ error_handler()
 		212)
 			errorData="AMD has dropped Catalyst/FGLRX support for HD2xxx-4xxx series cards as of 12-6.\nYou should have bought Nvidia if you wanted a long term working non free driver, sorry.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 	211)
-			errorData="You cannot start $SCRIPT_NAME with sudo. Please start $SCRIPT_NAME \nproperly as root (use either 'sudo su -' (note the '-' at the end) \nto become root, or login as root directly. If 'sudo su -' does not \nwork, please let the $SCRIPT_NAME maintainer know , and if your system \nhas root locked (why would anyone do that?) then you will have to \nunlock root. \n\nSee your distro manuals or help pages to fix this issue in that \ncase, and also make sure to update any documentation or how-to's \nfor running $SCRIPT_NAME with your distro.  This means you, Ubuntu/Mint users!\n\nTypical signs of sudo failures are respawnings of your desktop while \n$SCRIPT_NAME is runninger know."
+			errorData="You cannot start $SCRIPT_NAME with sudo. Please start $SCRIPT_NAME \nproperly as root (use either 'sudo su -' (note the '-' at the end) \nto become root, or login as root directly). If 'sudo su -' does not \nwork, please let the $SCRIPT_NAME maintainer know, and if your system \nhas root locked (why would anyone do that?) then you will have to \nunlock root. \n\nSee your distro manuals or help pages to fix this issue in that \ncase, and also make sure to update any documentation or how-to's \nfor running $SCRIPT_NAME with your distro.  This means you, Ubuntu/Mint users!\n\nTypical signs of sudo failures are respawnings of your desktop while \n$SCRIPT_NAME is running, or failures to create directories.\nr know."
 			;;
 		# specific install issues
 		200)
@@ -2688,8 +2688,8 @@ assign_standard_or_beta_driver()
 				fi
 				if [ -n "$beta173" ];then
 					if [ -z "$NV_LEGACY_BETA_3" -o "$( compare_numbers $beta173 $NV_LEGACY_BETA_3 )" -eq 0 ];then
-						NV_LEGACY_BETA_3=$beta173
-						NV_BETA="$NV_BETA:$b
+						NV_LEGACY_BETA_173
+						NV_BETA="$NV_BETA:$beta173"
 					fi
 				fi
 				if [ -n "$beta96" ];then
@@ -5741,9 +5741,9 @@ set_download_info()
 	elif [ "$B_FORCE_OPTION" == 'true' ];then
 		download_extract_driver $downloadUrl $DRIVER_FILE
 	else
-		case $CARD in
+		cas in
 			$NVIDIA)
-				# leaving  flags in case something goes wrong in early tests
+				# leaving in test flags in case something goes wrong in early tests
 # 				if [ "$B_TESTING_5" == 'true' ];then
 					test_module_build_ok 'return'
 					moduleTest="$?"
