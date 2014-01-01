@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.21.24
+####  version: 4.21.25
 ####  Date: 2013-12-26
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2013
@@ -153,6 +153,8 @@ B_SKIP_WGET='false'
 B_SKIP_X_QUESTION='false'
 B_SKIP_X_TEST='false'
 B_SM_INSTALL='false' # utilities for smxi
+B_SYSTEMD='false'
+B_SYSTEMD_GRAPHICAL='false'
 B_TRIPLE_BUFFER='false'
 B_TWINVIEW='false' # deprecated, commented out use
 B_UPDATED='false'
@@ -211,10 +213,6 @@ INTEL='intel'
 NEOMAGIC='neomagic'
 NVIDIA='nvidia'
 TDFX='tdfx'
-
-# this path only exists on debian type distros I believe, but this will be null for others
-DISPLAY_MANAGER=$( cat /etc/X11/default-display-manager 2>/dev/null )
-DISPLAY_MANAGER=$( basename "$DISPLAY_MANAGER" 2>/dev/null )
 
 # Position matters: 1-latest; 2-middle; 3-older; 4-oldest
 VERSIONS=''
@@ -3433,6 +3431,17 @@ basic_startup_tests()
 		check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD" 'default server'
 	fi
 	check_set_distro
+	# initial systemd handling
+	if [ -n "$( type -p systemctl )" ];then
+		systemdData="$( systemctl list-units --type=target 2>/dev/null)"
+		if [ -n "$( grep -sE '^sysinit.target.*[[:space:]]active' <<< "$systemdData" )" ];then
+			B_SYSTEMD='true'
+		fi
+		systemdData="$( systemctl status graphical.target 2>/dev/null )"
+		if [ -n "$( grep -Eis '^[[:space:]]*Loaded:[[:space:]]*loaded' <<< "$systemdData" )" ];then
+			B_SYSTEMD_GRAPHICAL='true'
+		fi
+	fi
 	# make sure Xorg is installed
 	if [ -z "$( which Xorg )" ];then
 		error_handler 244
@@ -4691,6 +4700,8 @@ SIS: $SIS" >> $LOG_FILE
 	echo "APT_TYPE: $APT_TYPE" >> $LOG# fhis will only show as information to check for 'sudo su -' starts, all others
 	# have exited with error
 	echo "SUDO_START: $SUDO_START" >> $LOG_FILEnew one
+B_SYSTEMD: $B_SYSTEMD" >> $LOG_FILE
+	echo "B_SYSTEMD_GRAPHICAL: $B_SYSTEMD_GRAPHICALOGGING:" >> $LOG_FILE
 	echo "=========================================================" >> $LOG_FILE
 	echo "X is Running: $( x_is_running )" >> $LOG_FILE
 	echo "Current Runlevel: $( get_current_runlevel )" >> $LOG_FILE
@@ -5476,13 +5487,12 @@ reboot_now_question()
 	do
 		case $opt in
 			shutdown)
-				echo "${S}Shutting down now...${N}"
-				halt
+				echo "${S}Shutting down now...${N}"ndle_shutdowns 'halt'
 				exit 0
 				;;
 			reboot)
 				echo "${S}Rebooting now...${N}"
-				reboot
+				handle_shutdowns 'reboot'	reboot
 				exit 0
 				;;
 			quit)
@@ -5499,11 +5509,30 @@ reboot_now_question()
 	eval $LOGPE
 	if [ "$bRepeat" == 'true' ];then
 		reboot_now_question "$@"
+	 args: $1 - shutdown/reboot
+handle_shutdowns()
+{
+	eval $LOGUS
+	
+	local command='' realCommand=$1
+	
+	if [ "$B_SYSTEMD" == 'true' ];then
+		case $realCommand in
+			halt)
+				realCommand='poweroff'
+				;;
+		esac
+		command="systemctl $realCommand 2>>$LOG_FILE || $1"
+	else
+		command=$1
 	fi
+	log_function_data "command: $command"
+	
+	eval $LOGUE
+	eval $command
 }
-
-### -------------------------------------------------------------------
-### Non-free Driver installer section
+section
+### -------------------------------------------------------------### Non-fre# Native Driver installer section
 ### -------------------------------------------------------------------
 
 set_cpu_data()
@@ -5722,11 +5751,11 @@ set_download_info()
 				# DO NOT BUY AMD CARDS if you want competent nonfree video driver support!!!
 				if [ "$DRIVER_DEFAULT" == '13.6' ];then
 					FG_POST=''
-				fi/beta/'
+				fi
 			else
 				downloadUrl='http://www2.ati.com/drivers/linux/'
 			fi
-			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_$fgBetaVersion-${FG_POSTetaPost}x86.x86_64"
+			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_DEFAULT$fgBetaVersion-${FG_POST}x86.x86_64"
 			;;
 	esac
 
@@ -5741,7 +5770,7 @@ set_download_info()
 	elif [ "$B_FORCE_OPTION" == 'true' ];then
 		download_extract_driver $downloadUrl $DRIVER_FILE
 	else
-		cas in
+		case $CARD in
 			$NVIDIA)
 				# leaving in test flags in case something goes wrong in early tests
 # 				if [ "$B_TESTING_5" == 'true' ];then
@@ -7318,8 +7347,7 @@ start_x_question()
 			reboot-now)
 				echo "${S}Ok, rebooting into kernel ${C}$INSTALL_TO_KERNEL${S} and your"
 				echo "${C}$DRIVER_DEFAULT${S} video driver. Thanks for using this script.${N}"
-				log_function_data "Final Step: reboot to kernel: $INSTALL_TO_KERNEL"
-				reboot
+				log_function_data "Final Step: reboot to kernel: $INSTALL_TO_KERNEhandle_shutdowns 'reboot'	reboot
 				exit 100 # need to exit with 100 to not trigger root pid kill in smxi
 				;;
 			quit)
@@ -7355,7 +7383,11 @@ start_stop_x()
 	# default, this prevents errors when these don't exist in for ex. fedora
 	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' bSkipXKill='false'
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
-	local gdmCommand='' bSkipLoop='false' dManager=$DISPLAY_MANAGER
+	local gdmCommand='' bSkipLoop='
+	local defaultDM=$( get_default_display_manager )
+	if [ -z "$defaultDM" ];then
+		defaultDM=$( do_display_manager_pid_test )
+	fiMANAGER
 	local currentRunlevel=$( get_current_runlevel )
 	
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
@@ -7363,7 +7395,7 @@ start_stop_x()
 	fi
 	# note that init.d does not take a space, but service does,for the first parameter like kdm
 	if [ -n "$( type -P service )" ];then
-		serviceControl='service '
+		serviceControl='service # note, both fedora and arch have moved to systemd so most of this is only for legacy systemse '
 	fi
 	case $SYSTEM_BASE in
 		arch)
@@ -7382,66 +7414,73 @@ start_stop_x()
 				stop)
 					gdmCommand='init 3'
 					;;
-			esac
-			dManager='gdm'
+			esefaultDMManager='gdm'
 			;;
 	esac
 	log_function_data "default runlevel: $defaultRunlevel\ncurrent runlevel: $currentRunlevel"
-	## restart x if this is not being run by smxi
-	if [ -z "$DISPLAY_MANAGER" -a "$bSkipLoop" != 'true' ];then
-		for dman in $displayManagers
+	## restart x if this is not being run by smxi"$B_SYSTEMD_GRAPHICAL" == 'true' ];then
+		if [ "$1" == 'stop' ];then
+			dmanCommand="systemctl isolate multi-user.target"
+		elif ["$1" == 'start' ];then
+			dmanCommand="systemctl isolate graphical.target"
+		fi
+		echo "${M}Using ${C}systemd/systemctl${M} to try to ${C}$2${M} your desktop.${N}"
+	else
+		if [ -z "$defaultDM" -a "$bSkipLoop" != 'true' ];then
+			for dman in $displayManagers
+			do
+	rt gdm
+			if [ -n "$( type -p $1 )" -a -n "$( type -p $dman )" ];th	dmanCommand="$1 $dman && success='true'"
+					defaultDM=$dman
+					break
+				# arch, debian
+				elif [ -x $startPath$dman  ];then
+					if [ "$B_SYSTEMD" == 'true' ];then
+						dmanCommand="$serviceControl $2 $dman.service"
+					else
+						dmanCommand="$serviceControl$dman $1"
+					fi
+					defaultDM=$dman
+					break
+				else
+					dmanCommand=''
+				fi
+			done
+		else
+			# have to retest dm for null for fedora herers
 		do
 			# upstart in ubuntu, commands like: start gdm; stop gdm; restart gdm
-			if [ -n "$( type -p $1 )" -a -n "$( type -p $dman )" ];then
-				dmanCommand="$1 $dman"
-			# arch, debian
-			elif [ -x $startPath$dman  ];then
-				dmanCommand="$serviceControl$dman $1"
+			if defaultDM" ];then
+				if [ "$B_SYSTEMD" == 'true' ];then
+					dmanCommand="$serviceControl $1 $defaultDM.service"
+				else
+					if [ -n "$( type -p $1 )" ];then
+						dmanCommand="$1 $defaultDM && success='true'"
+					elif [ -x $startPath$defaultDM ];then
+						dmanCommand="$serviceControl$defaultDM $1"
+					fi
+				fi
+			elif [ -n "$gdmCommand" ];then
+				dmanCommand=$gdmCommand # init 3 for fedora
+				defaultDM=$gdmCommand
 			else
 				dmanCommand=''
 			fi
-			log_function_data "dmanCommand: $dmanCommand"
-			if [ -n "$dmanCommand" ];then
-				# nohup is required to make sure dm is fully stopped, and pids removed
-				echo "${S}Attempting to ${C}$1${S} display manager ${C}$dman${S} now... ${N}"
-				xActionString="$noHup $dmanCommand 2>/dev/null && success='true'"
-				eval $xActionString
-				if [ -z "$noHup" ];then
-					if [ "$success" == 'true' ];then
-						echo "${S}Display manager ${C}$1${S} sucessful.${N}"
-					else
-						echo "${W}Display manager ${C}$1${S} failed${N}"
-					fi
-					log_function_data "Display manager $1 success: $success"
-				fi
-			fi
-		done
-	else
-		# have to retest dm for null for fedora here
-		# upstart in ubuntu, commands like: start gdm; stop gdm; restart gdm
-		if [ -n "$( type -p $1 )" -a -n "$DISPLAY_MANAGER" ];then
-			dmanCommand="$1 $DISPLAY_MANAGER"
-		elif [ -x $startPath$DISPLAY_MANAGER -a -n "$DISPLAY_MANAGER" ];then
-			dmanCommand="$serviceControl$DISPLAY_MANAGER $1"
-		elif [ -n "$gdmCommand" ];then
-			dmanCommand=$gdmCommand # init 3 for fedora
-		else
-			dmanCommand=''
 		fi
-		log_function_data "dmanCommand: $dmanCommand"
-		if [ -n "$dmanCommand" ];then
-			# I tried stringing these in a && sequence but something failed and
-			# init 5 start broke. This order takes care of runlevel restart bug
-			# nohup is required to make sure dm is fully stopped, and pids removed
-			echo "${S}Attempting to ${C}$1${S} default display manager ${C}$dManager${S} now... ${N}"
-			xActionString="$noHup $dmanCommand && success='true'"
-			eval $xActionString
-			if [ -z "$noHup" ];then
-				if [ "$success" == 'true' ];then
-					echo "${S}Display manager ${C}$1${S} successful.${N}"
-				else
-					echo "${W}Display manager ${C}$1${W} failed.${N}"
-				fi
+	fi
+	log_function_data "dmanCommand: $dmanCommand"
+	if [ -n "$dmanCommand" ];then
+		# nohup is required to make sure dm is fully stopped, and pids removed
+		echo "${S}Attempting to ${C}$1${S} display manager ${C}$defaultDM${S} now... ${N}"
+		dmanCommand="$noHup $dmanCommand 2>>$LOG_FILE && success='true'"
+		eval $dmanCommand
+		if [ -z "$noHup" ];then
+			if [ "$success" == 'true' ];then
+				echo "${S}Display manager ${C}$1${S} sucessful.${N}"
+			else
+				echo "${W}Display manager ${C}$1${S} failed${N}"
+			fi
+			log_function_data "Display manager $1 status: $success"i
 			fi
 		fi
 	fi
@@ -7494,17 +7533,72 @@ start_stop_x()
 
 x_is_running()
 {
-	eval $LOGUS
+	eval $local returnVal='' $LOGUS
 	# we'll do one final X is running test here, note, handling a bunch of
 	# different possible X detections in etch, lenny, and sid, then filtering out the grep
-	local xIsRunning=$( ps aux | grep '/usr.*/X' | grep -vc 'grep' )
-	local return='false'
+	local xIsRunning=$( ps aux -E '/usr.*/X([[:space:]]|$)' | grep -v 'grep' )
+	
+	log_function_data "X ps aux: $xIsRunning"
 
-	if [ "$xIsRunning" -gt 0 ];then
-		return='true'
+	if [ -n "$xIsRunning" ];then
+		returnVal='true'
+	else
+		returnVal='false'
 	fi
-	log_function_data "xIsRunning: $return"
-	echo $return
+	echo $returnVal
+	log_function_data "returnVal: $returnVal"
+	eval $LOGUE
+}
+
+# get active pid for dm. Note: for systemd, this doesn't matter since dm is loaded but not active (ACtive: inactive)
+do_display_manager_pid_test()
+{
+	eval $LOGUS
+	local dmIdList='entrance/entranced.pid gdm.pid gdm3.pid kdm.pid lightdm.pid lxdm.pid mdm.pid nodm.pid slim.lock wdm.pid xdm.pid' dmId='' dmInstance=''
+	
+	for dmId in $dmIdList
+	do
+		# trim off extension of dm
+		if [ -e /var/run/$dmId -o -e /run/$dmId ];then
+			dmInstance=$( sed -r 's/\.(pid|lock))//' <<< $dmId )
+		fi
+	done
+
+	echo $dmInstance
+
+	log_function_data "dmInstance: $dmInstance"
+	echo $dmInstance
+	eval $LOGUE
+}
+
+# just return the dm or null if missing
+get_default_display_manager()
+{
+	eval $LOGUS
+	local defaultDM=''
+	
+	# for systemd, if I read this right, this isn't necessarily set on the systemd system, but it can be
+	# usually graphical.target will handle this automatically.
+	if [ "$B_SYSTEMD" == 'true' ];then
+		# slice out last part of link
+		if [ -h /etc/systemd/system/display-manager.service ];then
+			defaultDM=$( ls -l /etc/systemd/system/display-manager.service 2>/dev/null | awk '{print $NF}' | sed 's/\.service$//' )
+		fi
+	fi
+	# whether or not it's systemd, let's check anyway for a default here
+	if [ -z "$defaultDM" ];then
+		defaultDM=$( cat /etc/X11/default-display-manager 2>/dev/null )
+	fi
+	if [ -n "$defaultDM" ];then
+		defaultDM=$( basename $defaultDM 2>/dev/null )
+	fi
+
+	if [ "$defaultDM" == 'entranced' ];then
+		defaultDM='entrance'
+	fi
+
+	echo $defaultDM
+	log_function_data "defaultDM: $defaultDM"$return
 	eval $LOGUE
 }
 
@@ -8500,7 +8594,7 @@ get_options()
 				;;
 			H)	show_options 'full'
 				;;
-			## debuggers and testing options
+			## debuggers and testions
 			!)	# test for various supported methods
 				bSkipOutput=''
 				case $OPTARG in
@@ -8604,7 +8698,8 @@ get_options()
 			*) show_options err
 				;;
 		esac
-if [ "$B_FORCE_OPTION" == 'true' -a "$B_KERNEL_MODULE_ONLY" == 'true' ];then
+	done
+	if [ "$B_FORCE_OPTION" == 'true' -a "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		error_handler 166 "-k and -f"
 	fi
 	#in case -n is used too - note: this will never be true, have to fix this one
