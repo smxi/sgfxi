@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.01
+####  version: 4.22.02
 ####  Date: 2014-01-01
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -7633,7 +7633,7 @@ get_current_tty()
 {
 	eval $LOGUS
 	
-	local term=$( basename tty )
+	local term=$( tty )
 	term=$( basename $term )
 	
 	log_function_data "term: $term"
