@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.00
+####  version: 4.22.01
 ####  Date: 2014-01-01
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -7421,7 +7421,7 @@ start_stop_x()
 	## restart x if this is not being run by smxi"$B_SYSTEMD_GRAPHICAL" == 'true' ];then
 		if [ "$1" == 'stop' ];then
 			dmanCommand="systemctl isolate multi-user.target"
-		elif ["$1" == 'start' ];then
+		elif [ "$1" == 'start' ];then
 			dmanCommand="systemctl isolate graphical.target"
 		fi
 		echo "${M}Using ${C}systemd/systemctl${M} to try to ${C}$2${M} your desktop.${N}"
@@ -8608,7 +8608,7 @@ get_options()
 				;;
 			W) B_SKIP_WGET='true'
 				START_OPTIONS=$START_OPTIONS' -W'
-				START_OPTIONS_PSTART_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already. Not recommended!\n"
+				START_OPTIONS_$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already. Not recommended!\n"
 				;;
 			x) B_NO_XVMC='true' # because two flags are required to use nvidia xvmc, this is fine
 				START_OPTIONS=$START_OPTIONS' -x'
