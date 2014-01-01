@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.02
+####  version: 4.22.03
 ####  Date: 2014-01-01
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -7511,10 +7511,10 @@ start_stop_x()
 			# the failure case handels a weird thing when kill gives error
 			if [ -n "$LOGIN_PID" ];then
 		"$B_SYSTEMD" == 'true' ];then
-					kill_systemd_tty || ttyKill=$?
-					if [ "$ttyKill" -gt 0 ];then
+					#kill_systemd_tty || ttyKill=$?
+					#if [ "$ttyKill" -gt 0 ];then
 						kill $LOGIN_PID && exit 0 || exit 1
-					fi
+					#fi
 				elif [ -n "$defaultRunlevel" ];then
 					init $INIT_LEVELunlevel && kill $LOGIN_PID && exit 0 || exit 1
 				else
@@ -7533,6 +7533,41 @@ start_stop_x()
 			exit 0 # smxi will handle the pid root kill
 		fi
 	fi
+	eval $LO# this has weird consequences, not a good thing to use possibly, but I'll check it outOkill_systemd_tty()
+{
+	eval $LOGUS
+	local returnValue=1 ttyStatus=''
+	local scriptTTY=$(get_current_tty)
+	
+	# verify we have an actual tty valid type
+	if [ -n "$scriptTTY" -a -n "$( grep -E '^tty[0-9]+$' <<< $scriptTTY )" ];then
+		ttyStatus="$( systemctl status getty@$scriptTTY.service )"
+		log_function_data "ttyStatus:\n$ttyStatus"
+		# double check it's the tty running script, then make sure that tty is actually active
+		if [ -n "$( grep "$SCRIPT_NAME" <<< "$ttyStatus" )" ];then
+			if "$( grep -Esi 'Active:[[:space:]]*active' <<< "$ttyStatus" )" ];then
+				echo "${M}Systemd being used to attempt to exit tty${N}"
+				systemctl stop getty@$scriptTTY.service
+				returnValue=$?
+			fi
+		fi
+	fi
+	# in theory this should not be running anymore so nothing to log, but we'll do it for errors
+	log_function_data "returnValue: $returnValue"
+	return $returnValue
+	eval $LOGUE
+}
+
+get_current_tty()
+{
+	eval $LOGUS
+	
+	local term=$( tty )
+	term=$( basename $term )
+	
+	log_function_data "term: $term"
+	echo $term
+	$return
 	eval $LOGUE
 }
 
@@ -7604,44 +7639,7 @@ get_default_display_manager()
 
 	echo $defaultDM
 	log_function_data "defaultDM: $defaultDM"$return
-	eval $LOkill_systemd_tty()
-{
-	eval $LOGUS
-	local returnValue=1 ttyStatus=''
-	local scriptTTY=$(get_current_tty)
-	
-	# verify we have an actual tty valid type
-	if [ -n "$scriptTTY" -a -n "$( grep -E '^tty[0-9]+$' <<< $scriptTTY )" ];then
-		ttyStatus="$( systemctl status getty@$scriptTTY.service )"
-		log_function_data "ttyStatus:\n$ttyStatus"
-		# double check it's the tty running script, then make sure that tty is actually active
-		if [ -n "$( grep "$SCRIPT_NAME" <<< "$ttyStatus" )" ];then
-			if "$( grep -Esi 'Active:[[:space:]]*active' <<< "$ttyStatus" )" ];then
-				echo "${M}Systemd being used to attempt to exit tty${N}"
-				systemctl stop getty@$scriptTTY.service
-				returnValue=$?
-			fi
-		fi
-	fi
-	# in theory this should not be running anymore so nothing to log, but we'll do it for errors
-	log_function_data "returnValue: $returnValue"
-	return $returnValue
-	eval $LOGUE
-}
-
-get_current_tty()
-{
-	eval $LOGUS
-	
-	local term=$( tty )
-	term=$( basename $term )
-	
-	log_function_data "term: $term"
-	echo $term
-	$return
-	eval $LOGUE
-}
-
+	eval $LOg steps
 ### -------------------------------------------------------------------
 ### xorg configuration (previously in sgfxi-lib-xorg)
 ### -------------------------------------------------------------------
@@ -8605,10 +8603,9 @@ get_options()
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: this is deprecated. Always sets for twinview (nVidia only)\n"
 				;;
 			U) B_FORCE_UPDATE='true'
-				;;
-			W) B_SKIP_WGET='true'
+				;;B_SKIP_WGET='true'
 				START_OPTIONS=$START_OPTIONS' -W'
-				START_OPTIONS_$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already. Not recommended!\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already. Not recommended!\n"
 				;;
 			x) B_NO_XVMC='true' # because two flags are required to use nvidia xvmc, this is fine
 				START_OPTIONS=$START_OPTIONS' -x'
