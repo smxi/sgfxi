@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.04
-####  Date: 2014-01-01
+####  version: 4.22.05
+####  Date: 2014-01-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -6148,8 +6148,8 @@ preinstall_cleanup()
 		rm -f /usr/local/bin/nvidia-settings /usr/local/bin/nvidia-xconfig 1>> $LOG_FILE 2>> $LOG_FILE
 		rm -f /tmp/.X0-lock
 		# double check, clean up anything left after uninstaller runs
-		rm -f ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-		rm -f ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -rf ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -rf ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 		rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 # 	fi
 	# this might need more work to not remove if X failed to stop
@@ -8601,7 +8601,7 @@ get_options()
 				;;
 			t) B_TWINVIEW='true'
 				START_OPTIONS=$START_OPTIONS' -t'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: this icated. Always sets for twinview (nVidia only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: thisrecated. Always sets for twinview (nVidia only)\n"
 				;;
 			U) B_FORCE_UPDATE='true'
 				;;
