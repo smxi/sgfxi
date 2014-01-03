@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.05
+####  version: 4.22.06
 ####  Date: 2014-01-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -505,7 +505,7 @@ set_test_data()
 driver_version_hacks()
 {
 	eval $LOGUS
-	local driverUsed=$1 bReturnDriver='true' results=''
+	local driverUsed=$1 bReturnDriver='true' results='' testData=''
 	
 	# short term hack because amd hasn't released a stable driver since 13.4 as of 13.11 beta
 	case $driverUsed in
@@ -515,13 +515,14 @@ driver_version_hacks()
 			log_function_data "Forcing beta driver for current with fglrx"
 			;;
 		331.*)
+			testData=$( grep -Es '^[[:space:]]*CONFIG_UIDGID_STRICT_TYPE_CHECKS[[:space:]]*=[[:space:]]*y' \
+			/boot/config-${KERNEL_FULL}* )
 			# new option for 3.12, we think.
-			if [ -n "$( grep -Es '^[[:space:]]*CONFIG_UIDGID_STRICT_TYPE_CHECKS[[:space:]]*=[[:space:]]*y' \
-			/boot/config-${KERNEL_FULL}* )" ];then
+			if [ -n "$testData" ];then
 				EXTRA_ARGS='--no-unified-memory'
 			fi
 			bReturnDriver='false'
-			log_function_data "Forcing nvidia installer option: "
+			log_function_data "testData: $testData\nForcing nvidia installer option: $EXTRA_ARGS"
 			;;
 	esac
 	
@@ -1514,7 +1515,8 @@ driver_support_tests()
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
 											331.*|325.*|319.[4-9][0-9]|304.1[0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
-												: # do nothing
+												# trigger installer flag if needed
+												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
 											*) # use 225 for beta testing errors
 												if [ "$B_TESTING_3" != 'true' ];then
@@ -1529,6 +1531,22 @@ driver_support_tests()
 											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
 											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
 											331.*|325.*|319.[6-9][0-9]|304.1[0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
+												# trigger installer flag if needed
+												driver_version_hacks "$DRIVER_DEFAULT"
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									13)
+										case $DRIVER_DEFAULT in
+											# note that patches are needed for rc 3.3 kernels, we'll wait
+											# http://weltall.heliohost.org/wordpress/2012/01/20/linux-kernel-3-3-rc1-and-nvidia-drivers/
+											# note: 173 probably does not work with 3.7 kernel but wait for error reports.
+											331.*|319.[6-9][0-9]|304.1[0-9][0-9]|173.14.[3-9][0-9]|$DISTRO_NVIDIA)
 												# trigger installer flag if needed
 												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
@@ -2670,7 +2688,7 @@ assign_standard_or_beta_driver()
 				beta304=$( cut -d ':' -f 2 <<< "$liveBetas" )
 				beta173=$( cut -d ':' -f 3 <<< "$liveBetas" )
 				beta96=$( cut -d ':' -f 4 <<< "$liveBetas" )
-				beta71=$( cut -d ':' -f 5 <<< "$liveBetas" )
+		1=$( cut -d ':' -f 5 <<< "$liveBetas" )
 				## assign live defaults if required
 				if [ -n "$betaCurrent" ];then
 					if [ -z "$NV_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $NV_DEFAULT_BETA )" -eq 0 ];then
@@ -2686,7 +2704,7 @@ assign_standard_or_beta_driver()
 				fi
 				if [ -n "$beta173" ];then
 					if [ -z "$NV_LEGACY_BETA_3" -o "$( compare_numbers $beta173 $NV_LEGACY_BETA_3 )" -eq 0 ];then
-						NV_LEGACY_BETA_173
+						NV_LEGACY_BETA_3=$beta173
 						NV_BETA="$NV_BETA:$beta173"
 					fi
 				fi
@@ -5733,19 +5751,22 @@ set_download_info()
 	# http://us.download.nvidia.com/XFree86/Linux-x86/275.19/NVIDIA-Linux-x86-275.19.run
 	case $CARD in
 		$NVIDIA)
-			# set the package name, .run is added to it when it's needed
+			# set the package name, .run is o it when it's needed
 			DRIVER_FILE="NVIDIA-Linux-x86$NV_64_ARCH-$DRIVER_DEFAULT$NV_PKG_NO"
 			downloadUrl="$NVIDIA_DOWNLOAD_SITE/XFree86/Linux-x86$KERNEL_ARCH/$DRIVER_DEFAULT/"
 			;;
 		$FGLRX)
 			# set driver package name
 			# DRIVER_FILE="ati-driver-installer-$DRIVER_DEFAULT-$CPU"
-			if [ "$B_USE_BETA" == 'true' ];th# note: need beta* because amd releases numbered betas within a month release ];th# # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.3-beta3-linux-x86.x86_64.zip
+			if [ "$B_USE_BETA" == 'true' ];then
+				# note: need beta* because amd releases numbered betas within a month release
+				# # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.3-beta3-linux-x86.x86_64.zip
 				# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
 				# amd-catalyst-13.6-beta-linux-x86.x86_64.run
 				
-				fgBetaVersion="-$FG_BETA_VERSION"'beta-'
-				downloadUrl='http://www2.ati.com/drivers/bet	# note, amd changed this AGAIN!!! for their damned betas
+				fgBetaVersion="-$FG_BETA_VERSION"
+				downloadUrl='http://www2.ati.com/drivers/beta/'
+				# note, amd changed this AGAIN!!! for their damned betas
 				# www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
 				# www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip 
 				# DO NOT BUY AMD CARDS if you want competent nonfree video driver support!!!
@@ -8581,7 +8602,7 @@ get_options()
 				;;
 			Q)	B_SKIP_X_QUESTION='true'
 				START_OPTIONS=$START_OPTIONS' -Q'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Q - X will start automatically when the driver install is finished.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Q - X will start automatican the driver install is finished.\n"
 				;;
 			r) B_REMOVE_MODELINES='true'
 				START_OPTIONS=$START_OPTIONS' -r'
@@ -8601,7 +8622,7 @@ get_options()
 				;;
 			t) B_TWINVIEW='true'
 				START_OPTIONS=$START_OPTIONS' -t'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: thisrecated. Always sets for twinview (nVidia only)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: this is deprecated. Always sets for twinview (nVidia only)\n"
 				;;
 			U) B_FORCE_UPDATE='true'
 				;;
