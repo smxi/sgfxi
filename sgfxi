@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.11
-####  Date: 2014-02-11
+####  version: 4.22.12
+####  Date: 2014-02-18
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -220,7 +220,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='331.38:304.119:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='331.49:304.119:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -247,7 +247,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38
+# lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
@@ -266,7 +266,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stabel legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='331.20:325.15:319.72:319.82:319.60:313.30:310.44:304.117:304.116:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='331.49:331.38:331.20:325.15:319.72:319.82:319.60:313.30:310.44:304.117:304.116:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_1='71xx'
@@ -1519,7 +1519,7 @@ driver_support_tests()
 										esac
 										;;
 									13)
-										echo driver default $DRIVER_DEFAULT
+										# echo driver default $DRIVER_DEFAULT
 										case $DRIVER_DEFAULT in
 											# waiting for patches and confirmations
 											334.*|331.3[89]|331.[4-9][0-9]|304.119|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
@@ -1532,6 +1532,21 @@ driver_support_tests()
 												if [ "$B_TESTING_3" != 'true' ];then
 													error_handler 234 $KERNEL_NUMBER
 												fi
+												driver_version_hacks "$DRIVER_DEFAULT"
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									14)
+										# echo driver default $DRIVER_DEFAULT
+										case $DRIVER_DEFAULT in
+											# waiting for patches and confirmations
+											334.*|331.[4-9][0-9]|304.119|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+												# trigger installer flag if needed
 												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
 											*) # use 225 for beta testing errors
@@ -2698,7 +2713,7 @@ assign_standard_or_beta_driver()
 				betaCurrent=$( cut -d ':' -f 1 <<< "$liveBetas" )
 				beta304=$( cut -d ':' -f 2 <<< "$liveBetas" )
 				beta173=$( cut -d ':' -f 3 <<< "$liveBetas" )
-				beta96=$( cut -d ':' -f 4 <<< "$liveB
+				beta96=$( cut -f 4 <<< "$liveBetas" )
 				beta71=$( cut -d ':' -f 5 <<< "$liveBetas" )
 				## assign live defaults if required
 				if [ -n "$betaCurrent" ];then
@@ -5762,7 +5777,7 @@ set_download_info()
 	# http://us.download.nvidia.com/XFree86/Linux-x86/275.19/NVIDIA-Linux-x86-275.19.run
 	case $CARD in
 		$NVIDIA)
-			# set the package nameis added to it when it's needed
+			he package name, .run is added to it when it's needed
 			DRIVER_FILE="NVIDIA-Linux-x86$NV_64_ARCH-$DRIVER_DEFAULT$NV_PKG_NO"
 			downloadUrl="$NVIDIA_DOWNLOAD_SITE/XFree86/Linux-x86$KERNEL_ARCH/$DRIVER_DEFAULT/"
 			;;
@@ -8613,7 +8628,7 @@ get_options()
 				;;
 			Q)	B_SKIP_X_QUESTION='true'
 				START_OPTIONS=$START_OPTIONS' -Q'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Q - X will start ically when the driver install is finished.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRI- X will start automatically when the driver install is finished.\n"
 				;;
 			r) B_REMOVE_MODELINES='true'
 				START_OPTIONS=$START_OPTIONS' -r'
