@@ -70,7 +70,7 @@
 ########################################################################
 ####  EXTRA DATA
 ####  Cross referenced table of package manager commands (apt/yum/pacman etc):
-####  http://www.archlinux.it/wiki/index.php?title=Pacman_rosetta
+####  https://wiki.archlinux.org/index.php/Pacman_Rosetta
 ########################################################################
 #### VARIABLES
 ########################################################################
