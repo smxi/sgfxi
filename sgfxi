@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.12
-####  Date: 2014-02-18
+####  version: 4.22.13
+####  Date: 2014-02-24
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -325,11 +325,11 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
-FG_DEFAULT_BETA='13.11'
+FG_DEFAULT_BETA='14.1'
 # http://www2.ati.com/drivers/beta/amd-catalyst-13.11-beta-v9.4-linux-x86.x86_64.run.zip
 # note: amd release a zip file that contains a space in the name, so I'm not spending 
 # any more of my time on this group of undisciplined incompetents at this point.
-FG_BETA_VERSION='beta6' 
+FG_BETA_VERSION='betav1.3' 
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
@@ -466,7 +466,7 @@ set_test_data()
 		rm -f $LOG_FILE_DIR	rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -598,6 +598,22 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
+						1.15)
+							case $DRIVER_DEFAULT in
+								14[.-]*|$DISTRO_FGLRX)
+									if [ "$LEGACY_LEVEL" -lt 3 ];then
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 212
+										fi
+									fi
+									;;
+								*)
+									if [ "$B_TESTING_3" != 'true' ];then
+										error_handler 226
+									fi
+									;;
+							esac
+							;;
 						1.14)
 							case $DRIVER_DEFAULT in
 								13[.-][6-9]|13[.-]1[0-2]|14[.-]*|$DISTRO_FGLRX)
@@ -1029,6 +1045,17 @@ driver_support_tests()
 									esac
 									;;
 								12)
+									case $DRIVER_DEFAULT in
+										13[.-][9]|13[.-]1[0-2]|14[.-]*)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								13)
 									case $DRIVER_DEFAULT in
 										13[.-][9]|13[.-]1[0-2]|14[.-]*)
 											: # do nothing
@@ -2698,22 +2725,22 @@ detect_card_version()
 			B_NATIVE_DRIVER='true'
 			;;
 	esac
-	#echo $cardNumbenote that for fglrx we need to just change the global values, not run this as subshell for driver teststesting
-# args: $1 - default/leg4cy-[1-3]; $2 - set-exists/driver
+	#echo $cardNumbenote that for fglrx we need to just change the global values, not run this as subshell for driver tests
+# args: $1 - default/legacy-[1-4]; $2 - set-exists/driver
 assign_standard_or_beta_driver()
 {
-	local betaDriver='' stableDriver='' liveB betaVersion='' 
-	local betaCurrent='' beta304='' beta173='' beta96='' beta71='' ta71=''
+	local betaDriver='' stableDriver='' liveBetas='' betaVersion='' 
+	local betaCurrent='' beta304='' beta173='' beta96='' beta71='' 
 	
 	case $CARD in
 		$NVIDIA)
 			# only run this the first time it's called
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
-				liveBetas=$( gebeta_driveria_betas )
+				liveBetas=$( get_live_beta_drivers )
 				betaCurrent=$( cut -d ':' -f 1 <<< "$liveBetas" )
 				beta304=$( cut -d ':' -f 2 <<< "$liveBetas" )
 				beta173=$( cut -d ':' -f 3 <<< "$liveBetas" )
-				beta96=$( cut -f 4 <<< "$liveBetas" )
+				beta96=$( cut -d ':' -f 4 <<< "$liveBetas" )
 				beta71=$( cut -d ':' -f 5 <<< "$liveBetas" )
 				## assign live defaults if required
 				if [ -n "$betaCurrent" ];then
@@ -5753,7 +5780,7 @@ misc_fixes()
 			local drmVersion=$( check_package_status 'libdrm2' 'i' )
 			local isFixedVersion='' isLessThan=''
 			# set to 0 if null to avoid math errors
-			if [ -z "$drmVersion" ];then
+			if [ -zersion" ];then
 				drmVersion=0
 			fi
 			# returns 0 for true/ 1 for false
@@ -5773,11 +5800,11 @@ misc_fixes()
 set_download_info()
 {
 	eval $LOGPS
-	local packageName='' downloadUrl='' response='' modulefgBetaVersion=''Post=''
+	local packageName='' downloadUrl='' response='' moduleTest=0 fgBetaVersion=''
 	# http://us.download.nvidia.com/XFree86/Linux-x86/275.19/NVIDIA-Linux-x86-275.19.run
 	case $CARD in
 		$NVIDIA)
-			he package name, .run is added to it when it's needed
+			# set the package name, .run is added to it when it's needed
 			DRIVER_FILE="NVIDIA-Linux-x86$NV_64_ARCH-$DRIVER_DEFAULT$NV_PKG_NO"
 			downloadUrl="$NVIDIA_DOWNLOAD_SITE/XFree86/Linux-x86$KERNEL_ARCH/$DRIVER_DEFAULT/"
 			;;
@@ -8608,7 +8635,7 @@ get_options()
 				;;
 			o) DRIVER_OVERRIDE="$OPTARG"
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -o - Driver override. Forces install of this driver: $DRIVER_OVERRIDE (nVidia|ATI fglrx only)\n"
-				START_OPTIONS=$START_OPTIONS" -o $OPTARG"
+				STIONS=$START_OPTIONS" -o $OPTARG"
 				;;
 			p) B_PRINT_VER='true'
 				START_OPTIONS=$START_OPTIONS' -p'
@@ -8628,7 +8655,7 @@ get_options()
 				;;
 			Q)	B_SKIP_X_QUESTION='true'
 				START_OPTIONS=$START_OPTIONS' -Q'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRI- X will start automatically when the driver install is finished.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -Q - X will start automatically when the driver install is finished.\n"
 				;;
 			r) B_REMOVE_MODELINES='true'
 				START_OPTIONS=$START_OPTIONS' -r'
