@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.22.13
-####  Date: 2014-02-24
+####  version: 4.23.00
+####  Date: 2014-03-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -119,6 +119,9 @@ B_BUILD_KERNEL_MODULES='false'
 B_CHECK_IA32='false' # if users want, they can disable this feature in config file
 B_COMPOSITE='false' 
 B_DEFAULT_NATIVE_DRIVER='false'
+# I cannot figure out the logic here, this must be some old thing that was used for a specific purpose.
+# I think it was an option set here to trigger use distro driver flag, but I don't see why that would
+# have been done in the first place, it was probably something very specific.
 B_DISTRO_FLAG='false'
 B_DISPLAY_DEVICES='false'
 B_EXPERIMENTAL='false'
@@ -161,6 +164,8 @@ B_UPDATED='false'
 B_USE_BETA='false' 
 B_USE_DIRECT_KERNEL_HEADER='false' # deprecated, commented out use
 B_USE_DISTRO_DRIVER='false'
+# force (for nvidia), using old method of kernel source /m-a module build. New default dkms
+B_USE_DISTRO_MODULE_MA='false' 
 B_USE_XVMC='false'
 B_XORG_BACKED_UP='false'
 
@@ -269,25 +274,26 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 NV_OTHERS='331.49:331.38:331.20:325.15:319.72:319.82:319.60:313.30:310.44:304.117:304.116:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
-NV_DEBIAN_LEGACY_1='71xx'
-NV_DEBIAN_LEGACY_2='96xx'
-NV_DEBIAN_LEGACY_3='173xx'
 NV_DEBIAN_LEGACY_4='304xx'
+NV_DEBIAN_LEGACY_3='173xx'
+NV_DEBIAN_LEGACY_2='96xx'
+NV_DEBIAN_LEGACY_1='71xx'
 # arch linux
 NV_AR_CURRENT=''
 NV_AR_LEGACY_4='304xx'
 NV_AR_LEGACY_3='173xx'
 NV_AR_LEGACY_2='96xx'
 # ubuntu 
-NV_UB_CURRENT='185'
-NV_UB_LEGACY_3='304'
+NV_UB_CURRENT='331'
+NV_UB_LEGACY_4='304'
 NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
 # fedora
 NV_FED_CURRENT="-$NV_DEFAULT" # note this will be out of sync until repo catches up, needs tests
-NV_FED_LEGACY_2='-96xx'
+NV_FED_LEGACY_4='-304xx'
 NV_FED_LEGACY_3='-173xx'
-NV_FED_LEGACY_3='-304xx'
+NV_FED_LEGACY_2='-96xx'
+
 # set dynamically in fixes, line 529 or so
 NVIDIA_DOWNLOAD_SITE='' 
 # needs dynamic assignment because new drivers won't use this in the string
@@ -505,13 +511,12 @@ set_test_data()
 driver_version_hacks()
 {
 	eval $LOGUS
-	local driverUsed=$1 bReturnDriver='true' results='' testData=''
+	local driverUsed=$1 bReturnDriver='false' results='' testData=''
 	
 	# short term hack because amd hasn't released a stable driver since 13.4 as of 13.11 beta
 	case $driverUsed in
 		13.9)
 			B_USE_BETA='true'
-			bReturnDriver='false'
 			log_function_data "Forcing beta driver for current with fglrx"
 			;;
 		331.*)
@@ -521,7 +526,6 @@ driver_version_hacks()
 			if [ -n "$testData" ];then
 				EXTRA_ARGS='--no-unified-memory'
 			fi
-			bReturnDriver='false'
 			log_function_data "testData: $testData\nForcing nvidia installer option: $EXTRA_ARGS"
 			;;
 	esac
@@ -2689,7 +2693,8 @@ detect_card_version()
 					LEGACY_LEVEL=1
 					# error should occur but on off chance that legacy smxi users are running very old install
 					# I'll leave it for now. Otherwise sgfxi will handle this itself later on.
-					# error_handler 253
+2014-03-02: turned on, no point in leaving support
+										# error_handler 253
 					# going to leave this in for now until debian kernels and
 					# xorgs catch up, but will permit by default for non legacy 0 cards
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
@@ -2708,10 +2713,9 @@ detect_card_version()
 					assign_standard_or_beta_driver 'default' 'driver'
 					iver' # echo 'dd: ' $DRIVER_DEFAULT
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'default' 'set-exists' )
-					# echo 'be: ' $B_BETA_EXISTS0 cards
-					if [ "$B_DISTRO_FLAG" == 'true' ];then
+					# echo 'be: ' $B_BETA_EXISTS0 cardif [ "$B_DISTRO_FLAG" == 'true' ];then
 						B_USE_DISTRO_DRIVER='true'
-					f0
+					fi
 					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
 						B_COMPOSITE='true'
 					fi
@@ -2725,7 +2729,10 @@ detect_card_version()
 			B_NATIVE_DRIVER='true'
 			;;
 	esac
-	#echo $cardNumbenote that for fglrx we need to just change the global values, not run this as subshell for driver tests
+	#echo $cardNumber
+}
+
+# note that for fglrx we need to just change the global values, not run this as subshell for driver tests
 # args: $1 - default/legacy-[1-4]; $2 - set-exists/driver
 assign_standard_or_beta_driver()
 {
@@ -5768,7 +5775,7 @@ misc_fixes()
 			;;
 		linux-generated-patch)
 			local generated1="${USRS}$KERNEL_FULL/include/generated/" 
-			local generated2="/lib/modules/$KERNEL_FULL/build/include/generated/"
+			local generated2="/lib/modules/$KERNEL_FULL/bclude/generated/"
 			outcome="$generated1 or $generated2 do not exist"
 			if [ -d "$generated1" -o -d "$generated2" ];then
 				echo 'true'
@@ -5780,7 +5787,7 @@ misc_fixes()
 			local drmVersion=$( check_package_status 'libdrm2' 'i' )
 			local isFixedVersion='' isLessThan=''
 			# set to 0 if null to avoid math errors
-			if [ -zersion" ];then
+			if [ -z "$drmVersion" ];then
 				drmVersion=0
 			fi
 			# returns 0 for true/ 1 for false
@@ -6804,7 +6811,8 @@ install_distro_drivers()
 {
 	eval $LOGPS
 	local nvidiaGlx='' nvidiaSource='' nvidiaModal='' nvidiaUtils=''
-	local akmodNvidia='' drvNvidia1='' drvNvidia2='' ubGlx='-glx'
+	local akmodNvidia='' nvidiaDriver='' nvidiaDriver2='' ubGlx='-glx' nvidiaSettings=''
+	local fglrxSettings='' fglrxDriver='' fglrxSource=''
 
 	clean_up_fglrx_junk
 
@@ -6812,57 +6820,71 @@ install_distro_drivers()
 		$NVIDIA)
 			case $SYSTEM_BASE in
 				arch)					fi
-					# dependencies handle the rest of this
+					# dependencies handle the rest . 
+					# nvidia driver package includes nvidia setting of this
 					case $LEGACY_LEVEL in
 						1)	:
 							# this has already been error handled.
 							;;
-						2)	nvidiaGlx=-$NV_AR_LEGACY_2"
+						2)DriveridiaGlx=-$NV_AR_LEGACY_2"
 							nvidiaUtils="nvidia-$NV_AR_LEGACY_2-utils"
 							;;
-						3)	nvidiaGlx="nvidia-$NV_AR_LEGACY_3"
+						3)	nvidiaDriver="nvidia-$NV_AR_LEGACY_3"
 							nvidiaUtils="nvidia-$NV_AR_LEGACY_3-utils"
 							;;
-						4)	nvidiaGlx="nvidia-$NV_AR_LEGACY_4"
+						4)	nvidiaDriver="nvidia-$NV_AR_LEGACY_4"
 							nvidiaUtils="nvidia-$NV_AR_LEGACY_4-utils"
 							;;
-						*)	nvidiaGlx="nvidia"
+						*)	nvidiaDriver="nvidia"
 							nvidiaUtils="nvidia-utils"
 							;;
 					esacc
 					
 					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
-					install_pacnvidiaGlx"
+					install_pacnvidiaDriver"
 					# conflicts with libgl and removes it
 # 					install_package "$nvidiaUtils"
 					;;
 				debian)
 					case $LEGACY_LEVEL in
+						# note, changed position of '-kernel' string in package name, not sure which debian stable
+						# this happened in, I'll double check. nvidia-glx is not in debian anymore.
 						1)	# nvidiaGlx='nvidia-glx-legacy'
 							# nvidiaSource='nvidia-kernel-legacy-source'
 							# if the two lines below don't work, comment them and uncomment the ones above
+							nvidiaDriver="nvidia-legacy-$NV_DEBIAN_LEGACY_1-driver"
 							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_1"
-							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_1-source"
+							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_1"
+							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_1-kernel-source"
 							;;
-						2)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
-							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_2-source"
+						2)	nvidiaDriver="nvidia-legacy-$NV_DEBIAN_LEGACY_2-driver"
+							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_2"
+							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_2"
+							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_2-kernel-source"
 							;;
-						3)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
-							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_3-source"
+						3)	nvidiaDriver="nvidia-legacy-$NV_DEBIAN_LEGACY_3-driver"
+							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_3"
+							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_3"
+							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_3-kernel-source"
 							;;
-						4)	nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_4"
-							nvidiaSource="nvidia-kernel-legacy-$NV_DEBIAN_LEGACY_4-source"
+						4)	nvidiaDriver="nvidia-legacy-$NV_DEBIAN_LEGACY_4-driver"
+							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_4"
+							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_4"
+							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_4-kernel-source"
 							;;
-						*)	nvidiaGlx='nvidia-glx'
+						*)	nvidiaDriver="nvidia-driver"
+							nvidiaGlx='nvidia-glx'
+							nvidiaSettings="nvidia-settings"
 							nvidiaSource='nvidia-kernel-source'
 							;;
 					esac
-					# start the install
-					if [ "$LEGACY_LEVEL" -ne 0 ];then
-						if [ "$B_TESTING_6" != 'true' ];then
-							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${Ns...${N}"
+					# start the install/73xx not supported for a while now. Note that this is actually set
+					# in the card/xorg version handling, so I don't really need this legacy level test
+					if [ "$LEGACY_LEVEL" -gt 1 ];then
+						if [ "$B_USE_DISTRO_MODULE_MA" == 'true' ];then
+							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components for ${C}m-a module build${S}...${Ns...${N}"
 							install_package 'nvidia-kernel-common'
-							install_package 'nvidia-settings'
+							install_p"$nvidiaSettings"ttings'
 							install_package "$nvidiaSource"
 							echo "${S}Creating  ${C}$DISTRO_NVIDIA${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
 							# m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i $nvidiaSource
@@ -6874,12 +6896,13 @@ install_distro_drivers()
 			
 							#m-a prepare && m-a qa-i nvidia
 							#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
-							echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
-							install_package "$nvidiaGlx"
+# echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
+							# install_package "$nvidiaGlx"
+							echo "${M}Please report failure to $SCRIPT_NAME maintainer, I'm not sure this feature works.${N}"
 							add_module 'nvidia'
 						else
-							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components (BETA)...${N}"
-							install_package "nvidia-settings $nvidiaGlx" 
+							echo "${S}Installing ${C}$DISTRO_NVIDIA dkms driver${S} components...${N}"
+							install_package "$nvidiaSettings $nvidiaDriveridiaGlx" 
 							add_module 'nvidia'
 						fi
 					fi
@@ -6899,33 +6922,33 @@ install_distro_drivers()
 							# this has already been error handled.
 							;;
 						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2"
-							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt"
+nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt64"
+								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt64"
 							fi
 							;;
 						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3"
-							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt"
+nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt64"
+								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt64"
 							fi
 							;;
 						4)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_4"
-							drvNvidia1="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt"
+nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								drvNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt64"
+								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt64"
 							fi
 							;;
 						*)	akmodNvidia="akmod-nvidia"
-							drvNvidia1="xorg-x11-drv-nvidia-libs.$archExt"
+nvidiaDriver="xorg-x11-drv-nvidia-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								drvNvidia2="xorg-x11-drv-nvidia-libs.$archExt64"
+								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia-libs.$archExt64"
 							fi
 							;;
 					esac
 					
 					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
-					install_package "$akmodNvidia $drvNvidia1 $drvNvidia2"
+					install_package "$akmodNnvidiaDriver $nvidiaDrivervNvidia2"
 					# only do a final removal of nouveau if the install succeeded
 # 					remove_module 'nouveau'
 					
@@ -6946,25 +6969,29 @@ install_distro_drivers()
 						1)	:
 							# this has already been error handled.
 							;;
-						2)	nvidiaGlx="nvidia${ubGlx}-$NV_UB_LEGACY_2"
+						2)Driver="nvidia${ubGlx}-$NV_UB_LEGACY_2"
+							nvidiaSettings="nvidia-settings{ubGlx}-$NV_UB_LEGACY_2"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_2-modaliases"
 							;;
-						3)	nvidiaGlx="nvidia${ubGlx}-$NV_UB_LEGACY_3"
+						3)DriveridiaGlx="nvidia${ubGlx}-$NV_UB_LEGACY_3"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_3-modaliases"
+nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
 							;;
-						4)	nvidiaGlx="nvidia${ubGlx}-$NV_UB_LEGACY_4"
+						4)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_4"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_4-modaliases"
+							nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_4"
 							;;
-						*)	nvidiaGlx="nvidia${ubGlx}-$NV_UB_CURRENT"
+						*)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_CURRENT"
 							nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
+							nvidiaSettings="nvidia-settings"
 							;;
 					esac
-					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
+					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${Ns...${N}# handle legacy ubuntus..${N}"
 					if [ -n "$ubGlx" ];then
 						install_package "$nvidiaModal"
 					fi
-					install_package "nvidia-settings"
-					install_package "$nvidiaGlx"
+					install_pa$nvidiaSettings"
+					install_package "$nvidiaDriver"
 					;;
 				*)
 					error_handler 176
@@ -6973,27 +7000,75 @@ install_distro_drivers()
 			;;
 		$FGLRX)
 			case $SYSTEM_BASE in
-				debian)
+				arch	debian)
 					echo "${S}Installing ${C}$DISTRO_FGLRX${S} components...${N}"
-					install_package 'fglrx-driver'
-					install_package 'fglrx-control'
-					# install_package 'fglrx-amdcccle'
-					install_package 'fglrx-kernel-src'
-					echo "${S}Creating  ${C}$DISTRO_FGLRX${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
-		
-					# damentz suggestion to make sure old module is used
-					# m-a a-i -f fglrx-kernel-src
-					# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i fglrx
-					m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_FGLRX
-					m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_FGLRX
-					m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_FGLRX
-					m-a build -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_FGLRX
-					m-a install -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_FGLRX
+					install_p"catalyst"
+					install_package "catalyst-utils"
+					;;
+				debian)
+					case $LEGACY_LEVEL in
+						# fglrx-glx is not in debian anymore.
+						0|1)
+							:
+							;;
+						2)	fglrxDriver="fglrx-legacy-driver"
+							fglrxGlx="fglrx-glx-legacy-glx"
+							fglrxSettings="fglrx-legacy-control"
+							fglrxSource='fglrx-legacy-source'
+							;;
+						*)	fglrxDriver="fglrx-driver"
+							fglrxGlx='fglrx-glx'
+							fglrxSettings="fglrx-control"
+							fglrxSource='fglrx-source'
+							;;
+					esac
+					# start the install/hd2000-4000 not supported; check main legacy level to update this
+					if [ "$LEGACY_LEVEL" -gt 1 ];then
+						if [ "$B_USE_DISTRO_MODULE_MA" == 'true' ];then
+							echo "${S}Installing ${C}$DISTRO_FGLRX m-a module${S} components...${N}"
+							# install_package "$fglrxDriver"
+							install_package "$fglrxSettings"
+							# install_package 'fglrx-amdcccle'
+							install_package "$fglrxSource"
+							echo "${S}Creating  ${C}$DISTRO_FGLRX${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
+				
+							# damentz suggestion to make sure old module is used
+							# m-a a-i -f fglrx-kernel-src
+							# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i fglrx
+							m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_FGLRX
+		_FGLRX
+					m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_FGLR		m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_FGLRX
+		_FGLRX
+					m-a build -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_FGLR		m-a install -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_FGLRX
+						else
+							echo "${S}Installing ${C}$DISTRO_FGLRX dkms driver${S} components...${N}"
+							install_package "$fglrxSettings $fglrxDriver" 
+							add_module 'fglrx'
+						fi
+					fi
+					;;
+				fedora	debian)
+					echo "${S}Installing ${C}$DISTRO_FGLRX${S} components...${N}"
+					install_p"akmod-catalyst" # installs both driver and amdcccleO_FGLRX
 					;;
 				ubuntu)
-					echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
-					install_package 'fglrx-modaliases'
-					install_package 'xorg-driver-fglrx'
+					echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}# legacy stuff
+					if [ -n "$( check_package_status 'fglrx-modaliases' 'c' )" ];then
+						install_package 'fglrx-modaliases'
+					fi
+					if [ -n "$( check_package_status 'xorg-driver-fglrx' 'c' )" ];then
+						install_package 'xorg-driver-fglrx'
+					fi
+					if [ -n "$( check_package_status 'fglrx-driver' 'c' )" ];then
+						install_package 'fglrx-driver'
+					fi
+					# current, as of T release, 2014
+					if [ -n "$( check_package_status 'fglrx' 'c' )" ];then
+						install_package 'fglrx'
+					fi
+					if [ -n "$( check_package_status 'fglrx-amdcccle' 'c' )" ];then
+						install_package 'fglrx-amdcccle'
+					fi-fglrx'
 					;;
 				*)
 					error_handler 176
@@ -8415,6 +8490,8 @@ show_options()
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
 	echo "   n to show current nvidia support status; f to show current fglrx support status;"
 	echo "   v to show current latest local + remote $SCRIPT_NAME svn/server version information."
+	m Overrides default (-d) dkms driver method, uses $SCRIPT_NAME's old method, kernel-source + m-a build"
+	echo "   of module. Use only if you want to avoid dkms (fglrx/nvidia only). Triggers -d as wellrmation."
 	echo "-n Automatically installs correct native xorg nvidia, intel, or ati/amd driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
 	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf. For radeon/noveau, also preps."
@@ -8538,7 +8615,7 @@ get_options()
 			;;
 	esac
 
-	while getopts AbBcCdDeEfFGHj:kK:L:nN:o:pP:QrRsStUWXxYzZ!: opt
+	while getopts AbBcCdDeEfFGHmj:kK:L:nN:o:pP:QrRsStUWXxYzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -8551,7 +8628,7 @@ get_options()
 				;;
 			B)	B_USE_BETA='true'
 				START_OPTIONS=$START_OPTIONS' -B'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -B - Use Beta Driver (nVidia only. Only if available)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -B - Use Beta Driver  only. Only if available)\n"
 				;;
 			c) B_COMPOSITE='true'
 				START_OPTIONS=$START_OPTIONS' -c'
@@ -8604,7 +8681,7 @@ get_options()
 				fi
 				;;
 			k)	B_KERNEL_MODULE_ONLY='true'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINTBuilding nvidia kernel module using previously installed driver\n      Permits building a module for an alternate kernel while in X. driver\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -k - Building nvidia kernel module using previously installed driver\n      Permits building a module for an alternate kernel while in X.\n"
 				START_OPTIONS=$START_OPTIONS" -k "
 				;;
 			K)	INSTALL_TO_KERNEL="$OPTARG"
@@ -8618,6 +8695,12 @@ get_options()
 				else
 					error_handler 228 $OPTARG
 				fi
+				;;
+			m)	B_USE_DISTRO_MODULE_MA='true'
+				B_USE_DISTRO_DRIVER='true'
+				B_FGLRX_DIRECT=''
+				START_OPTIONS=$START_OPTIONS' -m'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -m - Install distro packaged driver using kernel source + m-a.\n"
 				;;
 			n) B_NATIVE_DRIVER='true'
 				START_OPTIONS=$START_OPTIONS' -n'
@@ -8635,7 +8718,7 @@ get_options()
 				;;
 			o) DRIVER_OVERRIDE="$OPTARG"
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -o - Driver override. Forces install of this driver: $DRIVER_OVERRIDE (nVidia|ATI fglrx only)\n"
-				STIONS=$START_OPTIONS" -o $OPTARG"
+				START_OPTIONS=$START_OPTIONS" -o $OPTARG"
 				;;
 			p) B_PRINT_VER='true'
 				START_OPTIONS=$START_OPTIONS' -p'
