@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.01
+####  version: 4.23.02
 ####  Date: 2014-03-04
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -4790,6 +4790,7 @@ BITS: $BITS
 FG_DISTRIB_CODENAME: $FG_DISTRIB_CODENAME
 FG_DISTRIB_ID: $FG_DISTRIB_ID
 APT_TYPE: $APT_TYPE
+LOGIN_PID: $LOGIN_PID
 SUDO_START: $SUDO_START
 B_SYSTEMD: $B_SYSTEMD
 B_SYSTEMD_GRAPHICAL: $B_SYSTEMD_GRAPHICAL
@@ -7693,7 +7694,7 @@ start_stop_x()
 		"$B_SYSTEMD" == 'true' ];then
 					#kill_systemd_tty || ttyKill=$?
 					#if [ "$ttyKill" -gt 0 ];then
-						# kill $LOGIN_PID && exit 0 || exit 1
+						kill $LOGIN_PID && exit 0 || exit 1
 						exit 0
 					#fi
 				elif [ -n "$defaultRunlevel" ];then
@@ -8652,8 +8653,7 @@ get_options()
 			A) B_AUTORUN='true'
 				START_OPTIONS=$START_OPTIONS' -A'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -A - Autorun is selected\n"
-				;;
-			b) B_TRIPER='true'
+			b) B_TRIPLE_BUFFER='true'
 				START_OPTIONS=$START_OPTIONS' -b'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -b - TripleBuffer is on (nVidia only)\n"
 				;;
