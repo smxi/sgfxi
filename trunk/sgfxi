@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.03
-####  Date: 2014-03-11
+####  version: 4.23.04
+####  Date: 2014-03-18
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -2426,7 +2426,9 @@ select_card()
 #tester="00:0d.0 0300: 10de:03d1 (rev a2)
 #02:00.0 0300: 10de:01df (rev a1) "
 
-	local cardData=$( lspci -nn | grep 'VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
+	local cardData=$( lspci\
+	grep -E '([[:space:]]VGA[[:space:]]|3D[[:space:]]controller|Display[[:space:]]controller)' | \
+	VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
 	local cards='' card='' singleCardId=''
 	local options='' opt='' bFound='false'
 	local timeStampXorg=$EXXC-bu-$( date +%Y-%m-%d-%H:%M:%S )
@@ -2573,8 +2575,12 @@ detect_card_version()
 			OTHER_VERSIONS=$NV_OTHERS
 			CARD_NUMBER=$cardNumber
 			# do some card specific tests to determine generic classes
-			isQuad=$( lspci | grep 'VGA' | grep -i -o 'quadro' )
-			is8xxx=$( lspci | grep 'VGA' | grep -Eo '8[0-9]{3}' )
+			isQuad=$( l\
+			grep -E '([[:space:]]VGA[[:space:]]|3D[[:space:]]controller|Display[[:space:]]controller)' | \
+			grep -i -o 'quadro' )
+			is8xxx=$( lspci | \
+			grep -E '([[:space:]]VGA[[:space:]]|3D[[:space:]]controller|Display[[:space:]]controller)' | \
+			VGA' | grep -Eo '8[0-9]{3}' )
 			case $cardNumber in
 				# http://listing.driveragent.com/pci/10de/?q=94c3 # later series
 				# http://listing.driveragent.com/pci/12d2/?q=94c3 # full legacy
@@ -2710,10 +2716,11 @@ detect_card_version()
 				*)
 					# if no working driver via standard ati installer. Here we're also handling
 					# the monthly releases, so users can do an experimental test if needed
-					# if [ "$B_DISTRO_FLAG" == 'true' -a "$B_TESTING_1" != 'true' ]
-					LEGACY_LEVEL=10# this will reset the globals for betas/default drivers. Must not run in subshell
+					# if [ "$B_DISTRO_FLAG" == 'true' -a "$B_TESTING_1" != 'true'	LEGACY_LEVEL=100
+					# this will reset the globals for betas/default drivers. Must not run in subshell
 					assign_standard_or_beta_driver 'default' 'driver'
-					iver' # echo 'dd: ' $DRIVER_DEFAULT
+					
+					# echo 'dd: ' $DRIVER_DEFAULT
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'default' 'set-exists' )
 					# echo 'be: ' $B_BETA_EXISTS
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
@@ -4649,7 +4656,9 @@ print_information()
 	local scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
 	local scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
 	#local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2%'  )
-	local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\s|nVidia\s|Intel\s)(Technologies\sInc\s|Corporation\s|Unknown\sdevice){1,2}(.*)%\1\3%g' )
+	local cardInfo=$( l\
+	awk -F': ' '/(VGA compatible controller|3D controller|Display controller).*: / { print $NF }' | \
+	F }' | sed -r 's%(ATI\s|nVidia\s|Intel\s)(Technologies\sInc\s|Corporation\s|Unknown\sdevice){1,2}(.*)%\1\3%g' )
 	local cardRam='' cardVendor='' busId=''
 
 	# we need the real busid, not the xorg one
@@ -5788,7 +5797,7 @@ misc_fixes()
 				log_function_data "Creating soft link asm-x86 asm-i386 in $headersDir"
 				echo "${S}Creating symbolic link ${C}asm-x86 asm-i386${S}...${N}"
 
-				ln -s $headersDir/asm-x86 $headersDir/asm-i386 || error_handler 233 "link -s asm-x86 asm-i386"
+				ln -s $headersDir/asm-x86 $headersDir/asm- error_handler 233 "link -s asm-x86 asm-i386"
 				log_function_data "Link successfully created."
 			else
 				log_function_data "link asm-x86 asm-i386 in $headersDir already exists"
@@ -5796,7 +5805,7 @@ misc_fixes()
 			;;
 		linux-generated-patch)
 			local generated1="${USRS}$KERNEL_FULL/include/generated/" 
-			local generated2=odules/$KERNEL_FULL/build/include/generated/"
+			local generated2="/lib/modules/$KERNEL_FULL/build/include/generated/"
 			outcome="$generated1 or $generated2 do not exist"
 			if [ -d "$generated1" -o -d "$generated2" ];then
 				echo 'true'
@@ -8631,7 +8640,7 @@ get_options()
 {
 	local opt=''
 	
-	case $1 in
+	cas
 		--help|-h)
 			if tty > /dev/null ;then
 				show_options
@@ -8646,7 +8655,7 @@ get_options()
 				SCRIPT_COLORS=0
 				set_script_colors
 			fi
-			nformation
+			print_information
 			exit 0
 			;;
 	esac
