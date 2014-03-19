@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.07
+####  version: 4.23.08
 ####  Date: 2014-03-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -2425,8 +2425,10 @@ select_card()
 #02:00.0 VGA compatible controller [0300]: nVidia Corporation G71 [GeForce 7300 G S] [10de:01df] (rev a1)"  | grep -E 'VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
 #tester="00:0d.0 0300: 10de:03d1 (rev a2)
 #02:00.0 0300: 10de:01df (rev	# not using: |3D[[:space:]]controller ]|Display[[:space:]]controller - may cause dual id of same device 
+	# NOTE: we have to confirm it's a real card, we do that by checking: xx:xx.0 structure on pcibus id string.
 	local cardData=$( lspci -nn | \
-	grep -E '[[:space:]]VGA[[:space:]]' | \
+	grep -iE '(VGA compatible controller|3D controller|Display controller)' | \
+	grep -E '(^[^:]+:[^:\.]+[:\.]0)[[:space:]]' | \
 	VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
 	local cards='' card='' singleCardId=''
 	local options='' opt='' bFound='false'
@@ -2713,9 +2715,9 @@ detect_card_version()
 					LEGACY_LEVEL=2
 					;;
 				*)
-					# if no working driver via standard ati installer. Here we're also handling
+					# if no working driverandard ati installer. Here we're also handling
 					# the monthly releases, so users can do an experimental test if needed
-					# if [ "$B_DISTRO_FLAG" == 'tr"$B_TESTING_1" != 'true' ]
+					# if [ "$B_DISTRO_FLAG" == 'true' -a "$B_TESTING_1" != 'true' ]
 					LEGACY_LEVEL=100
 					# this will reset the globals for betas/default drivers. Must not run in subshell
 					assign_standard_or_beta_driver 'default' 'driver'
@@ -5793,11 +5795,10 @@ misc_fixes()
 
 			ln -sf $headersDir/asm-x86 $headersDir/asm || error_handler 233 "link -s asm-x86 asm"
 
-			if [ ! -e $headersDir/asm-i386 -a "$BITS" == '32' ];then
-				log_function_data "Creating soft link asm-x86 asm-i386 in $headersDir"
+			if [ ! -e $headersDir/asm-i386 -a "$BITS" == '32' ]			log_function_data "Creating soft link asm-x86 asm-i386 in $headersDir"
 				echo "${S}Creating symbolic link ${C}asm-x86 asm-i386${S}...${N}"
 
-				ln -s $Dir/asm-x86 $headersDir/asm-i386 || error_handler 233 "link -s asm-x86 asm-i386"
+				ln -s $headersDir/asm-x86 $headersDir/asm-i386 || error_handler 233 "link -s asm-x86 asm-i386"
 				log_function_data "Link successfully created."
 			else
 				log_function_data "link asm-x86 asm-i386 in $headersDir already exists"
@@ -8625,7 +8626,7 @@ show_options()
 		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
 		echo "   then exit the script without doing the driver download/install."
 		echo "-! 121  - When used with -p, will use the live driver list from smxi.org"
-		echo "          instead of the drivers taken from the local user $SCRIPT_NAME values."
+		echo "     stead of the drivers taken from the local user $SCRIPT_NAME values."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
@@ -8636,7 +8637,7 @@ show_options()
 }
 
 # args: $1 - "$@"
-gons()
+get_options()
 {
 	local opt=''
 	
