@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.10
+####  version: 4.23.11
 ####  Date: 2014-03-20
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -8687,7 +8687,7 @@ show_options()
 	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore system to default"
 	echo "      without redoi.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
 	echo "      require xorg.conf file to operate. Using this command restores system to default."
-	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
+	echo "-! 33 Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
 	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
@@ -8695,6 +8695,10 @@ show_options()
 	echo "      use either the -o <driver number> OR the -B option (if you are using current beta driver)"
 	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
 	echo "      -! 40 must be the LAST option in your list of options or errors will occur!"
+	echo "--debugger Create debugger data file in $HOME/$SCRIPT_NAME-data - the file is a gz file that holds"
+	echo "           whatever might be helpful to debugging $SCRIPT_NAME issues, like xorg.conf, lspci, inxi"
+	echo "           output if present, etc. Upload file to: ftp.techpatterns.com/incoming OR use a service"
+	echo "           like dropbox.com then give me the url to the uploaded file."
 	if [ "$1" == 'full' ];then
 		echo $PLINE
 		echo "Developer and Testing Options (Advanced):"
