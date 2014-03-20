@@ -4903,6 +4903,7 @@ log_writer()
 script_data_collector()
 {
 	local debug_data_home="$HOME/${SCRIPT_NAME}-data/"
+	local xorg_d_files='' xorg_file=''
 	
 	local host=$HOSTNAME
 	if [ -n $host ];then
@@ -4934,10 +4935,18 @@ script_data_collector()
 	cat /var/log/sgfxi/sgfxi.log &> $debug_data_dir/sgfxi.log
 	cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
 	cat /var/log/sgfxi/sgfxi.log.2 &> $debug_data_dir/sgfxi.2.log
-	cat /etc/X11/xorg.conf &> $debug_data_dir/xorg.conf
+	if [[ -e /etc/X11/xorg.conf ]];then
+		cat /etc/X11/xorg.conf &> $debug_data_dir/xorg-conf.txt
+	else
+		touch $debug_data_dir/no-xorg-conf-file
+	fi
 	if [[ -n $( ls /etc/X11/xorg.conf.d/ 2>/dev/null ) ]];then
 		ls /etc/X11/xorg.conf.d &> $debug_data_dir/ls-etc-x11-xorg-conf-d.txt
-		cp /etc/X11/xorg.conf.d $debug_data_home$debug_data_dir
+		xorg_d_files=$(ls /etc/X11/xorg.conf.d)
+		for xorg_file in $xorg_d_files
+		do
+			cat /etc/X11/xorg.conf.d/$xorg_file &> $debug_data_dir/xorg-conf-d-$xorg_file.txt
+		done
 	else
 		touch $debug_data_dir/no-xorg-conf-d-files
 	fi
@@ -5790,13 +5799,13 @@ set_driver_install_version()
 		fi
 		exit 0
 	fi
-	# need to puke and die here, not earlier because of print out 
+	# need to puke and die herearlier because of print out 
 	if [ -n "$INSTALL_TO_KERNEL" -a "$B_FGLRX_DIRECT" == 'true' -a "$CARD" == $FGLRX -a "$( uname -r )" != "$INSTALL_TO_KERNEL" ];then
 		error_handler 219
 	fi
 
 	if [ -n "$DRIVER_OVERRIDE" ];then
-		DRIVER_DEFAULTR_OVERRIDE
+		DRIVER_DEFAULT=$DRIVER_OVERRIDE
 	fi
 	# error_handler 246 $DRIVER_DEFAULT # for unsupported cards
 	if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
@@ -8676,9 +8685,9 @@ show_options()
 	echo $PLINE
 	echo "Advanced Options :: Only for Specialized Cases"
 	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore system to default"
-	echo "      without redoing xorg.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
+	echo "      without redoi.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
 	echo "      require xorg.conf file to operate. Using this command restores system to default."
-	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidif radeon/nouveau have been blacklisted."
+	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
 	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
