@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.08
-####  Date: 2014-03-19
+####  version: 4.23.09
+####  Date: 2014-03-20
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -113,6 +113,7 @@ WITHOUT_RECOMMENDS=''
 X_NAME=''
 
 ## main script boolean switches
+B_AMD='true'
 B_AUTORUN='false'
 B_BETA_EXISTS='false'
 B_BUILD_KERNEL_MODULES='false'
@@ -334,10 +335,12 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
 FG_DEFAULT_BETA='14.1'
+#FG_DEFAULT_BETA='14.3'
 # http://www2.ati.com/drivers/beta/amd-catalyst-13.11-beta-v9.4-linux-x86.x86_64.run.zip
 # note: amd release a zip file that contains a space in the name, so I'm not spending 
 # any more of my time on this group of undisciplined incompetents at this point.
 FG_BETA_VERSION='betav1.3' 
+#FG_BETA_VERSION='betav1.0'
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
@@ -474,7 +477,7 @@ set_test_data()
 		rm -f $LOG_FILE_DIR	rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -577,7 +580,12 @@ driver_support_tests()
 								;;
 						esac
 					fi
+					# amd-catalyst-14.1-betav1.3-linux-x86.x86_64.zip
 					case $DRIVER_DEFAULT in
+						14.3)
+							FGLRX_PACKAGE_PREFIX='amd-catalyst'
+							B_AMD='false'
+							;;
 						13[-.][8-9]|13[-.]1[0-2]|14[-.]*|15[-.]*)
 							FGLRX_PACKAGE_PREFIX='amd-catalyst'
 							;;
@@ -2707,7 +2715,7 @@ detect_card_version()
 					# going to leave this in for now until debian kernels and
 					# xorgs catch up, but will permit by default for non legacy 0 cards
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
-						B_USE_DISTRO_DRIVER='true'
+						B_TRO_DRIVER='true'
 					fi
 					;;
 				# these should cover most of the hd2xxx-hd4xxx series with discontinued support
@@ -2715,7 +2723,7 @@ detect_card_version()
 					LEGACY_LEVEL=2
 					;;
 				*)
-					# if no working driverandard ati installer. Here we're also handling
+					# if no working driver via standard ati installer. Here we're also handling
 					# the monthly releases, so users can do an experimental test if needed
 					# if [ "$B_DISTRO_FLAG" == 'true' -a "$B_TESTING_1" != 'true' ]
 					LEGACY_LEVEL=100
@@ -4737,7 +4745,7 @@ print_hec()
 }
 
 ### -------------------------------------------------------------------
-### logging tools
+### /debuggingmanager tools
 ### -------------------------------------------------------------------
 
 create_log()
@@ -4892,6 +4900,61 @@ log_writer()
 	if [ "$B_LOGGING_STARTED" == 'true' ];then
 		# strip out escape color code, if any. Method by dzz, thanks ;-)
 		echo -e "$1" | sed 's/\x1b\[[0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,2\}m//g' >> $LOG_FILE
+script_data_collector()
+{
+	local debug_data_home="$HOME/${SCRIPT_NAME}-data/"
+	local debug_data_dir="$SCRIPT_NAME-$(date +%Y-%m-%d-%H%M%S)"
+	
+	echo "Starting $SCRIPT_NAME debugging data collection..."
+	
+	if [ ! -d $debug_data_home ];then
+		mkdir $debug_data_home
+		echo "Created data directory here: $debug_data_home"
+	fi
+	cd $debug_data_home
+	if [ -d $debug_data_dir ];then
+		rm -rf $debug_data_dir
+	else
+		mkdir $debug_data_dir
+	fi
+	
+	lspci -n &> $debug_data_dir/lspci-n.txt
+	lspci -nn &> $debug_data_dir/lspci-nn.txt
+	lspci -v &> $debug_data_dir/lspci-v.txt
+	if type -p inxi &>/dev/null;then
+		inxi -bxxx -c 0 &> $debug_data_dir/inxi-bxxx.txt
+	else
+		touch $debug_data_dir/no-inxi.txt
+	fi
+	cat /var/log/Xorg.0.log &> $debug_data_dir/xorg.0.log
+	cat /var/log/sgfxi/sgfxi.log &> $debug_data_dir/sgfxi.log
+	cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
+	cat /var/log/sgfxi/sgfxi.log.2 &> $debug_data_dir/sgfxi.2.log
+	cat /etc/X11/xorg.conf &> $debug_data_dir/xorg.conf
+	echo "Data collection completed."
+	echo 'Creating tar.gz compressed file of this material now. Contents:'
+	echo $LINE
+	tar -cvzf $debug_data_dir.tar.gz $debug_data_dir
+	echo $LINE
+	echo 'Cleaning up leftovers...'
+	rm -rf $debug_data_dir
+	echo 'Testing gzip file integrity...'
+	gzip -t $debug_data_dir.tar.gz
+	if [[ $? -gt 0 ]];then
+		rm -f $debug_data_dir.tar.gz
+		echo 'Data in gz is corrupted, removed gzip file, try running data collector again.'
+		exit 1
+	else
+		echo $LINE
+		echo 'All done, you can find your data gzipped directory here:'
+		echo "$debug_data_home$debug_data_dir.tar.gz"
+		echo $LINE
+		echo "Please attach the gz file to a forum support thread, if the forum supports file attachments,"
+		echo "OR simply copy it over to: ftp.techpatterns.com/incoming"
+		echo "You can do this using a file manager like Dolphin, Konqueror, or any other one that lets"
+		echo "you type in the ftp address in the location bar then connect to it."
+		echo "After you do that, you can just drag in the gz file to the remote site."
+		exit 0OG_FILE
 	fi
 }
 
@@ -5739,7 +5802,7 @@ set_driver_install_version()
 		esac
 	fi
 
-	if [ "$B_SM_INSTALL" != 'true' -a -n "$START_OPTIONS_PRINT" ];then
+	if [ "$B_SLL" != 'true' -a -n "$START_OPTIONS_PRINT" ];then
 		print_information_continue 'info' "You are using the following options:\n$START_OPTIONS_PRINT"
 	elif [ "$B_SM_INSTALL" == 'true' -a -n "$INSTALL_TO_KERNEL" ];then
 		newKernelText="\n${S}onto the kernel: ${C}$INSTALL_TO_KERNEL${N}"
@@ -5748,15 +5811,17 @@ set_driver_install_version()
 	if [ "$B_USE_BETA" == 'true' ];then
 		case $CARD in
 			$NVIDIA|$FGLRX)
-				if [ "$B_BETA_EXISTS" == 'true' ];theif [ "$bDebugger" == 'true' ];then
+				if [ "$B_BETA_EXISTS" == 'true' ];then
+					if [ "$bDebugger" == 'true' ];then
 						echo "FDB:$FG_DEFAULT_BETA:"
 						echo "FBV:$FG_BETA_VERSION:"
 						echo "bd:$betaDriver:"
 						echo "End assign_standard_or_beta_driver"
-					fi ];then
-					betaDriverText="\n${M}This is the latest ${C}$CARD Beta driver${M} for your card type.${N}\	if [ "$CARD" == $FGLRX ];then
+					fi
+					betaDriverText="\n${M}This is the latest ${C}$CARD Beta driver${M} for your card type.${N}\n"
+					if [ "$CARD" == $FGLRX ];then
 						extraBetaInfo=" ($FG_BETA_VERSION) "
-					fi${N}\n"
+					fi
 				else
 					betaDriverText="\n${M}There is ${C}no current beta driver${M} for your ${C}$CARD${M} card type.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
 				fi
@@ -5769,9 +5834,9 @@ set_driver_install_version()
 	if [ "$B_KERNEL_MODULE_ONLY" == 'true' ];then
 		moduleOrInstall='building a module for'
 	fi
-	print_information_continue 'standard' "The graphics installer will be $moduleOrInstall the ${C}$CARD${S} driver: ${C}$DRIVER_DextraBetaInfo${N}$betaDriverText$newKernelText"
+	print_information_continue 'standard' "The graphics installer will be $moduleOrInstall the ${C}$CARD${S} driver: ${C}$DRIVER_DEFAULT$extraBetaInfo${N}$betaDriverText$newKernelText"
 
-	log_function_data "Installing this driver: $DRIVER_DEFAULT$extraBetaInfoDEFAULT"
+	log_function_data "Installing this driver: $DRIVER_DEFAULT$extraBetaInfo"
 
 	eval $LOGPE
 	# test for support
@@ -5795,7 +5860,8 @@ misc_fixes()
 
 			ln -sf $headersDir/asm-x86 $headersDir/asm || error_handler 233 "link -s asm-x86 asm"
 
-			if [ ! -e $headersDir/asm-i386 -a "$BITS" == '32' ]			log_function_data "Creating soft link asm-x86 asm-i386 in $headersDir"
+			if [ ! -e $headersDir/asm-i386 -a "$BITS" == '32' ];then
+				log_function_data "Creating soft link asm-x86 asm-i386 in $headersDir"
 				echo "${S}Creating symbolic link ${C}asm-x86 asm-i386${S}...${N}"
 
 				ln -s $headersDir/asm-x86 $headersDir/asm-i386 || error_handler 233 "link -s asm-x86 asm-i386"
@@ -5856,7 +5922,11 @@ set_download_info()
 				# amd-catalyst-13.6-beta-linux-x86.x86_64.run
 				
 				fgBetaVersion="-$FG_BETA_VERSION"
-				downloadUrl='http://www2.ati.com/drivers/beta/'
+				if [ "$B_AMD" == 'true' ];then
+					downloadUrl='http://www2.ati.com/drivers/beta/'
+				else
+					downloadUrl=$SCRIPT_DOWNLOAD_DATA
+				fi
 				# note, amd changed this AGAIN!!! for their damned betas
 				# www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
 				# www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip 
@@ -5956,12 +6026,17 @@ download_extract_driver()
 # 					echo "${S}Run package using .run.zip format. Preparing for zip/unzip procedure...${N}"
 # 					downloadPackage=$runZipPackage
 # 					extension='zip'
-				if wget -q --spider $uA $atiRef $1$zipPackage;then
-					echo "${S}Run package using .zip format. Preparing for zip/unzip procedure...${N}"
-					downloadPackage=$zipPackage
-					extension='zip'
+				if [ "$B_AMD" == 'true' ];then
+					if wget -q --spider $uA $atiRef $1$zipPackage;then
+						echo "${S}Run package using .zip format. Preparing for zip/unzip procedure...${N}"
+						downloadPackage=$zipPackage
+						extension='zip'
+					else
+						downloadPackage=$runPackage
+					fi
 				else
 					downloadPackage=$runPackage
+					atiRef=''
 				fi
 				;;
 		esac
@@ -8596,10 +8671,11 @@ show_options()
 	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
-	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
+	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to 40"
 	echo "      Note: if your installed driver is NOT the default $SCRIPT_NAME offers, you have to"
 	echo "      use either the -o <driver number> OR the -B option (if you are using current beta driver)"
-	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -echo "      -! 40 must be the LAST option in your list of options or errors will occur!B -! 40"
+	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
+	echo "      -! 40 must be the LAST option in your list of options or errors will occur!"
 	if [ "$1" == 'full' ];then
 		echo $PLINE
 		echo "Developer and Testing Options (Advanced):"
@@ -8620,13 +8696,13 @@ show_options()
 		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
 		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version (legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
-		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version(legacy, don't use)."
+		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version (legacy, don't use)."
 		
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
 		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
 		echo "   then exit the script without doing the driver download/install."
 		echo "-! 121  - When used with -p, will use the live driver list from smxi.org"
-		echo "     stead of the drivers taken from the local user $SCRIPT_NAME values."
+		echo "          instead of the drivers taken from the local user $SCRIPT_NAME values."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
@@ -8642,6 +8718,14 @@ get_options()
 	local opt=''
 	
 	case $1 in
+		--debugger)
+			if tty > /dev/null ;then
+				script_data_collector
+			else
+				echo "You cannot use the $SCRIPT_NAME debugger option in an IRC client!"
+				exit 1
+			fi
+			;;
 		--help|-h)
 			if tty > /dev/null ;then
 				show_options
