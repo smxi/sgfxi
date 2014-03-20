@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.09
+####  version: 4.23.10
 ####  Date: 2014-03-20
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -4935,6 +4935,12 @@ script_data_collector()
 	cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
 	cat /var/log/sgfxi/sgfxi.log.2 &> $debug_data_dir/sgfxi.2.log
 	cat /etc/X11/xorg.conf &> $debug_data_dir/xorg.conf
+	if [[ -n $( ls /etc/X11/xorg.conf.d/ 2>/dev/null ) ]];then
+		ls /etc/X11/xorg.conf.d &> $debug_data_dir/ls-etc-x11-xorg-conf-d.txt
+		cp /etc/X11/xorg.conf.d $debug_data_home$debug_data_dir
+	else
+		touch $debug_data_dir/no-xorg-conf-d-files
+	fi
 	echo "Data collection completed."
 	echo 'Creating tar.gz compressed file of this material now. Contents:'
 	echo $LINE
@@ -5790,7 +5796,7 @@ set_driver_install_version()
 	fi
 
 	if [ -n "$DRIVER_OVERRIDE" ];then
-		DRIVER_DEFAULT=$DRIVER_OVERRIDE
+		DRIVER_DEFAULTR_OVERRIDE
 	fi
 	# error_handler 246 $DRIVER_DEFAULT # for unsupported cards
 	if [ "$B_USE_DISTRO_DRIVER" != 'true' ];then
@@ -5800,7 +5806,8 @@ set_driver_install_version()
 			$FGLRX)
 				DRIVER_DEFAULT=$DISTRO_FGLRX
 				;;
-			$NVI		DRIVER_DEFAULT=$DISTRO_NVIDIA
+			$NVIDIA)
+				DRIVER_DEFAULT=$DISTRO_NVIDIA
 				;;
 		esac
 	fi
@@ -8671,10 +8678,10 @@ show_options()
 	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore system to default"
 	echo "      without redoing xorg.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
 	echo "      require xorg.conf file to operate. Using this command restores system to default."
-	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
+	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidif radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
-	echo "      Y have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
+	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
 	echo "      Note: if your installed driver is NOT the default $SCRIPT_NAME offers, you have to"
 	echo "      use either the -o <driver number> OR the -B option (if you are using current beta driver)"
 	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
