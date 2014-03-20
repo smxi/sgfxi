@@ -4903,8 +4903,12 @@ log_writer()
 script_data_collector()
 {
 	local debug_data_home="$HOME/${SCRIPT_NAME}-data/"
-	local debug_data_dir="$SCRIPT_NAME-$(date +%Y-%m-%d-%H%M%S)"
 	
+	local host=$HOSTNAME
+	if [ -n $host ];then
+		host="-$host"
+	fi
+	local debug_data_dir="$SCRIPT_NAME-$(date +%Y-%m-%d-%H%M%S)$host"
 	echo "Starting $SCRIPT_NAME debugging data collection..."
 	
 	if [ ! -d $debug_data_home ];then
@@ -5796,13 +5800,12 @@ set_driver_install_version()
 			$FGLRX)
 				DRIVER_DEFAULT=$DISTRO_FGLRX
 				;;
-			$NVIDIA)
-				DRIVER_DEFAULT=$DISTRO_NVIDIA
+			$NVI		DRIVER_DEFAULT=$DISTRO_NVIDIA
 				;;
 		esac
 	fi
 
-	if [ "$B_SLL" != 'true' -a -n "$START_OPTIONS_PRINT" ];then
+	if [ "$B_SM_INSTALL" != 'true' -a -n "$START_OPTIONS_PRINT" ];then
 		print_information_continue 'info' "You are using the following options:\n$START_OPTIONS_PRINT"
 	elif [ "$B_SM_INSTALL" == 'true' -a -n "$INSTALL_TO_KERNEL" ];then
 		newKernelText="\n${S}onto the kernel: ${C}$INSTALL_TO_KERNEL${N}"
@@ -8671,7 +8674,7 @@ show_options()
 	echo "-! 33 - Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
-	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to 40"
+	echo "      Y have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
 	echo "      Note: if your installed driver is NOT the default $SCRIPT_NAME offers, you have to"
 	echo "      use either the -o <driver number> OR the -B option (if you are using current beta driver)"
 	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
