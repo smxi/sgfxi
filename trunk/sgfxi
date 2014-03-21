@@ -4928,8 +4928,13 @@ debugger_data_collector()
 		mkdir $debug_data_dir
 	fi
 	lspci &> $debug_data_dir/lspci.txt
+	lspci -k &> $debug_data_dir/lspci-k.txt
+	lspci -knn &> $debug_data_dir/lspci-knn.txt
 	lspci -n &> $debug_data_dir/lspci-n.txt
 	lspci -nn &> $debug_data_dir/lspci-nn.txt
+	lspci -mm &> $debug_data_dir/lspci-mm.txt
+	lspci -mmnn &> $debug_data_dir/lspci-mmnn.txt
+	lspci -mmnnv &> $debug_data_dir/lspci-mmnnv.txt
 	lspci -v &> $debug_data_dir/lspci-v.txt
 	if type -p inxi &>/dev/null;then
 		inxi -Cbxxx -c 0 &> $debug_data_dir/inxi-Cbxxx.txt
@@ -5787,7 +5792,7 @@ check_supported_driver()
 	if [ "$1" == 'last-check' ];then
 		isGood=$( echo $drivers | grep "$DRIVER_DEFAULT" )
 		if [ -z "$isGood" ];then
-			error_handler 240 $DRIVER_DEFAULT
+			error_handlerRIVER_DEFAULT
 		fi
 	fi
 	eval $LOGUE
@@ -5797,7 +5802,8 @@ set_driver_install_version()
 {
 	eval $LOGPS
 	local response='' printDriver='' newKernelText='' betaDriverText=''
-	local moduleOrInstall='inst extraBetaInfo='ta	local bDebugger='false'
+	local moduleOrInstall='installing' extraBetaInfo=''
+	local bDebugger='false'
 
 	# I'm forcing special cases to override the defaults so the data
 	# printed out will show what drivers are supported
@@ -8692,9 +8698,9 @@ show_options()
 	echo "   other key downloads, like patches. The standard use for this is to download the driver file in X,"
 	echo "   then exit, and install it out of Xiously."
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
-	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
-	echo "   want X start/stop tests to run. Gives start X option on completion if no Expert use onlyot in X."
-	echo "-Y Clean script download and backup files. Shows a list of cleanup aco carry out, including script uninstaller."
+	echo "-X Use to skip auto X start/stop. Do not use this you have a good reason to not "
+	echo "   want X start/stop tests to run. Gives start X option on completion if not in X. Expert use only."
+	echo "-Y Clean script download and backup files. Shows a list of cleanup actions to carry out, including script uninstaller."
 	echo "   Can be run in X, as root."
 	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
