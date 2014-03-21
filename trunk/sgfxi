@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.11
-####  Date: 2014-03-20
+####  version: 4.23.12
+####  Date: 2014-03-21
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -365,14 +365,19 @@ LEGACY_LEVEL=''
 DRIVER_FILE=''
 
 # here we're cutting out both card type and version number for cases with > 1 card
-CARD_COUNT=$( lspci -n | grep -c '0300' )
+# match this, line starts: xx:xx.0 space bus type 300 (VGA compat)/302 (3D cont)/380 (Display cont)
+# 00:02.0 0380: 8086:2572 (rev 02)
+# 01:00.0 0300: 10de:0221 (rev a1)
+CARD_COUNT=$( lspci -n | grep -cE '^[^[:space:]]+\.0[[:space:]]+(0300|0302|0380)' )
 #CARD_DATA=$( lspci -n | grep 0300 | cut -d ':' -f 3-4  | cut -d ' ' -f2 )
-CARD_DATA=$( lspci -n | grep '0300' | grep -Eio '[a-f0-9]{4}:[a-f0-9]{4}' )
+CARD_DATA=$( lspci -n | grep -E '^[^[:space:]]+\.0[[:space:]]+(0300|0302|0380)' | \
+grep -Eio '[a-f0-9]{4}:[a-f0-9]{4}' )
 CARD_NUMBER=''
 CARD_BRAND=''
 # this is reset for multiple gfx cards in select_card()
 # " around CARD_DATA is mandatory for avoiding new grep issue
-BUS_ID=$( lspci -n | grep "$CARD_DATA" | grep -Eio '^[0-9]{1,2}:[0-9a-z]{1,2}(\.|:)[0-9]' | sed 's/\./:/')
+BUS_ID=$( lspci -n | grep "$CARD_DATA" | \
+grep -Eio '^[^[:space:]]+[\.:]0' | sed 's/\./:/')
 
 # system paths
 EAA='/etc/apt/apt.conf'
@@ -2711,11 +2716,11 @@ detect_card_version()
 					# error should occur but on off chance that legacy smxi users are running very old install
 					# I'll leave it for now. Otherwise sgfxi will handle this itself later on.
 2014-03-02: turned on, no point in leaving support
-										# error_handler 253
+					error_handler 253
 					# going to leave this in for now until debian kernels and
 					# xorgs catch up, but will permit by default for non legacy 0 cards
 					if [ "$B_DISTRO_FLAG" == 'true' ];then
-						B_TRO_DRIVER='true'
+						B_USE_DISTRO_DRIVER='true'
 					fi
 					;;
 				# these should cover most of the hd2xxx-hd4xxx series with discontinued support
@@ -4900,7 +4905,7 @@ log_writer()
 	if [ "$B_LOGGING_STARTED" == 'true' ];then
 		# strip out escape color code, if any. Method by dzz, thanks ;-)
 		echo -e "$1" | sed 's/\x1b\[[0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,2\}m//g' >> $LOG_FILE
-script_data_collector()
+debugger_data_collector()
 {
 	local debug_data_home="$HOME/${SCRIPT_NAME}-data/"
 	local xorg_d_files='' xorg_file=''
@@ -4922,19 +4927,32 @@ script_data_collector()
 	else
 		mkdir $debug_data_dir
 	fi
-	
+	lspci &> $debug_data_dir/lspci.txt
 	lspci -n &> $debug_data_dir/lspci-n.txt
 	lspci -nn &> $debug_data_dir/lspci-nn.txt
 	lspci -v &> $debug_data_dir/lspci-v.txt
 	if type -p inxi &>/dev/null;then
-		inxi -bxxx -c 0 &> $debug_data_dir/inxi-bxxx.txt
+		inxi -Cbxxx -c 0 &> $debug_data_dir/inxi-Cbxxx.txt
 	else
 		touch $debug_data_dir/no-inxi.txt
 	fi
 	cat /var/log/Xorg.0.log &> $debug_data_dir/xorg.0.log
+	if [ -f /var/log/sgfxi/sgfxi.log ];then
+		cat /var/log/sgfxi/sgfxi.log &> $debug_data_dir/sgfxi.log
+	else
+		touch $debug_data_dir/no-sgfxi.log-file
+	fi
 	cat /var/log/sgfxi/sgfxi.log &> $debug_data_dir/sgfxi.log
-	cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
-	cat /var/log/sgfxi/sgfxi.log.2 &> $debug_data_dir/sgfxi.2.log
+	if [ -f /var/log/sgfxi/sgfxi.log.1 ];then
+		cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
+	else
+		touch $debug_data_dir/no-sgfxi.log.1-file
+	fi
+	if [ -f /var/log/sgfxi/sgfxi.log.2 ];then
+		cat /var/log/sgfxi/sgfxi.log.2 &> $debug_data_dir/sgfxi.2.log
+	else
+		touch $debug_data_dir/no-sgfxi.log.2-file
+	fi
 	if [[ -e /etc/X11/xorg.conf ]];then
 		cat /etc/X11/xorg.conf &> $debug_data_dir/xorg-conf.txt
 	else
@@ -5779,7 +5797,7 @@ set_driver_install_version()
 {
 	eval $LOGPS
 	local response='' printDriver='' newKernelText='' betaDriverText=''
-	local moduleOrInstall='inst extraBetaInfo='ta	local bDebugger='falsetalling'
+	local moduleOrInstall='inst extraBetaInfo='ta	local bDebugger='false'
 
 	# I'm forcing special cases to override the defaults so the data
 	# printed out will show what drivers are supported
@@ -5799,7 +5817,7 @@ set_driver_install_version()
 		fi
 		exit 0
 	fi
-	# need to puke and die herearlier because of print out 
+	# need to puke and die here, not earlier because of print out 
 	if [ -n "$INSTALL_TO_KERNEL" -a "$B_FGLRX_DIRECT" == 'true' -a "$CARD" == $FGLRX -a "$( uname -r )" != "$INSTALL_TO_KERNEL" ];then
 		error_handler 219
 	fi
@@ -8676,7 +8694,7 @@ show_options()
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
 	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if no Expert use onlyot in X."
-	echo "-Y Clean script download and backup files. Shows a list of cleanup actions to carry out, including script uninstaller."
+	echo "-Y Clean script download and backup files. Shows a list of cleanup aco carry out, including script uninstaller."
 	echo "   Can be run in X, as root."
 	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
@@ -8685,7 +8703,7 @@ show_options()
 	echo $PLINE
 	echo "Advanced Options :: Only for Specialized Cases"
 	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore system to default"
-	echo "      without redoi.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
+	echo "      without redoing xorg.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
 	echo "      require xorg.conf file to operate. Using this command restores system to default."
 	echo "-! 33 Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
@@ -8743,7 +8761,7 @@ get_options()
 	case $1 in
 		--debugger)
 			if tty > /dev/null ;then
-				script_data_collector
+				debugger_data_collector
 			else
 				echo "You cannot use the $SCRIPT_NAME debugger option in an IRC client!"
 				exit 1
