@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.14
+####  version: 4.23.15
 ####  Date: 2014-03-28
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -4927,7 +4927,15 @@ debugger_data_collector()
 	else
 		mkdir $debug_data_dir
 	fi
+	cat /etc/modules &> $debug_data_dir/etc-modules.txt
+	readlink /usr/lib/libGL.so.1 &> $debug_data_dir/readlink-usr-lib-libgl.so.1.txt
+	readlink /usr/lib/xorg/modules/extensions/libglx.so &> $debug_data_dir/readlink-lib-xorg-modules-extensions-libglx.so.txt
 	cat /boot/grub/grub.cfg &> $debug_data_dir/boot-grub-grub-cfg.txt
+	ls /etc/modprobe.d/*.conf &> $debug_data_dir/ls-etc-modprob-d.txt
+	for item in $( ls /etc/modprobe.d/*.conf )
+	do
+		cat $item &> $debug_data_dir/$item
+	done
 	glxinfo &> $debug_data_dir/glxinfo.txt
 	xdpyinfo &> $debug_data_dir/xdpyinfo.txt
 	xrandr &> $debug_data_dir/xrandr.txt
@@ -5760,9 +5768,10 @@ handle_shutdowns()
 	eval $command
 }
 section
-### -------------------------------------------------------------### Non-fre# Native Driver installer section
-### -------------------------------------------------------------------
+### -------------------------------------------------------------### Non-fre# Native Driver installer OGPE
+}
 
+### -------------------------------------------------------------
 set_cpu_data()
 {
 	eval $LOGUS
@@ -5780,6 +5789,8 @@ set_cpu_data()
 				KERNEL_ARCH='amd64'
 			fi
 			;;
+	esac
+
 	if [ "$B_PRINT_VER" != 'true' ];then
 		log_function_data "BITS: $BITS - arch: $KERNEL_ARCH"
 	fi
@@ -8695,14 +8706,13 @@ show_options()
 	echo "   -o 177.68 (for nVidia) or: -o 8-6 (for fglrx)"
 	echo "-q Turns off composite mode. Default is ON for newer nVidia/ATI cards."
 	echo "-Q Skip start X Question, automatically start X post driver install."
-	echo "-r Remove mode lines from xorg.conf"
-# 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
+	echo "-r Remove mode lines from xorg.confho "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
 	echo "-R Skips self updating feature. No restart."
 	
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
-	echo p all wget downloads. Expert Use Only! Only use this to (re)install a driver that has already "
+	echo "-W Skip all wget downloads. Expert Use Only! Only use this to (re)install a driver that has already "
 	echo "   been downloaded using $SCRIPT_NAME previously. Because using this option can have unknown or unintended"
 	echo "   consequences, only use it if you are following instructions to do so. $SCRIPT_NAME always saves its "
 	echo "   driver downloads by default in all cases, so using -W will not change that behavior , but it may stop"
