@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.16
+####  version: 4.23.17
 ####  Date: 2014-03-28
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -228,7 +228,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='331.49:304.119:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='331.49:304.121:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -271,10 +271,10 @@ NV_BETA="$NV_VERSIONS_BETA:334.16::"
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 (ends with xorg 11/12 support)
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
 #                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38 173.14.39 (ends with xorg 1.15 support)
-# stabel legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119
+# stabel legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='331.49:331.38:331.20:325.15:319.72:319.82:319.60:313.30:310.44:304.117:304.116:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='331.49:331.38:331.20:325.15:319.72:319.82:319.60:313.30:310.44:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_4='304xx'
@@ -482,11 +482,11 @@ set_test_data()
 		rm -f $LOG_FILE_DIR	rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia current card (GS 8400)
 # 		FG_DEFAULT='8-5'
