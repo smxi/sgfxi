@@ -4930,6 +4930,7 @@ debugger_data_collector()
 	cat /etc/modules &> $debug_data_dir/etc-modules.txt
 	readlink /usr/lib/libGL.so.1 &> $debug_data_dir/readlink-usr-lib-libgl.so.1.txt
 	readlink /usr/lib/xorg/modules/extensions/libglx.so &> $debug_data_dir/readlink-lib-xorg-modules-extensions-libglx.so.txt
+	echo $(get_active_grub_files) &> $debug_data_dir/grub-files-active.txt
 	cat /boot/grub/grub.cfg &> $debug_data_dir/boot-grub-grub-cfg.txt
 	ls /etc/modprobe.d/*.conf &> $debug_data_dir/ls-etc-modprob-d.txt
 	for item in $( ls /etc/modprobe.d/*.conf )
@@ -5768,7 +5769,8 @@ handle_shutdowns()
 	eval $command
 }
 section
-### -------------------------------------------------------------### Non-fre# Native Driver installer OGPE
+### ------------------------------------------------------------
+### Non-free Driver installer sectionOGPE
 }
 
 ### -------------------------------------------------------------
@@ -8693,12 +8695,12 @@ show_options()
 	echo -n "   Supported Xorg drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nativeVersions )
-	for i in $nativeVersions
+	for i iveVersions
 	do
 		(( counter++ ))
 		case $counter in
 			12|25)
-		" $i"
+				echo " $i"
 				echo -n "  "
 				;;
 			$driverCount)
