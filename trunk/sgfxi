@@ -4927,6 +4927,7 @@ debugger_data_collector()
 	else
 		mkdir $debug_data_dir
 	fi
+	cat /boot/grub/grub.cfg &> $debug_data_dir/boot-grub-grub-cfg.txt
 	glxinfo &> $debug_data_dir/glxinfo.txt
 	xdpyinfo &> $debug_data_dir/xdpyinfo.txt
 	xrandr &> $debug_data_dir/xrandr.txt
@@ -5779,10 +5780,8 @@ set_cpu_data()
 				KERNEL_ARCH='amd64'
 			fi
 			;;
-	esac
-
 	if [ "$B_PRINT_VER" != 'true' ];then
-		log_function_data "BITS - arch: $KERNEL_ARCH"
+		log_function_data "BITS: $BITS - arch: $KERNEL_ARCH"
 	fi
 	eval $LOGUE
 }
@@ -8223,7 +8222,7 @@ update_xorgconf_driver_version()
 	if [ "$B_NATIVE_DRIVER" == 'true' ];then
 		case $CARD in
 			$FGLRX)
-				driverName='ati'
+				driveradeonme='ati'
 				;;
 			$INTEL)
 				driverName='intel'
@@ -8703,7 +8702,7 @@ show_options()
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
-	echo "-W Skip all wget downExpert Use Only! Only use this to (re)install a driver that has already "
+	echo p all wget downloads. Expert Use Only! Only use this to (re)install a driver that has already "
 	echo "   been downloaded using $SCRIPT_NAME previously. Because using this option can have unknown or unintended"
 	echo "   consequences, only use it if you are following instructions to do so. $SCRIPT_NAME always saves its "
 	echo "   driver downloads by default in all cases, so using -W will not change that behavior , but it may stop"
