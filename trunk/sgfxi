@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.13
-####  Date: 2014-03-21
+####  version: 4.23.14
+####  Date: 2014-03-28
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -4927,6 +4927,18 @@ debugger_data_collector()
 	else
 		mkdir $debug_data_dir
 	fi
+	glxinfo &> $debug_data_dir/glxinfo.txt
+	xdpyinfo &> $debug_data_dir/xdpyinfo.txt
+	xrandr &> $debug_data_dir/xrandr.txt
+	X -version &> $debug_data_dir/x-version.txt
+	Xorg -version &> $debug_data_dir/xorg-version.txt
+	xprop -root &> $debug_data_dir/xprop-root.txt
+	echo $GNOME_DESKTOP_SESSION_ID &> $debug_data_dir/gnome-desktop-session-id.txt
+	# kde 3 id
+	echo $KDE_FULL_SESSION &> $debug_data_dir/kde3-ful-session.txt
+	echo $KDE_SESSION_VERSION &> $debug_data_dir/kde456-session-version.txt
+	echo "$(kded$KDE_SESSION_VERSION --version )" &> $debug_data_dir/kde-version-data.txt
+	echo $XDG_CURRENT_DESKTOP &> $debug_data_dir/xdg-current-desktop.txt
 	lspci &> $debug_data_dir/lspci.txt
 	lspci -k &> $debug_data_dir/lspci-k.txt
 	lspci -knn &> $debug_data_dir/lspci-knn.txt
@@ -4951,17 +4963,17 @@ debugger_data_collector()
 	if [ -f /var/log/sgfxi/sgfxi.log.1 ];then
 		cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
 	else
-		touch $debug_data_dir/no-sgfxi.log.1-file
+		touch $debug_data_dir/sgfxi.log.1-absent-file
 	fi
 	if [ -f /var/log/sgfxi/sgfxi.log.2 ];then
 		cat /var/log/sgfxi/sgfxi.log.2 &> $debug_data_dir/sgfxi.2.log
 	else
-		touch $debug_data_dir/no-sgfxi.log.2-file
+		touch $debug_data_dir/sgfxi.log.2-absent-file
 	fi
 	if [[ -e /etc/X11/xorg.conf ]];then
 		cat /etc/X11/xorg.conf &> $debug_data_dir/xorg-conf.txt
 	else
-		touch $debug_data_dir/no-xorg-conf-file
+		touch $debug_data_dir/xorg-conf-file-absent
 	fi
 	if [[ -n $( ls /etc/X11/xorg.conf.d/ 2>/dev/null ) ]];then
 		ls /etc/X11/xorg.conf.d &> $debug_data_dir/ls-etc-x11-xorg-conf-d.txt
@@ -4971,7 +4983,7 @@ debugger_data_collector()
 			cat /etc/X11/xorg.conf.d/$xorg_file &> $debug_data_dir/xorg-conf-d-$xorg_file.txt
 		done
 	else
-		touch $debug_data_dir/no-xorg-conf-d-files
+		touch $debug_data_dir/xorg-conf-d-files-absent
 	fi
 	echo "Data collection completed."
 	echo 'Creating tar.gz compressed file of this material now. Contents:'
@@ -5770,7 +5782,7 @@ set_cpu_data()
 	esac
 
 	if [ "$B_PRINT_VER" != 'true' ];then
-		log_function_data "BITS: $BITS - arch: $KERNEL_ARCH"
+		log_function_data "BITS - arch: $KERNEL_ARCH"
 	fi
 	eval $LOGUE
 }
@@ -5792,7 +5804,7 @@ check_supported_driver()
 	if [ "$1" == 'last-check' ];then
 		isGood=$( echo $drivers | grep "$DRIVER_DEFAULT" )
 		if [ -z "$isGood" ];then
-			error_handlerRIVER_DEFAULT
+			error_handler 240 $DRIVER_DEFAULT
 		fi
 	fi
 	eval $LOGUE
@@ -8230,7 +8242,7 @@ update_xorgconf_driver_version()
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|neomagic|newport|nouveau|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|memodesettingesa|mga|neomagic|newport|nouveau|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	eval $LOGUE
 }
 
@@ -8696,9 +8708,9 @@ show_options()
 	echo "   consequences, only use it if you are following instructions to do so. $SCRIPT_NAME always saves its "
 	echo "   driver downloads by default in all cases, so using -W will not change that behavior , but it may stop"
 	echo "   other key downloads, like patches. The standard use for this is to download the driver file in X,"
-	echo "   then exit, and install it out of Xiously."
+	echo "   then exit, and install it out of X"
 	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
-	echo "-X Use to skip auto X start/stop. Do not use this you have a good reason to not "
+	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
 	echo "   want X start/stop tests to run. Gives start X option on completion if not in X. Expert use only."
 	echo "-Y Clean script download and backup files. Shows a list of cleanup actions to carry out, including script uninstaller."
 	echo "   Can be run in X, as root."
