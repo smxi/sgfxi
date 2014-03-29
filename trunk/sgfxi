@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.18
+####  version: 4.23.19
 ####  Date: 2014-03-29
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -4995,6 +4995,11 @@ debugger_data_collector()
 	else
 		touch $debug_data_dir/xorg-conf-d-files-absent
 	fi
+	if [[ -f /usr/share/ati/fglrx-install.log ]];then
+		cat /usr/share/ati/fglrx-install.log  &> $debug_data_dir/usr-share-ati-fglrx-install.log
+	else
+		touch $debug_data_dir/usr-share-ati-fglrx-install-log-absent
+	fi
 	if [[ -f /var/log/catalyst-install.log ]];then
 		cat /var/log/catalyst-install.log  &> $debug_data_dir/var/log/catalyst-install.log
 	else
@@ -5749,16 +5754,15 @@ reboot_now_question()
 				;;
 			quit)
 				echo "${S}Ok, remember you need to reboot before the $1 changes are live.${N}"
-				exit 100 # need to exit with 100 to not trigger root pid kill in smxi
+				ex# need to exit with 100 to not trigger root pidid root kill in smxi
 				;;
 			*)
 				echo "${W}Please select one of the options in the list, thank you.${N}"
 				bRepeat='true'
 				;;
 		esac
-		break
-	done
-	eval $LOGP "$bRepeat" == 'true' ];then
+		break	eval $LOGPE
+	if [ "$bRepeat" == 'true' ];then
 		reboot_now_question "$@"
 	fi
 }
@@ -8702,8 +8706,8 @@ show_options()
 	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu  only)."
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
 	echo "   n to show current nvidia support status; f to show current fglrx support status;"
-	echo "   v to show current latest local + remote $SCRIPT_NAME svn/server version information."
-	m Overrides default (-d) dkms driver method, uses $SCRIPT_NAME's old method, kernel-source + m-a build"
+	echo "   v to show current latel + remote $SCRIPT_NAME svn/server version information."
+	echo "-m Overrides default (-d) dkms driver method, uses $SCRIPT_NAME's old method, kernel-source + m-a build"
 	echo "   of module. Use only if you want to avoid dkms (fglrx/nvidia only). Triggers -d as well."
 	echo "-n Automatically installs correct native xorg nvidia, intel, or ati/amd driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
