@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.17
-####  Date: 2014-03-28
+####  version: 4.23.18
+####  Date: 2014-03-29
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -4995,6 +4995,22 @@ debugger_data_collector()
 	else
 		touch $debug_data_dir/xorg-conf-d-files-absent
 	fi
+	if [[ -f /var/log/catalyst-install.log ]];then
+		cat /var/log/catalyst-install.log  &> $debug_data_dir/var/log/catalyst-install.log
+	else
+		touch $debug_data_dir/catalyst-install-log-absent
+	fi
+	# ubuntu tool
+	if [[ -f /var/log/jockey.log ]];then
+		cat /var/log/jockey.log  &> $debug_data_dir/var/log/jockey.log
+	else
+		touch $debug_data_dir/jockey-installer-log-absent
+	fi
+	if [[ -f /var/log/nvidia-installer.log ]];then
+		cat /var/log/nvidia-installer.log  &> $debug_data_dir/nvidia-installer.log
+	else
+		touch $debug_data_dir/nvidia-installer-log-absent
+	fi
 	echo "Data collection completed."
 	echo 'Creating tar.gz compressed file of this material now. Contents:'
 	echo $LINE
@@ -5742,10 +5758,12 @@ reboot_now_question()
 		esac
 		break
 	done
-	eval $LOGPE
-	if [ "$bRepeat" == 'true' ];then
+	eval $LOGP "$bRepeat" == 'true' ];then
 		reboot_now_question "$@"
-	 args: $1 - shutdown/reboot
+	fi
+}
+
+# args: $1 - shutdown/reboot
 handle_shutdowns()
 {
 	eval $LOGUS
@@ -5766,11 +5784,10 @@ handle_shutdowns()
 	log_function_data "command: $command"
 	
 	eval $LOGUE
-	eval $command
+	eval $command $LOGPE
 }
-section
-### ------------------------------------------------------------
-### Non-free Driver installer sectionOGPE
+
+### -----------------------------------------------------------------Non-free Driver installer sectionOGPE
 }
 
 ### -------------------------------------------------------------
@@ -8687,7 +8704,7 @@ show_options()
 	echo "   n to show current nvidia support status; f to show current fglrx support status;"
 	echo "   v to show current latest local + remote $SCRIPT_NAME svn/server version information."
 	m Overrides default (-d) dkms driver method, uses $SCRIPT_NAME's old method, kernel-source + m-a build"
-	echo "   of module. Use only if you want to avoid dkms (fglrx/nvidia only). Triggers -d as wellrmation."
+	echo "   of module. Use only if you want to avoid dkms (fglrx/nvidia only). Triggers -d as well."
 	echo "-n Automatically installs correct native xorg nvidia, intel, or ati/amd driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
 	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf. For radeon/noveau, also preps."
@@ -8695,7 +8712,7 @@ show_options()
 	echo -n "   Supported Xorg drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nativeVersions )
-	for i iveVersions
+	for i in $nativeVersions
 	do
 		(( counter++ ))
 		case $counter in
