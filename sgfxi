@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.21
-####  Date: 2014-03-30
+####  version: 4.23.22
+####  Date: 2014-03-31
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -4387,10 +4387,11 @@ update_to_nonfree_sources()
 				for i in $eas $easdl $eassl
 				do
 					if [ -f "$i" ];then
-						counter=$( grep -Ec 'deb.*debian\.org.*(contrib|non-free)' $i )
+						counter=$( grep -Ec(debian\.org|peer1\.net).*(contrib.*non-free|non-free.*contrib)' $i )
 						isFree=$(( $counter + $isFree ))
 					fi
 				done
+				log_function_data "Debian contrib non free listed: $counter\nisFree: $isFree"one
 			
 				if [ "$isFree" -eq 0 ];then
 					for i in $eas $easdl
@@ -4401,7 +4402,7 @@ update_to_nonfree_sources()
 							aptProx=$( grep -Esi '^[[:space:]]*deb.*:9999/' $i )
 							if [ -z "$aptProx" ];then
 								echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
-								sed -i -r 's%(#?deb.*(debian\.org|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
+								sed -i -r 's%(#?deb.*(debiapeer1\.net|?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
 								# the second test requires the results of the first to work
 								# note that spaces are required for this to work more reliably for most patterns
 								sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
@@ -5741,10 +5742,9 @@ reboot_now_question()
 		echo "2 - Add the grub kernel option: ${C}nomodeset${S}"
 		echo "    at grub load, using the edit (e) method in grub, then boot with that. This will allow"
 		echo "    you to at least run $SCRIPT_NAME to install the non-free driver."
-	fi
-	echo $MLINE
+ho $MLINE
 	echo "${M}Remember, to install ${C}$CARD${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
-	fter you have restarted $initText"
+	echo "after you have restarted $initText"
 	echo $LINE
 	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
 	echo "${C}2 - reboot${S} - Reboot. This may not let some data unload from your memory.${N}"
