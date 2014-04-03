@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.23
-####  Date: 2014-03-31
+####  version: 4.23.24
+####  Date: 2014-04-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -1591,7 +1591,7 @@ driver_support_tests()
 										# echo driver default $DRIVER_DEFAULT
 										case $DRIVER_DEFAULT in
 											# waiting for patches and confirmations
-											334.*|331.[4-9][0-9]|304.119|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+											334.*|331.[4-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
 												# trigger installer flag if needed
 												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
@@ -1824,7 +1824,7 @@ run_driver_patches()
 						14)    
 							case $DRIVER_DEFAULT in
 								# patch url: https://devtalk.nvidia.com/default/topic/699422/nvidia-linux-334-21-drivers/?offset=4
-								334.21)
+								334.21|331.49)
 									patchFile='NVIDIA-334.21-3.14.patch'
 									apply_patch_file $patchFile
 									;;
