@@ -1089,6 +1089,17 @@ driver_support_tests()
 											fi
 									esac
 									;;
+								14)
+									case $DRIVER_DEFAULT in
+										14[.-]*|$DISTRO_FGLRX)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
 							esac
 							;;
 					esac
@@ -2702,10 +2713,11 @@ detect_card_version()
 					LEGACY_LEVEL=0
 					error_handler 253
 					;;
-				5041|5042|5043|5044|5045|5046|5047|5048|5049|504a|504b|504c|504d|504e|504f|5050|5051|5052|5053|5054|5055|5056|5057|5058|5144|5145|5146|5147|5148|5149|514a|514b|514c|514d|514e|514f|5154|5155|5157|5158|5159|515a|515e|515f|5168|5169|516a|516b|516c|516d|516f|5245|5246|5247|524b|524c|5345|5346|5347|5348|534b|534c|534d|534e|5354|5446|544c|5452|5453|5454|5455|5654|5655|5656|5833|5834|5835|5838|5854|5874|5940|5941|5942|5944|5960|5961|5962|5964|5965|5969|5c41|5c43|5c61|5c63|5d44)
+				5041|5042|5043|5044|5045|5046|5047|5048|5049|504a|504b|504c|504d|504e|504f|5050|5051|5052|5053|5054|5055|5056|5057|5058|5144|5145|5146|5147|5148|5149|514a|514b|514c|514d|514e|514f|5154|5155|5157|5158|5159|515a|515e|515f|51|516a|516b|516c|516d|516f|5245|5246|5247|524b|524c|5345|5346|5347|5348|534b|534c|534d|534e|5354|5446|544c|5452|5453|5454|5455|5654|5655|5656|5833|5834|5835|5838|5854|5874|5940|5941|5942|5944|5960|5961|5962|5964|5965|5969|5c41|5c43|5c61|5c63|5d44)
 					LEGACY_LEVEL=0
 					error_handler 253
-					7c37|728c|7834|7835)
+					;;
+				7c37|728c|7834|7835)
 					LEGACY_LEVEL=0
 					error_handler 253
 					;;
@@ -5739,12 +5751,12 @@ reboot_now_question()
 		echo "the ${C}$1${S} module will not be loaded, and no conflicts or issues should occur."
 		echo "You only need to do this one time, since after that the ${C}$1${S} module will not load"
 	elif [ "$2" == 'modeset-on' ];then
-		echo "${M}To make your new ${C}$1 Xorg / Kernel modules${S} fully functional, you will need to reboot first"
+		echo "${M}To make your new ${C}$1 Xorg / Kernel modules${S} fully fun, you will need to reboot first"
 		echo
 		echo "${W}The ${C}$1${W} drivers have very unreliable support for newer ${C}nVidia/ATI${W} cards!"
 		echo 
 		echo "${S}If your desktop fails to start properly after you reboot, you may need to do one of two things:"
-		echo "1 - move your xorg.conf fa temporary new file name, like: "
+		echo "1 - move your xorg.conf file to a temporary new file name, like: "
 		echo "    ${C}mv /etc/X11/xorg.conf /etc/X11/xorg.conf-holder${S}"
 		echo "    then restart your desktop login manager (like gdm,xdm,kdm). If X then starts, you're fine."
 		echo "2 - Add the grub kernel option: ${C}nomodeset${S}"
@@ -8712,11 +8724,11 @@ show_options()
 	echo "   cards not supported. Composite is default ON for newer nVidia/ATI cards (-c not required)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
 	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
-	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (formerly -s)."
+	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards ormerly -s)."
 	echo "-D Build Distro (Debian/Ubuntu only) packages for fglrx with FGLRX binary run package,"
 	echo "   then install them (formerly -F). Not recommended. Because of constant package"
 	echo "   builder failures, the direct install method is now default."
-# 	echo "-e Use experidrivers (currently: xorg ati only)."
+# 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
 	echo "-f Force option. Forces (re)install of your driver, bypasses default module check/build/rebuild (nVidia only)."
 	echo "   Note; -f cannot be used with -k because they contradict each other!"
