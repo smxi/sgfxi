@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.25
+####  version: 4.23.26
 ####  Date: 2014-04-08
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -6056,7 +6056,11 @@ set_download_info()
 					FG_POST=''
 				fi
 			else
-				downloadUrl='http://www2.ati.com/drivers/linux/'
+				if [ "$B_AMD" == 'true' ];then
+					downloadUrl='http://www2.ati.com/drivers/linux/'
+				else
+					downloadUrl=$SCRIPT_DOWNLOAD_ALT
+				fi
 			fi
 			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_DEFAULT$fgBetaVersion-${FG_POST}x86.x86_64"
 			;;
@@ -8723,8 +8727,8 @@ show_options()
 	echo "-c Force use of Xorg composite mode. Beryl/Compiz requires this for 3d. Old nvidia/ATI/Intel "
 	echo "   cards not supported. Composite is default ON for newer nVidia/ATI cards (-c not required)."
 	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
-	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
-	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards ormerly -s)."
+	echo "   Main use is if you have dual card output and don't want xorghanged."
+	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (formerly -s)."
 	echo "-D Build Distro (Debian/Ubuntu only) packages for fglrx with FGLRX binary run package,"
 	echo "   then install them (formerly -F). Not recommended. Because of constant package"
 	echo "   builder failures, the direct install method is now default."
