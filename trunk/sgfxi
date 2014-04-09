@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.26
+####  version: 4.23.27
 ####  Date: 2014-04-08
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -14,7 +14,7 @@
 ####  the terms of the GNU General Public License as published by the Free Software
 ####  Foundation; either version 2 of the License, or (at your option) any later version.
 ####
-####  This program is distributed in the hope that it will be useful, but WITHOUT
+####  This program is distributed in the hope that ift will be useful, but WITHOUT
 ####  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 ####  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 ####
@@ -405,8 +405,12 @@ PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
 # alt for some data
-SCRIPT_DOWNLOAD_ALT='http://liquorix.net/sgfxi/'
-SCRIPT_DOWNLOAD_ALT=$SCRIPT_DOWNLOAD_DATA
+A_BASE_URLS=(
+"http://liquorix.net/sgfxi/"
+"$SCRIPT_DOWNLOAD_DATA"
+)
+BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
+SCRIPT_DOWNLOAD_ALT=${A_BASE_URLS[${BASE_INDEX}]}
 SCRIPT_DOWNLOAD_VERSION='http://smxi.org/sm/sm-versions'
 SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
 SCRIPT_DOWNLOAD_BRANCH_1='http://sgfxi.googlecode.com/svn/branches/one/'
@@ -2713,7 +2717,7 @@ detect_card_version()
 					LEGACY_LEVEL=0
 					error_handler 253
 					;;
-				5041|5042|5043|5044|5045|5046|5047|5048|5049|504a|504b|504c|504d|504e|504f|5050|5051|5052|5053|5054|5055|5056|5057|5058|5144|5145|5146|5147|5148|5149|514a|514b|514c|514d|514e|514f|5154|5155|5157|5158|5159|515a|515e|515f|51|516a|516b|516c|516d|516f|5245|5246|5247|524b|524c|5345|5346|5347|5348|534b|534c|534d|534e|5354|5446|544c|5452|5453|5454|5455|5654|5655|5656|5833|5834|5835|5838|5854|5874|5940|5941|5942|5944|5960|5961|5962|5964|5965|5969|5c41|5c43|5c61|5c63|5d44)
+				5041|5042|5043|5044|5045|5046|5047|5048|5049|504a|504b|504c|504d|504e|504f|5050|5051|5052|5053|5054|5055|5056|5057|5058|5144|5145|5146|5147|49|514a|514b|514c|514d|514e|514f|5154|5155|5157|5158|5159|515a|515e|515f|5168|5169|516a|516b|516c|516d|516f|5245|5246|5247|524b|524c|5345|5346|5347|5348|534b|534c|534d|534e|5354|5446|544c|5452|5453|5454|5455|5654|5655|5656|5833|5834|5835|5838|5854|5874|5940|5941|5942|5944|5960|5961|5962|5964|5965|5969|5c41|5c43|5c61|5c63|5d44)
 					LEGACY_LEVEL=0
 					error_handler 253
 					;;
@@ -5750,8 +5754,8 @@ reboot_now_question()
 		echo "more consistently safe and reliable this step seems to be a good idea. Once you reboot,"
 		echo "the ${C}$1${S} module will not be loaded, and no conflicts or issues should occur."
 		echo "You only need to do this one time, since after that the ${C}$1${S} module will not load"
-	elif [ "$2" == 'modeset-on' ];then
-		echo "${M}To make your new ${C}$1 Xorg / Kernel modules${S} fully fun, you will need to reboot first"
+	elif [ "$2" == 'modeset-hen
+		echo "${M}To make your new ${C}$1 Xorg / Kernel modules${S} fully functional, you will need to reboot first"
 		echo
 		echo "${W}The ${C}$1${W} drivers have very unreliable support for newer ${C}nVidia/ATI${W} cards!"
 		echo 
@@ -8726,8 +8730,8 @@ show_options()
 	echo "   (Also nvidia for live latest beta information, and replaces script defaults with newer if present)"
 	echo "-c Force use of Xorg composite mode. Beryl/Compiz requires this for 3d. Old nvidia/ATI/Intel "
 	echo "   cards not supported. Composite is default ON for newer nVidia/ATI cards (-c not required)."
-	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
-	echo "   Main use is if you have dual card output and don't want xorghanged."
+	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with yoer."
+	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
 	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (formerly -s)."
 	echo "-D Build Distro (Debian/Ubuntu only) packages for fglrx with FGLRX binary run package,"
 	echo "   then install them (formerly -F). Not recommended. Because of constant package"
