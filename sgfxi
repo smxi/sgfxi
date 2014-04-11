@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.28
+####  version: 4.23.29
 ####  Date: 2014-04-10
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -6163,7 +6163,8 @@ download_extract_driver()
 	eval $LOGPS
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
 	local zipPackage=$2'.zip' runZipPackage=$2'.run.zip' extractError=0 
-	local uA='-U Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0' 
+	local uA='Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0'
+	# uA='Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)'
 	local downloadFrom=" from ${C}$1${S}"
 
 	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
@@ -6196,13 +6197,13 @@ download_extract_driver()
 					downloadPackage=$zipPackage
 					atiRef=''
 					extension='zip'
-					uA="-U s-tools/sgfxi-data.driver-$DRIVER_DEFAULT$fgBetaVersion" 
+					uA="s-tools/sgfxi-data.driver-$DRIVER_DEFAULT$fgBetaVersion" 
 					downloadFrom=' This can sometimes take a while'
 				fi
 				;;
 		esac
 		echo "${S}Downloading ${C}$downloadPackage${S}$downloadFrom...${N}"
-		wget -Nc $uA $atiRef $1$downloadPackage || error_handler 197 $downloadPackage
+		wget -Nc -U "$uA" $atiRef $1$downloadPackage || error_handler 197 $downloadPackage
 	else
 		case $CARD in
 			$FGLRX)
@@ -8744,12 +8745,11 @@ show_options()
 				;;
 		esac
 	done
-	eval $nvQuadText
-	eval $betaText
+	eval $nvQuadText$betaText
 	eval $nvBeta
 	eval $fgBeta
 	echo $PLINE
-	echo "Scripts:"
+	echo "Script Options:"
 	echo "-A Run the install non-interactively. Will not restart x at end. Expert users only! Requires testing."
 	echo "-b Enable tripleBuffer (nvidia only). triplebuffer can reduce 3d performance on cards"
 	echo "   with low graphics memory (64 mB or less). Default is disabled/off."
