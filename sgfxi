@@ -6164,7 +6164,6 @@ download_extract_driver()
 	local runPackage=$2'.run' errorTemp='' atiRef='' downloadPackage=$2 extension=''
 	local zipPackage=$2'.zip' runZipPackage=$2'.run.zip' extractError=0 
 	local uA='Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0'
-	# uA='Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)'
 	local downloadFrom=" from ${C}$1${S}"
 
 	pre_extract_clean_set_up $2 ## $2 will only apply to nvidia install dir removal
@@ -6186,7 +6185,7 @@ download_extract_driver()
 # 					downloadPackage=$runZipPackage
 # 					extension='zip'
 				if [ "$B_AMD" == 'true' ];then
-					if wget -q --spider $uA $atiRef $1$zipPackage;then
+					if wget -q --spider -U "$uA" $atiRef $1$zipPackage;then
 						echo "${S}Run package using .zip format. Preparing for zip/unzip procedure...${N}"
 						downloadPackage=$zipPackage
 						extension='zip'
