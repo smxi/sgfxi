@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.29
+####  version: 4.23.30
 ####  Date: 2014-04-10
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -256,7 +256,7 @@ NV_BETA="$NV_VERSIONS_BETA:334.16::"
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49
+# lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49 331.67
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
@@ -275,7 +275,7 @@ NV_BETA="$NV_VERSIONS_BETA:334.16::"
 # stabel legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='334.21:331.49:331.38:325.15:319.72:319.82:319.60:313.30:310.44:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='334.21:331.67:331.49:325.15:319.72:319.82:319.60:313.30:310.44:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_4='304xx'
@@ -2730,7 +2730,7 @@ detect_card_version()
 			CARD_NUMBER=$cardNumber
 			case $cardNumber in
 				# fireGL cards, temp no support in fglrx
-				# http://html.com/index.php/Hardware
+				# wiki.cchtml.com/index.php/Hardware
 				# note: 4e50 should work with 8.4 driver
 				3154|3e54|4147|4154|4a4d|4e47|4e4b|4e54|5464|5550|5551|564a|564b|5b64|5d49|5e48|5e49|71C4)
 					LEGACY_LEVEL=0
@@ -5766,7 +5766,8 @@ reboot_now_question()
 			initText="(use init ${C}$initLevel${M} to start, or use ${C}$initLevel${M} at grub)"
 			;;
 		*)
-			initText="(use ctrl+alt+F1 to enter console after reb		;;
+			initText="(use ctrl+alt+F1 to enter console afoot)"
+			;;
 	esac
 	
 	echo $MLINE
