@@ -405,8 +405,8 @@ PATCH_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD='http://smxi.org/sg/'
 SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
 # alt for some data
-A_BASE_URLS=(
 "http://liquorix.net/sgfxi/"
+A_BASE_URLS=(
 "$SCRIPT_DOWNLOAD_DATA"
 )
 BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
