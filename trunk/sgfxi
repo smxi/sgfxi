@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.33
+####  version: 4.23.34
 ####  Date: 2014-04-23
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -407,6 +407,7 @@ SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
 # alt for some data
 # "http://liquorix.net/sgfxi/"
 A_BASE_URLS=(
+"http://liquorix.net/sgfxi/"
 "$SCRIPT_DOWNLOAD_DATA"
 )
 BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
@@ -2729,7 +2730,8 @@ detect_card_version()
 			OTHER_VERSIONS=$FG_OTHERS
 			CARD_NUMBER=$cardNumber
 			case $cardNumber in
-				# fireGL cards, temp no support in fg	# http://wiki.cchtml.com/index.php/Hardware
+				# fireGL temp no support in fglrx
+				# http://wiki.cchtml.com/index.php/Hardware
 				# note: 4e50 should work with 8.4 driver
 				3154|3e54|4147|4154|4a4d|4e47|4e4b|4e54|5464|5550|5551|564a|564b|5b64|5d49|5e48|5e49|71C4)
 					LEGACY_LEVEL=0
@@ -5765,7 +5767,7 @@ reboot_now_question()
 			initText="(use init ${C}$initLevel${M} to start, or use ${C}$initLevel${M} at grub)"
 			;;
 		*)
-			initText="(use ctrl+alt+F1 to ensole after reboot)"
+			ini(use ctrl+alt+F1 to enter console after reboot)"
 			;;
 	esac
 	
