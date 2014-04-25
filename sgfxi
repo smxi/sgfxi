@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.34
-####  Date: 2014-04-23
+####  version: 4.23.35
+####  Date: 2014-04-25
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -309,8 +309,8 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # actual run: http://support.amd.com/us/gpudownload/linux/Pages/radeon_linux.aspx
 # IMPORTANT: on function set_download_info the actual path file name is set:
 # note, as distressingly usual, amd AGAIN has changed their driver name syntax. 
-FG_VERSIONS='14.4.1:13.12:13-4'
-FG_DEFAULT='14.4.1'
+FG_VERSIONS='14.4.2:13.12:13-4'
+FG_DEFAULT='14.4.2'
 # amd has no discipline whatsoever, look at the ridiculous failure to name the f#cking download file
 # consistently release to release, clearly this organization is run by incompetents of the highest order.
 # hint: use real package numbering and you avoid all this 'legacy/beta' nonsense.
