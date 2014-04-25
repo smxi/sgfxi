@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.35
+####  version: 4.23.36
 ####  Date: 2014-04-25
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -596,7 +596,7 @@ driver_support_tests()
 					fi
 					# amd-catalyst-14.1-betav1.3-linux-x86.x86_64.zip
 					case $DRIVER_DEFAULT in
-						14.3|14.4.1)
+						14.*)
 							FGLRX_PACKAGE_PREFIX='amd-catalyst'
 							B_AMD='false'
 							;;
