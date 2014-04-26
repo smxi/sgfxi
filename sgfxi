@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.36
-####  Date: 2014-04-25
+####  version: 4.23.38
+####  Date: 2014-04-26
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -335,18 +335,21 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
-FG_DEFAULT_BETA='14.3'
-#FG_DEFAULT_BETA='14.3'
+FG_DEFAULT_BETA='14.3.14'
 # http://www2.ati.com/drivers/beta/amd-catalyst-13.11-beta-v9.4-linux-x86.x86_64.run.zip
 # note: amd release a zip file that contains a space in the name, so I'm not spending 
 # any more of my time on this group of undisciplined incompetents at this point.
-FG_BETA_VERSION='betav1.4' 
+FG_BETA_VERSION='' # legacy, but leaving in case needed in future
 #FG_BETA_VERSION='betav1.0'
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
+
+# stable series: 14.4.2
+# beta series: 14.3.14
+# others list includes any betas as well, remomve them after a few months
+FG_OTHERS='14.4.2:14.3.14:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 # older ones, not used now:
 # :10-12:10-11:10-10:10-9:10-8:10-7:10-6:10-5:10-4:10-3:10-2:10-1
 # :9-12:9-11:9-10:9-9:9-8:9-7:9-6:9-5:9-4:9.2:9-1:8-12:8-11:8-10:8-9:8-8:8-7:8-6:8-5:8-4
-FG_OTHERS='13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 
 # fg legacy 2: 12-6 13.1
 # set to sid/lenny/etch
@@ -2725,12 +2728,12 @@ detect_card_version()
 		1002)
 			DRIVER_DEFAULT=$FG_DEFA# if a hack / driver change is required, this will trigger it
 			driver_version_hacks "$DRIVER_DEFAULT"DEFAULT
-			DRIVER_BETA=$FG_DEFAULT_BETA
+	R_BETA=$FG_DEFAULT_BETA
 			VERSIONS=$FG_VERSIONS
 			OTHER_VERSIONS=$FG_OTHERS
 			CARD_NUMBER=$cardNumber
 			case $cardNumber in
-				# fireGL temp no support in fglrx
+				# fireGL cards, temp no support in fglrx
 				# http://wiki.cchtml.com/index.php/Hardware
 				# note: 4e50 should work with 8.4 driver
 				3154|3e54|4147|4154|4a4d|4e47|4e4b|4e54|5464|5550|5551|564a|564b|5b64|5d49|5e48|5e49|71C4)
@@ -2889,7 +2892,8 @@ assign_standard_or_beta_driver()
 			local bDebugger='false'
 			
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
-				liveBetas=$( get_live_beta_drivers )
+				### NOTE: not used anymore
+				# liveBetas=$( get_live_beta_drivers )
 				if [ "$bDebugger" == 'true' ];then
 					echo
 					echo "Start assign_standard_or_beta_driver"
@@ -2974,13 +2978,16 @@ assign_standard_or_beta_driver()
 					DRIVER_DEFAULT=$stableDriver
 					# explicitly unset these to clear out any sgfxi attempt to use beta stuff internally
 					FG_BETA_VERSION=''
-					B_USE_BETA='false'
+					### NOTE: legacy, not used as of 14.x
+					# B_USE_BETA='false'
 					;;
 			esac
 		fi
 	else
 		if [ -n "$betaDriver" -a "$B_USE_BETA" == 'true' ];then
 			echo 'true'
+		else
+			echo 'false'
 		fi
 	fi
 }
@@ -5753,8 +5760,7 @@ reboot_now_question()
 	eval $LOGPS
 	local opt='' options='' initText='' initLevel=''
 	
-	case $DISTRIB_ID in
-		fedora|aptosid|sidux|mepis|antix|siduction)
+	case $DISTRIB_Ifedora|aptosid|sidux|mepis|antix|siduction)
 			initLevel=3
 			;;
 		*)
@@ -5767,7 +5773,7 @@ reboot_now_question()
 			initText="(use init ${C}$initLevel${M} to start, or use ${C}$initLevel${M} at grub)"
 			;;
 		*)
-			ini(use ctrl+alt+F1 to enter console after reboot)"
+			initText="(use ctrl+alt+F1 to enter console after reboot)"
 			;;
 	esac
 	
@@ -5974,12 +5980,13 @@ set_driver_install_version()
 						echo "End assign_standard_or_beta_driver"
 					fi
 					betaDriverText="\n${M}This is the latest ${C}$CARD Beta driver${M} for your card type.${N}\n"
-					if [ "$CARD" == $FGLRX ];then
+					if [ "$CARD" == $FGLRX -a -n "$FG_BETA_VERSION" ];then
 						extraBetaInfo=" ($FG_BETA_VERSION) "
 					fi
 				else
 					betaDriverText="\n${M}There is ${C}no current beta driver${M} for your ${C}$CARD${M} card type.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
 				fi
+				# echo bdt: $betaDriverText
 				;;
 			*)
 				betaDriverText="\n${M}There is no ${C}beta driver${M} for your ${C}$CARD${M} card.\n${S}Using the current ${C}stable driver${S} instead.${N}\n"
@@ -6075,8 +6082,9 @@ set_download_info()
 				# # http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.3-beta3-linux-x86.x86_64.zip
 				# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
 				# amd-catalyst-13.6-beta-linux-x86.x86_64.run
-				
-				fgBetaVersion="-$FG_BETA_VERSION"
+				if [ -n "$FG_BETA_VERSION" ];then
+					fgBetaVersion="-$FG_BETA_VERSION"
+				fi
 				if [ "$B_AMD" == 'true' ];then
 					downloadUrl='http://www2.ati.com/drivers/beta/'
 				else
@@ -8726,7 +8734,7 @@ show_options()
 		esac
 	done
 	#echo "fglrx:  default: $fgDefault		supported-drivers: $fgVersions"
-	echo "Nvidia: defaults (current + legacy - 3 2 1): $nvDefaults"
+	echo "Nvidia: defaults (current + - 3 2 1): $nvDefaults"
 	echo -n "Other supported-drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nvVersions )
@@ -8746,7 +8754,8 @@ show_options()
 				;;
 		esac
 	done
-	eval $nvQuadText$betaText
+	eval $nvQuadText
+	eval $betaText
 	eval $nvBeta
 	eval $fgBeta
 	echo $PLINE
@@ -8935,7 +8944,7 @@ get_options()
 				;;
 			B)	B_USE_BETA='true'
 				START_OPTIONS=$START_OPTIONS' -B'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -B - Use Beta Driver (nVidia only. Only if available)\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -B - Use Beta Driver (Only if available)\n"
 				;;
 			c) B_COMPOSITE='true'
 				START_OPTIONS=$START_OPTIONS' -c'
