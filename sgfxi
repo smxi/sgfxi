@@ -8917,7 +8917,8 @@ show_options()
 	echo "--debugger Create debugger data file in $HOME/$SCRIPT_NAME-data - the file is a gz file that holds"
 	echo "           whatever might be helpful to debugging $SCRIPT_NAME issues, like xorg.conf, lspci, inxi"
 	echo "           output if present, etc. Upload file to: ftp.techpatterns.com/incoming OR use a service"
-	echo "           like dropbox.com then give me the url to the uploaded file."
+	echo "           like dropbox.com then give me the url to the uploaded file. If $SCRIPT_NAME has an internet"
+	echo "           connection and python > 2.5, will also automatically upload the data to server for you."
 	if [ "$1" == 'full' ];then
 		echo $PLINE
 		echo "Developer and Testing Options (Advanced):"
