@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.38
-####  Date: 2014-04-26
+####  version: 4.23.39
+####  Date: 2014-04-29
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -599,7 +599,7 @@ driver_support_tests()
 					fi
 					# amd-catalyst-14.1-betav1.3-linux-x86.x86_64.zip
 					case $DRIVER_DEFAULT in
-						14.*)
+						14.*|15.*)
 							FGLRX_PACKAGE_PREFIX='amd-catalyst'
 							B_AMD='false'
 							;;
@@ -4969,14 +4969,16 @@ log_writer()
 		echo -e "$1" | sed 's/\x1b\[[0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,2\}m//g' >> $LOG_FILE
 debugger_data_collector()
 {
-	local debug_data_home="$HOME/${SCRIPT_NAME}-data/"
-	local xorg_d_files='' xorg_file='' data='' data2=''
+	local debug_data_home="$HOME/${SCRIPT_NAME}-data/" b_uploaded='false' xiin_download=''
+	local xorg_d_files='' xorg_file='' data='' data2='' xiin_file='xiin.py'
+	local ftp_upload='ftp.techpatterns.com/incoming' b_run_xiin='false'
 	
 	local host=$HOSTNAME
 	if [ -n $host ];then
 		host="-$host"
 	fi
 	local debug_data_dir="$SCRIPT_NAME-$(date +%Y-%m-%d-%H%M%S)$host"
+	local debug_gz_file="$debug_data_dir.tar.gz"
 	echo "Starting $SCRIPT_NAME debugging data collection..."
 	
 	if [ ! -d $debug_data_home ];then
@@ -4992,10 +4994,26 @@ debugger_data_collector()
 	cat /etc/modules &> $debug_data_dir/etc-modules.txt
 	readlink /usr/lib/libGL.so.1 &> $debug_data_dir/readlink-usr-lib-libgl.so.1.txt
 	readlink /usr/lib/xorg/modules/extensions/libglx.so &> $debug_data_dir/readlink-lib-xorg-modules-extensions-libglx.so.txt
+	ls -R /boot &> $debug_data_dir/boot-ls-files.txt
 	echo $(get_active_grub_files) &> $debug_data_dir/grub-files-active.txt
 	cat /boot/grub/grub.cfg &> $debug_data_dir/boot-grub-grub-cfg.txt
-	ls /etc/modprobe.d/*.conf &> $debug_data_dir/ls-etc-modprob-d.txt
+	ls /etc/modprobe.d/*.conf &> $debug_data_dir/ls-etc-modprobe-d.txt
 	for item in $( ls /etc/modprobe.d/*.conf )
+	do
+		data=${item#/}
+		cat $item &> $debug_data_dir/${data//\//-}
+	done
+	ls -R /var/lib/dkms/ &> $debug_data_dir/var-lib-dkms-ls-files.txt
+	ls -R /etc/dkms/ &> $debug_data_dir/etc-dkms-ls-files.txt
+	ls -R /usr/src/*/dkms.conf &> $debug_data_dir/usr-src-ls-dkms-files.txt
+	ls -R /usr/src/*/dkms.conf | grep -iE '(catalyst|fglrx|nvidia)' &> $debug_data_dir/usr-src-ls-dkms-video-files.txt
+	
+	if [ -f /etc/modprobe.d/dkms.conf ];then
+		cat /etc/modprobe.d/dkms.conf &> $debug_data_dir/etc-modprobe-dkms.conf.txt
+	else
+		touch $debug_data_dir/etc-modprobe-dkms.conf-absent
+	fi
+	for item in $( ls -R /usr/src/*/dkms.conf | grep -iE '(catalyst|fglrx|nvidia)' )
 	do
 		data=${item#/}
 		cat $item &> $debug_data_dir/${data//\//-}
@@ -5022,26 +5040,28 @@ debugger_data_collector()
 	lspci -mmnnv &> $debug_data_dir/lspci-mmnnv.txt
 	lspci -v &> $debug_data_dir/lspci-v.txt
 	if type -p inxi &>/dev/null;then
-		inxi -Cbxxxr -c 0 &> $debug_data_dir/inxi-Cbxxxr.txt
+		inxi -rfv7 -c 0 &> $debug_data_dir/inxi-rfv7.txt
 	else
-		touch $debug_data_dir/no-inxi.txt
+		touch $debug_data_dir/inxi-absent
 	fi
 	cat /var/log/Xorg.0.log &> $debug_data_dir/xorg.0.log
+	cat /var/log/Xorg.1.log &> $debug_data_dir/xorg.1.log
+	cat /var/log/Xorg.2.log &> $debug_data_dir/xorg.2.log
 	if [ -f /var/log/sgfxi/sgfxi.log ];then
 		cat /var/log/sgfxi/sgfxi.log &> $debug_data_dir/sgfxi.log
 	else
-		touch $debug_data_dir/no-sgfxi.log-file
+		touch $debug_data_dir/sgfxi.log-file-absent
 	fi
 	cat /var/log/sgfxi/sgfxi.log &> $debug_data_dir/sgfxi.log
 	if [ -f /var/log/sgfxi/sgfxi.log.1 ];then
 		cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
 	else
-		touch $debug_data_dir/sgfxi.log.1-absent-file
+		touch $debug_data_dir/sgfxi.log.1-file-absent
 	fi
 	if [ -f /var/log/sgfxi/sgfxi.log.2 ];then
 		cat /var/log/sgfxi/sgfxi.log.2 &> $debug_data_dir/sgfxi.2.log
 	else
-		touch $debug_data_dir/sgfxi.log.2-absent-file
+		touch $debug_data_dir/sgfxi.log.2-file-absent
 	fi
 	if [[ -e /etc/X11/xorg.conf ]];then
 		cat /etc/X11/xorg.conf &> $debug_data_dir/xorg-conf.txt
@@ -5092,26 +5112,61 @@ debugger_data_collector()
 	echo "Data collection completed."
 	echo 'Creating tar.gz compressed file of this material now. Contents:'
 	echo $LINE
-	tar -cvzf $debug_data_dir.tar.gz $debug_data_dir
+	tar -cvzf $debug_gz_file $debug_data_dir
 	echo $LINE
 	echo 'Cleaning up leftovers...'
 	rm -rf $debug_data_dir
 	echo 'Testing gzip file integrity...'
-	gzip -t $debug_data_dir.tar.gz
+	gzip -t $debug_gz_file
 	if [[ $? -gt 0 ]];then
-		rm -f $debug_data_dir.tar.gz
+		rm -f $debug_gz_file
 		echo 'Data in gz is corrupted, removed gzip file, try running data collector again.'
 		exit 1
 	else
 		echo $LINE
-		echo 'All done, you can find your data gzipped directory here:'
-		echo "$debug_data_home$debug_data_dir.tar.gz"
+		echo 'All done with debugger data collection.'
+		echo "$SCRIPT_NAME will now try to upload this data to the script server..."
 		echo $LINE
-		echo "Please attach the gz file to a forum support thread, if the forum supports file attachments,"
-		echo "OR simply copy it over to: ftp.techpatterns.com/incoming"
-		echo "You can do this using a file manager like Dolphin, Konqueror, or any other one that lets"
-		echo "you type in the ftp address in the location bar then connect to it."
-		echo "After you do that, you can just drag in the gz file to the remote site."
+		# -Nc is creating really weird download anomolies, so using -O instead
+		xiin_download="$( wget -q -O - http://inxi.googlecode.com/svn/branches/xiin/$xiin_file )"
+		# if nothing got downloaded kick out error, otherwise we'll use an older version
+		if [[ $? -gt 0 && ! -f $xiin_file ]];then
+			echo -e "ERROR: Failed to download ftp uploader file: $xiin_file\nMaybe the remote site is down or your networking is broken?"
+		elif [[ -n $( grep -s '# EOF' <<< "$xiin_download" ) || -f $xiin_file ]];then
+			if [[ -n $( grep -s '# EOF' <<< "$xiin_download" ) ]];then
+				echo "Updating $xiin_file from remote location"
+				echo "$xiin_download" > $xiin_file
+			else
+				echo "Using local $xiin_file due to download failure"
+			fi
+			b_run_xiin='true'
+		else
+			echo -e "ERROR: $xiin_file downloaded but the program file data is corrupted. Unable to do ftp upload."
+		fi
+		if [[ $b_run_xiin == 'true' ]];then
+			echo "Doing automatic upload of data to remote server $ftp_upload now..."
+			python ./$xiin_file -u $debug_data_home$debug_gz_file $ftp_upload 1>/dev/null
+			if [[ $? -gt 0 ]];then
+				echo $Line
+				echo "Error: looks like the automatic ftp upload failed. Error number: $?"
+			else
+				b_uploaded='true'
+			fi
+		else
+			echo 'Unable to run the automoatic ftp upload because of an error with the xiin download.'
+		fi
+		if [ "$b_uploaded" != 'true' ];then
+			echo "Please attach the gz file to a forum support thread, if the forum supports file attachments,"
+			echo "OR simply copy it over to: ftp.techpatterns.com/incoming"
+			echo "You can do this using a file manager like Dolphin, Konqueror, or any other one that lets"
+			echo "you type in the ftp address in the location bar then connect to it."
+			echo "After you do that, you can just drag in the gz file to the remote site."
+		else 
+			echo "The upload worked! You are done with the debugger process. Thank you."
+		fi
+		echo $LINE
+		echo "It's all good apparently. You can find a copy of the data here:"
+		echo "$debug_data_home$debug_gz_file"
 		exit 0OG_FILE
 	fi
 }
@@ -5682,7 +5737,7 @@ remove_modprobe_d_blacklist_item()
 		# first dump sgfxi created file if present, not going to use this for now
 		if [ -f "$empksb" ];then
 			rm -f $empksb
-			log_function_data "$empksb deleted from /etc/modprobe.d/"
+			log_function_datksb deleted from /etc/modprobe.d/"
 		fi
 		# then edit anything that remains to get rid of that blacklist item
 		if [ -n "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+'$1'' /etc/modprobe.d/*.conf )" ];then
@@ -5760,7 +5815,8 @@ reboot_now_question()
 	eval $LOGPS
 	local opt='' options='' initText='' initLevel=''
 	
-	case $DISTRIB_Ifedora|aptosid|sidux|mepis|antix|siduction)
+	case $DISTRIB_ID in
+		fedora|aptosid|sidux|mepis|antix|siduction)
 			initLevel=3
 			;;
 		*)
@@ -8670,7 +8726,7 @@ show_options()
 	#local nvQuadText='' nvQuad=$( echo $NV_QUAD | sed -r 's/'$pattern'/\2 /g')
 	local nvQuadText='' nvQuad=$( echo $NV_QUAD | tr ':' ' ' | sed 's/1.0-//g')
 	local fgDefault=$FG_DEFAULT
-	local fgVersions=$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
+	local fgVe$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
 	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
 	local fgBeta='' nvBeta='' betaText='' fgDebianSid=''
 	local counter=0 driverCount=0 bSkipOutput=''
@@ -8734,7 +8790,7 @@ show_options()
 		esac
 	done
 	#echo "fglrx:  default: $fgDefault		supported-drivers: $fgVersions"
-	echo "Nvidia: defaults (current + - 3 2 1): $nvDefaults"
+	echo "Nvidia: defaults (current + legacy - 3 2 1): $nvDefaults"
 	echo -n "Other supported-drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nvVersions )
