@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.39
-####  Date: 2014-04-29
+####  version: 4.23.40
+####  Date: 2014-05-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -4991,6 +4991,15 @@ debugger_data_collector()
 	else
 		mkdir $debug_data_dir
 	fi
+	if type -p shopt &>/dev/null;then
+		shopt -s nullglob;a_distro_ids=(/etc/*[-_]{release,version});shopt -u nullglob;echo ${a_distro_ids[@]} &> $debug_data_dir/etc-distro-files.txt
+		for distro_file in ${a_distro_ids[@]} /etc/issue
+		do
+			if [[ -f $distro_file ]];then
+				cat $distro_file &> $debug_data_dir/distro-file${distro_file//\//-}
+			fi
+		done
+	fi
 	cat /etc/modules &> $debug_data_dir/etc-modules.txt
 	readlink /usr/lib/libGL.so.1 &> $debug_data_dir/readlink-usr-lib-libgl.so.1.txt
 	readlink /usr/lib/xorg/modules/extensions/libglx.so &> $debug_data_dir/readlink-lib-xorg-modules-extensions-libglx.so.txt
@@ -5722,7 +5731,7 @@ add_modprobe_d_blacklist_item()
 			log_function_data "file updated to add $1 blacklist: $empksb"
 		fi
 	fi
-	eval $LOGUE
+	eval
 	return $returnValue
 }
 
@@ -5737,7 +5746,7 @@ remove_modprobe_d_blacklist_item()
 		# first dump sgfxi created file if present, not going to use this for now
 		if [ -f "$empksb" ];then
 			rm -f $empksb
-			log_function_datksb deleted from /etc/modprobe.d/"
+			log_function_data "$empksb deleted from /etc/modprobe.d/"
 		fi
 		# then edit anything that remains to get rid of that blacklist item
 		if [ -n "$( grep -Es '^[[:space:]]*blacklist[[:space:]]+'$1'' /etc/modprobe.d/*.conf )" ];then
@@ -8720,13 +8729,13 @@ show_options()
 	fi
 	#local pattern='(1\.0-)?([0-9]{4}|1[0-9]{2}\.[0-9]{2}\.?[0-9]{0,2}):?'
 	#local nvDefault=$( echo $NV_DEFAULT | sed -r 's/'$pattern'/\2 /g')
-	local nvDefaults=$( echo $NV_VERSIONS | tr ':' ' ' | sed 's/1.0-//g' )
+	local nvDefaults=$( echo $NV_VERSIONS | tr ':' ' ' | sed 's/1.)
 	#local nvVersions=$( echo "$NV_VERSIONS:$NV_OTHERS" | sed -r 's/'$pattern'/\2 /g')
 	local nvVersions=$( echo "$NV_OTHERS" | tr ':' ' ' | sed 's/1.0-//g')
 	#local nvQuadText='' nvQuad=$( echo $NV_QUAD | sed -r 's/'$pattern'/\2 /g')
 	local nvQuadText='' nvQuad=$( echo $NV_QUAD | tr ':' ' ' | sed 's/1.0-//g')
 	local fgDefault=$FG_DEFAULT
-	local fgVe$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
+	local fgVersions=$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
 	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
 	local fgBeta='' nvBeta='' betaText='' fgDebianSid=''
 	local counter=0 driverCount=0 bSkipOutput=''
