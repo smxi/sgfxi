@@ -7134,6 +7134,11 @@ clean_dkms()
 		echo "${M}Found and deleted ${C}fglrx dkms${M} material${N}"
 		rm -rf /var/lib/dkms/fglrx* 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
+	if [ -n "$( ls /var/lib/dkms/ | grep -i catalyst )" ];then
+		log_function_data "amd-catalyst dkms directories found and deleted:\n$(ls /var/lib/dkms/ | grep -i catalyst)"
+		echo "${M}Found and deleted ${C}catalyst dkms${M} material${N}"
+		rm -rf /var/lib/dkms/catalyst* 1>> $LOG_FILE 2>> $LOG_FILE
+	fi
 	if [ -n "$( ls /var/lib/dkms/ | grep -i nvidia )" ];then
 		echo "${M}Found and deleted ${C}nvidia dkms${M} material${N}"
 		log_function_data "nvidia dkms directories found and deleted:\n$(ls /var/lib/dkms/ | grep -i nvidia)"
@@ -8708,7 +8713,7 @@ show_extra_data()
 			if [ "$scriptVersion" == "$scriptRemoteVersion" ];then
 				dataFull="Remote Version: $scriptRemoteVersion is the same as Local Version: $scriptVersion" 
 			else
-				dataFull="The remote and local script versions are different:\nRemote Version: $scriptRemoteVersion\nRemote Date:    $scriptRemoteDate\n\nLocal Version:  $scriptVersion\nLocal Date:     $scriptDate"
+				dataFull="The remote and local script verre different:\nRemote Version: $scriptRemoteVersion\nRemote Date:    $scriptRemoteDate\n\nLocal Version:  $scriptVersion\nLocal Date:     $scriptDate"
 			fi
 			;;
 	esac
@@ -8717,7 +8722,7 @@ show_extra_data()
 		echo $LINE
 		echo -e "$dataFull"
 	else
-	${W}Failed!!${N}"
+		echo "${W}Failed!!${N}"
 		echo $WLINE
 		echo "${W}Unable to access the remote data file, exiting now, sorry."
 		echo "This feature requires a working internet connection.${N}"
