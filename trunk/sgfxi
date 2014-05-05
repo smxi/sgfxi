@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.41
+####  version: 4.23.42
 ####  Date: 2014-05-05
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -7121,20 +7121,23 @@ add_module()
 	eval $LOGPE
 }
 
-
 # this should in theory all be gone but not necessarily in fact
-# note that fglrx isn't working well here at all...
+# note that fglrx isn't working well here at all... 
+# further: 2014-05-05: --debugger dkms data shows individual driver directories top level in dkms
+# this is a change from previous /dkms/nvidia/ style. Update may resolve the lingering failures.
 clean_dkms()
 {
 	eval $LOGPS
 	local eddma='/etc/default/dmakms'
-	if [ -d /var/lib/dkms/fglrx ];then
-		log_function_data "fglrx dkms directories found and deleted"
-		rm -rf /var/lib/dkms/fglrx 1>> $LOG_FILE 2>> $LOG_FILE
+	if [ -n "$( ls /var/lib/dkms/ | grep -i fglrx )" ];then
+		log_function_data "fglrx dkms directories found and deleted:\n$(ls /var/lib/dkms/ | grep -i fglrx)"
+		echo "${M}Found and deleted ${C}fglrx dkms${M} material${N}"
+		rm -rf /var/lib/dkms/fglrx* 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
-	if [ -d /var/lib/dkms/nvidia ];then
-		log_function_data "nvidia dkms directories found and deleted"
-		rm -rf /var/lib/dkms/nvidia 1>> $LOG_FILE 2>> $LOG_FILE
+	if [ -n "$( ls /var/lib/dkms/ | grep -i nvidia )" ];then
+		echo "${M}Found and deleted ${C}nvidia dkms${M} material${N}"
+		log_function_data "nvidia dkms directories found and deleted:\n$(ls /var/lib/dkms/ | grep -i nvidia)"
+		rm -rf /var/lib/dkms/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 	fi
 	# handle the dmakms stuff too if present
 	if [ -f "$eddma" ];then
@@ -8714,7 +8717,7 @@ show_extra_data()
 		echo $LINE
 		echo -e "$dataFull"
 	else
-		echo "${W}Failed!!${N}"
+	${W}Failed!!${N}"
 		echo $WLINE
 		echo "${W}Unable to access the remote data file, exiting now, sorry."
 		echo "This feature requires a working internet connection.${N}"
@@ -8729,7 +8732,7 @@ show_options()
 	if [ -z "$X_VERSION" ];then
 		xVersion="${W}NO SUPPORTED XORG!${N}"
 	fi
-	#local pattern='(1\.0-)?([0-9]{4}|1[0-9]{2}\.[0-9]{2}\.?[2}):?'
+	#local pattern='(1\.0-)?([0-9]{4}|1[0-9]{2}\.[0-9]{2}\.?[0-9]{0,2}):?'
 	#local nvDefault=$( echo $NV_DEFAULT | sed -r 's/'$pattern'/\2 /g')
 	local nvDefaults=$( echo $NV_VERSIONS | tr ':' ' ' | sed 's/1.0-//g' )
 	#local nvVersions=$( echo "$NV_VERSIONS:$NV_OTHERS" | sed -r 's/'$pattern'/\2 /g')
