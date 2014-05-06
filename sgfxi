@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.43
-####  Date: 2014-05-05
+####  version: 4.23.44
+####  Date: 2014-05-06
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -5058,6 +5058,11 @@ debugger_data_collector()
 		data=${item#/}
 		cat $item &> $debug_data_dir/${data//\//-}
 	done
+	if dpkg &>/dev/null;then
+		dpkg -l | grep -iE '(nvidia|fglrx|catalyst)' &> $debug_data_dir/dpkg-l-grep-driver-files.txt
+	else
+		touch dpkg-absent
+	fi
 	glxinfo &> $debug_data_dir/glxinfo.txt
 	xdpyinfo &> $debug_data_dir/xdpyinfo.txt
 	xrandr &> $debug_data_dir/xrandr.txt
@@ -5079,6 +5084,7 @@ debugger_data_collector()
 	lspci -mmnn &> $debug_data_dir/lspci-mmnn.txt
 	lspci -mmnnv &> $debug_data_dir/lspci-mmnnv.txt
 	lspci -v &> $debug_data_dir/lspci-v.txt
+	sensors &> $debug_data_dir/sensors.txt
 	if type -p inxi &>/dev/null;then
 		inxi -rfv7 -c 0 &> $debug_data_dir/inxi-rfv7.txt
 	else
@@ -5092,7 +5098,6 @@ debugger_data_collector()
 	else
 		touch $debug_data_dir/sgfxi.log-file-absent
 	fi
-	cat /var/log/sgfxi/sgfxi.log &> $debug_data_dir/sgfxi.log
 	if [ -f /var/log/sgfxi/sgfxi.log.1 ];then
 		cat /var/log/sgfxi/sgfxi.log.1 &> $debug_data_dir/sgfxi.1.log
 	else
@@ -5723,11 +5728,11 @@ remove_grub_nomodeset_blacklist_item()
 
 	local returnValue=1
 	local searchReplace1="nomodeset|$1.modeset=0|rdblacklist=$1|$1.blacklist=1"
-	local grubFiles=$( get_active_grub_files )
+	local grubFiles_active_grub_files )
 	
 	if [ -n "$grubFiles" ];then
 		if [ -n "$( grep -Eis '('$searchReplace1')' $grubFiles )" ];then
-			ech{S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
+			echo -n "${S}Removing ${C}$grubFiles $1 blacklist${S} items..... ${N}"
 			sed -ri 's/[[:space:]]('$searchReplace1')//ig' $grubFiles
 			log_function_data "file updated to remove $1 blacklist: $grubFiles"
 			echo "${S}Removed${N}"
@@ -8718,10 +8723,11 @@ show_extra_data()
 			;;
 	esac
 	if [ "$bSysInfo" == 'true' ];then
-		echo "${S}System Information :: Xorg Version: ${N}$X_VERSION ${S}:: Kernel: ${N}$( uname -r )"
+		echo "${S}System Information :: Xorg Version: ${N}$X_VERSION ${S}el: ${N}$( uname -r )"
 	fi
 	echo -n "${S}Retrieving live data... ${N}"
-	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/nucase $1 in
+	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
+	case $1 in
 		v)
 # 			# don't need to run this if distro maintainer has set path
 # 			if [ "$B_ALLOW_AUTO_UPDATE" == 'true' ];then
