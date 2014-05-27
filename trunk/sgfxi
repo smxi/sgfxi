@@ -320,14 +320,19 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # amd-driver-installer-catalyst-13-4-linux-x86.x86_64.zip
 # amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
 # amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
-# http://www2.ati.com/drivers/legacy/amd-driver-installer-catalyst-13.1-legacy-linux-x86.x86_64.zip
-# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
-# http://www2.ati.com/drivers/linux/amd-driver-installer-catalyst-12.10-x86.x86_64.zip
-# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.2-beta3-linux-x86.x86_64.zip
-# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
-# http://www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip 
-# http://www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
-# http://www2.ati.com/drivers/beta/amd-catalyst-13.11-beta-v9.4-linux-x86.x86_64.run.zip
+# Linux_AMD_Catalyst_14.3_Beta_V1.0_B22_March12_2014.zip
+# www2.ati.com/drivers/legacy/amd-driver-installer-catalyst-13.1-legacy-linux-x86.x86_64.zip
+# www2.ati.com/drivers/beta/amd-driver-installer-catalyst-12.11-beta-x86.x86_64.zip
+# www2.ati.com/drivers/linux/amd-driver-installer-catalyst-12.10-x86.x86_64.zip
+# www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13.2-beta3-linux-x86.x86_64.zip
+# www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip
+# www2.ati.com/drivers/beta/amd-driver-installer-catalyst-13-6-beta-x86.x86_64.zip 
+# www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
+# www2.ati.com/drivers/beta/amd-catalyst-13.11-beta-v9.4-linux-x86.x86_64.run.zip
+# www2.ati.com/drivers/linux/amd-catalyst-13.12-linux-x86.x86_64.zip
+# www2.ati.com/drivers/linux/amd-catalyst-14-4-rev2-linux-x86-x86-64-may6.zip
+# www2.ati.com/drivers/linux/linux-amd-catalyst-14.4-rc-v1.0-apr17.zip
+# www2.ati.com/drivers/beta/linux-amd-catalyst-14.6-beta-v1.0-may23.zip
 FG_VERSIONS='14.5.1:14.4.2:13.12'
 FG_DEFAULT='14.5.1'
 FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
@@ -344,7 +349,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 
 ### Stable Series: ###
 # 14.4.1 14.4.2 14.5.1
-# 12-1 12-2 12-3 12-4 12-6 12-7 12.10 13.1 13-4 13.9
+# 12-1 12-2 12-3 12-4 12-6 12-7 12.10 13.1 13-4 13.9 13:12
 # 11-12 11-11 11-10 11-9 11-8 11-7 11-6 11-5 11-4 11-3 11-2 11-1
 # 10-12 10-11 10-10 10-9 10-8 10-7 10-6 10-5 10-4 10-3 10-2 10-1
 # 9-12 9-11 9-10 9-9 9-8 9-7 9-6 9-5 9-4 9.2 9-1 8-12 8-11 8-10 8-9 8-8 8-7 8-6 8-5 8-4
@@ -354,7 +359,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # 14.3.14 14.5.2
 ### Older Betas: ###
 # 13.8-beta2
-FG_OTHERS='14.5.1:14.4.2:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='14.5.1:14.4.2:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
@@ -2726,7 +2731,7 @@ detect_card_version()
 					fi
 					;;
 				# list of 6/7xxx devices: http://nvidia.custhelp.com/app/answers/detail/a_id/3142
-				0040|0041|0042|0043|0044|0045|0046|0047|0048|004e|0090|0091|0092|0093|0095|0098|0099|009d|00c0|00c1|00c2|00c3|00c8|00c9|00cc|00cd|00ce|00f1|00f2|00f3|00f4|00f5|00f6|00f8|00f9|0140|0141|0142|0143|0144|0145|0146|0147|0148|0149|014a|014c|014d|014e|014f|0160|0161|0162|0163|0164|0165|0166|0167|0168|0169|016a|01d0|01d1|01d2|01d3|01d6|01d7|01d8|01da|01db|01dc|01dd|01de|01df|0211|0212|0215|0218|0221|0222|0240|0241|0242|0244|0245|0247|0290|0x0291|0292|0293|0294|0295|0297|0298|0299|029a|029b|029c|029d|029e|029f|02e0|02e1|02e2|02e3|02e4|038b|0390|0391|0392|0393|0394|0395|0397|0398|0399|039c|039e|03d0|03d1|03d2|03d5|03d6|0531|0533|053a|053b|053e|07e07e2|07e3|07e5)
+				0040|0041|0042|0043|0044|0045|0046|0047|0048|004e|0090|0091|0092|0093|0095|0098|0099|009d|00c0|00c1|00c2|00c3|00c8|00c9|00cc|00cd|00ce|00f1|00f2|00f3|00f4|00f5|00f6|00f8|00f9|0140|0141|0142|0143|0144|0145|0146|0147|0148|0149|014a|014c|014d|014e|014f|0160|0161|0162|0163|0164|0165|0166|0167|0168|0169|016a|01d0|01d1|01d2|01d3|01d6|01d7|01d8|01da|0c|01dd|01de|01df|0211|0212|0215|0218|0221|0222|0240|0241|0242|0244|0245|0247|0290|0x0291|0292|0293|0294|0295|0297|0298|0299|029a|029b|029c|029d|029e|029f|02e0|02e1|02e2|02e3|02e4|038b|0390|0391|0392|0393|0394|0395|0397|0398|0399|039c|039e|03d0|03d1|03d2|03d5|03d6|0531|0533|053a|053b|053e|07e0|07e1|07e2|07e3|07e5)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-4' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-4' 'set-exists' )
 					LEGACY_LEVEL=4
@@ -5713,7 +5718,7 @@ add_grub_nomodeset_blacklist_item()
 				# literally not be able to access tty OR desktop in some cases
 				if [ -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $GRUB1_FED )" ];then
 					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$GRUB1_FED${S}..... ${N}"
-					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $GRUB1_FED
+					sed -i 's|^[[:space:]]*hiddenmenu|menu|' $GRUB1_FED
 					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $GRUB1_FED
 					log_function_data "File $GRUB1_FED updated to restore grub timeout/unhide menu: $GRUB1_FED"
 					echo "${S}Modified${N}"
@@ -5726,7 +5731,8 @@ add_grub_nomodeset_blacklist_item()
 	return $returnValue
 }
 
-# args: $1 - radeon/nouvove_grub_nomodeset_blacklist_item()
+# args: $1 - radeon/nouveau
+remove_grub_nomodeset_blacklist_item()
 {
 	eval $LOGUS
 
@@ -8710,7 +8716,7 @@ show_extra_data()
 			;;
 		f)
 			fullUrl='http://smxi.org/sm/upgrade-data/video_support_fglrx'
-			uaFull="$ua.fglrx-status"
+		="$ua.fglrx-status"
 			dataType='FGLRX Status'
 			bSysInfo='true'
 			;;
@@ -8722,7 +8728,8 @@ show_extra_data()
 			;;
 		v)
 			fullUrl=$SCRIPT_DOWNLOAD_VERSION
-			uaFull="$ua.version-datataType="(latest) $SCRIPT_NAME version information"
+			uaFull="$ua.version-data"
+			dataType="(latest) $SCRIPT_NAME version information"
 			;;
 	esac
 	if [ "$bSysInfo" == 'true' ];then
