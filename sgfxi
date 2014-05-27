@@ -256,7 +256,7 @@ NV_BETA="$NV_VERSIONS_BETA:337.12::"
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49 331.67
+# lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49 331.67 331.79
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
 # stable primary: 270.41.06 270.41.19 
@@ -275,7 +275,7 @@ NV_BETA="$NV_VERSIONS_BETA:337.12::"
 # stabel legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='334.21:331.67:331.49:325.15:319.72:319.82:319.60:313.30:310.44:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='334.21:331.79:331.67:325.15:319.72:319.82:319.60:313.30:310.44:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_4='304xx'
@@ -2724,7 +2724,7 @@ detect_card_version()
 				# list of 6/7xxx devices: http://nvidia.custhelp.com/app/answers/detail/a_id/3142
 				0040|0041|0042|0043|0044|0045|0046|0047|0048|004e|0090|0091|0092|0093|0095|0098|0099|009d|00c0|00c1|00c2|00c3|00c8|00c9|00cc|00cd|00ce|00f1|00f2|00f3|00f4|00f5|00f6|00f8|00f9|0140|0141|0142|0143|0144|0145|0146|0147|0148|0149|014a|014c|014d|014e|014f|0160|0161|0162|0163|0164|0165|0166|0167|0168|0169|016a|01d0|01d1|01d2|01d3|01d6|01d7|01d8|01da|01db|01dc|01dd|01de|01df|0211|0212|0215|0218|0221|0222|0240|0241|0242|0244|0245|0247|0290|0x0291|0292|0293|0294|0295|0297|0298|0299|029a|029b|029c|029d|029e|029f|02e0|02e1|02e2|02e3|02e4|038b|0390|0391|0392|0393|0394|0395|0397|0398|0399|039c|039e|03d0|03d1|03d2|03d5|03d6|0531|0533|053a|053b|053e|07e0|07e1|07e2|07e3|07e5)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-4' 'driver' )
-					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-4' 'sts' )
+					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacyt-exists' )
 					LEGACY_LEVEL=4
 					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
 						B_COMPOSITE='true'
@@ -5729,7 +5729,7 @@ remove_grub_nomodeset_blacklist_item()
 
 	local returnValue=1
 	local searchReplace1="nomodeset|$1.modeset=0|rdblacklist=$1|$1.blacklist=1"
-	local es=$( get_active_grub_files )
+	rubFiles=$( get_active_grub_files )
 	
 	if [ -n "$grubFiles" ];then
 		if [ -n "$( grep -Eis '('$searchReplace1')' $grubFiles )" ];then
@@ -8724,7 +8724,7 @@ show_extra_data()
 			;;
 	esac
 	if [ "$bSysInfo" == 'true' ];then
-		echo "${S}System Information :: Xorg Version: ${N}$X_VERS}:: Kernel: ${N}$( uname -r )"
+		echo "${S}System Information :: Xorg Version: ${N}ION ${S}:: Kernel: ${N}$( uname -r )"
 	fi
 	echo -n "${S}Retrieving live data... ${N}"
 	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
