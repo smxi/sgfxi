@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.47
+####  version: 4.23.48
 ####  Date: 2014-05-29
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -2096,7 +2096,7 @@ run_driver_patches()
 									;;
 							esac
 							;;
-						14)
+						1[4-9])
 							case $DRIVER_DEFAULT in
 								# patch url: http://www.forums.fedoraforum.org/showpost.php?p=1696887&postcount=117
 								14.[45].*)
@@ -2740,7 +2740,7 @@ detect_card_version()
 					fi
 					;;
 				# list of 6/7xxx devices: http://nvidia.custhelp.com/app/answers/detail/a_id/3142
-				0040|0041|0042|0043|0044|0045|0046|0047|0048|004e|0090|0091|0092|0093|0095|0098|9d|00c0|00c1|00c2|00c3|00c8|00c9|00cc|00cd|00ce|00f1|00f2|00f3|00f4|00f5|00f6|00f8|00f9|0140|0141|0142|0143|0144|0145|0146|0147|0148|0149|014a|014c|014d|014e|014f|0160|0161|0162|0163|0164|0165|0166|0167|0168|0169|016a|01d0|01d1|01d2|01d3|01d6|01d7|01d8|01da|01db|01dc|01dd|01de|01df|0211|0212|0215|0218|0221|0222|0240|0241|0242|0244|0245|0247|0290|0x0291|0292|0293|0294|0295|0297|0298|0299|029a|029b|029c|029d|029e|029f|02e0|02e1|02e2|02e3|02e4|038b|0390|0391|0392|0393|0394|0395|0397|0398|0399|039c|039e|03d0|03d1|03d2|03d5|03d6|0531|0533|053a|053b|053e|07e0|07e1|07e2|07e3|07e5)
+				0040|0041|0042|0043|0044|0045|0046|0047|0048|004e|0090|0091|0092|0093|0095|09|009d|00c0|00c1|00c2|00c3|00c8|00c9|00cc|00cd|00ce|00f1|00f2|00f3|00f4|00f5|00f6|00f8|00f9|0140|0141|0142|0143|0144|0145|0146|0147|0148|0149|014a|014c|014d|014e|014f|0160|0161|0162|0163|0164|0165|0166|0167|0168|0169|016a|01d0|01d1|01d2|01d3|01d6|01d7|01d8|01da|01db|01dc|01dd|01de|01df|0211|0212|0215|0218|0221|0222|0240|0241|0242|0244|0245|0247|0290|0x0291|0292|0293|0294|0295|0297|0298|0299|029a|029b|029c|029d|029e|029f|02e0|02e1|02e2|02e3|02e4|038b|0390|0391|0392|0393|0394|0395|0397|0398|0399|039c|039e|03d0|03d1|03d2|03d5|03d6|0531|0533|053a|053b|053e|07e0|07e1|07e2|07e3|07e5)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-4' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-4' 'set-exists' )
 					LEGACY_LEVEL=4
@@ -5724,7 +5724,7 @@ add_grub_nomodeset_blacklist_item()
 					echo "${S}Added${N}"
 				fi
 				# also make system bootable to init 3 easily with grub, otherwise you can
-				# literally not be aaccess tty OR desktop in some cases
+				# literally not  to access tty OR desktop in some cases
 				if [ -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $GRUB1_FED )" ];then
 					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$GRUB1_FED${S}..... ${N}"
 					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $GRUB1_FED
@@ -8714,7 +8714,7 @@ update_xorg()
 show_extra_data()
 {
 	local fullUrl='' ua='-U s-tools/sgfxi-data' uaFull='' dataFull='' dataType=''
-	local scriptVersion='' scriptDate='' scriptRemoteVersion='' scriptate=''
+	local scriptVersion='' scriptDate='' scriptRemoteVersion='' scoteDate=''
 	local dataWorking='' bSysInfo='false'
 	
 	case $1 in
