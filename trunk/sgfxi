@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.53
-####  Date: 2014-07-08
+####  version: 4.23.54
+####  Date: 2014-07-09
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -206,13 +206,13 @@ X_VERSION=''
 # 2.902
 # from one string, like: 1.11.2.902
 if [ -n "$( type -p X )" ];then
-	X_VERSION=$( X -version 2>&1 | grep -Eis -m 1 '^(X.Org X Server|X Window System)' | cut -d '(' -f 1 | awk '{ print $NF }' | grep -Eo '^[1237]\.[0-9]+' )
+	X_VERSION=$( X -version 2>&1 | grep -Eis -m 1 '^(X.Org X Server|X Window System)' | cut -d '(' -f 1 | awk '{ print $NF }' | grep -Eo '^[12347]\.[0-9]+(\.[0-9]+)?' )
 # some users only want to be running a very light xorg, which won't have X, only Xorg
 # Tested and works Debian/Arch
 elif [ -n "$( type -p Xorg )" ];then
 	# X.Org X Server 1.7.7
 	# xorg-server 2:1.7.7-7 (Julien Cristau <jcristau@debian.org>)
-	X_VERSION=$( Xorg -version 2>&1 | grep -Eis -m 1 '^(X\.org|xorg)' | cut -d ':' -f 2 | cut -d '(' -f 1 | awk '{ print $NF }' | grep -Eo '^[1237]\.[0-9]+' )
+	X_VERSION=$( Xorg -version 2>&1 | grep -Eis -m 1 '^(X\.org|xorg)' | cut -d ':' -f 2 | cut -d '(' -f 1 | awk '{ print $NF }' | grep -Eo '^[12347]\.[0-9]+' )
 fi
 CC=''
 GL=''
@@ -639,7 +639,7 @@ driver_support_tests()
 					# drivers for now until old driver support is dropped, then change to
 					# blacklist
 					case $X_VERSION in
-						1.16)
+						1.16*|1.15.99*)
 							case $DRIVER_DEFAULT in
 								15.*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
@@ -655,7 +655,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.15)
+						1.15.[0-8].*)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
@@ -671,7 +671,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.14)
+						1.14*)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-][6-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
@@ -687,7 +687,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.13)
+						1.13*)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[-.][3-9]|13[-.]1[0-2]|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
@@ -703,7 +703,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.12)
+						1.12*)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-]*|12[-.][6-9]|12[-.]1[0-2]|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
@@ -719,7 +719,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.11)
+						1.11*)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-]*|12[.-]*|11-1[0-2]|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
@@ -731,7 +731,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.10)
+						1.10*)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-]*|12[.-]*|11-[4-9]|11-1[0-2]|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
@@ -743,7 +743,7 @@ driver_support_tests()
 									;;
 							esac
 							;; 
-						1.9)
+						1.9.*)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-1[0-2]|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
@@ -755,7 +755,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.8|7.6)
+						1.8.*|7.6)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-[7-9]|10-1[0-2]|$DISTRO_FGLRX) # update when 1.8 is actually supported
 									: # all other drivers fail to support xorg >= 1.8
@@ -767,7 +767,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.7|7.5)
+						1.7.*|7.5)
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-[4-9]|10-1[0-2]|$DISTRO_FGLRX)
 									: # all other drivers fail to support xorg >= 1.7
@@ -779,7 +779,7 @@ driver_support_tests()
 									;;
 							esac
 							;;
-						1.6|7.[3-4])
+						1.6.*|7.[3-4])
 							case $DRIVER_DEFAULT in
 								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-*|9-[4-9]|9-1[0-2]|$DISTRO_FGLRX)
 									: # all other drivers fail to support xorg >= 1.6
@@ -1157,7 +1157,7 @@ driver_support_tests()
 						# drivers rather than whitelisting
 						# xorg info: http://www.x.org/wiki/Releases/7.4
 						case $X_VERSION in
-							1.[5-9]|1.10|2.[0-9]|7.[4-9])
+							1.[5-9].*|1.10*|2.[0-9]*|7.[4-9])
 								case $DRIVER_DEFAULT in
 									169.12|100.14.19)
 										if [ "$B_TESTING_3" != 'true' ];then
@@ -1173,7 +1173,7 @@ driver_support_tests()
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
 						case $X_VERSION in
-							1.16)
+							1.16*|1.15.99*)
 								# note: 173.14.39 is last legacy 3/5xxx card branch release so xorg support cuts off here
 								case $DRIVER_DEFAULT in
 									340.*|337.*|$DISTRO_NVIDIA)
@@ -1186,7 +1186,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.15)
+							1.15.[0-8]*)
 								# note: 173.14.39 is last legacy 3/5xxx card branch release so xorg support cuts off here
 								case $DRIVER_DEFAULT in
 									340.*|337.*|334.*|331.*|304.11[7-9]|304.1[2-9][0-9]|173.14.3[9]|$DISTRO_NVIDIA)
@@ -1199,7 +1199,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.14)
+							1.14*)
 								case $DRIVER_DEFAULT in
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|31[4-9].[0-9][0-9]|304.[89][0-9]|304.[1-9][0-9][0-9]|310.[4-9][0-9]|173.14.3[7-9]|$DISTRO_NVIDIA)
 										:
@@ -1211,7 +1211,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.13)
+							1.13*)
 								case $DRIVER_DEFAULT in
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.[3-9][0-9]|304.[1-9][0-9][0-9]|173.14.3[6-9]|$DISTRO_NVIDIA)
 										:
@@ -1223,7 +1223,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.12)
+							1.12*)
 								case $DRIVER_DEFAULT in
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.*|302.*|295.[3-9][0-9]|173.14.[3][4-9]|96.43.2[3-9]|$DISTRO_NVIDIA)
 										:
@@ -1235,7 +1235,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.11)
+							1.11*)
 								case $DRIVER_DEFAULT in
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.*|302.*|295.*|290.*|285.0[5-9].*|173.14.[3][4-9]|96.43.2[3-9]|$DISTRO_NVIDIA)
 										:
@@ -1251,7 +1251,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.10)
+							1.10*)
 								case $DRIVER_DEFAULT in
 									# not positive about legacy drivers yet
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.*|302.*|295.*|290.*|285.*|280.*|275.*|270.*|173.14.3*|96.43.2[0-9]|$DISTRO_NVIDIA)
@@ -1264,7 +1264,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.9)
+							1.9.*)
 								case $DRIVER_DEFAULT in
 									# not positive about 256 series + 1.9, or 96
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.*|302.*|295.*|290.*|285.*|280.*|275.*|270.*|260.*|256.*|173.14.3*|173.14.2[89]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
@@ -1277,7 +1277,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.8)
+							1.8.*)
 								case $DRIVER_DEFAULT in
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.*|302.*|295.*|290.*|285.*|280.*|275.*|270.*|260.*|256.*|195.36.[2-9][0-9]|173.14.3*|173.14.2[789]|96.43.19|96.43.2[0-9]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.8
@@ -1289,7 +1289,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.7|7.[5])
+							1.7.*|7.[5])
 								case $DRIVER_DEFAULT in
 									340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.*|302.*|295.*|290.*|285.*|280.*|275.*|270.*|260.*|256.*|195.*|190.53|173.14.3*|173.14.2*|96.43.1*|96.43.2*|71.86.1[34567]|$DISTRO_NVIDIA)
 										: # all other drivers fail to support xorg >= 1.7
@@ -1301,7 +1301,7 @@ driver_support_tests()
 										;;
 								esac
 								;;
-							1.6|7.[3-4])
+							1.6.*|7.[3-4])
 # 							1.[6-9]|2.[0-9]|7.[4-9])
 								case $DRIVER_DEFAULT in
 									71.86.11|71.86.09)
@@ -2735,9 +2735,9 @@ detect_card_version()
 					;;
 				0110|0111|0112|0113|0170|0171|0172|0173|0174|0175|0176|0177|0178|0179|017a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-2' 'driver' )
-					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-2' 'set-exists' )
+					B_BETA_EXISTS=$( assign_standard_odriver 'legacy-2' 'set-exists' )
 					LEGACY_LEVEL=2
-					# B_RENDER_AC# set default to false
+					# B_RENDER_ACCEL='' # set default to false
 					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
 						B_COMPOSITE='true'
 					fi
@@ -3679,7 +3679,7 @@ basic_startup_tests()
 		error_handler 244
 	fi
 	# make sure xorg.conf exists, with xorg > 1.4 exception to handle null xorg.conf
-	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" ];then
+	if [ ! -f $EXXC -a -z "$( echo $X_VERSION | grep -E '[1-4]\.[0-9]+(\.[0-9]+)?' )" ];then
 		error_handler 249
 	fi
 	# double check only 2.6 or newer series kernels, note double [[ and <
@@ -5719,8 +5719,8 @@ add_grub_nomodeset_blacklist_item()
 	fi
 	if [ -f "$GRUBED" ];then
 		if [ -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*$moduleSearch1" $GRUBED )" ];then
-			echo -n "${S}Adding ${C}$GRUBED $noModesetString${S} for ${C}$1${S} blacklist${S} items..... ${N}"
-			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAU)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 '$noModesetString'"|' $GRUBED
+			echo -n "${S}Adding ${C}$GRUBED $noModesetString$ ${C}$1${S} blacklist${S} items..... ${N}"
+			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 '$noModesetString'"|' $GRUBED
 			echo "${S}Added${N}"
 			log_function_data "File $GRUBED updated to add $1 $noModesetString: $GRUBED"
 			returnValue=0
@@ -8275,7 +8275,7 @@ create_x_conf()
 	
 	local bRepeat='false' opt='' options=''
 	
-	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep -E '[1-2]\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
+	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep 4]\.[0-9]+(\.[0-9]+)?\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
 		
 		echo $LINE
@@ -8704,9 +8704,9 @@ update_xorg()
 # 					layout='LVDS,AUTO' # no space in string
 # 				fi
 
-				# \n\tOption      "UseInternalAGPGART" "'$agpart'"
+				# \n\      "UseInternalAGPGART" "'$agpart'"
 				# \n\tOption      "VideoOverlay" "on"
-				# \n\tOpti "MonitorLayout" "'$layout'
+				# \n\tOption      "MonitorLayout" "'$layout'
 				perl -pi -e 's/^([\s]*Load\s*"extmod")/#\1\n\tSubSection  "extmod"\n\t  Option  "omit xfree86-dga"\n\tEndSubSection/' $EXXC
 
 				#s/^([\s]*Driver\s*"fglrx")/\1\n\tOption      "UseInternalAGPGART" "'$agpart'"\n\tOption "TexturedXrender"/
