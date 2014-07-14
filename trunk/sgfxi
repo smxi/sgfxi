@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.55
-####  Date: 2014-07-10
+####  version: 4.23.56
+####  Date: 2014-07-14
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -339,7 +339,7 @@ FG_DEFAULT='14.5.1'
 FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
-FG_DEFAULT_BETA='14.5.2'
+FG_DEFAULT_BETA='14.7.1'
 FG_BETA="$FG_DEFAULT_BETA:"
 
 # note: amd release a zip file that contains a space in the name, so I'm not spending 
@@ -2112,7 +2112,7 @@ check_patch_driver()
 						1[4-9])
 							case $DRIVER_DEFAULT in
 								# patch url: http://www.forums.fedoraforum.org/showpost.php?p=1696887&postcount=117
-								14.[45].*)
+								14.[45].*|14.7.1)
 									patchFile='FGLRX-14.5-3.14.patch'
 									apply_patch_file $patchFile "$1"
 									;;
@@ -2734,7 +2734,7 @@ detect_card_version()
 					esac
 					;;
 				0110|0111|0112|0113|0170|0171|0172|0173|0174|0175|0176|0177|0178|0179|017a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
-					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-2' 'd)
+					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacriver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-2' 'set-exists' )
 					LEGACY_LEVEL=2
 					# B_RENDER_ACCEL='' # set default to false
@@ -5718,8 +5718,7 @@ add_grub_nomodeset_blacklist_item()
 		fi
 	fi
 	if [ -f "$GRUBED" ];then
-		if [ -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*$moduleSearch1" $GRUBED )" ];then
-			e"${S}Adding ${C}$GRUBED $noModesetString${S} for ${C}$1${S} blacklist${S} items..... ${N}"
+		if [ -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*$moduleSearch1" $GRUBED )" ];thcho -n "${S}Adding ${C}$GRUBED $noModesetString${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 '$noModesetString'"|' $GRUBED
 			echo "${S}Added${N}"
 			log_function_data "File $GRUBED updated to add $1 $noModesetString: $GRUBED"
@@ -8701,7 +8700,7 @@ update_xorg()
 				# this is only for laptops
 # 				if [ -n "$(find /proc/acpi/battery/ -mindepth 1 -type d 2>/dev/null)" ]
 # 				then
-# 					layout='LVD # no space in string
+# 					layoS,AUTO' # no space in string
 # 				fi
 
 				# \n\tOption      "UseInternalAGPGART" "'$agpart'"
