@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.59
+####  version: 4.23.60
 ####  Date: 2014-09-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -251,6 +251,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
+# stable primary: 
 # stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
@@ -276,7 +277,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stabel legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121 304.123
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='340.32:340.24:337.25:334.21:331.89:331.79:331.67:325.15:319.72:319.82:319.60:313.30:310.44:304.123:304.121:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='343.22:340.32:340.24:337.25:334.21:331.89:331.79:331.67:325.15:319.72:319.82:319.60:313.30:310.44:304.123:304.121:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_4='304xx'
@@ -504,7 +505,7 @@ set_test_data()
 		rm -f $LOG_FILE_DIR	rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
@@ -1324,7 +1325,7 @@ driver_support_tests()
 							190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[134]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
 								;;
-							302.17|285.03|280.13|275.*|173.14.39)
+							343.22|302.17|285.03|280.13|275.*|173.14.39)
 								NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
 								;;
 							*)
@@ -2733,7 +2734,7 @@ detect_card_version()
 							;;
 					esac
 					;;
-				0110|0111|0112|0113|0170|0171|0172|0173|0174|0175|0176|0177|017817a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
+				0110|0111|0112|0113|0170|0171173|0174|0175|0176|0177|0178|0179|017a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-2' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-2' 'set-exists' )
 					LEGACY_LEVEL=2
@@ -5708,11 +5709,11 @@ add_grub_nomodeset_blacklist_item()
 			if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" ];then
 				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1_FED )" ];then
 					sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1_FED
-					activeFile=$GRUB1_FED
+					activeFile=$GR
 				fi
 			fi
 			
-			log_funata "$activeFile file updated to add $1 nomodeset: $grubFiles"
+			log_function_data "$activeFile file updated to add $1 nomodeset: $grubFiles"
 			echo "${S}Added${N}"
 			returnValue=0
 		fi
@@ -8695,7 +8696,7 @@ update_xorg()
 				;;
 			$FGLRX)
 				# set any custom stuff here
-				# only use fglrx internal agpart if not in system andfor 64 bit
+				# only use fglrx i agpart if not in system and never for 64 bit
 				#[ "$( lsmod | grep -c 'agpgart' )" -gt 0 -o "$BITS" == '64' ] && agpart='no'
 
 				# this is only for laptops
