@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.23.58
-####  Date: 2014-08-12
+####  version: 4.23.59
+####  Date: 2014-09-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -229,7 +229,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='340.32:304.123:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='343.22:304.123:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -240,7 +240,7 @@ NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 5xxx cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='343.13::::'
+NV_VERSIONS_BETA='::::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # ge4xx cards
@@ -251,7 +251,7 @@ NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 5xxx cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
-# stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32
+# stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
@@ -2733,7 +2733,7 @@ detect_card_version()
 							;;
 					esac
 					;;
-				0110|0111|0112|0113|0170|0171|0172|0173|0174|0175|0176|0177|0178|7a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
+				0110|0111|0112|0113|0170|0171|0172|0173|0174|0175|0176|0177|017817a|017c|017d|0180|0181|0182|0183|0185|0186|0187|0188|018a|018b|018c|01a0|01f0|0200|0201|0202|0203|0250|0251|0253|0258|0259|025b|0280|0281|0282|0286|0288|0289|028c)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-2' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-2' 'set-exists' )
 					LEGACY_LEVEL=2
@@ -5712,7 +5712,7 @@ add_grub_nomodeset_blacklist_item()
 				fi
 			fi
 			
-			log_functa "$activeFile file updated to add $1 nomodeset: $grubFiles"
+			log_funata "$activeFile file updated to add $1 nomodeset: $grubFiles"
 			echo "${S}Added${N}"
 			returnValue=0
 		fi
@@ -8695,7 +8695,7 @@ update_xorg()
 				;;
 			$FGLRX)
 				# set any custom stuff here
-				# only use fglrx internal agpart if not in system and or 64 bit
+				# only use fglrx internal agpart if not in system andfor 64 bit
 				#[ "$( lsmod | grep -c 'agpgart' )" -gt 0 -o "$BITS" == '64' ] && agpart='no'
 
 				# this is only for laptops
