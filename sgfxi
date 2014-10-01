@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.2
+####  version: 4.24.3
 ####  Date: 2014-09-30
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -1344,7 +1344,7 @@ driver_support_tests()
 							190.53|190.42|185.18.36|180.60|177.82|173.14.2[25]|169.12|100.14.19|96.43.1[46]|71.86.1[134]|71.86.09)
 								NVIDIA_DOWNLOAD_SITE='http://download.nvidia.com'
 								;;
-							343.22|302.17|285.03|280.13|275.*|173.14.39)
+							343.22|340.46|302.17|285.03|280.13|275.*|173.14.39)
 								NVIDIA_DOWNLOAD_SITE='http://us.download.nvidia.com'
 								;;
 							*)
@@ -2733,8 +2733,7 @@ detect_card_version()
 			VGA' | grep -Eo '8[0-9]{3}' )
 			case $cardNumber in
 				# http://listing.driveragent.com/pci/10de/?q=94c3 # later series
-				# http://listing.driveragent.com/pci/12d2/?q=94c3 # full lega# http://www.nvidia.com/object/linux-amd64-display-archive.html legacy
-				09|0010|0018|0019)
+				# http://listing.driveragent.com/pci/12d2/?q=94c3 # full lega# http://www.nvidia.com/object/linux-amd64-display-archive.html legac008|0009|0010|0018|0019)
 					error_handler 253 # if card in this list exit
 					LEGACY_LEVEL=0
 					;;
@@ -5637,7 +5636,7 @@ set_modesetting_off()
 						B_NATIVE_DRIVER='true'
 						echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
 						update_xorgconf_driver_version
-						reb_question "$1" 'modeset-off'
+		oot_now_question "$1" 'modeset-off'
 					fi
 					;;
 			esac
@@ -8641,7 +8640,7 @@ clear_prep_xorg()
 	eval $LOGUS
 	perl -pi -e 's/^[\s]*Load\s*"GLcore"/#\tLoad\t"GLcore"/;
 	s/^[\s]*Load\s*"dri"/#\tLoad\t"dri"/;
-	s/^[\s]*#*[\s]*Loax"/\tLoad\t"glx"/;
+	s/^[\s]*#*[d\s*"glx"/\tLoad\t"glx"/;
 	s/^.*Load\s*"speedo".*\n?//;
 	s/DefaultColorDepth.*/DefaultColorDepth 24/;
 	s/^[\s]*Option\s*"sw_cursor"/\t#Option     "sw_cursor"/;
