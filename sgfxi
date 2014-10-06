@@ -1721,7 +1721,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-									16)
+									16|17)
 										# echo driver default $DRIVER_DEFAULT
 										case $DRIVER_DEFAULT in
 											# waiting for patches and confirmations
@@ -2743,7 +2743,7 @@ detect_card_version()
 	case $cardBrand in
 		10de|12d2)
 			# these will also assign dynamic betas to $NV_BETA prior to sending it
-			# to the master DRIVER_B support tests right after
+			# to the master DRIVEfor support tests right after
 			DRIVER_DEFAULT=$( assign_standard_or_beta_driver 'default' 'driver' )
 			B_BETA_EXISTS=$( assign_standard_or_beta_driver 'default' 'set-exists' )
 			DRIVER_BETA=$NV_BETA
@@ -5638,7 +5638,7 @@ set_modesetting_off()
 # 						echo $LINE
 # 						echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
 # 						echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
-# 						echo "This is because its not possible to remove ${C}$1${S} from a running syN}"
+# 						echo "This is because its not possible to remove ${C}$1${S} from a running.${N}"
 # 						print_hec
 # 					fi
 # 					;;
@@ -8644,7 +8644,7 @@ check_extensions()
 				compState=$stateOn
 				compComment=''
 			else
-				com$stateOff
+				te=$stateOff
 			fi
 			;;
 	esac
