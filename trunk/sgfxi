@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.3
-####  Date: 2014-09-30
+####  version: 4.24.4
+####  Date: 2014-10-06
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -1165,6 +1165,17 @@ driver_support_tests()
 											fi
 									esac
 									;;
+								17)
+									case $DRIVER_DEFAULT in
+										15.*|14.9.*|14.1[0-2].*|$DISTRO_FGLRX)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
 							esac
 							;;
 					esac
@@ -1699,7 +1710,22 @@ driver_support_tests()
 										# echo driver default $DRIVER_DEFAULT
 										case $DRIVER_DEFAULT in
 											# waiting for patches and confirmations
-											343.*|340.*|337.*|334.*|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+											343.*|340.*|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+												# trigger installer flag if needed
+												driver_version_hacks "$DRIVER_DEFAULT"
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									16)
+										# echo driver default $DRIVER_DEFAULT
+										case $DRIVER_DEFAULT in
+											# waiting for patches and confirmations
+											343.*|340.*|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
 												# trigger installer flag if needed
 												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
@@ -2717,23 +2743,26 @@ detect_card_version()
 	case $cardBrand in
 		10de|12d2)
 			# these will also assign dynamic betas to $NV_BETA prior to sending it
-			# to the master DRIVER_BETA for support tests right after
+			# to the master DRIVER_B support tests right after
 			DRIVER_DEFAULT=$( assign_standard_or_beta_driver 'default' 'driver' )
 			B_BETA_EXISTS=$( assign_standard_or_beta_driver 'default' 'set-exists' )
 			DRIVER_BETA=$NV_BETA
 			VERSIONS=$NV_VERSIONS
 			OTHER_VERSIONS=$NV_OTHERS
 			CARD_NUMBER=$cardNumber
-			# do some card specific tests to determine generic clas# |3D[[:space:]]controller |Display[[:space:]]controller
+			# do some card specific tests to determine generic classes
+			# |3D[[:space:]]controller |Display[[:space:]]controller
 			isQuad=$( lspci | \
 			grep -E '([[:space:]]VGA[[:space:]])' | \
 			grep -i -o 'quadro' )
 			is8xxx=$( lspci | \
 			grep -E '[[:space:]]VGA[[:space:]]' | \
-			VGA' | grep -Eo '8[0-9]{3}' )
+			grep -Eo '8[0-9]{3}' )
 			case $cardNumber in
 				# http://listing.driveragent.com/pci/10de/?q=94c3 # later series
-				# http://listing.driveragent.com/pci/12d2/?q=94c3 # full lega# http://www.nvidia.com/object/linux-amd64-display-archive.html legac008|0009|0010|0018|0019)
+				# http://listing.driveragent.com/pci/12d2/?q=94c3 # full legacy
+				# http://www.nvidia.com/object/linux-amd64-display-archive.html
+				0008|0009|0010|0018|0019)
 					error_handler 253 # if card in this list exit
 					LEGACY_LEVEL=0
 					;;
@@ -5609,7 +5638,7 @@ set_modesetting_off()
 # 						echo $LINE
 # 						echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
 # 						echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
-# 						echo "This is because its not possible to remove ${C}$1${S} from a running system.${N}"
+# 						echo "This is because its not possible to remove ${C}$1${S} from a running syN}"
 # 						print_hec
 # 					fi
 # 					;;
@@ -5636,7 +5665,7 @@ set_modesetting_off()
 						B_NATIVE_DRIVER='true'
 						echo "${S}Setting ${C}$EXXC${S} to use ${C}Xorg vesa driver${S} temporarily..... ${N}"
 						update_xorgconf_driver_version
-		oot_now_question "$1" 'modeset-off'
+						reboot_now_question "$1" 'modeset-off'
 					fi
 					;;
 			esac
@@ -8615,7 +8644,7 @@ check_extensions()
 				compState=$stateOn
 				compComment=''
 			else
-				compState=$stateOff
+				com$stateOff
 			fi
 			;;
 	esac
@@ -8640,7 +8669,7 @@ clear_prep_xorg()
 	eval $LOGUS
 	perl -pi -e 's/^[\s]*Load\s*"GLcore"/#\tLoad\t"GLcore"/;
 	s/^[\s]*Load\s*"dri"/#\tLoad\t"dri"/;
-	s/^[\s]*#*[d\s*"glx"/\tLoad\t"glx"/;
+	s/^[\s]*#*[\s]*Load\s*"glx"/\tLoad\t"glx"/;
 	s/^.*Load\s*"speedo".*\n?//;
 	s/DefaultColorDepth.*/DefaultColorDepth 24/;
 	s/^[\s]*Option\s*"sw_cursor"/\t#Option     "sw_cursor"/;
