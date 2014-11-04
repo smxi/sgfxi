@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.6
-####  Date: 2014-10-28
+####  version: 4.24.7
+####  Date: 2014-11-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -8043,7 +8043,7 @@ start_x_question()
 start_stop_x()
 {
 	eval $LOGUS
-	local displayManagers='entrance gdm gdm3 kdm kdm-trinity lightdm lxdm mdm nodm slim wdm xdm' dman='' success=''
+	local displayManagers='entrance gdm gdm3 kdm kdm-trinity lightdm lxdm mdmd mdm nodm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
@@ -8278,13 +8278,13 @@ x_is_running()
 do_display_manager_pid_test()
 {
 	eval $LOGUS
-	local dmIdList='entrance/entranced.pid gdm.pid gdm3.pid kdm.pid lightdm.pid lxdm.pid mdm.pid nodm.pid slim.lock wdm.pid xdm.pid' dmId='' dmInstance=''
+	local dmIdList='entranced.pid gdm.pid gdm3.pid kdm.pid lightdm.pid lxdm.pid mdm.pid nodm.pid sddm.pid sddm slim.lock wdm.pid xdm.pid' dmId='' dmInstance=''
 	
 	for dmId in $dmIdList
 	do
 		# trim off extension of dm
-		if [ -e /var/run/$dmId -o -e /run/$dmId ];then
-			dmInstance=$( sed -r 's/\.(pid|lock))//' <<< $dmId )
+		if [ -f /run/$dmId -o -f /run/${dmId%.*}/$dmId -o -f /var/run/$dmId -o -f /var/run/${dmId%.*}/$dmId  ];then
+			dmInstance=${dmId%.*}
 		fi
 	done
 
