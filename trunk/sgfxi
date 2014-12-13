@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.14
+####  version: 4.24.15
 ####  Date: 2014-12-15
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -1207,7 +1207,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.17*|1.16.99*)
 								case $DRIVER_DEFAULT in
-									346.*$DISTRO_NVIDIA)
+									346.*|343.[3-9][0-9]|340.[6-9][0-9]|304.1[2-9][0-9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -2729,11 +2729,11 @@ set_card()
 		1002)
 			CARD=$FGLRX
 			bCardFound='true'
-			B_DEFAULT_NATIVE_DRIVER='true'
+			B_DEFAULT_NATIVR='true'
 			;;
 		8086)
 			CARD=$INTEL
-		ound='true'
+			bCardFound='true'
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		10c8)
@@ -5634,10 +5634,11 @@ download_install_package()
 prep_native_driver()
 {
 	eval $LOGUS
-	local xxva='xserver-xorg-video-ati' ldrmd='libdrm-dev'
+	local xxva='xserver-xorg-video-ati' ldrmrm-dev'
 	local packageList=''
 
-	case $CA	$FGLRX)
+	case $CARD in
+		$FGLRX)
 			packageList="$xxva $ldrmd"
 			;;
 	esac
