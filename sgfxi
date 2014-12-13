@@ -1205,6 +1205,18 @@ driver_support_tests()
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
 						case $X_VERSION in
+							1.17*|1.16.99*)
+								case $DRIVER_DEFAULT in
+									346.*$DISTRO_NVIDIA)
+										:
+										;;
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
 							1.16*|1.15.99*)
 								# note: 173.14.39 is last legacy 3/5xxx card branch release so xorg support cuts off here
 								case $DRIVER_DEFAULT in
@@ -1741,7 +1753,7 @@ driver_support_tests()
 										# echo driver default $DRIVER_DEFAULT
 										case $DRIVER_DEFAULT in
 											# waiting for patches and confirmations
-											346.*|340.*|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+											346.*|343.*|340.[6-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
 												# trigger installer flag if needed
 												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
@@ -2721,7 +2733,7 @@ set_card()
 			;;
 		8086)
 			CARD=$INTEL
-			bCardFound='true'
+		ound='true'
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		10c8)
@@ -2735,7 +2747,7 @@ set_card()
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		*)
-			# this is required to handown card types when forced override is used
+			# this is required to handle unknown card types when forced override is used
 			if [ -n "$NATIVE_OVERRIDE" ];then
 				bCardFound='true'
 			fi
@@ -5625,19 +5637,18 @@ prep_native_driver()
 	local xxva='xserver-xorg-video-ati' ldrmd='libdrm-dev'
 	local packageList=''
 
-	case $CARD in
-		$FGLRX)
+	case $CA	$FGLRX)
 			packageList="$xxva $ldrmd"
 			;;
 	esac
 	eval $LOGUE
-	remove_package "$packageList" "$xxva"
+	remove_package "$packageList" "$xxva" $LOGPE
 }
 
-### -------------------------------------------------------------------
-### KMS Tools - Modesetting On/Off, Blacklist On/Off, Initramfs set
-### ------------------------------------------------------------
+### -----------------------------------------------------------------KMS Tools - Modesetting On/Off, Blacklist On/Off, Initramfs setOGPE
+}
 
+### -------------------------------------------------------------
 # $1 - module to be handled; $2 - optional: failed (triggers reboot requirement)
 set_modesetting_off()
 {
@@ -8623,7 +8634,7 @@ update_xorgconf_driver_version()
 		log_function_data "Driver $driverName failed to get written to $EXXC. Probable cause for failure."
 	else
 		log_function_data "Driver $driverName written to $EXXC. This component worked."
-	fi' $EXXC
+	fi
 	eval $LOGUE
 }
 
@@ -8632,7 +8643,7 @@ update_xorgconf_driver_version()
 check_extensions()
 {
 	eval $LOGUS
-	local stateOn='enable' stateOff='disable'ult for nvidia
+	local stateOn='enable' stateOff='disable' # default for nvidia
 	local turnOff='' rendState=$stateOff compState=$stateOff aiglxString=''
 	local compComment='#' rendComment='#'
 
