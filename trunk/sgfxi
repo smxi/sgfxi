@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.16
+####  version: 4.24.17
 ####  Date: 2014-12-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
@@ -8243,7 +8243,7 @@ start_stop_x()
 				fi
 	#else
 		#else
-			exit 0 # smxi will handle the pid root kill
+			exit 0 # smxi will handle the pid root # kill
 		fi
 	fi
 	eval $LO# this has weird consequences, not a good thing to use possibly, but I'll check it outOkill_systemd_tty()
