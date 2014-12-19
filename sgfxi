@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.15
-####  Date: 2014-12-15
+####  version: 4.24.16
+####  Date: 2014-12-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2014
 ####  Code contributions copyright: Latino 2008
@@ -8216,7 +8216,9 @@ start_stop_x()
 		fi
 	fi
 	# this will exit the root shell on successful run of start x
-	if [ "$1" == 'start' -a "$success" == 'true' ];then
+	if [ "$1" == 'start' -a "$success" == 'true' ];# trying to bypass this because smxi is failing to restart x after driver install, so
+		# I will make smxi exit after running sgfxi
+		# then
 		if [ "$B_SM_INSTALL" != 'true' ];then
 			# the failure case handels a weird thing when kill gives error
 			if [ -n "$LOGIN_PID" ];th# too many oddities with systemd kill root/tty, so not doing anything for now ];then
@@ -8239,8 +8241,8 @@ start_stop_x()
 					echo "${E}No login Pid found to kill, leaving root logged in.${N}"
 					exit 0
 				fi
-			fi
-		else
+	#else
+		#else
 			exit 0 # smxi will handle the pid root kill
 		fi
 	fi
