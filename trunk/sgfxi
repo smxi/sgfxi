@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.21
-####  Date: 2015-02-24
+####  version: 4.24.22
+####  Date: 2015-03-11
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -410,6 +410,7 @@ EXXC='/etc/X11/xorg.conf'
 EAR='/etc/arch-release'
 EDV='/etc/debian_version'
 EFR='/etc/fedora-release'
+EIT='/etc/inittab'
 ELR='/etc/lsb-release'
 ELRC='/etc/lsb-release-crunchbang'
 GRUB1='/boot/grub/menu.lst'
@@ -2727,8 +2728,8 @@ set_card()
 			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		1002)
-			CARD=$FGLRX
-			bCardFound='trB_DEFAULT_NATIVE_DRIVER='true'
+			CARD=$FGLRardFound='true'
+			B_DEFAULT_NATIVE_DRIVER='true'
 			;;
 		8086)
 			CARD=$INTEL
@@ -5626,7 +5627,7 @@ download_install_package()
 	wget -Nc $url || error_handler 189 $packageToInstall
 
 	if [ -s "$packageToInstall" ];then
-		echo "${S}Experimental package ${C}$shortPackage${S} downloaded successfully, install.${N}"
+		echo "${S}Experimental package ${C}$shortPackage${S} downloaded sully, installing now.${N}"
 		dpkg -i $packageToInstall
 		rm -f $packageToInstall
 	else
@@ -8078,7 +8079,10 @@ start_stop_x()
 	# setting the default will handle cases like default 2 while still handling 3/5
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
-	local defaultRunlevel=$( grep -Es '^id.*:initdefault:' /etc/inittab | grep -Eo '[0-5]' )
+	local defaultRu''
+	if [ -f $EIT ];then
+		defaultRunlevel=$( grep -Es '^id.*:initdefault:' $EIT | grep -Eo '[0-5]' )
+	fi0-5]' )
 	# default, this prevents errors when these don't exist in for ex. fedora
 	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' bSkipXKill='false'
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
@@ -8646,8 +8650,8 @@ update_xorgconf_driver_version()
 
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
-	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\sark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	# these are all known xserver-xorg-video-xxxx , plus nvidia and fglrx
+	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	# confirm that it got written, if they add other driver names etc, like modesetting, it will fail until
 	# sgfxi is updated with those new names.
 	if [[ -z $( grep "\"$driverName\"" $EXXC ) ]];then
