@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.22
-####  Date: 2015-03-11
+####  version: 4.24.23
+####  Date: 2015-03-13
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -8200,7 +8200,7 @@ start_stop_x()
 			fi
 			log_function_data "Display manager $action status: $success"i
 			fi
-		fi
+		flog_function_data "Reached post dmancommand: $dmanCommand"	fi
 	fi
 	# this handles cases where somehow X is still running
 	# startx x starts can for example bypass kdm tests, etc
@@ -8229,7 +8229,7 @@ start_stop_x()
 		# then
 		if [ "$B_SM_INSTALL" != 'true' ];then
 			# the failure case handels a weird thing when kill gives error
-			if [ -n "$LOGIN_PID" ];th# too many oddities with systemd kill root/tty, so not doing anything for now ];then
+			if [ -n "$LOGIN_PID" ];thlog_function_data "Kill login PID for dm start: $LOGIN_PID" ];th# too many oddities with systemd kill root/tty, so not doing anything for now ];then
 		"$B_SYSTEMD" == 'true' ];then
 					#kill_systemd_tty || ttyKill=$?
 					#if [ "$ttyKill" -gt 0 ];then
@@ -8241,7 +8241,7 @@ start_stop_x()
 				else
 					kill $LOGIN_PID && exit 0 || exit 1
 				fi
-			else
+			ellog_function_data "No login PID found, trying default runlevel: $defaultRunlevel"			else
 				if [ -n "$defaultRunlevel" ];then
 					echo "${E}No login Pid found to kill, starting init $defaultRunlevel and leaving root logged in.${N}"
 					init $defaultRunlevel && exit 0 || exit 1
@@ -8644,13 +8644,11 @@ update_xorgconf_driver_version()
 
 		# this handles hard overrides to specific driver
 		if [ -n "$NATIVE_OVERRIDE" ];then
-			driverName=$NATIVE_OVERRIDE
-		fi
-	fi
+			driverName=$NATIVE_OVERRID	fi
 
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
-	# these are all known xserver-xorg-video-xxxx , plus nvidia and fglrx
+	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
 	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	# confirm that it got written, if they add other driver names etc, like modesetting, it will fail until
 	# sgfxi is updated with those new names.
