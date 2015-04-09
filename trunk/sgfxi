@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.24
-####  Date: 2015-03-27
+####  version: 4.24.25
+####  Date: 2015-04-08
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='346.47:340.76:304.125:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='346.59:340.76:304.125:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -254,13 +254,14 @@ NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 8xxx/21x cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
-# stable primary: 343.36 346.35 346.47
+# stable primary: 343.36 346.35 346.47 346.59
 # stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 331.89 340.24 340.32 340.46 340.58 340.65 346.35 346.47
+# lt stable primary: 
+# lt stable primary: 331.89 340.24 340.32 340.46 340.58 340.65 346.35 346.47 346.59
 # lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49 331.67 331.79
 # lt stable primary: 304.37 304.43 304.51 310.19 310.32 310.40 310.44 319.17 319.23
 # lt stable primary: 275.28 275.36 275.43 295.20 295.40 295.49 295.53 295.59 295.71
@@ -278,11 +279,11 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
 #                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38 173.14.39 (ends with xorg 1.15 support)
 # stable legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121 304.123 304.125
-# stable legacy 5: 340.24 340.32 340.46 340.58 340.76
+# stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76
 
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='346.35:343.36:343.22:340.65:340.58:337.25:334.21:331.89:331.79:325.15:319.72:319.82:313.30:310.44:304.125:304.123:304.121:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='346.59:346.47:346.35:343.36:340.76:340.65:337.25:334.21:331.89:331.79:325.15:319.72:319.82:313.30:310.44:304.125:304.123:304.121:304.119:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_5='340xx'
@@ -2729,10 +2730,10 @@ select_card()
 	else
 		echo "${S}Because you started with ${C}-C${S} option, ${C}$SCRIPT_NAME${S} will NOT change your ${C}xorg.conf${S} here"
 		echo "but will simply set which card to use for the automatic driver selection. Just pick the card"
-		echo "you want ${C}$SCRIPT_NAME${S} to use as the main card and ${C}$SCRIPT_NAME${S} will continue to installing the proper driver."
+		echo "you want ${C}$SCRIPT_NAME${S} to use as the main card and ${C}$SCRIPT_NAME${S} will continuetalling the proper driver."
 	fi
 	echo
-	echolease select which card you want to install a driver for now to proceed:"
+	echo "${S}Please select which card you want to install a driver for now to proceed:"
 	echo $MLINE
 
 	options="$cardData exit"
@@ -5625,9 +5626,9 @@ install_native_driver()
 native_driver_install_keep()
 {
 	eval $LOGUS
-	local lgmd='libgl1-mesa-dri'  ldrm='libdrm2'
+	local lgmd='libgl1-m'  ldrm='libdrm2'
 
-	if [ "$NATIVE_OVERRIDE"deon' ];then
+	if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
 		if [ -z "$( check_package_status "$lgmd" 'i' )" ];then
 			install_package $lgmd
 		fi
@@ -8647,9 +8648,9 @@ create_driver_entry()
 {
 	eval $LOGUS
 	# since this is set in the above function, it must exist, but I'll check to make sure
-	local deviceLineNu=$( grep -Eisn 'Section[[:space:]]*"Device"' $EXXC | cut -d ':' -f 1 )
+	local deviceLineNu=$( grep -Eisn 'Section[[:space:]]*"Device"' $cut -d ':' -f 1 )
 
-	# echo deviceLineNu: $dneNu
+	# echo deviceLineNu: $deviceLineNu
 	# make sure it's numeric, and that only one device section number was returned (space)
 	if [ -n "$( grep -E '^[0-9]+$' <<< $deviceLineNu )" ];then
 		# this is a trick to only grep within a block delimited by start/EndSection
