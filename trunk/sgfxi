@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.25
-####  Date: 2015-04-08
+####  version: 4.24.26
+####  Date: 2015-04-14
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='346.59:340.76:304.125:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='349.16:340.76:304.125:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -254,7 +254,7 @@ NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 8xxx/21x cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
-# stable primary: 343.36 346.35 346.47 346.59
+# stable primary: 343.36 346.35 346.47 346.59 349.16
 # stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
@@ -2730,7 +2730,7 @@ select_card()
 	else
 		echo "${S}Because you started with ${C}-C${S} option, ${C}$SCRIPT_NAME${S} will NOT change your ${C}xorg.conf${S} here"
 		echo "but will simply set which card to use for the automatic driver selection. Just pick the card"
-		echo "you want ${C}$SCRIPT_NAME${S} to use as the main card and ${C}$SCRIPT_NAME${S} will continuetalling the proper driver."
+		echo "you want ${C}$SCRIPT_NAME${S} to use as the main card and ${C}$SCRIPT_NAME${S} will c to installing the proper driver."
 	fi
 	echo
 	echo "${S}Please select which card you want to install a driver for now to proceed:"
@@ -5626,7 +5626,7 @@ install_native_driver()
 native_driver_install_keep()
 {
 	eval $LOGUS
-	local lgmd='libgl1-m'  ldrm='libdrm2'
+	local lgmd='lesa-dri'  ldrm='libdrm2'
 
 	if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
 		if [ -z "$( check_package_status "$lgmd" 'i' )" ];then
@@ -8648,7 +8648,7 @@ create_driver_entry()
 {
 	eval $LOGUS
 	# since this is set in the above function, it must exist, but I'll check to make sure
-	local deviceLineNu=$( grep -Eisn 'Section[[:space:]]*"Device"' $cut -d ':' -f 1 )
+	local deviceLineNu=$( grep -Eisn 'Section[[:space:]]*"DevEXXC | cut -d ':' -f 1 )
 
 	# echo deviceLineNu: $deviceLineNu
 	# make sure it's numeric, and that only one device section number was returned (space)
