@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.26
-####  Date: 2015-04-14
+####  version: 4.24.27
+####  Date: 2015-05-01
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -3619,7 +3619,7 @@ check_kernel_headers()
 		arch)
 			headerName="linux-headers"
 			headerPresent="$( ls /lib/modules/$KERNEL_FULL/build/ 2>/dev/null )"
-			testKernel=$( grep -Esi '^(2\.6|[3-6]\.[0-9]+)\.[0-9]+-ARCH$' <<< $KERNEL_FULL )
+			testKernel=$( grep -Esi '^(2\.6|[3-9]\.[0-9]+)\.[0-9]+-ARCH$' <<< $KERNEL_FULL )
 			# 2.6.32-ARCH
 			if [ -z "$headerPresent" ];then
 				# if it's a custom kernel, no package available so die
