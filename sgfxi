@@ -4020,7 +4020,7 @@ nt" )
 					FG_DISTRIB_CODENAME='stable'
 					SYSTEM_CODENAME='stable'
 				fi
-			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isJessiesWheezy" -o "$isTesting" -gt 0 ];then
+			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isStretchsWheezy" -o "$isTesting" -gt 0 ];then
 				FG_DISTRIB_CODENAME='sid'
 				SYSTEM_CODENAME='testing'
 			else
@@ -5619,7 +5619,7 @@ install_native_driver()
 		eval $LOGPE
 		## and finish it up
 		x_start_stop_master start
-		# just exit here in case something weird goes wrong with xorg start
+	 # just exit here in case something weird goes wrong with xorg start
 	else
 		error_handler 254 # this is redundant, but I'm leaving it as a fail safe
 	fi
@@ -8646,7 +8646,7 @@ set_server_flag()
 
 # some rough code, will write driver / pciid if required,this is mainly for systems
 # that are using the new xorg, and may not have a driver/busid entry.
-# if all goes well,nly create a driver / busid entry if missing
+# if all goes wellonly create a driver / busid entry if missing
 create_driver_entry()
 {
 	eval $LOGUS
