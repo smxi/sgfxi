@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.27
-####  Date: 2015-05-01
+####  version: 4.24.28
+####  Date: 2015-05-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -3948,16 +3948,17 @@ check_set_distro()
 		local isLenny=$( grep -is '^5.' <<< "$edvContent" )
 		local isSqueeze=$( grep -Eis '^(squeeze|6\.)' <<< "$edvContent" )
 		local isWheezy=$( grep -Eis '^(wheezy|7\.)' <<< "$edvConte	local isJessie=$( grep -Eis '^(jessie|8\.)' <<< "$edvContent" )
+		local isStretch=$( grep -Eis '^(stretch|9\.)' <<< "$edvContent" )
 nt" )
 	
 		# first tests sources
-		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(wheezy(stable|squeeze|lenny|etch)' )
-		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -jessie(wheezy|testing)' )
-		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstabe)' )
+		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(wheezy(stable|squeeze|len|jesse)' )
+		local isTestingnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Etretch(wheezy|testing)' )
+		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstab		e)' )
 	
 		# then test conf for default version
-		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny||wheezy)"' <<< "$eaaContent" )
-		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|jessie|wheezy)"' <<< "$eaaContent" )
+		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny||wheezy|jesse)"' <<< "$eaaContent" )
+		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|stretch|wheezy)"' <<< "$eaaContent" )
 		local isUnstableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(sid|unstable)"' <<< "$eaaContent" )
 	# arch tests
 	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
@@ -3997,11 +3998,10 @@ nt" )
 			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
 			if [ "$workingId" == 'linuxmint-debian' ];then
-				APT_TYPE='apt-get'
-			fi
+				APT_TYPE='apt-get'			fi
 
 			# set system type. This test will never be perfect, but it's a good approximation
-			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o WheezySqueeze" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
+			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o WheezySq -o -n "$isJessieSqueeze" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
 				if [ -n "$isEtch" ];then
 					FG_DISTRIB_CODENAME='etch'
 					SYSTEM_CODENAME='etch'
@@ -4013,6 +4013,9 @@ nt" )
 					SYSTEM_CODENAME='squeeze'if [ -n "$isWheezy" ];then
 					FG_DISTRIB_CODENAME='wheezy' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='wheezy'
+				elif [ -n "$isJesse" ];then
+					FG_DISTRIB_CODENAME='jesse' # note: 'stable' breaks the installer
+					SYSTEM_CODENAME='jesse'
 				else
 					FG_DISTRIB_CODENAME='stable'
 					SYSTEM_CODENAME='stable'
@@ -5616,7 +5619,7 @@ install_native_driver()
 		eval $LOGPE
 		## and finish it up
 		x_start_stop_master start
-		exit 0 # just exit here in case something weird goes wrong with xorg start
+		# just exit here in case something weird goes wrong with xorg start
 	else
 		error_handler 254 # this is redundant, but I'm leaving it as a fail safe
 	fi
@@ -5626,7 +5629,7 @@ install_native_driver()
 native_driver_install_keep()
 {
 	eval $LOGUS
-	local lgmd='lesa-dri'  ldrm='libdrm2'
+	local lgmd='libgl1-mesa-dri'  ldrm='libdrm2'
 
 	if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
 		if [ -z "$( check_package_status "$lgmd" 'i' )" ];then
@@ -8643,12 +8646,12 @@ set_server_flag()
 
 # some rough code, will write driver / pciid if required,this is mainly for systems
 # that are using the new xorg, and may not have a driver/busid entry.
-# if all goes well, will only create a driver / busid entry if missing
+# if all goes well,nly create a driver / busid entry if missing
 create_driver_entry()
 {
 	eval $LOGUS
 	# since this is set in the above function, it must exist, but I'll check to make sure
-	local deviceLineNu=$( grep -Eisn 'Section[[:space:]]*"DevEXXC | cut -d ':' -f 1 )
+	local deviceLineNu=$( grep -Eisn 'Section[[:space:]]*"Device"' $EXXC | cut -d ':' -f 1 )
 
 	# echo deviceLineNu: $deviceLineNu
 	# make sure it's numeric, and that only one device section number was returned (space)
