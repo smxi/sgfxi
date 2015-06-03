@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.30
-####  Date: 2015-05-18
+####  version: 4.24.31
+####  Date: 2015-06-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -345,12 +345,12 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # www2.ati.com/drivers/linux/amd-catalyst-14-4-rev2-linux-x86-x86-64-may6.zip
 # www2.ati.com/drivers/linux/linux-amd-catalyst-14.4-rc-v1.0-apr17.zip
 # www2.ati.com/drivers/beta/linux-amd-catalyst-14.6-beta-v1.0-may23.zip
-FG_VERSIONS='14.12.1:14.9.1:14.5.1'
-FG_DEFAULT='14.12.1'
+FG_VERSIONS='15.6.1:14.12.1:14.9.1'
+FG_DEFAULT='15.6.1'
 FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
-FG_DEFAULT_BETA='14.7.1'
+FG_DEFAULT_BETA=''
 FG_BETA="$FG_DEFAULT_BETA:"
 
 # note: amd release a zip file that contains a space in the name, so I'm not spending 
@@ -360,7 +360,7 @@ FG_BETA_VERSION='' # legacy, but leaving in case needed in future
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 
 ### Stable Series: ###
-# 14.4.1 14.4.2 14.5.1 14.9.1 13.12.1 
+# 13.12.1 14.4.1 14.4.2 14.5.1 14.9.1 14.12.1 15.6.1
 # 12-1 12-2 12-3 12-4 12-6 12-7 12.10 13.1 13-4 13.9 13:12
 # 11-12 11-11 11-10 11-9 11-8 11-7 11-6 11-5 11-4 11-3 11-2 11-1
 # 10-12 10-11 10-10 10-9 10-8 10-7 10-6 10-5 10-4 10-3 10-2 10-1
@@ -371,7 +371,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # 14.3.14 14.5.2 14.7.1
 ### Older Betas: ###
 # 13.8-beta2
-FG_OTHERS='13.12.1:14.9.1:14.5.1:14.4.2:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='15.6.1:14.12.1:14.9.1:14.5.1:14.4.2:13.12.1:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
@@ -653,7 +653,7 @@ driver_support_tests()
 					case $X_VERSION in
 						1.16*|1.15.99*)
 							case $DRIVER_DEFAULT in
-								15.*|14.9.*|$DISTRO_FGLRX)
+								15.*|14.12.*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -1197,6 +1197,17 @@ driver_support_tests()
 						4)
 							case $KERNEL_MATH in
 								0)
+									case $DRIVER_DEFAULT in
+										15.*|$DISTRO_FGLRX)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								1)
 									case $DRIVER_DEFAULT in
 										15.*|$DISTRO_FGLRX)
 											: # do nothing
@@ -2723,12 +2734,12 @@ select_card()
 		echo "please restart ${C}$SCRIPT_NAME${M} with extra ${C}-C${M} option and it will not change xorg.conf."
 		echo
 		echo "${C}$SCRIPT_NAME${S} will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desirable,"
-		echo "but for rare cases of dual card, dual monitor setups, you may want to start with ${C}-C${S} (exit here to do so) "
+		echo "but for rare cases of dual card, dualr setups, you may want to start with ${C}-C${S} (exit here to do so) "
 		echo
 		
 		echo "If you proceed without ${C}-C${S}, a copy of your current ${C}xorg.conf${S} will be made here: ${C}$timeStampXorg"
 	else
-		echo "${S}Because you started with ${C}-C${S} option, ${C}$SCRIPT_NAME${S} will NOT change your ${conf${S} here"
+		echo "${S}Because you started with ${C}-C${S} option, ${C}$SCRIPT_NAME${S} will NOT change your ${C}xorg.conf${S} here"
 		echo "but will simply set which card to use for the automatic driver selection. Just pick the card"
 		echo "you want ${C}$SCRIPT_NAME${S} to use as the main card and ${C}$SCRIPT_NAME${S} will continue to installing the proper driver."
 	fi
@@ -5598,7 +5609,7 @@ install_native_driver()
 			fi
 		fi
 		# we'll need this to determine whether to do a reboot for radeon/nouveau
-		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' $EXXC | grep -oEs "(nvidia|fglrx)" )
+		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' $EXXC | grep -oEs "(fglrx)" )
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		if [ "$B_RESTORE_DEFAULTS" == 'false' ];then
 			update_xorg
@@ -5607,7 +5618,7 @@ install_native_driver()
 		
 		case $NATIVE_OVERRIDE in
 			nouveau|radeon)
-				case $SYST in
+				case $SYSTEM_BASE in
 					arch|fedora|debian|ubuntu)
 						add_module "$NATIVE_OVERRIDE"
 						;;
@@ -8626,8 +8637,7 @@ create_section_serverflags()
 	# if this section is not present, create it
 	if [ "$( grep -Esic 'Section[ \t]*"ServerFlags"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
-		echo -e 'Section "ServerFlags"' >> $EXXC
-		echo 'EndSection' >> $EXXC
+		echo -e 'Section "ServerFlags"' >> $EXho 'EndSection' >> $EXXC
 		echo  >> $EXXC
 	fi
 	eval $LOGUE
@@ -8639,7 +8649,7 @@ set_server_flag()
 	eval $LOGUS
 	create_section_serverflags
 	if [ -z "$( grep -Eis '^[[:space:]]*Option[[:space:]]+"'$1'"[[:space:]]+' $EXXC )" ];then
-		perl -pi -e 's/^([\s]*Section\s*"ServerFlags")/\1\n\tOption      t"true"\n/' $EXXC
+		perl -pi -e 's/^([\s]*Section\s*"ServerFlags")/\1\n\tOption      "'$1'"\t"true"\n/' $EXXC
 	fi
 	eval $LOGUE
 }
