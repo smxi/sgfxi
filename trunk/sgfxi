@@ -432,7 +432,6 @@ SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
 # alt for some data
 # "http://liquorix.net/sgfxi/"
 A_BASE_URLS=(
-"http://liquorix.net/sgfxi/"
 "$SCRIPT_DOWNLOAD_DATA"
 )
 BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
@@ -516,7 +515,7 @@ set_test_data()
 		rm -f $LOG_FILE_DIR	rm -f $SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-# 4xxx
+# 		CARD_DATA=1002:9442 # fake ati hd2000- 4xxx
 # 		CARD_DATA=1002:9805 # fake ati hd 6250 card
 # 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
