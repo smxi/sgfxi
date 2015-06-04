@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.31
-####  Date: 2015-06-02
+####  version: 4.24.32
+####  Date: 2015-06-04
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -432,6 +432,7 @@ SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
 # alt for some data
 # "http://liquorix.net/sgfxi/"
 A_BASE_URLS=(
+"http://liquorix.net/sgfxi/"
 "$SCRIPT_DOWNLOAD_DATA"
 )
 BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
