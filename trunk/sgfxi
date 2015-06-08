@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.32
-####  Date: 2015-06-04
+####  version: 4.24.33
+####  Date: 2015-06-08
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -410,6 +410,7 @@ EAS='/etc/apt/sources.list'
 EXXC='/etc/X11/xorg.conf'
 EAR='/etc/arch-release'
 EDV='/etc/debian_version'
+EDVV='/etc/devuan_version'
 EFR='/etc/fedora-release'
 EIT='/etc/inittab'
 ELR='/etc/lsb-release'
@@ -2734,7 +2735,7 @@ select_card()
 		echo "please restart ${C}$SCRIPT_NAME${M} with extra ${C}-C${M} option and it will not change xorg.conf."
 		echo
 		echo "${C}$SCRIPT_NAME${S} will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desirable,"
-		echo "but for rare cases of dual card, dualr setups, you may want to start with ${C}-C${S} (exit here to do so) "
+		echo "but for rar of dual card, dual monitor setups, you may want to start with ${C}-C${S} (exit here to do so) "
 		echo
 		
 		echo "If you proceed without ${C}-C${S}, a copy of your current ${C}xorg.conf${S} will be made here: ${C}$timeStampXorg"
@@ -3934,9 +3935,15 @@ check_set_distro()
 		workingId='linuxmint'
 	# debian defaults, might miss other ubuntu derived distros but those will
 	# be handled as we find them, empirically.
-	elif [ -f "$EDV" ];then
+	elif [ -f -o -f "$EDVV" ];then # edvv is devua" ];then
 		# set files to ram first, no need to keep reading them
-		local edvContent='' easContent='' eaaContent=''
+		local edvContent='' easContent='' eaaCon edvFile=''
+		
+		if [ -f "$EDV" ];then
+			edvFile=$EDV
+		elif [ -f "$EDVV" ];then
+			edvFile=$EDVV
+		fitent=''
 		
 		workingId='debian'
 		
@@ -3944,8 +3951,8 @@ check_set_distro()
 			workingId='linuxmint-debian'
 		fi
 		
-		if [ -f "$EDV" ];then
-			edvContent="$( cat $EDV )"
+		if edvFile" ];then
+			edvContent="$( cat $edvFileat $EDV )"
 		fi
 		if [ -f "$EAS" -o -d "$EAS.d" ];then
 			easContent="$( cat $EAS $EAS.d/*.list 2>/dev/null )"
@@ -5607,9 +5614,8 @@ install_native_driver()
 			if [ "$CARD" == "$FGLRX" ];then
 				eval $extraAtiPackage1
 			fi
-		fi
-		# we'll need this to determine whether to do a reboot for radeon/nouveau
-		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' $EXXC | grep -oEs "(fglrx)" )
+# we'll need this to determine whether to do a reboot for radeon/nouveau
+		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' $EXXC | grep -oEs "(nvidia|fglrx)" )
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		if [ "$B_RESTORE_DEFAULTS" == 'false' ];then
 			update_xorg
@@ -8634,10 +8640,11 @@ create_section_extensions()
 create_section_serverflags()
 {
 	eval $LOGUS
-	# if this section is not present, create it
+	# if ction is not present, create it
 	if [ "$( grep -Esic 'Section[ \t]*"ServerFlags"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
-		echo -e 'Section "ServerFlags"' >> $EXho 'EndSection' >> $EXXC
+		echo -e 'Section "ServerFlags"' >> $EXXC
+		echo 'EndSection' >> $EXXC
 		echo  >> $EXXC
 	fi
 	eval $LOGUE
