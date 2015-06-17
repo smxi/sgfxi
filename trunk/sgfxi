@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.34
-####  Date: 2015-06-15
+####  version: 4.24.35
+####  Date: 2015-06-16
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='352.21;340.76:304.125:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='352.21:340.76:304.125:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
