@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.36
-####  Date: 2015-06-23
+####  version: 4.24.37
+####  Date: 2015-07-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -6639,7 +6639,7 @@ download_extract_driver()
 prep_install()
 {
 	eval $LOGPS
-	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-6]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-6]\.[0-9]{1,2}' )
+	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-7]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-7]\.[0-9]{1,2}' )
 	local gccPackage="gcc-$gccVersion"  
 	local libMesaGlx='' ubgv='' bUpdateGcc='false'
 
@@ -6654,9 +6654,18 @@ prep_install()
 			;;
 		debian)
 			libMesaGlx='libgl1-mesa-glx'
+			# it looks like maybe as of gcc 5 debian dropped the decimal
+			if [ -n "$gccVersion" -a -n "$( grep -E '^[5-9]' <<< $gccVersion)" ];then
+				gccVersion=$(grep -Eo '^[5-9]' <<< $gccVersion )
+				gccPackage="gcc-$gccVersion"
+			fi
 			;;
 		ubuntu)
 			libMesaGlx='libgl1-mesa-glx'
+			if [ -n "$gccVersion" -a -n "$( grep -E '^[5-9]' <<< $gccVersion)" ];then
+				gccVersion=$(grep -Eo '^[5-9]' <<< $gccVersion )
+				gccPackage="gcc-$gccVersion"
+			fi
 			;;
 		fedora)
 			gccPackage='gcc'
@@ -8617,7 +8626,7 @@ create_section_device()
 		# the vesa is a just a failsafe, the actual driver will be set in driver version
 # 		echo -e '\tDriver "vesa"' >> $EXXC
 # 		echo -e '\tBusID "PCI:'$BUS_ID'"' >> $EXXC
-		echo 'EndSection' >> $EXXC
+		echo 'EndSectioEXXC
 		echo  >> $EXXC
 	fi
 	# now fill it if needed
@@ -8639,7 +8648,8 @@ create_section_extensions()
  
 create_section_serverflags()
 {
-	eval $# if this section is not present, create it
+	eval $LOGUS
+	# if this section is not present, create it
 	if [ "$( grep -Esic 'Section[ \t]*"ServerFlags"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
 		echo -e 'Section "ServerFlags"' >> $EXXC
