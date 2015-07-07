@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.37
-####  Date: 2015-07-03
+####  version: 4.24.38
+####  Date: 2015-07-07
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -8244,7 +8244,7 @@ start_stop_x()
 					dmanCommand="systemctl $action $dman.service"
 				elif [ "$B_UPSTART" == 'true' ];then
 					dmanCommand="initctl $action $dman"
-				elif [ -x $startPath$dman  ];then
+				elif [ -x "$startPath$dman"  ];then
 					dmanCommand="$serviceControl$dman $action"
 				fi
 				defaultDM=$dman
@@ -8270,7 +8270,7 @@ start_stop_x()
 				dmanCommand="systemctl $action $defaultDM.service"
 			elif [ "$B_UPSTART" == 'true' ];then
 				dmanCommand="initctl $action $defaultDM"
-			elif [ -x $startPath$defaultDM ];then
+			elif [ -x "$startPath$defaultDM" ];then
 				dmanCommand="$serviceControl$defaultDM $action"
 			fi
 		elif [ -n "$gdmCommand" ];then
@@ -8626,7 +8626,7 @@ create_section_device()
 		# the vesa is a just a failsafe, the actual driver will be set in driver version
 # 		echo -e '\tDriver "vesa"' >> $EXXC
 # 		echo -e '\tBusID "PCI:'$BUS_ID'"' >> $EXXC
-		echo 'EndSectioEXXC
+		echo 'EndSe>> $EXXC
 		echo  >> $EXXC
 	fi
 	# now fill it if needed
