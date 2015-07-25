@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.40
-####  Date: 2015-07-10
+####  version: 4.24.41
+####  Date: 2015-07-25
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -1851,6 +1851,18 @@ driver_support_tests()
 												;;
 										esac
 										;;
+									1) # reports build failure with 340.46
+										case $DRIVER_DEFAULT in
+											352.*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
 								esac
 								# end KERNEL_MATH
 								;;
@@ -2730,11 +2742,12 @@ select_card()
 	echo "${C}$cardData"
 	echo
 	if [ "$B_SKIP_CONFIG" != 'true' ];then
-		echo "${M}If you want to preserve your current ${C}xorg.conf${M}, for example if you use dual"
+		echo "${M}If you want to preserve your current ${C}xorg.conf${Mexample if you use dual"
 		echo "card setup, and your system is working fine with the driver you are installing,"
 		echo "please restart ${C}$SCRIPT_NAME${M} with extra ${C}-C${M} option and it will not change xorg.conf."
 		echo
-		echo "${C}$SCRIPT_NAME${S} will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desir		echo "but for rare cases of dual card, dual monitor setups, you may want to start with ${C}-C${S} (exit here to do so) "
+		echo "${C}$SCRIPT_NAME${S} will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desirable,"
+		echo "but for rare cases of dual card, dual monitor setups, you may want to start with ${C}-C${S} (exit here to do so) "
 		echo
 		
 		echo "If you proceed without ${C}-C${S}, a copy of your current ${C}xorg.conf${S} will be made here: ${C}$timeStampXorg"
@@ -5598,7 +5611,7 @@ install_native_driver()
 		fi
 		
 		if [ "$CARD" == "$FGLRX" -a "$B_EXPERIMENTAL" == 'true' ];then
-			echo "${S}Installing experimental driver ${C}$driver${S} now...${N}"
+			echo "${S}Installing experimental driver ${C}$driver$...${N}"
 			native_driver_experimental "$driver"
 		else
 			if [ "$bSkipInstall" != 'true' ];then
@@ -5611,7 +5624,7 @@ install_native_driver()
 				install_package $driver '' 'reinstall'
 			fi
 			if [ "$CARD" == "$FGLRX" ];then
-				evaaAtiPackage1
+				eval $extraAtiPackage1
 			fi
 		fi
 		# we'll need this to determine whether to do a reboot for radeon/nouveau
@@ -8618,14 +8631,15 @@ create_x_conf()
 create_section_device()
 {
 	eval $LOGUS
-	# if this section is not present, create it
+	# if this section present, create it
 	if [ "$( grep -Esic 'Section[ \t]*"Device"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
 		echo -e 'Section "Device"' >> $EXXC
 		echo -e '\tIdentifier "Card0"' >> $EXXC
 		# the vesa is a just a failsafe, the actual driver will be set in driver version
 # 		echo -e '\tDriver "vesa"' >> $EXXC
-# 		echo -e '\tBusID "PCI:'$BUS_ID'"' >> $EXXC 'EndSection' >> $EXXC
+# 		echo -e '\tBusID "PCI:'$BUS_ID'"' >> $EXXC
+		echo 'EndSection' >> $EXXC
 		echo  >> $EXXC
 	fi
 	# now fill it if needed
