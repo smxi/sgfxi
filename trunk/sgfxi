@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.41
-####  Date: 2015-07-25
+####  version: 4.24.42
+####  Date: 2015-07-28
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='352.21:340.76:304.125:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='352.30:340.76:304.125:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -254,7 +254,8 @@ NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 8xxx/21x cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
-# stable primary: 343.36 346.35 346.47 346.59 349.16 346.72 352.21
+# stable primary: 
+# stable primary: 343.36 346.35 346.47 346.59 349.16 346.72 352.21 352.30
 # stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
@@ -283,7 +284,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 
 # beta/others: 310.14 313.09 319.12
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='346.82:346.72:343.36:340.76:340.65:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.125:304.123:304.121:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='352.30:352.21:346.82:346.72:343.36:340.76:340.65:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.125:304.123:304.121:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_5='340xx'
@@ -2742,7 +2743,7 @@ select_card()
 	echo "${C}$cardData"
 	echo
 	if [ "$B_SKIP_CONFIG" != 'true' ];then
-		echo "${M}If you want to preserve your current ${C}xorg.conf${Mexample if you use dual"
+		echo "${M}If you want trve your current ${C}xorg.conf${M}, for example if you use dual"
 		echo "card setup, and your system is working fine with the driver you are installing,"
 		echo "please restart ${C}$SCRIPT_NAME${M} with extra ${C}-C${M} option and it will not change xorg.conf."
 		echo
@@ -5611,7 +5612,7 @@ install_native_driver()
 		fi
 		
 		if [ "$CARD" == "$FGLRX" -a "$B_EXPERIMENTAL" == 'true' ];then
-			echo "${S}Installing experimental driver ${C}$driver$...${N}"
+			echo "${S}Ins experimental driver ${C}$driver${S} now...${N}"
 			native_driver_experimental "$driver"
 		else
 			if [ "$bSkipInstall" != 'true' ];then
@@ -8628,10 +8629,9 @@ create_x_conf()
 }
 
 # create required section device:
-create_section_device()
-{
+create_section_dev
 	eval $LOGUS
-	# if this section present, create it
+	# if this section is not present, create it
 	if [ "$( grep -Esic 'Section[ \t]*"Device"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
 		echo -e 'Section "Device"' >> $EXXC
