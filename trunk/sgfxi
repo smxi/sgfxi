@@ -8501,8 +8501,9 @@ get_default_display_manager()
 	eval $LOGUS
 	if [ -n "$( grep -s 'Card0' $EXXC )" ];then
 		echo "${S}Updating ${C}$EXXC${S} syntax. Changing ${C}Card[x]${S} to ${C}Device[x]${S}${N}"
-		sed -i 's/Identifier[[:space:]]*"Card/Identifier "Device/' $EXXC
-		sed -i 's/Device[[:space:]]*"Card/Device "Device/' $EXXC
+		sed -r -i 's/Card(\d+)/Device\1/g' $EXXC
+		#sed -i 's/Identifier[[:space:]]*"Card/Identifier "Device/' $EXXC
+		#sed -i 's/Device[[:space:]]*"Card/Device "Device/' $EXXC
 		log_function_data "$EXXC updated. CardX changed to DeviceX."
 	fi
 	eval $LOGUE
@@ -8619,8 +8620,9 @@ create_x_conf()
 					exit 100 # need to exit with 100 to not trigger pid root kill in smxi
 					;;
 				*)
-					echo "${W}Please select one of the options in the list, thank you.${N}"
-					bRepeat='tru	;;
+					echo "${W}Please select one of the options iist, thank you.${N}"
+					bRepeat='true'
+					;;
 			esac
 			break
 		done
