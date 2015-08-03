@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.42
-####  Date: 2015-07-28
+####  version: 4.24.43
+####  Date: 2015-08-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -8496,7 +8496,17 @@ get_default_display_manager()
 	eval $LOg steps
 ### -------------------------------------------------------------------
 ### xorg configuration (previously in sgfxi-lib-xorg)
-### -------------------------------------------------------------------
+### --------------------------------------------------------------fix_xorg_device_id()
+{
+	eval $LOGUS
+	if [ -n "$( grep -s 'Card0' $EXXC )" ];then
+		echo "${S}Updating ${C}$EXXC${S} syntax. Changing ${C}Card[x]${S} to ${C}Device[x]${S}${N}"
+		sed -i 's/Identifier[[:space:]]*"Card/Identifier "Device/' $EXXC
+		sed -i 's/Device[[:space:]]*"Card/Device "Device/' $EXXC
+		log_function_data "$EXXC updated. CardX changed to DeviceX."
+	fi
+	eval $LOGUE
+}-------
 
 move_x_conf()
 {
@@ -8610,8 +8620,7 @@ create_x_conf()
 					;;
 				*)
 					echo "${W}Please select one of the options in the list, thank you.${N}"
-					bRepeat='true'
-					;;
+					bRepeat='tru	;;
 			esac
 			break
 		done
@@ -8629,13 +8638,14 @@ create_x_conf()
 }
 
 # create required section device:
-create_section_dev
+create_section_device()
+{
 	eval $LOGUS
 	# if this section is not present, create it
 	if [ "$( grep -Esic 'Section[ \t]*"Device"' $EXXC )" -eq 0 ];then
 		echo  >> $EXXC
 		echo -e 'Section "Device"' >> $EXXC
-		echo -e '\tIdentifier "Card0"' >> $EXXC
+		echo -e '\tIdentifier "Device0"' >> $EXXC
 		# the vesa is a just a failsafe, the actual driver will be set in driver version
 # 		echo -e '\tDriver "vesa"' >> $EXXC
 # 		echo -e '\tBusID "PCI:'$BUS_ID'"' >> $EXXC
@@ -9790,6 +9800,7 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 		install_distro_drivers
 	fi
 	if [ "$B_SKIP_CONFIG" != 'true' ];then
+		fix_xorg_device_id
 		update_xorg
 	fi
 	final_install_steps
