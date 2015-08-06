@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.44
+####  version: 4.24.45
 ####  Date: 2015-08-05
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
@@ -8511,7 +8511,7 @@ get_default_display_manager()
 	eval $LOGUS
 	if [ -n "$( grep -s 'Card0' $EXXC )" ];then
 		echo "${S}Updating ${C}$EXXC${S} syntax. Changing ${C}Card[x]${S} to ${C}Device[x]${S}${N}"
-		sed -r -i 's/Card(\d+)/Device\1/g' $EXXC
+		sed -r -i 's/Card([0-9]+)/Device\1/g' $EXXC
 		#sed -i 's/Identifier[[:space:]]*"Card/Identifier "Device/' $EXXC
 		#sed -i 's/Device[[:space:]]*"Card/Device "Device/' $EXXC
 		log_function_data "$EXXC updated. CardX changed to DeviceX."
@@ -8613,7 +8613,7 @@ create_x_conf()
 					fi
 
 					# this handles the case where nouveau was running, sgfxi was started, 
-					# no xorg.conf was found, and the X -confommand defaults to nv
+					# no xorg.conf was found, and the X -ce command defaults to nv
 					if [ "$B_TESTING_5" == 'true' -a -n "$( lsmod | grep '^nouveau' )" ];then
 						NATIVE_OVERRIDE='nouveau'
 						update_xorgconf_driver_version
