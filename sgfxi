@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.46
+####  version: 4.24.47
 ####  Date: 2015-08-05
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
@@ -8950,6 +8950,7 @@ update_xorg()
 	clear_prep_xorg # bring xorg.conf to default condition
 	check_extensions
 	remove_modelines
+	fix_xorg_device_id # fix the CardX change to DeviceX
 	if [ "$B_SET_IGNOREABI" == 'true' ];then
 		set_server_flag 'ignoreABI'
 	fi
@@ -9813,7 +9814,6 @@ if [ "$B_SKIP_INSTALL" != 'true' ];then
 		install_distro_drivers
 	fi
 	if [ "$B_SKIP_CONFIG" != 'true' ];then
-		fix_xorg_device_id
 		update_xorg
 	fi
 	final_install_steps
