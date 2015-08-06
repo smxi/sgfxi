@@ -8515,6 +8515,8 @@ get_default_display_manager()
 		#sed -i 's/Identifier[[:space:]]*"Card/Identifier "Device/' $EXXC
 		#sed -i 's/Device[[:space:]]*"Card/Device "Device/' $EXXC
 		log_function_data "$EXXC updated. CardX changed to DeviceX."
+	else
+		log_function_data "No CardX in $EXXC."
 	fi
 	eval $LOGUE
 }-------
@@ -8612,8 +8614,7 @@ create_x_conf()
 						fi
 					fi
 
-					# this handles the case where nouveau was running, sgfxi was started, 
-					# no xorg.conf was found, and the X -ce command defaults to nv
+					# this handles the case where nouveau was running, sgfxi was starte		# no xorg.conf was found, and the X -configure command defaults to nv
 					if [ "$B_TESTING_5" == 'true' -a -n "$( lsmod | grep '^nouveau' )" ];then
 						NATIVE_OVERRIDE='nouveau'
 						update_xorgconf_driver_version
