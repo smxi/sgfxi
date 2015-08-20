@@ -4,7 +4,7 @@
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
 ####  version: 4.24.47
-####  Date: 2015-08-05
+####  Date: 2015-08-20
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -21,7 +21,7 @@
 ####  Get the full text of the GPL here: http://www.gnu.org/licenses/gpl.txt
 ########################################################################
 ####  Script URL: http://smxi.org/sg/sgfxi
-####  Script SVN: http://code.google.com/p/sgfxi
+####  Script GIT: https://github.com/smxi/sgfxi
 ####  Script Documentation: http://smxi.org/docs/
 ####  Script Home page: http://techpatterns.com/forums/about933.html
 ########################################################################
@@ -496,8 +496,6 @@ fi
 ### test data - only for dev/debugging purposes
 ### -------------------------------------------------------------------
 
-#----
-
 # only for debugging purposes
 set_test_data()
 {
@@ -511,42 +509,45 @@ set_test_data()
 # 		# note: devs: double check this output to make sure it's your user name
 		username=$( getent passwd 1000|cut -d \: -f1 )
 		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
-		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/# INSTALL_DIRECTORY='' # for stuff like patches etcxi/dev"
-		LOG_FILE_DIR="/home/$username/bin/scripts/sg/logs/"
+		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev"
+		# INSTALL_DIRECTORY='' # for stuff like patches etc
+		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/logs/"
 # 		PATCH_DOWNLOAD='http://smxi.org/sg/'
 		cd $SCRIPT_HOME
-		rm -f $LOG_FILE_DIR	rm -f $SCRIPT_NAME.log
+		rm -f $LOG_FILE_DIR$SCRIPT_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
-# 		CARD_DATA=1002:9442 # fake ati hd2000-#  4xxx
-# 		CARD_DATA=1002:9805 # fake ati hd 6250 card
-# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx dr# ers)
-# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx dr# ivers)
-		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
-# 		CARD_DATA=10de:0422 # fake 8-9xxx-nt card (GS 8400)
+# 		CARD_DATA=1002:9442 # fake ati hd2000-hd4xxx
+#  		CARD_DATA=1002:9805 # fake ati hd 6250 card
+# 		CARD_DATA=10de:0020 # fake nvidia oldest legacy (7x.xx.xx drivers)
+# 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
+# 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
+# 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
+# 		CARD_DATA=10de:0422 # fake nvidia 8-9xxx- (GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
-# 		# set system bits to test 32/64 specific beh# iors
+# 		# set system bits to test 32/64 specific behaviors
 # 		BITS=64
-# 		# if you want to test for/without aptosid kernels, set to null '' or # 'true'
-		B_IS_APTOSID_KERNEL='false'
+# 		# if you want to test for/without aptosid kernels, set to null '' or 'true'
+# 		B_IS_APTOSID_KERNEL='false'
 # 		# to test patches/error handling for a specific kernel major version,
-# 		# ie: 3-		KERNEL_BASE=3
-		KERNEL_MATH=14_MATH=7
+# 		# ie: 3-7 here
+		KERNEL_BASE=3
+		KERNEL_MATH=14
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
 # 		# 'sid' 'testing' 'stable' 'etch'
 #		SYSTEM_BASE='debian'
-# 		SYSTEM_CODENAME='te# sting'
-		X_VERSION='1.11' # override for patching etc
+# 		SYSTEM_CODENAME='testing'
+# 		X_VERSION='1.11' # override for patching etc
 # leave this at first character or errors in updater tools will occur
 :
-	}"
+	fi
 }
 
-### -----------------------------------------------------------------driver+kernel support tests, and patch handlers:
+### -------------------------------------------------------------------
+### driver+kernel support tests, and patch handlers:
 ### -------------------------------------------------------------------
 
 ## these are first to make it easy to update each new driver release support data
@@ -2331,7 +2332,7 @@ run_prepatch_fixes()
 			3.7-path-fix)
 				file1='version.h'
 				path1="/usr/src/linux-headers-$KERNEL_FULL/include/generated/uapi/linux/$file1"
-				path2= "/usr/src/linux-headers-$KERNEL_FULL/include/linux/"
+				path2="/usr/src/linux-headers-$KERNEL_FULL/include/linux/"
 				echo "${S}Running pre-install patch for kernel header ${C}uapi${S} path tweak...${N}"
 				if [ -e $path1 ];then
 					if [ -d $path2 ];then
@@ -2339,16 +2340,16 @@ run_prepatch_fixes()
 							ln -s $path1 $path2$file1
 							outcome="${S}Link created here: ${C}$path2$file1${N}"
 						else
-							outcome="$S}Target file exists: ${C}$path2$file1${S} for uapi!!${N}"
+							outcome="${S}Target file exists: ${C}$path2$file1${S}${N}"
 						fi
 					else
-						outcome="${E}Target directory ${C}$path2${E} not found. Unable to patch for ${C}uapi${E}!!${N}"
+						outcome="${E}Target directory ${C}$path2${E} not found.\nUnable to patch for ${C}uapi${E}!!${N}"
 					fi
 				else
-					outcome="${E$path1${E} not found.\not found. Driver install may fail!!${N}"
+					outcome="${E}Path ${C}$path1${E} not found.\nDriver install may fail!!${N}"
 				fi
 				log_function_data "$outcome"
-				echo "$outcome"
+				echo -e "$outcome"
 				;;
 		esac
 	fi
@@ -2383,11 +2384,8 @@ run_patch_fixes()
 }
 
 ### -------------------------------------------------------------------
-### primary stacolors
+### primary startup - colors
 ### -------------------------------------------------------------------
-
-#fi
-}
 
 # set global color variables
 # options: 0 - turns off all colors; 1 - defaults
@@ -2601,8 +2599,9 @@ error_handler()
 			;;
 		212)
 			errorData="AMD has dropped Catalyst/FGLRX support for HD2xxx-4xxx series cards as of 12-6.\nYou should have bought Nvidia if you wanted a long term working non free driver, sorry.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
-	211)
-			errorData="You cannot start $SCRIPT_NAME with sudo. Please start $SCRIPT_NAME \nproperly as root (use either 'sudo su -' (note the '-' at the end) \nto become root, or login as root directly). If 'sudo su -' does not \nwork, please let the $SCRIPT_NAME maintainer know, and if your system \nhas root locked (why would anyone do that?) then you will have to \nunlock root. \n\nSee your distro manuals or help pages to fix this issue in that \ncase, and also make sure to update any documentation or how-to's \nfor running $SCRIPT_NAME with your distro.  This means you, Ubuntu/Mint users!\n\nTypical signs of sudo failures are respawnings of your desktop while \n$SCRIPT_NAME is running, or failures to create directories.\nr know."
+			;;
+		211)
+			errorData="You cannot start $SCRIPT_NAME with sudo. Please start $SCRIPT_NAME \nproperly as root (use either 'sudo su -' (note the '-' at the end) \nto become root, or login as root directly). If 'sudo su -' does not \nwork, please let the $SCRIPT_NAME maintainer know, and if your system \nhas root locked (why would anyone do that?) then you will have to \nunlock root. \n\nSee your distro manuals or help pages to fix this issue in that \ncase, and also make sure to update any documentation or how-to's \nfor running $SCRIPT_NAME with your distro.  This means you, Ubuntu/Mint users!\n\nTypical signs of sudo failures are respawnings of your desktop while \n$SCRIPT_NAME is running, or failures to create directories.\n"
 			;;
 		# specific install issues
 		200)
@@ -2706,10 +2705,12 @@ error_handler()
 			;;
 		167)
 			errorData="You have used the -! 33 override option but the $errorExtra module action reports as failed\n.$SCRIPT_NAME is unable to continue in this scenario.\nPlease blacklist/unblacklist your $errorExtra manually then run $SCRIPT_NAME again."
-		66)
-			errorData="The options ($errorExtra) you used are not compatible, and create internal $SCRIPT_NAME conflicts.\nPlease correct this error and startPT_NAME again."
-		65)
-			errorData="Extraction of zip file: $errorExtra failedE again."
+			;;
+		166)
+			errorData="The options ($errorExtra) you used are not compatible, and create internal $SCRIPT_NAME conflicts.\nPlease correct this error and start again."
+			;;
+		165)
+			errorData="Extraction of zip file: $errorExtra failed."
 			;;
 		100)
 			errorData="The function: $errorExtra exited through user action."
@@ -2740,7 +2741,8 @@ select_card()
 #cardData=$(echo "00:0d.0 VGA compatible controller [0300]: nVidia Corporation GeForce 6100 nForce 405 [10de:03d1] (rev a2)
 #02:00.0 VGA compatible controller [0300]: nVidia Corporation G71 [GeForce 7300 G S] [10de:01df] (rev a1)"  | grep -E 'VGA' | cut -d ':' -f 3-4 | cut -d ' ' -f 2-50 | tr ' ' '-' )
 #tester="00:0d.0 0300: 10de:03d1 (rev a2)
-#02:00.0 0300: 10de:01df (rev	# not using: |3D[[:space:]]controller ]|Display[[:space:]]controller - may cause dual id of same device 
+#02:00.0 0300: 10de:01df (rev a1) "
+	# not using: |3D[[:space:]]controller ]|Display[[:space:]]controller - may cause dual id of same device 
 	# NOTE: we have to confirm it's a real card, we do that by checking: xx:xx.0 structure on pcibus id string.
 	local cardData=$( lspci -nn | \
 	grep -iE '(VGA compatible controller|3D controller|Display controller)' | \
@@ -3331,13 +3333,14 @@ reset_using_live_driver_data()
 			# fglrx drivers
 			FG_DEFAULT=$( awk '{print $2}' <<< "$fglrxDefault" )
 			FG_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 }' <<< "$fglrxDefault" )
-		fiesponse
+		fi
 	fi
 }
 
-### -----------------------------------------------------------------general script utilities######
+### -------------------------------------------------------------------
+### general script utilities
+### -------------------------------------------------------------------
 
-### -------------------------------------------------------------
 # args: $1 - get/set; $2 - prefname
 get_set_prefs()
 {
@@ -3541,13 +3544,11 @@ uninstall_script()
 	if [ "$bRepeat" == 'true' ];then
 		uninstall_script
 	fi
-}xva"
 }
+### -------------------------------------------------------------------
+### kernel data and header testing
+### -------------------------------------------------------------------
 
-### -----------------------------------------------------------------kernel data and header testingxva"
-}
-
-### -------------------------------------------------------------
 kernel_string_info()
 {
 	# The kernel variables stuff needs to be in a separate function to get data from
@@ -3676,7 +3677,8 @@ check_kernel_headers()
 	esac
 	eval $LOGUE
 }
-s# Nvidia requires for 64 bit ia32 libs installed for 64 bit
+
+# Nvidia requires for 64 bit ia32 libs installed for 64 bit
 # This will satisfy the nVidia driver and also let the installer 
 # place the 32-bit compatibility files in the correct location, 
 # letting 32-bit applications run properly that depend on OpenGL acceleration.
@@ -3831,12 +3833,14 @@ check_ia32_libs()
 	if [ "$1" == 'test' ];then
 		echo $returnValue
 	fi
-	eval $LOGUEnse
-	fi
+	eval $LOGUE
 }
 
-### -----------------------------------------------------------------startup and tools testingsection
-### ----------------------------------------------------------------note that we want this to print with no root error
+### -------------------------------------------------------------------
+### startup and tools testing
+### -------------------------------------------------------------------
+
+# note that we want this to print with no root error
 check_root()
 {
 	if [ "$B_PRINT_VER" != 'true' ];then
@@ -3943,8 +3947,8 @@ check_connection()
 	echo $result
 }
 
-	*)
-			## basic system requirements for this script to run, first so user d## have to be root or out of x to get basic failure information
+## basic system requirements for this script to run, first so user doesn't
+## have to be root or out of x to get basic failure information
 check_set_distro()
 {
 	local lsbOsrData='' workingId=''
@@ -3952,7 +3956,7 @@ check_set_distro()
 	local etcIssue=$( cat /etc/issue 2>/dev/null )
 	
 	# make sure that it's a debian/arch/ubuntu based system
-	# note that mint/ubuntu have file /etc/debian_version so we need to be careful hreful here
+	# note that mint/ubuntu have file /etc/debian_version so we need to be careful here
 	if [ -n "$( grep -si 'buntu' <<< $etcIssue )" ];then
 		workingId='ubuntu'
 	# mint test, note that for new lmde we are treating it as pure debian
@@ -3960,15 +3964,15 @@ check_set_distro()
 		workingId='linuxmint'
 	# debian defaults, might miss other ubuntu derived distros but those will
 	# be handled as we find them, empirically.
-	elif [ -f -o -f "$EDVV" ];then # edvv is devua" ];then
+	elif [ -f "$EDV" -o -f "$EDVV" ];then # edvv is devuan
 		# set files to ram first, no need to keep reading them
-		local edvContent='' easContent='' eaaCon edvFile=''
+		local edvContent='' easContent='' eaaContent='' edvFile=''
 		
 		if [ -f "$EDV" ];then
 			edvFile=$EDV
 		elif [ -f "$EDVV" ];then
 			edvFile=$EDVV
-		fitent=''
+		fi
 		
 		workingId='debian'
 		
@@ -3976,8 +3980,8 @@ check_set_distro()
 			workingId='linuxmint-debian'
 		fi
 		
-		if edvFile" ];then
-			edvContent="$( cat $edvFileat $EDV )"
+		if [ -f "$edvFile" ];then
+			edvContent="$( cat $edvFile )"
 		fi
 		if [ -f "$EAS" -o -d "$EAS.d" ];then
 			easContent="$( cat $EAS $EAS.d/*.list 2>/dev/null )"
@@ -3990,18 +3994,18 @@ check_set_distro()
 		local isEtch=$( grep -is '^4.' <<< "$edvContent" )
 		local isLenny=$( grep -is '^5.' <<< "$edvContent" )
 		local isSqueeze=$( grep -Eis '^(squeeze|6\.)' <<< "$edvContent" )
-		local isWheezy=$( grep -Eis '^(wheezy|7\.)' <<< "$edvConte	local isJessie=$( grep -Eis '^(jessie|8\.)' <<< "$edvContent" )
+		local isWheezy=$( grep -Eis '^(wheezy|7\.)' <<< "$edvContent" )
+		local isJessie=$( grep -Eis '^(jessie|8\.)' <<< "$edvContent" )
 		local isStretch=$( grep -Eis '^(stretch|9\.)' <<< "$edvContent" )
-nt" )
-	
+
 		# first tests sources
-		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(wheezy(stable|squeeze|len|jesse)' )
-		local isTestingnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Etretch(wheezy|testing)' )
-		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstab		e)' )
-	
+		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(stable|wheezy|squeeze|lenny|etch|jesse)' )
+		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(stretch|testing)' )
+		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
+		
 		# then test conf for default version
-		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny||wheezy|jesse)"' <<< "$eaaContent" )
-		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|stretch|wheezy)"' <<< "$eaaContent" )
+		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny|squeeze|wheezy|jesse)"' <<< "$eaaContent" )
+		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|stretch)"' <<< "$eaaContent" )
 		local isUnstableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(sid|unstable)"' <<< "$eaaContent" )
 	# arch tests
 	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
@@ -4041,10 +4045,10 @@ nt" )
 			FG_DISTRIB_ID='Debian'
 			SYSTEM_BASE='debian' # debian not using elr file yet
 			if [ "$workingId" == 'linuxmint-debian' ];then
-				APT_TYPE='apt-get'			fi
-
+				APT_TYPE='apt-get'
+			fi
 			# set system type. This test will never be perfect, but it's a good approximation
-			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o WheezySq -o -n "$isJessieSqueeze" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
+			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o -n "$isWheezy"  -o -n "$isJessie" -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
 				if [ -n "$isEtch" ];then
 					FG_DISTRIB_CODENAME='etch'
 					SYSTEM_CODENAME='etch'
@@ -4053,7 +4057,8 @@ nt" )
 					SYSTEM_CODENAME='lenny'
 				elif [ -n "$isSqueeze" ];then
 					FG_DISTRIB_CODENAME='squeeze' # note: 'stable' breaks the installer
-					SYSTEM_CODENAME='squeeze'if [ -n "$isWheezy" ];then
+					SYSTEM_CODENAME='squeeze'
+				elif [ -n "$isWheezy" ];then
 					FG_DISTRIB_CODENAME='wheezy' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='wheezy'
 				elif [ -n "$isJesse" ];then
@@ -4063,7 +4068,7 @@ nt" )
 					FG_DISTRIB_CODENAME='stable'
 					SYSTEM_CODENAME='stable'
 				fi
-			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isStretchsWheezy" -o "$isTesting" -gt 0 ];then
+			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isStretch" -o "$isTesting" -gt 0 ];then
 				FG_DISTRIB_CODENAME='sid'
 				SYSTEM_CODENAME='testing'
 			else
@@ -4095,11 +4100,10 @@ nt" )
 			FG_DISTRIB_CODENAME=''
 			SYSTEM_BASE='fedora'
 			if [ -f "$EFR" ];then
-				DISTRIB_CODENAME=$'^DISTRIB_CODENAME' $EFR | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' | awk '{print $1}' )
+				DISTRIB_CODENAME=$( grep '^DISTRIB_CODENAME' $EFR | cut -d '=' -f 2 | tr '[A-Z]' '[a-z]' | awk '{print $1}' )
 				SYSTEM_CODENAME=$DISTRIB_CODENAME
 # 				DISTRIB_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*\((.*)\)/\1/i' )
-# 1/i' )
-				SYSTEM_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*[[:space:]]([0-9]+)[[:space:]]\(.*\)/\1/i' )
+# 				SYSTEM_CODENAME=$( grep -si 'Fedora' $EFR | sed -r 's/Fedora.*[[:space:]]([0-9]+)[[:space:]]\(.*\)/\1/i' )
 			fi
 			X_NAME='X'
 			;;
@@ -4284,21 +4288,22 @@ check_driver_install_tools()
 # return codes: 0 - $1 > $2; 1 - $1 == $2; 2 - $1 < $2
 # note: this also works for one dot, like 3.4, and for 0 dot, like 3
 # note: this function will always be sent . type numbers, and it handles any
-# localization re decimal indicators internally, otherwise it's too much of a# Handles cases like 13.10 > 13.9 as well, ie, 10>9a# Make sure all numbers passed to this function only contain numbers/dots, like: 195.23.23
+# localization re decimal indicators internally, otherwise it's too much of a pain.
+# Handles cases like 13.10 > 13.9 as well, ie, 10>9
+# Make sure all numbers passed to this function only contain numbers/dots, like: 195.23.23
 # if any non numeric values are encountered the function will return 3, which means one of the
 # numbers was not numeric almost certainly.
 compare_numbers()
 {
 	eval $LOGUS
-o $1 $2
+
 	# first we need to determine what the base system is using for decimal indicator
-	local returnV 
+	local returnValue='' 
 	local oneTwo=0 oneThree=0 twoTwo=0 twoThree=0
 	local b_debug='false'
-	# ue=''
-	local decimalType=$( echo 1 | awk '{total = 1 / 2; print total}' | grep -Eo '(\.|,)' )
+	# local decimalType=$( echo 1 | awk '{total = 1 / 2; print total}' | grep -Eo '(\.|,)' )
 
-	# next we'll get the raw data and transanto separate numbers, this also handles cases
+	# next we'll get the raw data and transate it into separate numbers, this also handles cases
 	# like 13.10 is greater than 13.9 for versions
 	local oneOne=$( cut -d '.' -f 1 <<< $1 )
 	local twoOne=$( cut -d '.' -f 1 <<< $2 )
@@ -4343,12 +4348,14 @@ o $1 $2
 		echo "twoOne: $twoOne"
 		echo "twoTwo: $twoTwo"
 		echo "twoThree: $twoThree"
-		echo "returnValue $returnValue"Value=2
+		echo "returnValue $returnValue"
 	fi
 
 	echo $returnValue
 	log_function_data "returnValue: $returnValue"
-	eval $LO args: $1 first number; $2 -second number
+	eval $LOGUE
+}
+# args: $1 first number; $2 -second number
 number_compare()
 {
 	local compareValue=3 # 3 will be used for debugging of non numberic numbers etc
@@ -4363,7 +4370,7 @@ number_compare()
 	echo $compareValue
 }
 ## DEBUGGER
-# compare_numbers 13.101.233 13.101.222 195.53 ;exit
+# compare_numbers 13.101.233 13.101.222 ;exit
 
 # for smxi launch in X
 launch_from_X()
@@ -4474,8 +4481,8 @@ check_package_status()
 			# version, ie:  *** 2.13 0 \ 100 /var/lib/dpkg/status is the only value returned
 			poolPackageCount=$( grep -Es "^[[:space:]]*[0-9]{3}"  <<< "$cacheData" | grep -vcE "^[[:space:]]*100[[:space:]]" )
 			
-			packageVersion=$
-			/'$statusType'/ && !/(\(None\)|\(none\)\(None\)/ {print $2}' <<< "$cacheData" )
+			packageVersion=$( awk '
+			/'$statusType'/ && !/(\(None\)|\(none\))/ {print $2}' <<< "$cacheData" )
 			
 			# if either none found, or only a local apt version available, return null
 			if [ "$statusType" == 'Candidate:' -a "$poolPackageCount" -eq 0 ];then
@@ -4557,7 +4564,7 @@ install_package()
 	case $SYSTEM_BASE in
 		debian)
 			if [ -n "$2" ];then
-				distroVersion="/$2" #  --fo rce-yesrequird to avoid apt downgrade error
+				distroVersion="/$2" #  --force-yes requird to avoid apt downgrade error
 			fi
 			;;
 	esac
@@ -4593,7 +4600,7 @@ install_package()
 			;;
 	esac
 	# then install the package with all options
-	log_function_data "Install command for $APT_TYPE: $;optionalArgs: $optionalArgs;UseUntrusted: $useUntrusted;WithoutRecommends: $WITHOUT_RECOMMENDS;doYes: $doYes; packages: $1$distroVersionnalArgs"
+	log_function_data "Install command for $APT_TYPE: $install;optionalArgs: $optionalArgs;UseUntrusted: $useUntrusted;WithoutRecommends: $WITHOUT_RECOMMENDS;doYes: $doYes; packages: $1$distroVersion"
 	echo "${S}Updating required package ${C}$1${S} now...${N}"
 	$APT_TYPE $install $useUntrusted $WITHOUT_RECOMMENDS $doYes $optionalArgs $1$distroVersion || error_handler 200 "$1"
 	eval $LOGUE
@@ -4733,12 +4740,11 @@ update_to_nonfree_sources()
 				for i in $eas $easdl $eassl
 				do
 					if [ -f "$i" ];then
-						counter=$( grep -Ec(debian\.org|peer1\.net).*(contrib.*non-free|non-free.*contrib)' $i )
+						counter=$( grep -Ec 'deb.*(debian\.org|peer1\.net).*(contrib.*non-free|non-free.*contrib)' $i )
 						isFree=$(( $counter + $isFree ))
 					fi
 				done
-				log_function_data "Debian contrib non free listed: $counter\nisFree: $isFree"one
-			
+				log_function_data "Debian contrib non free listed: $counter\nisFree: $isFree"
 				if [ "$isFree" -eq 0 ];then
 					for i in $eas $easdl
 					do
@@ -4748,7 +4754,7 @@ update_to_nonfree_sources()
 							aptProx=$( grep -Esi '^[[:space:]]*deb.*:9999/' $i )
 							if [ -z "$aptProx" ];then
 								echo "${S}Updating your ${C}$i${S} to use non-free / contrib now...${N}"
-								sed -i -r 's%(#?deb.*(debiapeer1\.net|?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
+								sed -i -r 's%(#?deb.*(debian\.org|peer1\.net|sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\s(main|fix\.main))(\s*)(non-free.*|contrib.*)*%\1 contrib non-free%' $i
 								# the second test requires the results of the first to work
 								# note that spaces are required for this to work more reliably for most patterns
 								sed -i -r 's%(#?deb.*(sidux\.com|sidux\.net|debian\.tu-bs\.de|mirrorservice\.org|heanet\.ie|spline\.de|sunsite\.utk\.edu|ftp-mirror\.internap\.com|ftp\.tw.debian\.org|leg\.uct\.ac\.za|mirror\.aarnet\.edu\.au).*\snon-free)%\1 firmware fix.contrib fix.non-free %' $i
@@ -4887,8 +4893,8 @@ check_update_script()
 				if [ -n "$isGood" ];then
 					echo "$fileDataTemp" > $1
 					chmod 705 $1
-					if [ "$B_FORCE_UPDATE" != 'true' ];thenexec 
-						./$1 -R$START_OPTIONS
+					if [ "$B_FORCE_UPDATE" != 'true' ];then
+						exec ./$1 -R$START_OPTIONS
 					else
 						print_information
 						echo "${C}$SCRIPT_NAME${S} was successfully updated. Please start the script again to access"
@@ -4983,7 +4989,7 @@ check_script_version()
 	return $returnValue
 }
 
-# args: $1 patch file t; $2 - [optional] standard (implied)/test
+# args: $1 patch file to apply; $2 - [optional] standard (implied)/test
 apply_patch_file()
 {
 	eval $LOGUS
@@ -4991,7 +4997,7 @@ apply_patch_file()
 	if [ "$2" == 'test' ];then
 		B_FORCE_OPTION='true'
 		return 0;
-	fi $LOGUS
+	fi
 	local patchFile=$1
 	## this can be changed to branches with -! 20 or -! 21
 	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SCRIPT_NAME-data.patches.$patchFile"
@@ -5022,10 +5028,11 @@ print_information()
 {
 	local scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
 	local scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
-	#local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2# |3D controller|Display controller
+	#local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2%'  )
+	# |3D controller|Display controller
 	local cardInfo=$( lspci | \
 	awk -F': ' '/VGA compatible controller.*: / { print $NF }' | \
-	F }' | sed -r 's%(ATI\s|nVidia\s|Intel\s)(Technologies\sInc\s|Corporation\s|Unknown\sdevice){1,2}(.*)%\1\3%g' )
+	sed -r 's%(ATI\s|nVidia\s|Intel\s)(Technologies\sInc\s|Corporation\s|Unknown\sdevice){1,2}(.*)%\1\3%g' )
 	local cardRam='' cardVendor='' busId=''
 
 	# we need the real busid, not the xorg one
@@ -5054,7 +5061,7 @@ print_information()
 print_information_continue()
 {
 	eval $LOGUS
-	local resp bShowIa32='falseponse=''
+	local response='' bShowIa32='false'
 
 	case $1 in
 		standard|info)
@@ -5063,7 +5070,8 @@ print_information_continue()
 	esac
 
 	if [ "$1" == 'standard' ];then
-		if [ "$B_AUTORUN" != 'true' ];t# this checks to see if it's a supported card/system, and that ia32 stuff is not already installed
+		if [ "$B_AUTORUN" != 'true' ];then
+			# this checks to see if it's a supported card/system, and that ia32 stuff is not already installed
 			# only in case where it's supported and not installed / configured will user see this message
 			bShowIa32=$( check_ia32_libs 'test' )
 			echo "${M}Please select from the following options:${N}"
@@ -5077,7 +5085,7 @@ print_information_continue()
 			case $response in
 				i|I)
 					B_CHECK_IA32='true'
-					;;onse in
+					;;
 				x|X)
 					error_handler 100 $FUNCNAME
 					;;
@@ -5102,13 +5110,14 @@ print_hec()
 }
 
 ### -------------------------------------------------------------------
-### /debuggingmanager tools
+### logging/debugging tools
 ### -------------------------------------------------------------------
 
 create_log()
 {
 	local cardString=$( lspci | grep -i 'vga ' | cut -d ':' -f 3 )
-	local sgfxiVersion=$( grep 'version:' $SCRIPT_NAME | grep -o "[0-9]*\.[0-9]*\.[0-	local installToKernel='' smValues=''
+	local sgfxiVersion=$( grep 'version:' $SCRIPT_NAME | grep -o "[0-9]*\.[0-9]*\.[0-9]*" )
+	local installToKernel='' smValues=''
 	
 	if [ -n "$INSTALL_TO_KERNEL" ];then
 		installToKernel="\nRunning install from Kernel: $(uname -r)\n"
@@ -5116,7 +5125,7 @@ create_log()
 	# it's important to log these in case there's some issue or bug in the values
 	if [ -f $SM_VALUES ];then
 		smValues="\nBegin User Set $SM_VALUES:\n$( cat $SM_VALUES)\nEnd User Set Values\n"
-	fi-9]*" )
+	fi
 
 	# check and create log file:
 	if [ ! -d $LOG_FILE_DIR ];then
@@ -5146,7 +5155,8 @@ create_log()
 		logrotate $SCRIPT_ROTATE
 	fi
 
-	touch $LOG_FILE # and if rotated, need a ne# sudo start will only show as information to check for 'sudo su -' starts, all others
+	touch $LOG_FILE # and if rotated, need a new one
+	# sudo start will only show as information to check for 'sudo su -' starts, all others
 # have exited with error
 	echo -e "=========================================================
 START $SCRIPT_NAME LOGGING:
@@ -5185,7 +5195,7 @@ KERNEL_FULL: $KERNEL_FULL
 KERNEL_BASE: $KERNEL_BASE
 KERNEL_NUMBER: $KERNEL_NUMBER
 KERNEL_MATH: $KERNEL_MATH
-_MATH\nB_IS_XEN: $B_IS_XEN" >> $LOG_FILE
+B_IS_XEN: $B_IS_XEN" >> $LOG_FILE
 
 	B_LOGGING_STARTED='true'
 }
@@ -5257,6 +5267,9 @@ log_writer()
 	if [ "$B_LOGGING_STARTED" == 'true' ];then
 		# strip out escape color code, if any. Method by dzz, thanks ;-)
 		echo -e "$1" | sed 's/\x1b\[[0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,2\}m//g' >> $LOG_FILE
+	fi
+}
+
 debugger_data_collector()
 {
 	local debug_data_home="$HOME/${SCRIPT_NAME}-data/" b_uploaded='false' xiin_download=''
@@ -5480,7 +5493,7 @@ debugger_data_collector()
 		echo $LINE
 		echo "It's all good apparently. You can find a copy of the data here:"
 		echo "$debug_data_home$debug_gz_file"
-		exit 0OG_FILE
+		exit 0
 	fi
 }
 
@@ -5602,7 +5615,9 @@ install_native_driver()
 				print_information_continue 'standard' "The graphics installer will be installing the${C}$experimentalText Free xorg${S} driver: ${C}$driverInstall${N}"
 			fi
 		fi
-		x_start_stop_master 	## cleanup up old stuff
+		x_start_stop_master stop
+
+		## cleanup up old stuff
 		pre_extract_clean_set_up
 		preinstall_cleanup
 		# this is required to do radeon xorg driver
@@ -5769,13 +5784,13 @@ prep_native_driver()
 			;;
 	esac
 	eval $LOGUE
-	remove_package "$packageList" "$xxva" $LOGPE
+	remove_package "$packageList" "$xxva"
 }
 
-### -----------------------------------------------------------------KMS Tools - Modesetting On/Off, Blacklist On/Off, Initramfs setOGPE
-}
+### -------------------------------------------------------------------
+### KMS Tools - Modesetting On/Off, Blacklist On/Off, Initramfs set
+### -------------------------------------------------------------------
 
-### -------------------------------------------------------------
 # $1 - module to be handled; $2 - optional: failed (triggers reboot requirement)
 set_modesetting_off()
 {
@@ -6194,14 +6209,16 @@ reboot_now_question()
 				;;
 			quit)
 				echo "${S}Ok, remember you need to reboot before the $1 changes are live.${N}"
-				exit 100 # need to exit with 100 to not trigger root pidid root kill in smxi
+				exit 100 # need to exit with 100 to not trigger root pid kill in smxi
 				;;
 			*)
 				echo "${W}Please select one of the options in the list, thank you.${N}"
 				bRepeat='true'
 				;;
 		esac
-		break	eval $LOGPE
+		break
+	done
+	eval $LOGPE
 	if [ "$bRepeat" == 'true' ];then
 		reboot_now_question "$@"
 	fi
@@ -6228,13 +6245,13 @@ handle_shutdowns()
 	log_function_data "command: $command"
 	
 	eval $LOGUE
-	eval $command $LOGPE
+	eval $command
 }
 
-### -----------------------------------------------------------------Non-free Driver installer sectionOGPE
-}
+### -------------------------------------------------------------------
+### Non-free Driver installer section
+### -------------------------------------------------------------------
 
-### -------------------------------------------------------------
 set_cpu_data()
 {
 	eval $LOGUS
@@ -7114,7 +7131,7 @@ post_installer_steps()
 						if [ -n "$( check_package_status 'mesa' 'c' )" ];then
 							install_package 'mesa'
 						fi
-					filer 176
+					fi
 					;;
 			esac
 			;;
@@ -7122,8 +7139,11 @@ post_installer_steps()
 	eval $LOGPE
 }
 
-### -----------------------------------------------------------------module toolng steps
-### ----------------------------------------------------------------$1 - direct/build; $2 - silent [optional]
+### -------------------------------------------------------------------
+### module tools
+### -------------------------------------------------------------------
+
+# $1 - direct/build; $2 - silent [optional]
 build_kernel_module_only()
 {
 	eval $LOGPS
@@ -7462,12 +7482,12 @@ clean_dkms()
 			log_function_data "fglrx dmakms entry found and commented out"
 			sed -i 's/fglrx-kernel-source/#fglrx-kernel-source/' $eddma
 		fi
-	fi;
-	esac
+	fi
 	eval $LOGPE
 }
 
-### -----------------------------------------------------------------distro fglrx/nvidia driver installer
+### -------------------------------------------------------------------
+### distro fglrx/nvidia driver installer
 ### -------------------------------------------------------------------
 
 install_distro_drivers()
@@ -7482,14 +7502,14 @@ install_distro_drivers()
 	case $CARD in
 		$NVIDIA)
 			case $SYSTEM_BASE in
-				arch)					fi
-					# dependencies handle the rest . 
-					# nvidia driver package includes nvidia setting of this
+				arch)
+					# dependencies handle the rest of this. 
+					# nvidia driver package includes nvidia settings
 					case $LEGACY_LEVEL in
 						1)	:
 							# this has already been error handled.
 							;;
-						2)DriveridiaGlx=-$NV_AR_LEGACY_2"
+						2)	nvidiaDriver="nvidia-$NV_AR_LEGACY_2"
 							nvidiaUtils="nvidia-$NV_AR_LEGACY_2-utils"
 							;;
 						3)	nvidiaDriver="nvidia-$NV_AR_LEGACY_3"
@@ -7504,10 +7524,9 @@ install_distro_drivers()
 						*)	nvidiaDriver="nvidia"
 							nvidiaUtils="nvidia-utils"
 							;;
-					esacc
-					
+					esac
 					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
-					install_pacnvidiaDriver"
+					install_package "$nvidiaDriver"
 					# conflicts with libgl and removes it
 # 					install_package "$nvidiaUtils"
 					;;
@@ -7553,9 +7572,9 @@ install_distro_drivers()
 					# in the card/xorg version handling, so I don't really need this legacy level test
 					if [ "$LEGACY_LEVEL" -gt 2 ];then
 						if [ "$B_USE_DISTRO_MODULE_MA" == 'true' ];then
-							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components for ${C}m-a module build${S}...${Ns...${N}"
+							echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components for ${C}m-a module build${S}...${N}"
 							install_package 'nvidia-kernel-common'
-							install_p"$nvidiaSettings"ttings'
+							install_package "$nvidiaSettings"
 							install_package "$nvidiaSource"
 							echo "${S}Creating  ${C}$DISTRO_NVIDIA${S} kernel module for kernel ${C}$KERNEL_FULL${S}...${N}"
 							# m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i $nvidiaSource
@@ -7567,13 +7586,13 @@ install_distro_drivers()
 			
 							#m-a prepare && m-a qa-i nvidia
 							#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
-# echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
+							# echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
 							# install_package "$nvidiaGlx"
 							echo "${M}Please report failure to $SCRIPT_NAME maintainer, I'm not sure this feature works.${N}"
 							add_module 'nvidia'
 						else
 							echo "${S}Installing ${C}$DISTRO_NVIDIA dkms driver${S} components...${N}"
-							install_package "$nvidiaSettings $nvidiaDriveridiaGlx" 
+							install_package "$nvidiaSettings $nvidiaDriver" 
 							add_module 'nvidia'
 						fi
 					fi
@@ -7593,38 +7612,39 @@ install_distro_drivers()
 							# this has already been error handled.
 							;;
 						2)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_2"
-nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt"
+							nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt64"
+								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_2-libs.$archExt64"
 							fi
 							;;
 						3)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_3"
-nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt"
+							nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt64"
+								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_3-libs.$archExt64"
 							fi
 							;;
 						4)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_4"
-nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt"
+							nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt64"
+								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_4-libs.$archExt64"
 							fi
-							;;5)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_5"
+							;;
+						5)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_5"
 							nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_5-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia$NV_FED_5EGACY_4-libs.$archExt64"
+								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_5-libs.$archExt64"
 							fi
 							;;
 						*)	akmodNvidia="akmod-nvidia"
-nvidiaDriver="xorg-x11-drv-nvidia-libs.$archExt"
+							nvidiaDriver="xorg-x11-drv-nvidia-libs.$archExt"
 							if [ "$BITS" == '64' ];then
-								nvidiaDrivervNvidia2="xorg-x11-drv-nvidia-libs.$archExt64"
+								nvidiaDriver2="xorg-x11-drv-nvidia-libs.$archExt64"
 							fi
 							;;
 					esac
 					
 					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
-					install_package "$akmodNnvidiaDriver $nvidiaDrivervNvidia2"
+					install_package "$akmodNvidia $nvidiaDriver $nvidiaDriver2"
 					# only do a final removal of nouveau if the install succeeded
 # 					remove_module 'nouveau'
 					
@@ -7645,13 +7665,13 @@ nvidiaDriver="xorg-x11-drv-nvidia-libs.$archExt"
 						1)	:
 							# this has already been error handled.
 							;;
-						2)Driver="nvidia${ubGlx}-$NV_UB_LEGACY_2"
-							nvidiaSettings="nvidia-settings{ubGlx}-$NV_UB_LEGACY_2"
+						2)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_2"
+							nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_2"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_2-modaliases"
 							;;
-						3)DriveridiaGlx="nvidia${ubGlx}-$NV_UB_LEGACY_3"
+						3)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_3"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_3-modaliases"
-nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
+							nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
 							;;
 						4)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_4"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_4-modaliases"
@@ -7666,11 +7686,12 @@ nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
 							nvidiaSettings="nvidia-settings"
 							;;
 					esac
-					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${Ns...${N}# handle legacy ubuntus..${N}"
+					echo "${S}Installing ${C}$DISTRO_NVIDIA${S} components...${N}"
+					# handle legacy ubuntus
 					if [ -n "$ubGlx" ];then
 						install_package "$nvidiaModal"
 					fi
-					install_pa$nvidiaSettings"
+					install_package "$nvidiaSettings"
 					install_package "$nvidiaDriver"
 					;;
 				*)
@@ -7680,9 +7701,9 @@ nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
 			;;
 		$FGLRX)
 			case $SYSTEM_BASE in
-				arch	debian)
+				arch)
 					echo "${S}Installing ${C}$DISTRO_FGLRX${S} components...${N}"
-					install_p"catalyst"
+					install_package "catalyst"
 					install_package "catalyst-utils"
 					;;
 				debian)
@@ -7716,10 +7737,10 @@ nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
 							# m-a a-i -f fglrx-kernel-src
 							# kelmo:  m-a --text-mode --non-inter -f -l ${KERNEL_FULL} a-i fglrx
 							m-a update 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 184 $DISTRO_FGLRX
-		_FGLRX
-					m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_FGLR		m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_FGLRX
-		_FGLRX
-					m-a build -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_FGLR		m-a install -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_FGLRX
+							m-a prepare fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 185 $DISTRO_FGLRX
+							m-a clean fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 182 $DISTRO_FGLRX
+							m-a build -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 194 $DISTRO_FGLRX
+							m-a install -f -l $KERNEL_FULL fglrx 1>> $LOG_FILE 2>> $LOG_FILE || error_handler 193 $DISTRO_FGLRX
 						else
 							echo "${S}Installing ${C}$DISTRO_FGLRX dkms driver${S} components...${N}"
 							install_package "$fglrxSettings $fglrxDriver" 
@@ -7727,12 +7748,13 @@ nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
 						fi
 					fi
 					;;
-				fedora	debian)
+				fedora)
 					echo "${S}Installing ${C}$DISTRO_FGLRX${S} components...${N}"
-					install_p"akmod-catalyst" # installs both driver and amdcccleO_FGLRX
+					install_package "akmod-catalyst" # installs both driver and amdcccle
 					;;
 				ubuntu)
-					echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}# legacy stuff
+					echo "${S}Installing ${C}$UBUNTU_FGLRX${S} components...${N}"
+					# legacy stuff
 					if [ -n "$( check_package_status 'fglrx-modaliases' 'c' )" ];then
 						install_package 'fglrx-modaliases'
 					fi
@@ -7748,7 +7770,7 @@ nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_3"
 					fi
 					if [ -n "$( check_package_status 'fglrx-amdcccle' 'c' )" ];then
 						install_package 'fglrx-amdcccle'
-					fi-fglrx'
+					fi
 					;;
 				*)
 					error_handler 176
@@ -8077,15 +8099,15 @@ start_x_question()
 					fgGlxInstall='echo -e "${C}$fgGlxOpt${M} - Install ${C}$fgGlx${M}."'
 					;;
 				$NVIDIA)
-					# not using this now until issue is confirmed b					# note, as of 2013-07-05 this issue occurs on install of: libgl1-nvidia-glx:i386
+					# not using this now until issue is confirmed by user
+					# note, as of 2013-07-05 this issue occurs on install of: libgl1-nvidia-glx:i386
 					# when trying to install that package apt tries to install nvidia installer cleaner
 					# or cleanup
 # 					nvGlxOpt='install-nvidia-glx'
 # 					# note, this was the old package name
 # 					# nvGlx='libgl1-nvidia-glx-ia32'
 # 					nvGlx='libgl1-nvidia-glx:i386'
-# a32'
-# 					nvGlxAlert='echo -e "\n${M}You might want to (re)install ${C}$nvGlx${M} (even if already installed)\nif you have problems with your ${C}64 bit nVidia${M} driver/apps.# N}"'
+# 					nvGlxAlert='echo -e "\n${M}You might want to (re)install ${C}$nvGlx${M} (even if already installed)\nif you have problems with your ${C}64 bit nVidia${M} driver/apps.${N}"'
 # 					nvGlxInstall='echo -e "${C}$nvGlxOpt${M} - Install ${C}$nvGlx${M}."'
 					:
 					;;
@@ -8176,7 +8198,8 @@ start_x_question()
 			reboot-now)
 				echo "${S}Ok, rebooting into kernel ${C}$INSTALL_TO_KERNEL${S} and your"
 				echo "${C}$DRIVER_DEFAULT${S} video driver. Thanks for using this script.${N}"
-				log_function_data "Final Step: reboot to kernel: $INSTALL_TO_KERNEhandle_shutdowns 'reboot'	reboot
+				log_function_data "Final Step: reboot to kernel: $INSTALL_TO_KERNEL"
+				handle_shutdowns 'reboot'
 				exit 100 # need to exit with 100 to not trigger root pid kill in smxi
 				;;
 			quit)
@@ -8204,33 +8227,34 @@ start_x_question()
 start_stop_x()
 {
 	eval $LOGUS
-	local displayManagers='entrance gdm gdm3 kdm kdm-trinity lightdm lxdm mdmd mdm nodm slim wdm xdm' dman='' success=''
+	local displayManagers='entrance gdm gdm3 kdm kdm-trinity lightdm lxdm mdm nodm sddm slim wdm xdm' dman='' success=''
 	# setting the default will handle cases like default 2 while still handling 3/5
 	# also note, future systems will probably not use inittab, ubuntu doesn't, but
 	# they will read it, so we'll always use this as default to respect user changes
-	local defaultRu''
+	local defaultRunlevel=''
 	if [ -f $EIT ];then
 		defaultRunlevel=$( grep -Es '^id.*:initdefault:' $EIT | grep -Eo '[0-5]' )
-	fi0-5]' )
+	fi
 	# default, this prevents errors when these don't exist in for ex. fedora
 	local serviceControl='/etc/init.d/' startPath='/etc/init.d/' bSkipXKill='false'
 	local noHup='nohup' xActionString='' finalXKill='' dmanCommand=''
-	local gdmCommand='' bSkipLoop='ttyKill=0
+	local gdmCommand='' bSkipLoop='false' ttyKill=0
 	local action=$1
 	
 	local defaultDM=$( get_default_display_manager )
 	if [ -z "$defaultDM" ];then
 		defaultDM=$( do_display_manager_pid_test )
-	fiMANAGER
+	fi
 	local currentRunlevel=$( get_current_runlevel )
 	
 	if [ -z "$DISPLAY" -a "$1" == 'stop' ];then
 		noHup=''
 	fi
 	# note that init.d does not take a space, but service does,for the first parameter like kdm
-	if [ -n "$(ptype -P service )" ];then
-		serviceControl='service # note, both fedora and arch have moved to systemd so most of this is only for legacy systemse '
+	if [ -n "$( type -p service )" ];then
+		serviceControl='service '
 	fi
+	# note, both fedora and arch have moved to systemd so most of this is only for legacy systems
 	case $SYSTEM_BASE in
 		arch)
 			serviceControl='/etc/rc.d/'
@@ -8248,11 +8272,13 @@ start_stop_x()
 				stop)
 					gdmCommand='init 3'
 					;;
-			esefaultDMManager='gdm'
+			esac
+			defaultDM='gdm'
 			;;
 	esac
 	log_function_data "default runlevel: $defaultRunlevel\ncurrent runlevel: $currentRunlevel"
-	## restart x if this is not being run by smxi"$B_SYSTEMD_INIT" == 'true' ];then
+	## restart x if this is not being run by smxi
+	if [ "$B_SYSTEMD_INIT" == 'true' ];then
 		echo "${M}Using ${C}systemd/systemctl${M} to try to ${C}$action${M} your desktop.${N}"
 	fi
 	if [ "$B_UPSTART" == 'true' ];then
@@ -8327,10 +8353,10 @@ start_stop_x()
 			else
 				echo "${W}Display manager ${C}$action${S} failed${N}"
 			fi
-			log_function_data "Display manager $action status: $success"i
-			fi
-		flog_function_data "Reached post dmancommand: $dmanCommand"	fi
+			log_function_data "Display manager $action status: $success"
+		fi
 	fi
+	log_function_data "Reached post dmancommand: $dmanCommand"
 	# this handles cases where somehow X is still running
 	# startx x starts can for example bypass kdm tests, etc
 	if [ "$1" == 'stop' ];then
@@ -8353,24 +8379,27 @@ start_stop_x()
 		fi
 	fi
 	# this will exit the root shell on successful run of start x
-	if [ "$1" == 'start' -a "$success" == 'true' ];# trying to bypass this because smxi is failing to restart x after driver install, so
+	if [ "$1" == 'start' -a "$success" == 'true' ];then
+		# trying to bypass this because smxi is failing to restart x after driver install, so
 		# I will make smxi exit after running sgfxi
-		# then
-		if [ "$B_SM_INSTALL" != 'true' ];then
+		# if [ "$B_SM_INSTALL" != 'true' ];then
 			# the failure case handels a weird thing when kill gives error
-			if [ -n "$LOGIN_PID" ];thlog_function_data "Kill login PID for dm start: $LOGIN_PID" ];th# too many oddities with systemd kill root/tty, so not doing anything for now ];then
-		"$B_SYSTEMD" == 'true' ];then
+			if [ -n "$LOGIN_PID" ];then
+				log_function_data "Kill login PID for dm start: $LOGIN_PID"
+				# too many oddities with systemd kill root/tty, so not doing anything for now
+				if [ "$B_SYSTEMD" == 'true' ];then
 					#kill_systemd_tty || ttyKill=$?
 					#if [ "$ttyKill" -gt 0 ];then
 						kill $LOGIN_PID && exit 0 || exit 1
 						exit 0
 					#fi
 				elif [ -n "$defaultRunlevel" ];then
-					init $INIT_LEVELunlevel && kill $LOGIN_PID && exit 0 || exit 1
+					init $INIT_LEVEL && kill $LOGIN_PID && exit 0 || exit 1
 				else
 					kill $LOGIN_PID && exit 0 || exit 1
 				fi
-			ellog_function_data "No login PID found, trying default runlevel: $defaultRunlevel"			else
+			else
+				log_function_data "No login PID found, trying default runlevel: $defaultRunlevel"
 				if [ -n "$defaultRunlevel" ];then
 					echo "${E}No login Pid found to kill, starting init $defaultRunlevel and leaving root logged in.${N}"
 					init $defaultRunlevel && exit 0 || exit 1
@@ -8378,12 +8407,16 @@ start_stop_x()
 					echo "${E}No login Pid found to kill, leaving root logged in.${N}"
 					exit 0
 				fi
-	#else
+			fi
 		#else
-			exit 0 # smxi will handle the pid root # kill
-		fi
+		#	exit 0 # smxi will handle the pid root kill
+		# fi
 	fi
-	eval $LO# this has weird consequences, not a good thing to use possibly, but I'll check it outOkill_systemd_tty()
+	eval $LOGUE
+}
+
+# this has weird consequences, not a good thing to use possibly, but I'll check it out
+kill_systemd_tty()
 {
 	eval $LOGUS
 	local returnValue=1 ttyStatus=''
@@ -8417,16 +8450,17 @@ get_current_tty()
 	
 	log_function_data "term: $term"
 	echo $term
-	$return
+	
 	eval $LOGUE
 }
 
 x_is_running()
 {
-	eval $local returnVal='' $LOGUS
+	eval $LOGUS
+	local returnVal=''
 	# we'll do one final X is running test here, note, handling a bunch of
 	# different possible X detections in etch, lenny, and sid, then filtering out the grep
-	local xIsRunning=$( ps aux -E '/usr.*/X([[:space:]]|$)' | grep -v 'grep' )
+	local xIsRunning=$( ps aux | grep -E '/usr.*/X([[:space:]]|$)' | grep -v 'grep' )
 	
 	if [ -z "$xIsRunning" -a "$B_SYSTEMD" == 'true' ];then
 		xIsRunning=$( systemd_dm_test )
@@ -8502,11 +8536,16 @@ get_default_display_manager()
 	fi
 
 	echo $defaultDM
-	log_function_data "defaultDM: $defaultDM"$return
-	eval $LOg steps
+	log_function_data "defaultDM: $defaultDM"
+	eval $LOGUE
+}
+
+
 ### -------------------------------------------------------------------
 ### xorg configuration (previously in sgfxi-lib-xorg)
-### --------------------------------------------------------------fix_xorg_device_id()
+### -------------------------------------------------------------------
+
+fix_xorg_device_id()
 {
 	eval $LOGUS
 	if [ -n "$( grep -s 'Card0' $EXXC )" ];then
@@ -8519,7 +8558,7 @@ get_default_display_manager()
 		log_function_data "No CardX in $EXXC."
 	fi
 	eval $LOGUE
-}-------
+}
 
 move_x_conf()
 {
@@ -8560,7 +8599,7 @@ create_x_conf()
 	
 	local bRepeat='false' opt='' options=''
 	
-	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep 4]\.[0-9]+(\.[0-9]+)?\.[0-9]' )" -a -n "$( which $X_NAME )" ];then
+	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep -E '[1-4]\.[0-9]+(\.[0-9]+)?' )" -a -n "$( which $X_NAME )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
 		
 		echo $LINE
@@ -8614,7 +8653,8 @@ create_x_conf()
 						fi
 					fi
 
-					# this handles the case where nouveau was running, sgfxi was starte		# no xorg.conf was found, and the X -configure command defaults to nv
+					# this handles the case where nouveau was running, sgfxi was started, 
+					# no xorg.conf was found, and the X -configure command defaults to nv
 					if [ "$B_TESTING_5" == 'true' -a -n "$( lsmod | grep '^nouveau' )" ];then
 						NATIVE_OVERRIDE='nouveau'
 						update_xorgconf_driver_version
