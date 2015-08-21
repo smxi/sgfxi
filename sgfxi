@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.47
+####  version: 4.24.48
 ####  Date: 2015-08-20
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
@@ -441,8 +441,8 @@ BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
 SCRIPT_DOWNLOAD_ALT=${A_BASE_URLS[${BASE_INDEX}]}
 SCRIPT_DOWNLOAD_VERSION='http://smxi.org/sm/sm-versions'
 SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
-SCRIPT_DOWNLOAD_BRANCH_1='http://sgfxi.googlecode.com/svn/branches/one/'
-SCRIPT_DOWNLOAD_BRANCH_2='http://sgfxi.googlecode.com/svn/branches/two/'
+SCRIPT_DOWNLOAD_BRANCH_1='https://github.com/smxi/sgfxi/raw/one/'
+SCRIPT_DOWNLOAD_BRANCH_2='https://github.com/smxi/sgfxi/raw/one/'
 
 ARCH_FGLRX='arch-fglrx'
 ARCH_NVIDIA='arch-nvidia'
@@ -5454,7 +5454,7 @@ debugger_data_collector()
 		echo "$SCRIPT_NAME will now try to upload this data to the script server..."
 		echo $LINE
 		# -Nc is creating really weird download anomolies, so using -O instead
-		xiin_download="$( wget -q -O - http://inxi.googlecode.com/svn/branches/xiin/$xiin_file )"
+		xiin_download="$( wget -q -O - https://github.com/smxi/inxi/raw/xiin/$xiin_file )"
 		# if nothing got downloaded kick out error, otherwise we'll use an older version
 		if [[ $? -gt 0 && ! -f $xiin_file ]];then
 			echo -e "ERROR: Failed to download ftp uploader file: $xiin_file\nMaybe the remote site is down or your networking is broken?"
