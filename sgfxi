@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.49
-####  Date: 2015-08-28
+####  version: 4.24.50
+####  Date: 2015-08-30
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -9027,7 +9027,10 @@ update_xorg()
 				# \n\tOption      "RandRRotation"\t"'$stateTrue'"
 				# \n\tOption      "DynamicTwinView"\t"'$twin'"
 				# perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"1"\n\tOption      "AddARGBGLXVisuals"\t"'$stateTrue'"\n\tOption      "TripleBuffer"\t"'$triple'"/' $EXXC
-				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"8"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "UseEvents"\t"'$useEvents'"/' $EXXC
+				## NOTE: ignoreDisplay makes 352 series fail to start x;
+				## xorg reports: 15.059] (WW) NVIDIA(0): Option "UseEvents" is not used
+				# perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"8"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "UseEvents"\t"'$useEvents'"/' $EXXC
+				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$allowGlx'Option      "Coolbits"\t"8"\n\tOption      "TripleBuffer"\t"'$triple'"\n/' $EXXC
 				;;
 			$FGLRX)
 				# set any custom stuff here
