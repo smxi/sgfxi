@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.51
-####  Date: 2015-08-31
+####  version: 4.24.52
+####  Date: 2015-09-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='355.11:340.76:304.125:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='355.11:340.93:304.125:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -280,11 +280,11 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
 #                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38 173.14.39 (ends with xorg 1.15 support)
 # stable legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121 304.123 304.125
-# stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76
+# stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76 340.93
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='355.11:352.41:352.30:346.87:346.82:343.36:340.76:340.65:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.125:304.123:304.121:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='355.11:352.41:352.30:346.87:346.82:343.36:340.93:340.76:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.125:304.123:304.121:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_5='340xx'
@@ -1810,7 +1810,7 @@ driver_support_tests()
 										# echo driver default $DRIVER_DEFAULT
 										case $DRIVER_DEFAULT in
 											# waiting for patches and confirmations
-											355.*|352.*|349.*|346.*|343.*|340.[6-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+											355.*|352.*|349.*|346.*|343.*|340.[6-9][0-9]|340.[1-9][0-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
 												# trigger installer flag if needed
 												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
@@ -1825,7 +1825,7 @@ driver_support_tests()
 										# echo driver default $DRIVER_DEFAULT
 										case $DRIVER_DEFAULT in
 											# waiting for patches and confirmations
-											355.*|352.*|349.*|346.*|340.[7-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+											355.*|352.*|349.*|346.*|340.[7-9][0-9]|340.[1-9][0-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
 												# trigger installer flag if needed
 												driver_version_hacks "$DRIVER_DEFAULT"
 												;;
@@ -1843,7 +1843,7 @@ driver_support_tests()
 								case $KERNEL_MATH in
 									0)
 										case $DRIVER_DEFAULT in
-											355.*|352.*|349.*|346.*|340.[7-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
+											355.*|352.*|349.*|346.*|340.[7-9][0-9]|340.[1-9][0-9][0-9]|304.[1-9][2-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1855,7 +1855,7 @@ driver_support_tests()
 										;;
 									1) # reports build failure with 340.46
 										case $DRIVER_DEFAULT in
-											355.*|352.*|$DISTRO_NVIDIA)
+											355.*|352.*|340.96|340.[1-9][0-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -1867,7 +1867,19 @@ driver_support_tests()
 										;;
 									2) # reports build failure with 340.46
 										case $DRIVER_DEFAULT in
-											355.*|352.*|$DISTRO_NVIDIA)
+											355.*|352.*|340.96|340.[1-9][0-9][0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									3) # reports build failure with 340.46
+										case $DRIVER_DEFAULT in
+											355.*|352.*|340.96|340.[1-9][0-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
