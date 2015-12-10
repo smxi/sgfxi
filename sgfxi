@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.60
-####  Date: 2015-11-24
+####  version: 4.24.61
+####  Date: 2015-12-09
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -242,7 +242,7 @@ NV_LEGACY_5=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 8xxx/21x cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='358.09:::::'
+NV_VERSIONS_BETA='358.16:::::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 6 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # ge4xx cards
@@ -373,7 +373,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # 14.3.14 14.5.2 14.7.1
 ### Older Betas: ###
 # 13.8-beta2
-FG_OTHERS='15.9.1:15.7.1:15.6.1:14.12.1:14.9.1:14.5.1:14.4.2:13.12.1:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='15.11.1:15.9.1:15.7.1:15.6.1:14.12.1:14.9.1:14.5.1:14.4.2:13.12.1:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
