@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.62
-####  Date: 2015-12-16
+####  version: 4.24.63
+####  Date: 2015-12-18
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2015
 ####  Code contributions copyright: Latino 2008
@@ -347,8 +347,8 @@ NV_64_ARCH='' # if nvidia changes file name use this
 # www2.ati.com/drivers/linux/amd-catalyst-14-4-rev2-linux-x86-x86-64-may6.zip
 # www2.ati.com/drivers/linux/linux-amd-catalyst-14.4-rc-v1.0-apr17.zip
 # www2.ati.com/drivers/beta/linux-amd-catalyst-14.6-beta-v1.0-may23.zip
-FG_VERSIONS='15.11.1:15.9.1:15.7.1'
-FG_DEFAULT='15.11.1'
+FG_VERSIONS='15.12.1:15.11.1:15.9.1'
+FG_DEFAULT='15.12.1'
 FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1, legacy uses changed paths
 # note, the programming supports various formats for these because AMD simply is incapable of 
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
@@ -362,7 +362,7 @@ FG_BETA_VERSION='' # legacy, but leaving in case needed in future
 FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 
 ### Stable Series: ###
-# 13.12.1 14.4.1 14.4.2 14.5.1 14.9.1 14.12.1 15.6.1 15.7.1 15.9.1 15.11.1
+# 13.12.1 14.4.1 14.4.2 14.5.1 14.9.1 14.12.1 15.6.1 15.7.1 15.9.1 15.11.1 15.12.1
 # 12-1 12-2 12-3 12-4 12-6 12-7 12.10 13.1 13-4 13.9 13:12
 # 11-12 11-11 11-10 11-9 11-8 11-7 11-6 11-5 11-4 11-3 11-2 11-1
 # 10-12 10-11 10-10 10-9 10-8 10-7 10-6 10-5 10-4 10-3 10-2 10-1
@@ -373,7 +373,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 # 14.3.14 14.5.2 14.7.1
 ### Older Betas: ###
 # 13.8-beta2
-FG_OTHERS='15.11.1:15.9.1:15.7.1:15.6.1:14.12.1:14.9.1:14.5.1:14.4.2:13.12.1:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
+FG_OTHERS='15.12.1:15.11.1:15.9.1:15.7.1:15.6.1:14.12.1:14.9.1:14.5.2:13.12.1:13.12:13.9:13-4:13.1:12.10:12-7:12-6:12-4:12-3:12-2:12-1:11-12:11-11:11-10:11-9:11-8:11-7:11-6:11-5:11-4:11-3:11-2:11-1'
 
 # set to sid/lenny/etch
 FG_DISTRIB_ID=''
@@ -673,7 +673,7 @@ driver_support_tests()
 							;;
 						1.16*|1.15.99*)
 							case $DRIVER_DEFAULT in
-								15.*|14.12.*|$DISTRO_FGLRX)
+								16.*|15.*|14.12.*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -689,7 +689,7 @@ driver_support_tests()
 							;;
 						1.15.[0-8].*)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|$DISTRO_FGLRX)
+								16.*|15.*|14.*|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -705,7 +705,7 @@ driver_support_tests()
 							;;
 						1.14*)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-][6-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
+								16.*|15.*|14.*|13[.-][6-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -721,7 +721,7 @@ driver_support_tests()
 							;;
 						1.13*)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[-.][3-9]|13[-.]1[0-2]|$DISTRO_FGLRX)
+								16.*|15.*|14.*|13[-.][3-9]|13[-.]1[0-2]|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -737,7 +737,7 @@ driver_support_tests()
 							;;
 						1.12*)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-]*|12[-.][6-9]|12[-.]1[0-2]|$DISTRO_FGLRX)
+								16.*|15.*|14.*|13[.-]*|12[-.][6-9]|12[-.]1[0-2]|$DISTRO_FGLRX)
 									if [ "$LEGACY_LEVEL" -lt 3 ];then
 										if [ "$B_TESTING_3" != 'true' ];then
 											error_handler 212
@@ -753,7 +753,7 @@ driver_support_tests()
 							;;
 						1.11*)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-]*|12[.-]*|11-1[0-2]|$DISTRO_FGLRX) 
+								16.*|15.*|14.*|13[.-]*|12[.-]*|11-1[0-2]|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -765,7 +765,7 @@ driver_support_tests()
 							;;
 						1.10*)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-]*|12[.-]*|11-[4-9]|11-1[0-2]|$DISTRO_FGLRX) 
+								16.*|15.*|14.*|13[.-]*|12[.-]*|11-[4-9]|11-1[0-2]|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -777,7 +777,7 @@ driver_support_tests()
 							;; 
 						1.9.*)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-1[0-2]|$DISTRO_FGLRX) 
+								16.*|15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-1[0-2]|$DISTRO_FGLRX) 
 									: # all other drivers fail to support xorg >= 1.9
 									;;
 								*)
@@ -789,7 +789,7 @@ driver_support_tests()
 							;;
 						1.8.*|7.6)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-[7-9]|10-1[0-2]|$DISTRO_FGLRX) # update when 1.8 is actually supported
+								16.*|15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-[7-9]|10-1[0-2]|$DISTRO_FGLRX) # update when 1.8 is actually supported
 									: # all other drivers fail to support xorg >= 1.8
 									;;
 								*)
@@ -801,7 +801,7 @@ driver_support_tests()
 							;;
 						1.7.*|7.5)
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-[4-9]|10-1[0-2]|$DISTRO_FGLRX)
+								16.*|15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-[4-9]|10-1[0-2]|$DISTRO_FGLRX)
 									: # all other drivers fail to support xorg >= 1.7
 									;;
 								*)
@@ -813,7 +813,7 @@ driver_support_tests()
 							;;
 						1.6.*|7.[3-4])
 							case $DRIVER_DEFAULT in
-								15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-*|9-[4-9]|9-1[0-2]|$DISTRO_FGLRX)
+								16.*|15.*|14.*|13[.-]*|12[.-]*|11[.-]*|10-*|9-[4-9]|9-1[0-2]|$DISTRO_FGLRX)
 									: # all other drivers fail to support xorg >= 1.6
 									;;
 								*)
@@ -885,7 +885,7 @@ driver_support_tests()
 									;;
 								29)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-*|10-*|9.2|9-[3-9]|9-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|10-*|9.2|9-[3-9]|9-1[0-2]|$DISTRO_FGLRX)
 											: 
 											;;
 										*)
@@ -897,7 +897,7 @@ driver_support_tests()
 									;;
 								30)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-*|10-*|9-8|9-9|9-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|10-*|9-8|9-9|9-1[0-2]|$DISTRO_FGLRX)
 											: 
 											;;
 										*)
@@ -909,7 +909,7 @@ driver_support_tests()
 									;;
 								31|32)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-*|10-*|9-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|10-*|9-1[0-2]|$DISTRO_FGLRX)
 											: 
 											;;
 										*)
@@ -921,7 +921,7 @@ driver_support_tests()
 									;;
 								33)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-*|10-[2-9]|10-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|10-[2-9]|10-1[0-2]|$DISTRO_FGLRX)
 											:
 											;;
 										*)
@@ -933,7 +933,7 @@ driver_support_tests()
 									;;
 								34)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-*|10-[5-9]|10-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|10-[5-9]|10-1[0-2]|$DISTRO_FGLRX)
 											:
 											;;
 										*)
@@ -945,7 +945,7 @@ driver_support_tests()
 									;;
 								35)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-*|10-[8-9]|10-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|10-[8-9]|10-1[0-2]|$DISTRO_FGLRX)
 											:
 											;;
 										*)
@@ -959,7 +959,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										15.*|14.*|13[.-]*|12[.-]*|11-*|10-1[0-2]|$DISTRO_FGLRX) 
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|10-1[0-2]|$DISTRO_FGLRX) 
 											:
 											;;
 										*)
@@ -973,7 +973,7 @@ driver_support_tests()
 									case $DRIVER_DEFAULT in
 										# note: unknown if -11 will support 36, -10 doesn't, assume -12 will
 										# patch from Arch works in application, don't know if it really works
-										15.*|14.*|13[.-]*|12[.-]*|11-*|$DISTRO_FGLRX) 
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-*|$DISTRO_FGLRX) 
 											:
 											;;
 										*)
@@ -985,7 +985,7 @@ driver_support_tests()
 									;;	
 								39)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-[6-9]|11-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-[6-9]|11-1[0-2]|$DISTRO_FGLRX)
 											:
 											;;
 										*)
@@ -1002,7 +1002,7 @@ driver_support_tests()
 							case $KERNEL_MATH in
 								0)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-[6-9]|11-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-[6-9]|11-1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1013,7 +1013,7 @@ driver_support_tests()
 									;;
 								1)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|11-[8-9]|11-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|11-[8-9]|11-1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1024,7 +1024,7 @@ driver_support_tests()
 									;;
 								2)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12[.-]*|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12[.-]*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1035,7 +1035,7 @@ driver_support_tests()
 									;;
 								3)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12-[4-9]|12-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12-[4-9]|12-1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1046,7 +1046,7 @@ driver_support_tests()
 									;;
 								4)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12-[7-9]|12-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12-[7-9]|12-1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1057,7 +1057,7 @@ driver_support_tests()
 									;;
 								5)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12-9|12-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12-9|12-1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1068,7 +1068,7 @@ driver_support_tests()
 									;;
 								6)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-]*|12-9|12-1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-]*|12-9|12-1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1080,7 +1080,7 @@ driver_support_tests()
 								7)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										15.*|14.*|13[.-][3-9]|13[.-]1[0-2]12.10|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-][3-9]|13[.-]1[0-2]12.10|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1092,7 +1092,7 @@ driver_support_tests()
 								8)
 									case $DRIVER_DEFAULT in
 										# amd release notes say it only supports kernel 3.5, but that's probably wrong
-										15.*|14.*|13[.-][4-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-][4-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1103,7 +1103,7 @@ driver_support_tests()
 									;;
 								9)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-][8-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-][8-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1114,7 +1114,7 @@ driver_support_tests()
 									;;
 								10)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-][8-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-][8-9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1125,7 +1125,7 @@ driver_support_tests()
 									;;
 								11)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-][9]|13[.-]1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-][9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1136,7 +1136,7 @@ driver_support_tests()
 									;;
 								12)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-][9]|13[.-]1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-][9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1147,7 +1147,7 @@ driver_support_tests()
 									;;
 								13)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|13[.-][9]|13[.-]1[0-2]|$DISTRO_FGLRX)
+										16.*|15.*|14.*|13[.-][9]|13[.-]1[0-2]|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1158,7 +1158,7 @@ driver_support_tests()
 									;;
 								14)
 									case $DRIVER_DEFAULT in
-										15.*|14.*|$DISTRO_FGLRX)
+										16.*|15.*|14.*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1169,7 +1169,7 @@ driver_support_tests()
 									;;
 								15)
 									case $DRIVER_DEFAULT in
-										15.*|14.[5-9].*|14.1[0-2].*|$DISTRO_FGLRX)
+										16.*|15.*|14.[5-9].*|14.1[0-2].*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1180,7 +1180,7 @@ driver_support_tests()
 									;;
 								16)
 									case $DRIVER_DEFAULT in
-										15.*|14.9.*|14.1[0-2].*|$DISTRO_FGLRX)
+										16.*|15.*|14.9.*|14.1[0-2].*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1191,7 +1191,7 @@ driver_support_tests()
 									;;
 								17)
 									case $DRIVER_DEFAULT in
-										15.*|14.9.*|14.1[0-2].*|$DISTRO_FGLRX)
+										16.*|15.*|14.9.*|14.1[0-2].*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1202,7 +1202,7 @@ driver_support_tests()
 									;;
 								18|19)
 									case $DRIVER_DEFAULT in
-										15.*|14.1[0-2].*|$DISTRO_FGLRX)
+										16.*|15.*|14.1[0-2].*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1218,7 +1218,7 @@ driver_support_tests()
 							case $KERNEL_MATH in
 								0)
 									case $DRIVER_DEFAULT in
-										15.*|$DISTRO_FGLRX)
+										16.*|15.*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1229,7 +1229,7 @@ driver_support_tests()
 									;;
 								1)
 									case $DRIVER_DEFAULT in
-										15.9.*|$DISTRO_FGLRX)
+										16.*|15.9.*|15.12.*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
@@ -1240,7 +1240,18 @@ driver_support_tests()
 									;;
 								2)
 									case $DRIVER_DEFAULT in
-										15.9.*|$DISTRO_FGLRX)
+										16.*|15.9.*|15.12.*|$DISTRO_FGLRX)
+											: # do nothing
+											;;
+										*) # use 225 for beta testing errors
+											if [ "$B_TESTING_3" != 'true' ];then
+												error_handler 234 $KERNEL_NUMBER
+											fi
+									esac
+									;;
+								3)
+									case $DRIVER_DEFAULT in
+										16.*|15.12.*|$DISTRO_FGLRX)
 											: # do nothing
 											;;
 										*) # use 225 for beta testing errors
