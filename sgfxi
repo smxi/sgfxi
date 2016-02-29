@@ -3367,7 +3367,7 @@ get_live_beta_drivers()
 		esac
 	fi
 
-	#return processed betas
+	#return processied betas
 	echo $driverList
 }
 
@@ -4073,12 +4073,12 @@ check_set_distro()
 		local isStretch=$( grep -Eis '^(stretch|9\.)' <<< "$edvContent" )
 
 		# first tests sources
-		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(stable|wheezy|squeeze|lenny|etch|jesse)' )
+		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(stable|wheezy|squeeze|lenny|etch|jessie)' )
 		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(stretch|testing)' )
 		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | grep -Eicw '(sid|unstable)' )
 		
 		# then test conf for default version
-		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny|squeeze|wheezy|jesse)"' <<< "$eaaContent" )
+		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny|squeeze|wheezy|jessie)"' <<< "$eaaContent" )
 		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|stretch)"' <<< "$eaaContent" )
 		local isUnstableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(sid|unstable)"' <<< "$eaaContent" )
 	# arch tests
@@ -4135,9 +4135,9 @@ check_set_distro()
 				elif [ -n "$isWheezy" ];then
 					FG_DISTRIB_CODENAME='wheezy' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='wheezy'
-				elif [ -n "$isJesse" ];then
-					FG_DISTRIB_CODENAME='jesse' # note: 'stable' breaks the installer
-					SYSTEM_CODENAME='jesse'
+				elif [ -n "$isJessie" ];then
+					FG_DISTRIB_CODENAME='jessie' # note: 'stable' breaks the installer
+					SYSTEM_CODENAME='jessie'
 				else
 					FG_DISTRIB_CODENAME='stable'
 					SYSTEM_CODENAME='stable'
@@ -4291,9 +4291,9 @@ check_driver_install_tools()
 					install_package 'module-assistant'
 				fi
 			fi
-			if [ -z "$( check_package_status 'build-essential' 'i' )" ];then
-				if [ -n "$( check_package_status 'build-essential' 'c' )" ];then
-					install_package 'build-essential'
+			if [ -z "$( check_package_status 'build-essiential' 'i' )" ];then
+				if [ -n "$( check_package_status 'build-essiential' 'c' )" ];then
+					install_package 'build-essiential'
 				fi
 			fi
 			
@@ -5510,7 +5510,7 @@ debugger_data_collector()
 		touch $debug_data_dir/etc-apt-source-files-absent
 	fi
 	echo "Data collection completed."
-	echo 'Creating tar.gz compressed file of this material now. Contents:'
+	echo 'Creating tar.gz compressied file of this material now. Contents:'
 	echo $LINE
 	tar -cvzf $debug_gz_file $debug_data_dir
 	echo $LINE
@@ -6854,7 +6854,7 @@ preinstall_cleanup()
 	local fglrxUninstaller='/usr/share/ati/fglrx-uninstall.sh' useForce=''
 	local bNvidiaError='false' bFglrxError='false' nvidiaGlxExtras='' extraPackageBan=''
 	
-	# yep, you guessed it, another stupid pointless amd/ati change. Discipline guys....
+	# yep, you guessied it, another stupid pointless amd/ati change. Discipline guys....
 	if [ -e /usr/share/ati/amd-uninstall.sh ];then
 		fglrxUninstaller='/usr/share/ati/amd-uninstall.sh'
 		useForce='--force'
