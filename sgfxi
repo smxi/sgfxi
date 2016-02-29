@@ -3367,7 +3367,7 @@ get_live_beta_drivers()
 		esac
 	fi
 
-	#return processied betas
+	#return processed betas
 	echo $driverList
 }
 
@@ -4291,9 +4291,9 @@ check_driver_install_tools()
 					install_package 'module-assistant'
 				fi
 			fi
-			if [ -z "$( check_package_status 'build-essiential' 'i' )" ];then
-				if [ -n "$( check_package_status 'build-essiential' 'c' )" ];then
-					install_package 'build-essiential'
+			if [ -z "$( check_package_status 'build-essential' 'i' )" ];then
+				if [ -n "$( check_package_status 'build-essential' 'c' )" ];then
+					install_package 'build-essential'
 				fi
 			fi
 			
@@ -5510,7 +5510,7 @@ debugger_data_collector()
 		touch $debug_data_dir/etc-apt-source-files-absent
 	fi
 	echo "Data collection completed."
-	echo 'Creating tar.gz compressied file of this material now. Contents:'
+	echo 'Creating tar.gz compressed file of this material now. Contents:'
 	echo $LINE
 	tar -cvzf $debug_gz_file $debug_data_dir
 	echo $LINE
@@ -6854,7 +6854,7 @@ preinstall_cleanup()
 	local fglrxUninstaller='/usr/share/ati/fglrx-uninstall.sh' useForce=''
 	local bNvidiaError='false' bFglrxError='false' nvidiaGlxExtras='' extraPackageBan=''
 	
-	# yep, you guessied it, another stupid pointless amd/ati change. Discipline guys....
+	# yep, you guessed it, another stupid pointless amd/ati change. Discipline guys....
 	if [ -e /usr/share/ati/amd-uninstall.sh ];then
 		fglrxUninstaller='/usr/share/ati/amd-uninstall.sh'
 		useForce='--force'
