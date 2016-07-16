@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.75
-####  Date: 2016-06-28
+####  version: 4.24.76
+####  Date: 2016-07-15
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2016
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='367.27:340.96:304.131:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='367.35:340.96:304.131:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -254,14 +254,14 @@ NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 8xxx/21x cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
-# stable primary: 355.11 361.28 361.42 364.19 367.27
+# stable primary: 355.11 361.28 361.42 364.19 367.27 367.35
 # stable primary: 343.36 346.35 346.47 346.59 349.16 346.72 352.21 352.30 352.41
 # stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
 # stable primary: 304.60 304.64 310.19 313.18 313.26 313.30 319.17 319.23 319.32
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 
+# lt stable primary: 367.35
 # lt stable primary: 346.72 346.82 346.87 352.41 352.55 352.63 361.28 361.42 367.27
 # lt stable primary: 331.89 340.24 340.32 340.46 340.58 340.65 346.35 346.47 346.59
 # lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49 331.67 331.79
@@ -286,7 +286,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='367.27:364.19:361.42:358.16:355.11:352.63:352.55:346.87:346.82:343.36:340.96:340.93:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.131:304.128:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='367.35:367.27:364.19:361.42:358.16:355.11:352.63:352.55:346.87:346.82:343.36:340.96:340.93:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.131:304.128:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_5='340xx'
