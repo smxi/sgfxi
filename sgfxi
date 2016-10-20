@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.79
-####  Date: 2016-09-08
+####  version: 4.24.80
+####  Date: 2016-10-20
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2016
 ####  Code contributions copyright: Latino 2008
@@ -2249,7 +2249,7 @@ check_patch_driver()
 					;;
 				4)
 					case $KERNEL_MATH in
-						6|7)
+						6|7|8)
 							case $DRIVER_DEFAULT in
 								# patch url: https://devtalk.nvidia.com/default/topic/699422/nvidia-linux-334-21-drivers/?offset=4
 								340.96)
@@ -3029,6 +3029,7 @@ detect_card_version()
 				# http://listing.driveragent.com/pci/10de/?q=94c3 # later series
 				# http://listing.driveragent.com/pci/12d2/?q=94c3 # full legacy
 				# http://www.nvidia.com/object/linux-amd64-display-archive.html
+				# https://pci-ids.ucw.cz/read/PC/10de
 				0008|0009|0010|0018|0019)
 					error_handler 253 # if card in this list exit
 					LEGACY_LEVEL=0
