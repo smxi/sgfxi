@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.82
-####  Date: 2016-11-30
+####  version: 4.24.83
+####  Date: 2016-12-18
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2016
 ####  Code contributions copyright: Latino 2008
@@ -230,7 +230,7 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='375.20:340.98:304.132:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='375.26:340.101:304.134:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -254,6 +254,7 @@ NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 8xxx/21x cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
+# stabel primary: 375.26 
 # stable primary: 355.11 361.28 361.42 364.19 367.27 367.35 367.44 370.28 375.20
 # stable primary: 343.36 346.35 346.47 346.59 349.16 346.72 352.21 352.30 352.41
 # stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
@@ -261,7 +262,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
-# lt stable primary: 367.35 367.44 367.57 375.20
+# lt stable primary: 367.35 367.44 367.57 375.20 375.26 
 # lt stable primary: 346.72 346.82 346.87 352.41 352.55 352.63 361.28 361.42 367.27
 # lt stable primary: 331.89 340.24 340.32 340.46 340.58 340.65 346.35 346.47 346.59
 # lt stable primary: 319.49 319.60 319.82 319.72 331.20 331.38 331.49 331.67 331.79
@@ -280,13 +281,13 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable legacy 2: 96.43.11 96.43.13 96.43.14 96.43.16 96.43.18 96.43.19 96.43.20 96.43.23 (ends with xorg 11/12 support)
 # stable legacy 3: 173.14.12 173.14.18 173.14.20 173.14.22 173.14.25 173.14.27 173.14.28 173.14.30
 #                  173.14.31 173.14.35 173.14.36 173.14.37 173.14.38 173.14.39 (ends with xorg 1.15 support)
-# stable legacy 4: 304.128 304.131 304.132
+# stable legacy 4: 304.128 304.131 304.132 304.134
 # stable legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121 304.123 304.125 304.131
-# stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76 340.93 340.96 340.98
+# stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76 340.93 340.96 340.98 340.101
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='375.20:370.28:367.57:367.44:364.19:361.42:358.16:355.11:352.63:352.55:346.87:346.82:343.36:340.98:340.96:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.132:304.131:304.128:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='375.26:375.20:370.28:367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:340.101:340.98:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.134:304.132:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_5='340xx'
@@ -1303,7 +1304,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.18*|1.17.99*)
 								case $DRIVER_DEFAULT in
-									375.*|370.*|367.*|364.*|361.*|358.*|355.*|352.*|349.*|340.[8-9][0-9]|304.1[2-9][0-9]|$DISTRO_NVIDIA)
+									375.*|370.*|367.*|364.*|361.*|358.*|355.*|352.*|349.*|340.[8-9][0-9]|340.[1-9][0-9][0-9]|304.1[2-9][0-9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -1315,7 +1316,7 @@ driver_support_tests()
 								;;
 							1.17*|1.16.99*)
 								case $DRIVER_DEFAULT in
-									375.*|370.*|367.*|364.*|361.*|358.*|355.*|352.*|349.*|346.*|343.[3-9][0-9]|340.[6-9][0-9]|304.1[2-9][0-9]|$DISTRO_NVIDIA)
+									375.*|370.*|367.*|364.*|361.*|358.*|355.*|352.*|349.*|346.*|343.[3-9][0-9]|340.[6-9][0-9]|340.[1-9][0-9][0-9]|304.1[2-9][0-9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
@@ -2000,6 +2001,18 @@ driver_support_tests()
 												;;
 										esac
 										;;
+									9)
+										case $DRIVER_DEFAULT in
+											375.*|340.[1-9][0-9][0-9]|304.13[4-9]|304.1[4-9][0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
 								esac
 								# end KERNEL_MATH
 								;;
@@ -2266,6 +2279,14 @@ check_patch_driver()
 								# patch url: https://devtalk.nvidia.com/default/topic/699422/nvidia-linux-334-21-drivers/?offset=4
 								340.96)
 									patchFile='NVIDIA-340.96-kernel-4.6.patch'
+									apply_patch_file $patchFile "$1"
+									;;
+							esac
+							;;
+						9)
+							case $DRIVER_DEFAULT in
+								340.101)
+									patchFile='NVIDIA_340.101-4.9.diff'
 									apply_patch_file $patchFile "$1"
 									;;
 							esac
@@ -8969,7 +8990,7 @@ update_xorgconf_driver_version()
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\s*"(apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|iftv|ivtv|i128|i740|i810|imstt|intel|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nv|nvidia|openchrome|radeon|radeonhd|rendition|s3virge|s3|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|i128|i740|i810|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	# confirm that it got written, if they add other driver names etc, like modesetting, it will fail until
 	# sgfxi is updated with those new names.
 	if [[ -z $( grep "\"$driverName\"" $EXXC ) ]];then
