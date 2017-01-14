@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.83
-####  Date: 2016-12-18
+####  version: 4.24.84
+####  Date: 2017-01-14
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2016
 ####  Code contributions copyright: Latino 2008
@@ -103,7 +103,7 @@ NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
 # http://blog.mecheye.net/2014/04/xwayland/ - good info on xwayland, and general xorg architecture
-NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|fbdev|geode|glide|glint|i128|i740|intel|imstt|mach64|mga|modesetting|neomagic|nsc|openchrome|nouveau|r128|radeon|rendition|s3|s3virge|savage|siliconmotion|sis|sisusb|tdfx|tga|trident|tseng|vesa|vga|via|voodoo|vmware|v4l'
+NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|fbdev|geode|glide|glint|i128|i740|intel|imstt|mach64|mga|modesetting|neomagic|nsc|openchrome|nouveau|r128|radeon|rendition|s3|s3virge|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|vesa|vga|via|voodoo|vmware|v4l'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
 SCRIPT_COLORS=1
@@ -7279,6 +7279,14 @@ post_installer_steps()
 				perl -pi -e 's|[\n]?$|\n|' $ema
 				echo "alias char-major-195 nvidia" >> $ema
 			fi
+			# note: http://askubuntu.com/questions/548557/how-to-install-gail-and-atk-bridge
+# 			case $SYSTEM_BASE in
+# 				debian|ubuntu)
+# 					apt-get install libatk-adaptor libgail-common
+# 					apt-get install libatk-adaptor:i386 libgail-common:i386
+# 					;;
+# 			esac
+			
 			;;
 		$FGLRX)
 			clean_up_fglrx_junk
@@ -8990,7 +8998,7 @@ update_xorgconf_driver_version()
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|i128|i740|i810|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|i128|i740|i810|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	# confirm that it got written, if they add other driver names etc, like modesetting, it will fail until
 	# sgfxi is updated with those new names.
 	if [[ -z $( grep "\"$driverName\"" $EXXC ) ]];then
