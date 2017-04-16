@@ -526,7 +526,7 @@ set_test_data()
 # 		CARD_DATA=10de:0280 # fake nvidia mid legacy (9x.xx.xx drivers)
 # 		CARD_DATA=10de:0322 # fake nvidia 5xxx legacy (173.xx.xx drivers)
 # 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
-# 		CARD_DATA=10de:0422 # fake nvidia 8-9xxx- (GS 8400)
+# 		CARD_DATA=10de:0422 # fake nvidia 8-9xxx- (340.xx GS 8400)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
@@ -536,7 +536,7 @@ set_test_data()
 # 		# to test patches/error handling for a specific kernel major version,
 # 		# ie: 3-7 here
 		KERNEL_BASE=4
-		KERNEL_MATH=7
+		KERNEL_MATH=10
 # 		# values: '' or 'true'
 # 		B_IS_XEN='false'
 # 		# check for specific system base tests, can be:
@@ -2013,6 +2013,18 @@ driver_support_tests()
 												;;
 										esac
 										;;
+									10)
+										case $DRIVER_DEFAULT in
+											378.*|340.[1-9][0-9][0-9]|304.13[4-9]|304.1[4-9][0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
 								esac
 								# end KERNEL_MATH
 								;;
@@ -2287,6 +2299,22 @@ check_patch_driver()
 							case $DRIVER_DEFAULT in
 								340.101)
 									patchFile='NVIDIA_340.101-4.9.diff'
+									apply_patch_file $patchFile "$1"
+									;;
+							esac
+							;;
+						10)
+							case $DRIVER_DEFAULT in
+								304.135)
+									patchFile='nvidia_kernel-4.10_304.patch'
+									apply_patch_file $patchFile "$1"
+									;;
+								340.102)
+									patchFile='nvidia_kernel-4.10_340.patch'
+									apply_patch_file $patchFile "$1"
+									;;
+								378.13)
+									patchFile='nvidia_kernel-4.10_378.patch'
 									apply_patch_file $patchFile "$1"
 									;;
 							esac
