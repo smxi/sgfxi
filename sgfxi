@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.86
-####  Date: 2017-04-16
+####  version: 4.24.87
+####  Date: 2017-04-25
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
@@ -2315,10 +2315,10 @@ check_patch_driver()
 									patchFile='nvidia_kernel-4.10_340.patch'
 									apply_patch_file $patchFile "$1"
 									;;
-# 								378.13)
-# 									patchFile='nvidia_kernel-4.10_378.patch'
-# 									apply_patch_file $patchFile "$1"
-# 									;;
+								378.13)
+									patchFile='nvidia_kernel-4.10_378.patch'
+									apply_patch_file $patchFile "$1"
+									;;
 # 								381.09)
 # 									patchFile='nvidia_kernel-4.10_381.09.patch'
 # 									apply_patch_file $patchFile "$1"
