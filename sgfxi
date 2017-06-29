@@ -4264,6 +4264,9 @@ check_set_distro()
 				elif [ -n "$isJessie" ];then
 					FG_DISTRIB_CODENAME='jessie' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='jessie'
+				elif [ -n "$isStretch" ];then
+					FG_DISTRIB_CODENAME='stretch' # note: 'stable' breaks the installer
+					SYSTEM_CODENAME='stretch'
 				else
 					FG_DISTRIB_CODENAME='stable'
 					SYSTEM_CODENAME='stable'
