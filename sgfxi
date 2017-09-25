@@ -254,7 +254,7 @@ NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 8xxx/21x cards
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA:::"
-# stabel primary: 375.26 378.13 381.22 384.59 384.90
+# stable primary: 375.26 378.13 381.22 384.59 384.90
 # stable primary: 355.11 361.28 361.42 364.19 367.27 367.35 367.44 370.28 375.20
 # stable primary: 343.36 346.35 346.47 346.59 349.16 346.72 352.21 352.30 352.41
 # stable primary: 325.15 331.20 331.38 331.49 334.21 337.25 340.24 340.32 343.22
@@ -262,6 +262,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable primary: 295.49 295.53 295.59 295.71 302.17 304.30 304.37 304.43 304.51
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
+# lt stable primary: 
 # lt stable primary: 367.35 367.44 367.57 375.20 375.26 375.39 375.66 384.59 384.69
 # lt stable primary: 346.72 346.82 346.87 352.41 352.55 352.63 361.28 361.42 367.27
 # lt stable primary: 331.89 340.24 340.32 340.46 340.58 340.65 346.35 346.47 346.59
