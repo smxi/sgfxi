@@ -80,9 +80,9 @@
 # to false if this script will be packaged and you want to not allow script auto updates
 B_ALLOW_AUTO_UPDATE='true'
 # maintainers change this to script default path please to keep things simple if different
-SCRIPT_HOME='/usr/local/bin'
-SCRIPT_NAME='sgfxi'
-SCRIPT_WORKING_DIR="/usr/src/$SCRIPT_NAME-downloads"
+SELF_HOME='/usr/local/bin'
+SELF_NAME='sgfxi'
+SELF_WORKING_DIR="/usr/src/$SELF_NAME-downloads"
 SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 
 # script global data
@@ -106,7 +106,7 @@ NATIVE_OVERRIDE=''
 NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|fbdev|geode|glide|glint|i128|i740|intel|imstt|mach64|mga|modesetting|neomagic|nsc|openchrome|nouveau|r128|radeon|rendition|s3|s3virge|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|vesa|vga|via|voodoo|vmware|v4l'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
-SCRIPT_COLORS=1
+SELF_COLORS=1
 START_OPTIONS_PRINT='' # for output to user of what options they used
 START_OPTIONS=''
 SUDO_START=''
@@ -432,20 +432,20 @@ FG_WORKING_DIR='fglrx-install'
 FG_LIVE_DRIVERS='http://smxi.org/sg/data/fg-drivers'
 NV_LIVE_DRIVERS='http://people.freedesktop.org/~aplattner/nvidia-versions'
 PATCH_DOWNLOAD='http://smxi.org/sg/'
-SCRIPT_DOWNLOAD='http://smxi.org/sg/'
-SCRIPT_DOWNLOAD_DATA='http://smxi.org/sg/data/'
+SELF_DOWNLOAD='http://smxi.org/sg/'
+SELF_DOWNLOAD_DATA='http://smxi.org/sg/data/'
 # alt for some data
 # "http://liquorix.net/sgfxi/"
 A_BASE_URLS=(
 "http://liquorix.net/sgfxi/"
-"$SCRIPT_DOWNLOAD_DATA"
+"$SELF_DOWNLOAD_DATA"
 )
 BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
-SCRIPT_DOWNLOAD_ALT=${A_BASE_URLS[${BASE_INDEX}]}
-SCRIPT_DOWNLOAD_VERSION='http://smxi.org/sm/sm-versions'
-SCRIPT_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
-SCRIPT_DOWNLOAD_BRANCH_1='https://github.com/smxi/sgfxi/raw/one/'
-SCRIPT_DOWNLOAD_BRANCH_2='https://github.com/smxi/sgfxi/raw/one/'
+SELF_DOWNLOAD_ALT=${A_BASE_URLS[${BASE_INDEX}]}
+SELF_DOWNLOAD_VERSION='http://smxi.org/sm/sm-versions'
+SELF_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
+SELF_DOWNLOAD_BRANCH_1='https://github.com/smxi/sgfxi/raw/one/'
+SELF_DOWNLOAD_BRANCH_2='https://github.com/smxi/sgfxi/raw/one/'
 
 ARCH_FGLRX='arch-fglrx'
 ARCH_NVIDIA='arch-nvidia'
@@ -458,15 +458,15 @@ FEDORA_NVIDIA='fedora-nvidia'
 UBUNTU_FGLRX='ubuntu-fglrx'
 UBUNTU_NVIDIA='ubuntu-nvidia'
 
-LOG_FILE_DIR="/var/log/$SCRIPT_NAME/"
-LOG_FILE="$SCRIPT_NAME.log"
+LOG_FILE_DIR="/var/log/$SELF_NAME/"
+LOG_FILE="$SELF_NAME.log"
 LOGPS='log_function_data ps $FUNCNAME "$( echo $@ )"'
 LOGPE='log_function_data pe $FUNCNAME'
 LOGUS='log_function_data us $FUNCNAME "$( echo $@ )"'
 LOGUE='log_function_data ue $FUNCNAME'
 
-SCRIPT_ROTATE="/etc/logrotate.d/$SCRIPT_NAME"
-SM_VALUES="/usr/local/bin/$SCRIPT_NAME-values"
+SELF_ROTATE="/etc/logrotate.d/$SELF_NAME"
+SM_VALUES="/usr/local/bin/$SELF_NAME-values"
 
 EXPERIMENTAL_XORG_ATI='xserver-xorg-video-ati_6.6.193-1'
 EXPERIMENTAL_LIBDRM2='libdrm2_2.4.0~git20070625-1'
@@ -483,7 +483,7 @@ LOGIN_PID=$( awk '{print $1}' <<< $LOGIN_PID | grep -Eo "^[0-9]+$" )
 # do some distro specific tweaks here too. Don't do this if
 # distro maintainers have set package defaults above.
 if [ -f "$EAR" -a "$B_ALLOW_AUTO_UPDATE" == 'true' ];then
-	SCRIPT_HOME='/usr/bin'
+	SELF_HOME='/usr/bin'
 fi
 
 # allow user set globals to override script globals
@@ -511,13 +511,13 @@ set_test_data()
 
 # 		# note: devs: double check this output to make sure it's your user name
 		username=$( getent passwd 1000|cut -d \: -f1 )
-		SCRIPT_HOME="/home/$username/bin/scripts/sgfxi/dev/"
-		SCRIPT_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev"
+		SELF_HOME="/home/$username/bin/scripts/sgfxi/dev/"
+		SELF_WORKING_DIR="/home/$username/bin/scripts/sgfxi/dev"
 		# INSTALL_DIRECTORY='' # for stuff like patches etc
 		LOG_FILE_DIR="/home/$username/bin/scripts/sgfxi/dev/logs/"
 # 		PATCH_DOWNLOAD='http://smxi.org/sg/'
-		cd $SCRIPT_HOME
-		rm -f $LOG_FILE_DIR$SCRIPT_NAME.log
+		cd $SELF_HOME
+		rm -f $LOG_FILE_DIR$SELF_NAME.log
 # 		# sgfxi doesn't support any legacy ATI stuff
 # 		CARD_DATA=1002:7280 # fake ati pre x2000 card
 # 		CARD_DATA=1002:9442 # fake ati hd2000-hd4xxx
@@ -2584,7 +2584,7 @@ run_patch_fixes()
 				grep 'CONFIG_LUPO' . -Rl 2> /dev/null | xargs -i sed -i -e 's/CONFIG_LUPO/CONFIG_XEN/g' {}
 				;;
 		esac
-		cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
+		cd $SELF_WORKING_DIR/$INSTALL_DIRECTORY
 	fi
 	eval $LOGPE
 }
@@ -2598,7 +2598,7 @@ run_patch_fixes()
 set_script_colors()
 {
 	# set colors
-	case $SCRIPT_COLORS in
+	case $SELF_COLORS in
 		0)
 			W='' # red: Warning message
 			E='' # yellow: script Error
@@ -2677,7 +2677,7 @@ error_handler()
 			errorData="No supported $CARD card found!"
 			;;
 		253)
-			errorData="No supported $CARD card found!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
+			errorData="No supported $CARD card found!\nYou can use this script to install the native Xorg drivers: $SELF_NAME -n"
 			;;
 		252)
 			errorData="This does not appear to be a Debian/Ubuntu/Arch based system! If you know that it is\nand received this error, please let the maintainer know and he'll try to correct the\ndistro identification failure. Post on the script forums: http://techpatterns.com/forums/forum-33.html\nwith your system information, including the contents of these files, if present:\n/etc/issue\n/etc/debian_version\n/etc/lsb-release"
@@ -2726,13 +2726,13 @@ error_handler()
 			errorData="This script does not support installing $CARD drivers in livemode."
 			;;
 		238)
-			errorData="There does not appear to be a live connection, or $SCRIPT_NAME script server is down.\nIf you are sure you have a connection, restart script with -Z option to cancel connection test."
+			errorData="There does not appear to be a live connection, or $SELF_NAME script server is down.\nIf you are sure you have a connection, restart script with -Z option to cancel connection test."
 			;;
 		237)
 			errorData="The native xorg driver you selected: $errorExtra is not supported."
 			;;
 		236)
-			errorData="An ATI $CARD error makes them not support your Xorg version $errorExtra\n If you are using less than R500 type card, you can install native radeon drivers with this script.\nUse this syntax to install those and reconfigure xorg.conf: $SCRIPT_NAME -N radeon"
+			errorData="An ATI $CARD error makes them not support your Xorg version $errorExtra\n If you are using less than R500 type card, you can install native radeon drivers with this script.\nUse this syntax to install those and reconfigure xorg.conf: $SELF_NAME -N radeon"
 			;;
 		235)
 			errorData="The driver $DRIVER_DEFAULT requires the 2.6.$errorExtra kernel to run.\nYou are running the $KERNEL_NUMBER kernel. Please update your kernel now."
@@ -2765,7 +2765,7 @@ error_handler()
 			;;
 		# this is only for nvidia latest kernel + beta errors
 		225)
-			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are installing the driver to kernel: $KERNEL_FULL\nPlease try the beta driver instead. Use this command to install beta drivers\nto either non-current kernel: $SCRIPT_NAME -cB -K $KERNEL_FULL\nor to current kernel: $SCRIPT_NAME -cB"
+			errorData="The driver $DRIVER_DEFAULT does not support the 2.6.$errorExtra kernel.\nYou are installing the driver to kernel: $KERNEL_FULL\nPlease try the beta driver instead. Use this command to install beta drivers\nto either non-current kernel: $SELF_NAME -cB -K $KERNEL_FULL\nor to current kernel: $SELF_NAME -cB"
 			;;
 		224)
 			errorData="Your system is missing the required kernel header package: $errorExtra\n and it is not currently available in your repos. Cannot continue.\nPlease either update your kernel and kernel headers,\nor find and install kernel headers for $KERNEL_FULL\nYou can override this test with -! 6 option. If install works, let maintainer know."
@@ -2777,7 +2777,7 @@ error_handler()
 			errorData="The Xorg driver $extraData you are trying to install is not available\nfor your version of $DISTRIB_ID: $DISTRIB_CODENAME"
 			;;
 		221)
-			errorData="AMD/ATI had dropped fglrx non-free driver support for your card type as of driver release 9-4\nOnly cards x2000 or newer are now supported by AMD/ATI for this driver.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
+			errorData="AMD/ATI had dropped fglrx non-free driver support for your card type as of driver release 9-4\nOnly cards x2000 or newer are now supported by AMD/ATI for this driver.\nIf you know your card is supported, please let the $SELF_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		220)
 			errorData="The Driver you are trying to install does not work with libdrm2 version 2.4.x less than 2.4.11.\nYour installed version of libdrm2 is: $errorExtra\n\nIf you are using Debian Sid, you must upgrade your libdrm2 to 2.4.11 or greater."
@@ -2789,7 +2789,7 @@ error_handler()
 			errorData="Something went wrong in the creation of your new $EXXC file\nPlease let the script maintainer know."
 			;;
 		217)
-			errorData="No supported $CARD card found for the distro driver (-d - formerly -s) installer option!\nYou can use this script to install the native Xorg drivers: $SCRIPT_NAME -n"
+			errorData="No supported $CARD card found for the distro driver (-d - formerly -s) installer option!\nYou can use this script to install the native Xorg drivers: $SELF_NAME -n"
 			;;
 		216)
 			errorData="You are using Ubuntu but you do not appear to have the 'restricted' repos enabled.\nPlease enable them before continuing, thank you."
@@ -2801,13 +2801,13 @@ error_handler()
 			errorData="Cannot create your new $EXXC because X cannot be killed.\nPlease let the script maintainer know."
 			;;
 		213)
-			errorData="$SCRIPT_NAME cannot locate any /boot/grub/ config files. Unable to continue.\n$SCRIPT_NAME requires grub config files: /boot/grub/menu.lst or /boot/grub/grub.cfg\n$SCRIPT_NAME does not support lilo or unmounted /boot partitions.\nThe action: $errorExtra cannot be done without an active Grub on your system."
+			errorData="$SELF_NAME cannot locate any /boot/grub/ config files. Unable to continue.\n$SELF_NAME requires grub config files: /boot/grub/menu.lst or /boot/grub/grub.cfg\n$SELF_NAME does not support lilo or unmounted /boot partitions.\nThe action: $errorExtra cannot be done without an active Grub on your system."
 			;;
 		212)
-			errorData="AMD has dropped Catalyst/FGLRX support for HD2xxx-4xxx series cards as of 12-6.\nYou should have bought Nvidia if you wanted a long term working non free driver, sorry.\nIf you know your card is supported, please let the $SCRIPT_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
+			errorData="AMD has dropped Catalyst/FGLRX support for HD2xxx-4xxx series cards as of 12-6.\nYou should have bought Nvidia if you wanted a long term working non free driver, sorry.\nIf you know your card is supported, please let the $SELF_NAME maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
 			;;
 		211)
-			errorData="You cannot start $SCRIPT_NAME with sudo. Please start $SCRIPT_NAME \nproperly as root (use either 'sudo su -' (note the '-' at the end) \nto become root, or login as root directly). If 'sudo su -' does not \nwork, please let the $SCRIPT_NAME maintainer know, and if your system \nhas root locked (why would anyone do that?) then you will have to \nunlock root. \n\nSee your distro manuals or help pages to fix this issue in that \ncase, and also make sure to update any documentation or how-to's \nfor running $SCRIPT_NAME with your distro.  This means you, Ubuntu/Mint users!\n\nTypical signs of sudo failures are respawnings of your desktop while \n$SCRIPT_NAME is running, or failures to create directories.\n"
+			errorData="You cannot start $SELF_NAME with sudo. Please start $SELF_NAME \nproperly as root (use either 'sudo su -' (note the '-' at the end) \nto become root, or login as root directly). If 'sudo su -' does not \nwork, please let the $SELF_NAME maintainer know, and if your system \nhas root locked (why would anyone do that?) then you will have to \nunlock root. \n\nSee your distro manuals or help pages to fix this issue in that \ncase, and also make sure to update any documentation or how-to's \nfor running $SELF_NAME with your distro.  This means you, Ubuntu/Mint users!\n\nTypical signs of sudo failures are respawnings of your desktop while \n$SELF_NAME is running, or failures to create directories.\n"
 			;;
 		# specific install issues
 		200)
@@ -2886,7 +2886,7 @@ error_handler()
 			errorData="Whoops, how did this happen? It appears you are not running a supported Distro for distro driver install."
 			;;
 		175)
-			errorData="You are using the -k (build kernel module only) option, but required file: $errorExtra\nis not found in $SCRIPT_WORKING_DIR\nNote: if your installed driver is NOT the default $SCRIPT_NAME offers, you have to\nuse either the -o <driver number> OR the -B option (if you are using current beta driver)\nplus the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
+			errorData="You are using the -k (build kernel module only) option, but required file: $errorExtra\nis not found in $SELF_WORKING_DIR\nNote: if your installed driver is NOT the default $SELF_NAME offers, you have to\nuse either the -o <driver number> OR the -B option (if you are using current beta driver)\nplus the -! 40 option. EG: to install beta to all kernels: $SELF_NAME -B -! 40"
 			;;
 		174)
 			errorData="The -k option cannot be used if you are using distribution packaged nVidia drivers."
@@ -2901,19 +2901,19 @@ error_handler()
 			errorData="The kernel module build failed with error code: $errorExtra\nPlease check /var/log/nvidia-installer.log for more information about the failure.\nA copy of this nvidia error log is also here: $LOG_FILE\nPlease try to reinstall the driver using: sgfxi -f (force override module build)\nbecause sometimes modules cannot be built to new kernels without the source\nbeing patched first, which requires a driver reinstall."
 			;;
 		170)
-			errorData="An nvidia module already exists for $KERNEL_FULL at path:\n/lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SCRIPT_NAME.\nInstalling a driver will remove all previous modules, then you can\nrebuild them with the -! 40 option (see $SCRIPT_NAME -h for more information on that method)."
+			errorData="An nvidia module already exists for $KERNEL_FULL at path:\n/lib/modules/$KERNEL_FULL/kernel/drivers/video/nvidia.ko\nYou must either remove this manually, or install a new driver with $SELF_NAME.\nInstalling a driver will remove all previous modules, then you can\nrebuild them with the -! 40 option (see $SELF_NAME -h for more information on that method)."
 			;;
 		169)
-			errorData="No previous $NVIDIA $SCRIPT_NAME run package install detected for -k option module build."
+			errorData="No previous $NVIDIA $SELF_NAME run package install detected for -k option module build."
 			;;
 		168)
 			errorData="An Xorg update overwrote $NVIDIA run package files. You must reinstall $NVIDIA driver.\nUnable to build -k option module."
 			;;
 		167)
-			errorData="You have used the -! 33 override option but the $errorExtra module action reports as failed\n.$SCRIPT_NAME is unable to continue in this scenario.\nPlease blacklist/unblacklist your $errorExtra manually then run $SCRIPT_NAME again."
+			errorData="You have used the -! 33 override option but the $errorExtra module action reports as failed\n.$SELF_NAME is unable to continue in this scenario.\nPlease blacklist/unblacklist your $errorExtra manually then run $SELF_NAME again."
 			;;
 		166)
-			errorData="The options ($errorExtra) you used are not compatible, and create internal $SCRIPT_NAME conflicts.\nPlease correct this error and start again."
+			errorData="The options ($errorExtra) you used are not compatible, and create internal $SELF_NAME conflicts.\nPlease correct this error and start again."
 			;;
 		165)
 			errorData="Extraction of zip file: $errorExtra failed."
@@ -2965,17 +2965,17 @@ select_card()
 	if [ "$B_SKIP_CONFIG" != 'true' ];then
 		echo "${M}If you want to preserve your current ${C}xorg.conf${M}, for example if you use dual"
 		echo "card setup, and your system is working fine with the driver you are installing,"
-		echo "please restart ${C}$SCRIPT_NAME${M} with extra ${C}-C${M} option and it will not change xorg.conf."
+		echo "please restart ${C}$SELF_NAME${M} with extra ${C}-C${M} option and it will not change xorg.conf."
 		echo
-		echo "${C}$SCRIPT_NAME${S} will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desirable,"
+		echo "${C}$SELF_NAME${S} will adjust your xorg.conf busID. For typical, single monitor/dual card setups, this is desirable,"
 		echo "but for rare cases of dual card, dual monitor setups, you may want to start with ${C}-C${S} (exit here to do so) "
 		echo
 		
 		echo "If you proceed without ${C}-C${S}, a copy of your current ${C}xorg.conf${S} will be made here: ${C}$timeStampXorg"
 	else
-		echo "${S}Because you started with ${C}-C${S} option, ${C}$SCRIPT_NAME${S} will NOT change your ${C}xorg.conf${S} here"
+		echo "${S}Because you started with ${C}-C${S} option, ${C}$SELF_NAME${S} will NOT change your ${C}xorg.conf${S} here"
 		echo "but will simply set which card to use for the automatic driver selection. Just pick the card"
-		echo "you want ${C}$SCRIPT_NAME${S} to use as the main card and ${C}$SCRIPT_NAME${S} will continue to installing the proper driver."
+		echo "you want ${C}$SELF_NAME${S} to use as the main card and ${C}$SELF_NAME${S} will continue to installing the proper driver."
 	fi
 	echo
 	echo "${S}Please select which card you want to install a driver for now to proceed:"
@@ -3585,7 +3585,7 @@ cleanup_update_files()
 
 	# Note: if  * is in "" the wildcard does not work
 	# /dev/null handles case where no temp or original file exists
-	all_files=$( ls "${SCRIPT_NAME}."* 2> /dev/null )
+	all_files=$( ls "${SELF_NAME}."* 2> /dev/null )
 	# make sure stuff exists, rm files
 	if [ -n "$all_files" ];then
 		rm -f $all_files
@@ -3605,10 +3605,10 @@ create_data_storage()
 {
 	local nvidiaPackages='' fglrxPackages='' bMoved='false'
 	# don't run this in case of user set test paths
-	if [ ! -d "$SCRIPT_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
+	if [ ! -d "$SELF_WORKING_DIR" -a "$B_TESTING_1" != 'true' ];then
 		echo $LINE
-		echo "${S}Creating ${C}$SCRIPT_WORKING_DIR${S} to store driver downloads in...${N}"
-		mkdir -p $SCRIPT_WORKING_DIR
+		echo "${S}Creating ${C}$SELF_WORKING_DIR${S} to store driver downloads in...${N}"
+		mkdir -p $SELF_WORKING_DIR
 		rm -f ${USRS}nohup.out &>/dev/null # sometimes these get left over...
 		rm -rf /usr/src/nvidia-installer &>/dev/null # this can cause weirdness so dump it
 		nvidiaPackages=$( ls ${USRS} 2>/dev/null | grep -Esi '^nvidia' )
@@ -3618,21 +3618,21 @@ create_data_storage()
 		log_function_data "nvidiaPackages:\n$nvidiaPackages"
 		log_function_data "fglrxPackages:\n$fglrxPackages"
 		if [ -n "$nvidiaPackages" ];then
-			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
+			echo "${S}Moving all existing ${C}nVidia${S} data files to ${C}$SELF_WORKING_DIR${S}...${N}"
 			for i in $nvidiaPackages
 			do
 				if [ -e "${USRS}$i" ];then
-					mv -f ${USRS}$i $SCRIPT_WORKING_DIR 2>/dev/null
+					mv -f ${USRS}$i $SELF_WORKING_DIR 2>/dev/null
 				fi
 			done
 			bMoved='true'
 		fi
 		if [ -n "$fglrxPackages" ];then
-			echo "${S}Moving all existing ${C}ATI/fglrx${S} data files to ${C}$SCRIPT_WORKING_DIR${S}...${N}"
+			echo "${S}Moving all existing ${C}ATI/fglrx${S} data files to ${C}$SELF_WORKING_DIR${S}...${N}"
 			for i in $fglrxPackages
 			do
 				if [ -e "${USRS}$i" ];then
-					mv -f ${USRS}$i $SCRIPT_WORKING_DIR 2>/dev/null
+					mv -f ${USRS}$i $SELF_WORKING_DIR 2>/dev/null
 				fi
 			done
 			bMoved='true'
@@ -3647,27 +3647,27 @@ create_data_storage()
 clean_script_data()
 {
 	check_root
-	cd $SCRIPT_HOME
+	cd $SELF_HOME
 
 	local downloadDirectorySize='' backupFiles='' backupFilesCount=''
 	local opt='' bRepeat='false'
-	local options="remove-video-driver-downloads delete-xorg.conf-backup-files uninstall-$SCRIPT_NAME quit" 
+	local options="remove-video-driver-downloads delete-xorg.conf-backup-files uninstall-$SELF_NAME quit" 
 	
 	echo $MLINE
-	echo "${M}$SCRIPT_NAME cleanup tool"
+	echo "${M}$SELF_NAME cleanup tool"
 	echo $MLINE
 	echo "${S}Calculating cleanup data....${N}"
 	echo $LINE
-	downloadDirectorySize=$( du -ch $SCRIPT_WORKING_DIR 2>/dev/null | grep 'total' )
+	downloadDirectorySize=$( du -ch $SELF_WORKING_DIR 2>/dev/null | grep 'total' )
 	backupFiles=$( ls $EXXC-bu* $EXXC.1st* 2>/dev/null )
 	backupFilesCount=$( wc -w <<< $backupFiles )
-	echo "${S}The following ${C}$SCRIPT_NAME${S} data exists for possible cleanup in your system"
-	echo "$SCRIPT_WORKING_DIR: ${C}$downloadDirectorySize${S}"
+	echo "${S}The following ${C}$SELF_NAME${S} data exists for possible cleanup in your system"
+	echo "$SELF_WORKING_DIR: ${C}$downloadDirectorySize${S}"
 	echo "$EXXC-bu* backup files: ${C}$backupFilesCount${S}"
 	echo $LINE
 	echo "${C}1 - remove-video-driver-downloads${S} - Delete ALL video driver downloads."
 	echo "${C}2 - delete-xorg.conf-backup-files${S} - Delete ALL xorg.conf backup files."
-	echo "${C}3 - uninstall-$SCRIPT_NAME${S} - Removes ALL pieces of $SCRIPT_NAME. Cannot be undone."
+	echo "${C}3 - uninstall-$SELF_NAME${S} - Removes ALL pieces of $SELF_NAME. Cannot be undone."
 	echo "   Will confirm your choice before proceeding."
 	
 	echo "${C}4 - quit${S} - Exit now."
@@ -3676,11 +3676,11 @@ clean_script_data()
 	do
 		case $opt in
 			remove-video-driver-downloads)
-				if [ -d $SCRIPT_WORKING_DIR ];then
-					rm -rf $SCRIPT_WORKING_DIR
-					echo "${C}$SCRIPT_WORKING_DIR${S} deleted. ${C}$downloadDirectorySize${S} cleaned up.${N}"
+				if [ -d $SELF_WORKING_DIR ];then
+					rm -rf $SELF_WORKING_DIR
+					echo "${C}$SELF_WORKING_DIR${S} deleted. ${C}$downloadDirectorySize${S} cleaned up.${N}"
 				else
-					echo "${M}No ${C}$SCRIPT_WORKING_DIR${M} directory present so nothing deleted.${N}"
+					echo "${M}No ${C}$SELF_WORKING_DIR${M} directory present so nothing deleted.${N}"
 				fi
 				bRepeat='true'
 				;;
@@ -3693,7 +3693,7 @@ clean_script_data()
 				fi
 				bRepeat='true'
 				;;
-			uninstall-$SCRIPT_NAME)
+			uninstall-$SELF_NAME)
 				uninstall_script
 				;;
 			quit)
@@ -3717,12 +3717,12 @@ uninstall_script()
 	local opt=''
 	local options="yes-uninstall-everything return-main-menu"
 	echo $LINE
-	echo "${S}Are you sure you want to totally uninstall ${C}$SCRIPT_NAME${S}"
-	echo "This will remove $SCRIPT_NAME and all its components permanently!"
+	echo "${S}Are you sure you want to totally uninstall ${C}$SELF_NAME${S}"
+	echo "This will remove $SELF_NAME and all its components permanently!"
 	echo $LINE
 	echo "${S}Enter a number for your selection and hit enter"
 	echo $LINE
-	echo "${C}1 - yes-uninstall-everything${S} - Completely uninstall $SCRIPT_NAME and its related."
+	echo "${C}1 - yes-uninstall-everything${S} - Completely uninstall $SELF_NAME and its related."
 	echo "    components, logs, and configurations."
 	echo "${C}2 - return-main-menu${S} - Go back to main menu, skip the uninstall."
 	echo $LINE
@@ -3731,14 +3731,14 @@ uninstall_script()
 			case $opt in
 				yes-uninstall-everything)
 					echo "${S}Ok, removing all the pieces now...${N}"
-					rm -rf /var/log/${SCRIPT_NAME}*
+					rm -rf /var/log/${SELF_NAME}*
 					rm -f $EXXC-bu* $EXXC.1st*
-					rm -f /etc/logrotate.d/${SCRIPT_NAME}*
-					rm -rf $SCRIPT_WORKING_DIR
-					rm -f $SCRIPT_HOME/video_support_* $SCRIPT_HOME/sg-drivers*
-					rm -f $SCRIPT_HOME/${SCRIPT_NAME}*
+					rm -f /etc/logrotate.d/${SELF_NAME}*
+					rm -rf $SELF_WORKING_DIR
+					rm -f $SELF_HOME/video_support_* $SELF_HOME/sg-drivers*
+					rm -f $SELF_HOME/${SELF_NAME}*
 					rm -f /etc/modprobe.d/kms-sg-blacklist.conf
-					echo "${S}Ok, everything is removed. Exiting since $SCRIPT_NAME is now gone.${N}"
+					echo "${S}Ok, everything is removed. Exiting since $SELF_NAME is now gone.${N}"
 					exit 0
 					;;
 				return-main-menu)
@@ -3975,13 +3975,13 @@ check_ia32_libs()
 							fi
 							echo "${S}Your system is now compatible with ${C}nVidia's${S} proprietary driver ${C}32-bit compatibility layer${S}.${N}"
 						else
-							echo "${W}No ${C}$ia32Name${W} installed or present in ${C}APT${W}. Please let the ${C}$SCRIPT_NAME${W} maintainer know."
+							echo "${W}No ${C}$ia32Name${W} installed or present in ${C}APT${W}. Please let the ${C}$SELF_NAME${W} maintainer know."
 							echo "Unable to complete ${C}$NVIDIA 32 bit compatibility layer${W} setup. Continuing to driver install.${N}"
 							log_function_data "Missing $ia32Name package, not installed."
 						fi
 					else
 						echo "${M}There is a problem in ${C}APT${M} currently. Unable to install ${C}$ia32Name${M}. Continuing"
-						echo "Try running ${C}$SCRIPT_NAME${M} again in a day or two and the issue should be resolved.${N}"
+						echo "Try running ${C}$SELF_NAME${M} again in a day or two and the issue should be resolved.${N}"
 						log_function_data "APT reported error on attempt to -s install $ia32Name."
 					fi
 				else
@@ -4065,7 +4065,7 @@ check_root()
 		local sudoBase=$( ps -j -fp $startPPPID 2>/dev/null | grep -Eos 'sudo su.*' )
 		# log_function_data "startPPID: $startPPID\nstartPPPID: $startPPPID\nsudoBase: $sudoBase"
 		if [ -n "$sudoBase" ];then
-			echo "${M}Information: Starting $SCRIPT_NAME with: ${C}$sudoBase${N}"
+			echo "${M}Information: Starting $SELF_NAME with: ${C}$sudoBase${N}"
 			SUDO_START=$sudoBase
 		fi
 	fi
@@ -4074,11 +4074,11 @@ check_root()
 basic_startup_tests()
 {
 	## basic execute requirements
-	cd $SCRIPT_HOME
+	cd $SELF_HOME
 	check_root
 	# this allows users to update in x, for example, to see latest drivers
 	if [ "$B_FORCE_UPDATE" == 'true' ];then
-		check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD" 'default server'
+		check_update_script "$SELF_NAME" "$SELF_DOWNLOAD" 'default server'
 	fi
 	check_set_distro
 	# initial systemd handling
@@ -4147,7 +4147,7 @@ get_current_runlevel()
 # has a live connection or not. This is mainly for logging/debugging
 check_connection()
 {
-	local checkUrl=${SCRIPT_DOWNLOAD_DATA}connection-test result=0
+	local checkUrl=${SELF_DOWNLOAD_DATA}connection-test result=0
 	local ua='-U s-tools/sgfxi-data.connection-test'
 	
 	wget $ua -q -t 1 -T 2 --spider $checkUrl || result=$?
@@ -4247,7 +4247,7 @@ check_set_distro()
 			DISTRO_NVIDIA=$ARCH_NVIDIA
 			SYSTEM_BASE='arch'
 			SYSTEM_CODENAME='arch'
-			SCRIPT_HOME='/usr/bin'
+			SELF_HOME='/usr/bin'
 			X_NAME='Xorg'
 			;;
 		debian|linuxmint-debian)
@@ -4594,7 +4594,7 @@ launch_from_X()
 		if [ "$( tty | grep pts )" ];then
 			#TERM=linux
 			TERM=1
-			exec openvt -s bash -c "$SCRIPT_NAME $@; bash"
+			exec openvt -s bash -c "$SELF_NAME $@; bash"
 		fi
 	fi
 }
@@ -5056,7 +5056,7 @@ check_update_script()
 {
 	local fileDataTemp='' isGood='' extraText='' bRunUpdate='false'
 	local versionTest=0 versionData='' localVersion='' remoteVersion=''
-	local downloadUrl=$2 uArgs='up' ua="-U s-tools/$SCRIPT_NAME"
+	local downloadUrl=$2 uArgs='up' ua="-U s-tools/$SELF_NAME"
 	local origXorg='/etc/X11/xorg-conf-orig-sg'
 
 	if [ -n "$( grep -E '(dev|svn|alt)' <<< $3 )" ];then
@@ -5064,10 +5064,10 @@ check_update_script()
 	else
 		extraText="${C}$3${S}"
 	fi
-	cd $SCRIPT_HOME # make sure we're in the right place
+	cd $SELF_HOME # make sure we're in the right place
 	# download / replace requested file
 	case $1 in
-		$SCRIPT_NAME)
+		$SELF_NAME)
 			if [ "$B_FORCE_UPDATE" == 'true' ];then
 				uArgs='ufr'
 				bRunUpdate='true'
@@ -5079,7 +5079,7 @@ check_update_script()
 # 				uArgs='dev'
 # 				bRunUpdate='true'
 			else
-				echo -n "${S}Checking ${C}$SCRIPT_NAME${S} versions.... ${N}"
+				echo -n "${S}Checking ${C}$SELF_NAME${S} versions.... ${N}"
 				# 0: same versionp; 1 - different version; 2 - download error
 				versionData=$( check_script_version )
 				versionTest="$?"
@@ -5100,7 +5100,7 @@ check_update_script()
 			# kind of error handling
 			if [ "$bRunUpdate" == 'true' ];then
 				ua="$ua.$uArgs.$SIS"
-				echo -e "${S}Updating ${C}$SCRIPT_NAME${S} now using the $extraText${N}"
+				echo -e "${S}Updating ${C}$SELF_NAME${S} now using the $extraText${N}"
 				fileDataTemp="$( wget $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
 				# all smxi files have this string as last line, if there, the file should usually
 				# run fine, except for weird fringe cases where the ascii file is corrupted partially
@@ -5112,16 +5112,16 @@ check_update_script()
 						exec ./$1 -R$START_OPTIONS
 					else
 						print_information
-						echo "${C}$SCRIPT_NAME${S} was successfully updated. Please start the script again to access"
-						echo "the latest features and drivers. Remember that ${C}$SCRIPT_NAME${S} always updates itself"
+						echo "${C}$SELF_NAME${S} was successfully updated. Please start the script again to access"
+						echo "the latest features and drivers. Remember that ${C}$SELF_NAME${S} always updates itself"
 						echo "automatically when it starts so usually ${C}-U${S} is not required."
 						echo
 						echo "To see the latest drivers or support features, use the ${C}-L${S} option. You can"
 						echo "run this option in X, and you don't need to be root to use it. Features:"
-						echo "Show all currently supported drivers: ${C}$SCRIPT_NAME -L d${S}"
-						echo "Show current nVidia support status: ${C}$SCRIPT_NAME -L n${S}"
-						echo "Show current ATI/Fglrx support status: ${C}$SCRIPT_NAME -L f${S}"
-						echo "Show current local/remote ${C}$SCRIPT_NAME${S} versions: ${C}$SCRIPT_NAME -L v${S}"
+						echo "Show all currently supported drivers: ${C}$SELF_NAME -L d${S}"
+						echo "Show current nVidia support status: ${C}$SELF_NAME -L n${S}"
+						echo "Show current ATI/Fglrx support status: ${C}$SELF_NAME -L f${S}"
+						echo "Show current local/remote ${C}$SELF_NAME${S} versions: ${C}$SELF_NAME -L v${S}"
 						print_hec
 						echo "${S}Update completed. Exiting now.${N}"
 					fi
@@ -5159,7 +5159,7 @@ check_update_script()
 						echo  "$fileDataTemp" > $EXXC
 						chmod 604 $EXXC
 						echo "${S}All done with the ${C}$EXXC${S} update."
-						echo "Try running ${C}$SCRIPT_NAME${S} again and see if your driver install works this time.${N}"
+						echo "Try running ${C}$SELF_NAME${S} again and see if your driver install works this time.${N}"
 						;;
 					*)
 						echo  "$fileDataTemp" > $1
@@ -5177,16 +5177,16 @@ check_update_script()
 check_script_version()
 {
 	local returnValue=0 wgetError=0 validated='' versionData=''
-	local ua="-U s-tools/$SCRIPT_NAME-updater.$SIS"
+	local ua="-U s-tools/$SELF_NAME-updater.$SIS"
 	local localVersion='' remoteVersion=''
 	if [ "$B_SKIP_WGET" == 'true' ];then
 		returnValue=2
 	else
-		versionData="$( wget $ua -qO - $SCRIPT_DOWNLOAD_VERSION )" || wgetError="$?"
+		versionData="$( wget $ua -qO - $SELF_DOWNLOAD_VERSION )" || wgetError="$?"
 		if [ "$wgetError" -eq 0  ];then
 			validated=$( grep -Esi '#\*\*EOF\*\*#' <<< "$versionData" )
 			if [ -n "$validated" ];then
-				localVersion=$( awk '/^#.*[[:space:]]version:/ {print $3}' $SCRIPT_HOME/$SCRIPT_NAME )
+				localVersion=$( awk '/^#.*[[:space:]]version:/ {print $3}' $SELF_HOME/$SELF_NAME )
 				remoteVersion=$( grep 'sgfxi' <<< "$versionData" | cut -d '=' -f 2 | cut -d ':' -f 1 )
 				if [ "$localVersion" == "$remoteVersion" ];then
 					returnValue=0
@@ -5215,11 +5215,11 @@ apply_patch_file()
 	fi
 	local patchFile=$1
 	## this can be changed to branches with -! 20 or -! 21
-	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SCRIPT_NAME-data.patches.$patchFile"
+	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SELF_NAME-data.patches.$patchFile"
 	local patchFileDataTemp=''
 
-	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY # first change to the correct directory
-	log_function_data "Patch File Dir: $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY"
+	cd $SELF_WORKING_DIR/$INSTALL_DIRECTORY # first change to the correct directory
+	log_function_data "Patch File Dir: $SELF_WORKING_DIR/$INSTALL_DIRECTORY"
 	log_function_data "Patch URL: $patchUrl"
 
 	echo "${S}Retrieving patch ${C}$patchFile${S}...${N}"
@@ -5241,8 +5241,8 @@ apply_patch_file()
 
 print_information()
 {
-	local scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2 )
-	local scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
+	local scriptVersion=$( grep -Eo -m 1 "(version:).*" $SELF_HOME/$SELF_NAME | cut -d ' ' -f 2 )
+	local scriptDate=$( grep -Eo -m 1 '(Date:).*' $SELF_HOME/$SELF_NAME | cut -d ' ' -f 2-4 )
 	#local cardInfo=$( lspci | awk -F': ' '/VGA compatible controller.*: / { print $NF }' | sed -r 's%(ATI\sTechnologies\sInc\s|nVidia\sCorporation\s)(.*)%\2%'  )
 	# |3D controller|Display controller
 	local cardInfo=$( lspci | \
@@ -5258,7 +5258,7 @@ print_information()
 		cardVendor=$( lspci -v -s $busId 2>/dev/null | grep -E '.*Subsystem:[[:space:]]*(.*)' | sed -r 's/.*Subsystem:[[:space:]]*(.*)/\1/' | sed 's/[dD]evice.*$//g' | sed 's/[uU]nknown//g' )
 	fi
 	echo $MLINE
-	echo " ${M}$SCRIPT_NAME${S} :: version: ${C}$scriptVersion${S} :: last updated: ${C}$scriptDate"
+	echo " ${M}$SELF_NAME${S} :: version: ${C}$scriptVersion${S} :: last updated: ${C}$scriptDate"
 	echo $MLINE
 	echo " ${S}graphics card information:"
 	echo "   ${S}series: ${C}$cardInfo"
@@ -5331,7 +5331,7 @@ print_hec()
 create_log()
 {
 	local cardString=$( lspci | grep -i 'vga ' | cut -d ':' -f 3 )
-	local sgfxiVersion=$( grep 'version:' $SCRIPT_NAME | grep -o "[0-9]*\.[0-9]*\.[0-9]*" )
+	local sgfxiVersion=$( grep 'version:' $SELF_NAME | grep -o "[0-9]*\.[0-9]*\.[0-9]*" )
 	local installToKernel='' smValues=''
 	
 	if [ -n "$INSTALL_TO_KERNEL" ];then
@@ -5351,30 +5351,30 @@ create_log()
 	# check and create logfile:
 	LOG_FILE=$LOG_FILE_DIR$LOG_FILE
 
-	if [ ! -f $SCRIPT_ROTATE ];then
+	if [ ! -f $SELF_ROTATE ];then
 		echo "$LOG_FILE {
 	rotate 8
 	create
 	size 10k
 }
-" > $SCRIPT_ROTATE
+" > $SELF_ROTATE
 	else
 		# update if needed
-		if [ -n "$( grep ' 120k' $SCRIPT_ROTATE )" ];then
-			sed -i 's/rotate[[:space:]]4/rotate 8/' $SCRIPT_ROTATE
-			sed -i 's/size[[:space:]]120k/size 10k/' $SCRIPT_ROTATE
+		if [ -n "$( grep ' 120k' $SELF_ROTATE )" ];then
+			sed -i 's/rotate[[:space:]]4/rotate 8/' $SELF_ROTATE
+			sed -i 's/size[[:space:]]120k/size 10k/' $SELF_ROTATE
 		fi
 	fi
 	touch $LOG_FILE # make sure there's one there for rotate to look at
 	if [ -n "$( which logrotate )" ];then
-		logrotate $SCRIPT_ROTATE
+		logrotate $SELF_ROTATE
 	fi
 
 	touch $LOG_FILE # and if rotated, need a new one
 	# sudo start will only show as information to check for 'sudo su -' starts, all others
 # have exited with error
 	echo -e "=========================================================
-START $SCRIPT_NAME LOGGING:
+START $SELF_NAME LOGGING:
 =========================================================
 Script started: $( date +%Y-%m-%d-%H:%M:%S )
 Video Card Information:$cardString
@@ -5382,8 +5382,8 @@ Video Card Type: $CARD_BRAND
 Video Card Number: $CARD_NUMBER
 Xorg Version: $X_VERSION
 Installing driver to kernel: $KERNEL_FULL$installToKernel
-$SCRIPT_NAME script version: $sgfxiVersion
-$SCRIPT_NAME start options: $START_OPTIONS
+$SELF_NAME script version: $sgfxiVersion
+$SELF_NAME start options: $START_OPTIONS
 SYSTEM_BASE: $SYSTEM_BASE
 SYSTEM_CODENAME: $SYSTEM_CODENAME
 DISTRIB_CODENAME: $DISTRIB_CODENAME
@@ -5487,7 +5487,7 @@ log_writer()
 
 debugger_data_collector()
 {
-	local debug_data_home="$HOME/${SCRIPT_NAME}-data/" b_uploaded='false' xiin_download=''
+	local debug_data_home="$HOME/${SELF_NAME}-data/" b_uploaded='false' xiin_download=''
 	local xorg_d_files='' xorg_file='' data='' data2='' xiin_file='xiin.py'
 	local ftp_upload='ftp.techpatterns.com/incoming' b_run_xiin='false' root_string=''
 	local host=$( tr '[A-Z]' '[a-z]' <<< "$HOSTNAME" )
@@ -5499,9 +5499,9 @@ debugger_data_collector()
 	if [[ $( whoami ) == 'root' ]];then
 		root_string='-root'
 	fi
-	local debug_data_dir="$SCRIPT_NAME-$(date +%Y-%m-%d-%H%M%S)$host$root_string"
+	local debug_data_dir="$SELF_NAME-$(date +%Y-%m-%d-%H%M%S)$host$root_string"
 	local debug_gz_file="$debug_data_dir.tar.gz"
-	echo "Starting $SCRIPT_NAME debugging data collection..."
+	echo "Starting $SELF_NAME debugging data collection..."
 	if [ ! -d $debug_data_home ];then
 		mkdir $debug_data_home
 		echo "Created data directory here: $debug_data_home"
@@ -5666,7 +5666,7 @@ debugger_data_collector()
 	else
 		echo $LINE
 		echo 'All done with debugger data collection.'
-		echo "$SCRIPT_NAME will now try to upload this data to the script server..."
+		echo "$SELF_NAME will now try to upload this data to the script server..."
 		echo $LINE
 		# -Nc is creating really weird download anomolies, so using -O instead
 		xiin_download="$( wget -q -O - https://github.com/smxi/inxi/raw/xiin/$xiin_file )"
@@ -5966,7 +5966,7 @@ download_install_package()
 			;;
 	esac
 	
-	url=$SCRIPT_DOWNLOAD'ati-drivers/'$packageToInstall
+	url=$SELF_DOWNLOAD'ati-drivers/'$packageToInstall
 	if [ -z "$packageToInstall" ];then
 		error_handler 187 download-package
 	fi
@@ -6021,7 +6021,7 @@ set_modesetting_off()
 # 					if [ "$2" == 'failed' ];then
 # 						echo $LINE
 # 						echo "${S}Please note: Arch users: you can proceed with your driver install, but you must ${S}reboot${S}"
-# 						echo "at the end of ${C}$SCRIPT_NAME${S} when the install is completed before the driver will work."
+# 						echo "at the end of ${C}$SELF_NAME${S} when the install is completed before the driver will work."
 # 						echo "This is because its not possible to remove ${C}$1${S} from a running system.${N}"
 # 						print_hec
 # 					fi
@@ -6378,7 +6378,7 @@ reboot_now_question()
 	if [ "$2" == 'modeset-off' ];then
 		echo "${M}Since ${C}$1${M} is running in the kernel, you will need to restart your computer before"
 		echo "your ${C}$CARD${M} install is completed, and you may need to reboot again if it errors out,"
-		echo "then you can run ${C}$SCRIPT_NAME${M} again and it should work."
+		echo "then you can run ${C}$SELF_NAME${M} again and it should work."
 		echo
 		echo "${S}For best results, select the ${C}shutdown${S} option, let the computer sit for a minute, then restart it."
 		
@@ -6398,10 +6398,10 @@ reboot_now_question()
 		echo "    then restart your desktop login manager (like gdm,xdm,kdm). If X then starts, you're fine."
 		echo "2 - Add the grub kernel option: ${C}nomodeset${S}"
 		echo "    at grub load, using the edit (e) method in grub, then boot with that. This will allow"
-		echo "    you to at least run $SCRIPT_NAME to install the non-free driver."
+		echo "    you to at least run $SELF_NAME to install the non-free driver."
 	fi
 	echo $MLINE
-	echo "${M}Remember, to install ${C}$CARD${M} drivers, you'll need to run ${C}$SCRIPT_NAME${M} again."
+	echo "${M}Remember, to install ${C}$CARD${M} drivers, you'll need to run ${C}$SELF_NAME${M} again."
 	echo "after you have restarted $initText"
 	echo $LINE
 	echo "${C}1 - shutdown${S} - Shutdown, wait 30 seconds, then restart manually (${M}RECOMMENDED!${S}).${N}"
@@ -6687,7 +6687,7 @@ set_download_info()
 				if [ "$B_AMD" == 'true' ];then
 					downloadUrl='http://www2.ati.com/drivers/beta/'
 				else
-					downloadUrl=$SCRIPT_DOWNLOAD_ALT
+					downloadUrl=$SELF_DOWNLOAD_ALT
 				fi
 				# note, amd changed this AGAIN!!! for their damned betas
 				# www2.ati.com/drivers/beta/amd-catalyst-13.8-beta1-linux-x86.x86_64.zip 
@@ -6700,7 +6700,7 @@ set_download_info()
 				if [ "$B_AMD" == 'true' ];then
 					downloadUrl='http://www2.ati.com/drivers/linux/'
 				else
-					downloadUrl=$SCRIPT_DOWNLOAD_ALT
+					downloadUrl=$SELF_DOWNLOAD_ALT
 				fi
 			fi
 			DRIVER_FILE="$FGLRX_PACKAGE_PREFIX-$DRIVER_DEFAULT$fgBetaVersion-${FG_POST}x86.x86_64"
@@ -6751,8 +6751,8 @@ pre_extract_clean_set_up()
 {
 	eval $LOGUS
 	# this is only made for binary run packge installs
-	if [ -d "$SCRIPT_WORKING_DIR" ];then
-		cd $SCRIPT_WORKING_DIR
+	if [ -d "$SELF_WORKING_DIR" ];then
+		cd $SELF_WORKING_DIR
 	fi
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
 		rm -rf $1 # this removes nvidia install dir if present
@@ -6984,8 +6984,8 @@ set_install_directory()
 			INSTALL_DIRECTORY=$( ls | grep "$FG_WORKING_DIR" )
 			;;
 	esac
-	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
-	log_function_data "Function: set_install_directory - set to: $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY"
+	cd $SELF_WORKING_DIR/$INSTALL_DIRECTORY
+	log_function_data "Function: set_install_directory - set to: $SELF_WORKING_DIR/$INSTALL_DIRECTORY"
 }
 
 preinstall_cleanup()
@@ -7005,7 +7005,7 @@ preinstall_cleanup()
 
 	# this is not set as a path if native driver install
 	if [ "$B_NATIVE_DRIVER" != 'true' ];then
-		cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
+		cd $SELF_WORKING_DIR/$INSTALL_DIRECTORY
 	fi
 	# some legacy cleanup gunk, this can probably be dumped
 	if [ -f /etc/modutils/1alsa ];then
@@ -7118,7 +7118,7 @@ preinstall_cleanup()
 		rm -f /tmp/.X0-lock
 		# double check, clean up anything left after uninstaller runs
 		rm -rf ${USRS}nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
-		rm -rf ${SCRIPT_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
+		rm -rf ${SELF_WORKING_DIR}/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 		rm -rf ${USRS}modules/nvidia* 1>> $LOG_FILE 2>> $LOG_FILE
 # 	fi
 	# this might need more work to not remove if X failed to stop
@@ -7186,7 +7186,7 @@ run_driver_installer()
 	local distroCodeName=''
 
 	# this was set in prep_install()
-	cd $SCRIPT_WORKING_DIR/$INSTALL_DIRECTORY
+	cd $SELF_WORKING_DIR/$INSTALL_DIRECTORY
 	echo "${S}Running driver installer for ${C}$DRIVER_DEFAULT${S} (this might take a while)...${N}"
 
 	log_function_data "driver: $DRIVER_DEFAULT"
@@ -7322,7 +7322,7 @@ post_installer_steps()
 
 	echo "${S}Running post installer steps...${N}"
 
-	cd $SCRIPT_WORKING_DIR
+	cd $SELF_WORKING_DIR
 
 	rm -rf $INSTALL_DIRECTORY # remove the extracted driver install directory in /usr/src
 
@@ -7388,10 +7388,10 @@ build_kernel_module_only()
 			echo $LINE
 			echo "${S}Building kernel module ${C}$DRIVER_DEFAULT${S} for kernel ${C}$KERNEL_FULL${S} now (can take a while)...${N}"
 			if [ "$2" != 'silent' ];then
-				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a || moduleResult=$?
+				bash $SELF_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a || moduleResult=$?
 			else
 				silent=' -s'
-				bash $SCRIPT_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
+				bash $SELF_WORKING_DIR/$runPackage $silent -N --kernel-name=$KERNEL_FULL --kernel-module-only -a 1>> $LOG_FILE 2>> $LOG_FILE || moduleResult=$?
 			fi
 			if [ "$moduleResult" -ne 0 ];then
 				log_driver_installer_failure
@@ -7423,7 +7423,7 @@ test_module_build_ok()
 	echo $LINE
 	echo "${S}Starting ${C}$NVIDIA module${S} build process checks for kernel: ${C}$KERNEL_FULL${N}"
 	echo -n "  ${S}Checking for driver run package ${C}$DRIVER_FILE${S}.... ${N}"
-	if [ ! -f "$SCRIPT_WORKING_DIR/$runPackage" ];then
+	if [ ! -f "$SELF_WORKING_DIR/$runPackage" ];then
 		echo "${W}NOT FOUND${N}"
 		returnValue=1
 		logData="No Driver Run Package: "
@@ -7452,7 +7452,7 @@ test_module_build_ok()
 		libGlNvidia=$( readlink /usr/lib/libGL.so.1 | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
 		echo -n "  ${S}Checking for installed ${C}nVidia${S} driver.... ${N}" 
 		if [ -z "$libGlNvidia" ];then
-			echo "${W}No $SCRIPT_NAME ${C}nVidia${W} Driver Detected${N}"
+			echo "${W}No $SELF_NAME ${C}nVidia${W} Driver Detected${N}"
 			returnValue=3
 			logData="${logData}No Installed Nvidia: "
 			if [ "$1" == 'error' ];then
@@ -7480,7 +7480,7 @@ test_module_build_ok()
 		# this file belongs to xserver-xorg but is overwritten by nvidia, so if above test
 		# is true and this is null, then xorg has been renewed
 		xorgNvidia=$( readlink /usr/lib/xorg/modules/extensions/libglx.so | grep -Eois '[0-9]{2,3}\.[0-9]{2,3}(\.[0-9]+)?' )
-		# installedDriver=$( bash $SCRIPT_WORKING_DIR/$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+		# installedDriver=$( bash $SELF_WORKING_DIR/$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 		if [ -z "$xorgNvidia" ];then
 			echo "${C}Xorg${W} Updated${N}"
 			returnValue=5
@@ -7493,8 +7493,8 @@ test_module_build_ok()
 		fi
 	fi
 # 	echo "${S}Checking that installed driver is the same as the driver you are having" 
-# 	echo -n "${C}$SCRIPT_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
-# 	installedDriver=$( bash $SCRIPT_WORKING_DIR/$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
+# 	echo -n "${C}$SELF_NAME${S} build a kernel module for: ${C}$DRIVER_DEFAULT${S}.... ${N}"
+# 	installedDriver=$( bash $SELF_WORKING_DIR/$runPackage -N --driver-info | grep -Eio 'version:[[:space:]]*[0-9\.]+' | grep -oE '[0-9\.]+' )
 # 	if [ "$installedDriver" != "$DRIVER_DEFAULT" ];then
 # 		echo "${W}MISMATCH${N}"
 # 		returnValue=1
@@ -7811,7 +7811,7 @@ install_distro_drivers()
 							#nvidiaGlx has dependences problems. Workaround is to build-install the driver before install nvidiaglx
 							# echo "${S}Installing ${C}$nvidiaGlx${S} now...${N}"
 							# install_package "$nvidiaGlx"
-							echo "${M}Please report failure to $SCRIPT_NAME maintainer, I'm not sure this feature works.${N}"
+							echo "${M}Please report failure to $SELF_NAME maintainer, I'm not sure this feature works.${N}"
 							add_module 'nvidia'
 						else
 							echo "${S}Installing ${C}$DISTRO_NVIDIA dkms driver${S} components...${N}"
@@ -8650,7 +8650,7 @@ kill_systemd_tty()
 		ttyStatus="$( systemctl status getty@$scriptTTY.service )"
 		log_function_data "ttyStatus:\n$ttyStatus"
 		# double check it's the tty running script, then make sure that tty is actually active
-		if [ -n "$( grep "$SCRIPT_NAME" <<< "$ttyStatus" )" ];then
+		if [ -n "$( grep "$SELF_NAME" <<< "$ttyStatus" )" ];then
 			if "$( grep -Esi 'Active:[[:space:]]*active' <<< "$ttyStatus" )" ];then
 				echo "${M}Systemd being used to attempt to exit tty${N}"
 				systemctl stop getty@$scriptTTY.service
@@ -8890,7 +8890,7 @@ create_x_conf()
 					fi
 					;;
 				quit)
-					echo "${S}Ok, you'll have to figure out what to do manually then if you want to run $SCRIPT_NAME.${N}"
+					echo "${S}Ok, you'll have to figure out what to do manually then if you want to run $SELF_NAME.${N}"
 					exit 100 # need to exit with 100 to not trigger pid root kill in smxi
 					;;
 				*)
@@ -9060,7 +9060,7 @@ update_xorgconf_driver_version()
 	# sgfxi is updated with those new names.
 	if [[ -z $( grep "\"$driverName\"" $EXXC ) ]];then
 		echo "${M}Driver ${C}$driverName${M} failed to get written to ${C}$EXXC${M}."
-		echo "Probable cause for failure loading desktop/X. Please alert $SCRIPT_NAME maintainer.${N}"
+		echo "Probable cause for failure loading desktop/X. Please alert $SELF_NAME maintainer.${N}"
 		log_function_data "Driver $driverName failed to get written to $EXXC. Probable cause for failure."
 	else
 		log_function_data "Driver $driverName written to $EXXC. This component worked."
@@ -9317,9 +9317,9 @@ show_extra_data()
 			bSysInfo='true'
 			;;
 		v)
-			fullUrl=$SCRIPT_DOWNLOAD_VERSION
+			fullUrl=$SELF_DOWNLOAD_VERSION
 			uaFull="$ua.version-data"
-			dataType="(latest) $SCRIPT_NAME version information"
+			dataType="(latest) $SELF_NAME version information"
 			;;
 	esac
 	if [ "$bSysInfo" == 'true' ];then
@@ -9335,12 +9335,12 @@ show_extra_data()
 # 			fi
 			dataWorking=$( grep 'sgfxi=' <<< "$dataFull" | cut -d '=' -f 2 )
 			
-			if [ -f $SCRIPT_HOME/$SCRIPT_NAME ];then
-				scriptVersion=$( grep -Eo -m 1 "(version:).*" $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' '  -f 2-4 )
-				scriptDate=$( grep -Eo -m 1 '(Date:).*' $SCRIPT_HOME/$SCRIPT_NAME | cut -d ' ' -f 2-4 )
+			if [ -f $SELF_HOME/$SELF_NAME ];then
+				scriptVersion=$( grep -Eo -m 1 "(version:).*" $SELF_HOME/$SELF_NAME | cut -d ' '  -f 2-4 )
+				scriptDate=$( grep -Eo -m 1 '(Date:).*' $SELF_HOME/$SELF_NAME | cut -d ' ' -f 2-4 )
 			else
-				scriptVersion="Error: wrong path for $SCRIPT_NAME"
-				scriptDate="Error: wrong path for $SCRIPT_NAME"
+				scriptVersion="Error: wrong path for $SELF_NAME"
+				scriptDate="Error: wrong path for $SELF_NAME"
 			fi
 			scriptRemoteVersion=$( cut -d ':' -f 1 <<< $dataWorking )
 			scriptRemoteDate=$( cut -d ':' -f 2 <<< $dataWorking )
@@ -9417,7 +9417,7 @@ show_options()
 	echo "Xorg version required: 7.1/1.1 or greater - Your X version: $xVersion"
 	echo "Linux Kernel required: 2.6.18 or greater - Your kernel: $(uname -r)"
 	echo $PLINE
-	echo "'default(s):' - The driver installed automatically by $SCRIPT_NAME unless it is not supported by"
+	echo "'default(s):' - The driver installed automatically by $SELF_NAME unless it is not supported by"
 	echo "your card. Some older cards will force an override of this basic default. Script will"
 	echo "print out what driver it will install when you start it up, with option to exit."
 	echo
@@ -9493,21 +9493,21 @@ show_options()
 	echo "-k Build kernel module either for current kernel or another kernel (with -K <kernel version)"
 	echo "   Can be run in X (if not in X and installing to current kernel). Simply builds the kernel"
 	echo "   module for that kernel, and does not remove any other modules or drivers, or update $EXXC."
-	echo "   Requires previous install with $SCRIPT_NAME of the same driver to work. This feature only"
-	echo "   supports nVidia drivers.  $SCRIPT_NAME defaults to building modules for kernels automatically."
+	echo "   Requires previous install with $SELF_NAME of the same driver to work. This feature only"
+	echo "   supports nVidia drivers.  $SELF_NAME defaults to building modules for kernels automatically."
 	echo "   The -f option overrides this default behavior and forces a full reinstall of the driver."
 	echo "   Hint: sgfxi -! 40 will install modules to all your non-running kernels automatically!"
-	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SCRIPT_NAME -K 2.6.25-2"
-	echo "   $SCRIPT_NAME will double check that the kernel exists (Debian/Ubuntu only). "
+	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SELF_NAME -K 2.6.25-2"
+	echo "   $SELF_NAME will double check that the kernel exists (Debian/Ubuntu only). "
 	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
 	echo "   n to show current nvidia support status; f to show current fglrx support status;"
-	echo "   v to show current latest local + remote $SCRIPT_NAME svn/server version information."
-	echo "-m Overrides default (-d) dkms driver method, uses $SCRIPT_NAME's old method, kernel-source + m-a build"
+	echo "   v to show current latest local + remote $SELF_NAME svn/server version information."
+	echo "-m Overrides default (-d) dkms driver method, uses $SELF_NAME's old method, kernel-source + m-a build"
 	echo "   of module. Use only if you want to avoid dkms (fglrx/nvidia only). Triggers -d as well."
 	echo "-n Automatically installs correct native xorg nvidia, intel, or ati/amd driver for your system."
 	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
 	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf. For radeon/noveau, also preps."
-	echo "-N Force install of specific xorg driver. Syntax: $SCRIPT_NAME -N <driver> Ex: $SCRIPT_NAME -N radeon"
+	echo "-N Force install of specific xorg driver. Syntax: $SELF_NAME -N <driver> Ex: $SELF_NAME -N radeon"
 	echo -n "   Supported Xorg drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nativeVersions )
@@ -9537,11 +9537,11 @@ show_options()
 	echo "-R Skips self updating feature. No restart."
 	
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
-	echo "-U Forces $SCRIPT_NAME to update itself, must be root, but can be in x. Exits after."
-	echo "-v Prints $SCRIPT_NAME current version information. Exits after."
+	echo "-U Forces $SELF_NAME to update itself, must be root, but can be in x. Exits after."
+	echo "-v Prints $SELF_NAME current version information. Exits after."
 	echo "-W Skip all wget downloads. Expert Use Only! Only use this to (re)install a driver that has already "
-	echo "   been downloaded using $SCRIPT_NAME previously. Because using this option can have unknown or unintended"
-	echo "   consequences, only use it if you are following instructions to do so. $SCRIPT_NAME always saves its "
+	echo "   been downloaded using $SELF_NAME previously. Because using this option can have unknown or unintended"
+	echo "   consequences, only use it if you are following instructions to do so. $SELF_NAME always saves its "
 	echo "   driver downloads by default in all cases, so using -W will not change that behavior , but it may stop"
 	echo "   other key downloads, like patches. The standard use for this is to download the driver file in X,"
 	echo "   then exit, and install it out of X"
@@ -9552,7 +9552,7 @@ show_options()
 	echo "   Can be run in X, as root."
 	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
 	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
-# 	echo "-Z Skips connection test. Use this if $SCRIPT_NAME gives you connection failed error but"
+# 	echo "-Z Skips connection test. Use this if $SELF_NAME gives you connection failed error but"
 # 	echo "   you are sure your connection is fine."
 	echo $PLINE
 	echo "Advanced Options :: Only for Specialized Cases"
@@ -9562,15 +9562,15 @@ show_options()
 	echo "-! 33 Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
 	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
 	echo "      each if can be made, then create the modules, excluding your running kernel."
-	echo "      You must have already installed an nVidia driver with $SCRIPT_NAME to use -! 40"
-	echo "      Note: if your installed driver is NOT the default $SCRIPT_NAME offers, you have to"
+	echo "      You must have already installed an nVidia driver with $SELF_NAME to use -! 40"
+	echo "      Note: if your installed driver is NOT the default $SELF_NAME offers, you have to"
 	echo "      use either the -o <driver number> OR the -B option (if you are using current beta driver)"
-	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SCRIPT_NAME -B -! 40"
+	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SELF_NAME -B -! 40"
 	echo "      -! 40 must be the LAST option in your list of options or errors will occur!"
-	echo "--debugger Create debugger data file in $HOME/$SCRIPT_NAME-data - the file is a gz file that holds"
-	echo "           whatever might be helpful to debugging $SCRIPT_NAME issues, like xorg.conf, lspci, inxi"
+	echo "--debugger Create debugger data file in $HOME/$SELF_NAME-data - the file is a gz file that holds"
+	echo "           whatever might be helpful to debugging $SELF_NAME issues, like xorg.conf, lspci, inxi"
 	echo "           output if present, etc. Upload file to: ftp.techpatterns.com/incoming OR use a service"
-	echo "           like dropbox.com then give me the url to the uploaded file. If $SCRIPT_NAME has an internet"
+	echo "           like dropbox.com then give me the url to the uploaded file. If $SELF_NAME has an internet"
 	echo "           connection and python > 2.5, will also automatically upload the data to server for you."
 	if [ "$1" == 'full' ];then
 		echo $PLINE
@@ -9591,14 +9591,14 @@ show_options()
 		echo "-! 20 - Uses patch from svn branch one server (must be in branch/one/patches)."
 		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
 		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version (legacy, don't use)."
-		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
+		echo "        Use X -configure instead to redo your xorg, or -z option in $SELF_NAME."
 		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version (legacy, don't use)."
 		
-		echo "        Use X -configure instead to redo your xorg, or -z option in $SCRIPT_NAME."
+		echo "        Use X -configure instead to redo your xorg, or -z option in $SELF_NAME."
 		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
 		echo "   then exit the script without doing the driver download/install."
 		echo "-! 121  - When used with -p, will use the live driver list from smxi.org"
-		echo "          instead of the drivers taken from the local user $SCRIPT_NAME values."
+		echo "          instead of the drivers taken from the local user $SELF_NAME values."
 	fi
 	echo
 	if [ "$1" == 'err' ];then
@@ -9618,7 +9618,7 @@ get_options()
 			if tty > /dev/null ;then
 				debugger_data_collector
 			else
-				echo "You cannot use the $SCRIPT_NAME debugger option in an IRC client!"
+				echo "You cannot use the $SELF_NAME debugger option in an IRC client!"
 				exit 1
 			fi
 			;;
@@ -9626,14 +9626,14 @@ get_options()
 			if tty > /dev/null ;then
 				show_options
 			else
-				echo "You cannot use the $SCRIPT_NAME help option in an IRC client!"
+				echo "You cannot use the $SELF_NAME help option in an IRC client!"
 				exit 1
 			fi
 			;;
 		--version|-v)
 			# if showing in irc, kill the colors
 			if ! tty > /dev/null ;then
-				SCRIPT_COLORS=0
+				SELF_COLORS=0
 				set_script_colors
 			fi
 			print_information
@@ -9695,11 +9695,11 @@ get_options()
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -G - Gui mode. Run in X. For nVidia, passes --no-x-check flag to nvidia installer\n       . Not reliable, but try if you want.\n"
 				;;
 			j)	if [ -n "$( grep -sE '^[0-4]$' <<< $OPTARG )" ];then
-					SCRIPT_COLORS=$OPTARG
+					SELF_COLORS=$OPTARG
 					START_OPTIONS=$START_OPTIONS" -j $OPTARG"
 					# no reason to reset the colors if they are default
-					if [ "$SCRIPT_COLORS" != 1 ];then
-						START_OPTIONS=$START_OPTIONS" -j $SCRIPT_COLORS"
+					if [ "$SELF_COLORS" != 1 ];then
+						START_OPTIONS=$START_OPTIONS" -j $SELF_COLORS"
 						set_script_colors
 					fi
 				else
@@ -9842,48 +9842,48 @@ get_options()
 					9)	B_TESTING_6='true'
 						;;
 					10)
-						cd $SCRIPT_HOME
+						cd $SELF_HOME
 						check_root
 						check_set_distro
-						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_DEV" 'dev server'
+						check_update_script "$SELF_NAME" "$SELF_DOWNLOAD_DEV" 'dev server'
 						;;
 					11)
-						cd $SCRIPT_HOME
+						cd $SELF_HOME
 						check_root
 						check_set_distro
-						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_BRANCH_1" 'svn: branch one server'
+						check_update_script "$SELF_NAME" "$SELF_DOWNLOAD_BRANCH_1" 'svn: branch one server'
 						;;
 					12)
-						cd $SCRIPT_HOME
+						cd $SELF_HOME
 						check_root
 						check_set_distro
-						check_update_script "$SCRIPT_NAME" "$SCRIPT_DOWNLOAD_BRANCH_2" 'svn: branch two server'
+						check_update_script "$SELF_NAME" "$SELF_DOWNLOAD_BRANCH_2" 'svn: branch two server'
 						;;
 					http*)
-						cd $SCRIPT_HOME
+						cd $SELF_HOME
 						check_root
 						check_set_distro
-						check_update_script "$SCRIPT_NAME" "$OPTARG" 'alt server'
+						check_update_script "$SELF_NAME" "$OPTARG" 'alt server'
 						;;
 					20)
-						PATCH_DOWNLOAD="$SCRIPT_DOWNLOAD_BRANCH_1"
+						PATCH_DOWNLOAD="$SELF_DOWNLOAD_BRANCH_1"
 						;;
 					21)
-						PATCH_DOWNLOAD="$SCRIPT_DOWNLOAD_BRANCH_2"
+						PATCH_DOWNLOAD="$SELF_DOWNLOAD_BRANCH_2"
 						;;
 					# let these run in X
 					30)
-						cd $SCRIPT_HOME
+						cd $SELF_HOME
 						check_root
 						check_set_distro
-						check_update_script "dm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
+						check_update_script "dm-1-xorg-conf" "$SELF_DOWNLOAD_DATA" 'main server'
 						exit 0
 						;;
 					31)
-						cd $SCRIPT_HOME
+						cd $SELF_HOME
 						check_root
 						check_set_distro
-						check_update_script "sm-1-xorg-conf" "$SCRIPT_DOWNLOAD_DATA" 'main server'
+						check_update_script "sm-1-xorg-conf" "$SELF_DOWNLOAD_DATA" 'main server'
 						exit 0
 						;;
 					32)
@@ -9956,7 +9956,7 @@ fi
 
 ## update everything, restart if not run from smxi
 if [ "$B_ALLOW_AUTO_UPDATE" == 'true' -a "$B_SKIP_RESTART" != 'true' -a "$B_SM_INSTALL" != 'true' -a "$B_SKIP_FUNCTION" != 'true' -a "$B_SKIP_WGET" != 'true' -a "$B_PRINT_VER" != 'true'  ];then
-	check_update_script $SCRIPT_NAME "$SCRIPT_DOWNLOAD" 'default server'
+	check_update_script $SELF_NAME "$SELF_DOWNLOAD" 'default server'
 fi
 
 set_test_data # this will set other test data for debugging
