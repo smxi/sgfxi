@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.17
+####  version: 4.24.18
 ####  Date: 2017-11-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
@@ -434,11 +434,11 @@ USRS='/usr/src/'
 INSTALL_DIRECTORY=''
 FG_WORKING_DIR='fglrx-install'
 # file and patch urls
-FG_LIVE_DRIVERS='http://smxi.org/sg/data/fg-drivers'
+FG_LIVE_DRIVERS='https://smxi.org/sg/data/fg-drivers'
 NV_LIVE_DRIVERS='http://people.freedesktop.org/~aplattner/nvidia-versions'
-PATCH_DOWNLOAD='http://smxi.org/sg/'
-SELF_DOWNLOAD='http://smxi.org/sg/'
-SELF_DOWNLOAD_DATA='http://smxi.org/sg/data/'
+PATCH_DOWNLOAD='https://smxi.org/sg/'
+SELF_DOWNLOAD='https://smxi.org/sg/'
+SELF_DOWNLOAD_DATA='https://smxi.org/sg/data/'
 # alt for some data
 # "http://liquorix.net/sgfxi/"
 A_BASE_URLS=(
@@ -447,7 +447,7 @@ A_BASE_URLS=(
 )
 BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
 SELF_DOWNLOAD_ALT=${A_BASE_URLS[${BASE_INDEX}]}
-SELF_DOWNLOAD_VERSION='http://smxi.org/sm/sm-versions'
+SELF_DOWNLOAD_VERSION='https://smxi.org/sm/sm-versions'
 SELF_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
 SELF_DOWNLOAD_BRANCH_1='https://github.com/smxi/sgfxi/raw/one/'
 SELF_DOWNLOAD_BRANCH_2='https://github.com/smxi/sgfxi/raw/one/'
