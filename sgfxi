@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.18
-####  Date: 2017-11-03
+####  version: 4.24.19
+####  Date: 2017-11-25
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
@@ -120,6 +120,7 @@ B_BETA_EXISTS='false'
 B_BUILD_KERNEL_MODULES='false'
 B_CHECK_IA32='false' # if users want, they can disable this feature in config file
 B_COMPOSITE='false' 
+B_CURL='false'
 B_DEFAULT_NATIVE_DRIVER='false'
 # I cannot figure out the logic here, this must be some old thing that was used for a specific purpose.
 # I think it was an option set here to trigger use distro driver flag, but I don't see why that would
@@ -2855,13 +2856,13 @@ error_handler()
 			errorData="The package: $errorExtra failed to install, please check apt for any problems."
 			;;
 		199) # replaced by 231
-			errorData="The file: $errorExtra failed to download - wget reports success."
+			errorData="The file: $errorExtra failed to download - downloader reports success."
 			;;
 		198)
-			errorData="The url/file: $errorExtra\nfailed to download - wget error."
+			errorData="The url/file: $errorExtra\nfailed to download - downloader error."
 			;;
 		197)
-			errorData="The graphics driver installer: $errorExtra failed to download - wget error."
+			errorData="The graphics driver installer: $errorExtra failed to download - downloader error."
 			;;
 		196)
 			errorData="The driver package: $errorExtra failed to extract and has been deleted."
@@ -2912,7 +2913,7 @@ error_handler()
 			errorData="Patch file: $errorExtra failed to download."
 			;;
 		180)
-			errorData="wget error: Patch file: $errorExtra failed to download."
+			errorData="Downloader error: Patch file: $errorExtra failed to download."
 			;;
 		179)
 			errorData="Patching error: file: $errorExtra failed."
@@ -3522,7 +3523,11 @@ get_live_beta_drivers()
 	if [ "$B_SKIP_WGET" != 'true' ];then
 		case $CARD in
 			$NVIDIA)
-				driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
+				if [ "$B_CURL" == 'true' ];then
+					driverList="$( curl -y 3 -s $NV_LIVE_DRIVERS )"
+				else
+					driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
+				fi
 				# get beta drivers
 				betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
 				beta340=$( awk '/^340.*beta/ {print $3}' <<< "$driverList" )
@@ -3533,7 +3538,11 @@ get_live_beta_drivers()
 				driverList="$betaCurrent:$beta173:$beta96:$beta71"
 				;;
 			$FGLRX)
-				driverList="$( wget -T 3 -t 2 -qO - $FG_LIVE_DRIVERS )"
+				if [ "$B_CURL" == 'true' ];then
+					driverList="$( curl -y 3 -s $FG_LIVE_DRIVERS )"
+				else
+					driverList="$( wget -T 3 -t 2 -qO - $FG_LIVE_DRIVERS )"
+				fi
 				betaCurrent=$( grep 'beta' <<< "$driverList" )
 				driverList=$betaCurrent
 				# echo 'bc^'$betaCurrent'^'
@@ -3550,8 +3559,12 @@ get_live_beta_drivers()
 reset_using_live_driver_data()
 {
 	if [ "$B_SKIP_WGET" != 'true' ];then
-		local uaFull="-U s-tools/sgfxi-data.tool-data" 
-		local driverList="$( wget $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
+		local uaFull="s-tools/sgfxi-data.tool-data" driverList=''
+		if [ "$B_CURL" == 'true' ];then
+			driverList="$( curl -A $uaFull -y 3 -s http://smxi.org/sg/data/sg-drivers-23 )"
+		else
+			driverList="$( wget -U $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
+		fi
 		local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
 		local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
 		local fglrxDefault=$( grep -iA 1 'Fglrx Main Drivers' <<< "$driverList" | grep 'DEFAULT' )
@@ -4138,11 +4151,14 @@ basic_startup_tests()
 		fi
 	fi
 	# not making this elif for now because who knows what ubuntu will actually do with upstart
-	if [ -n "$( type -p initctl )" ];then
+	if type -p initctl &>/dev/null;then
 		B_UPSTART='true'
 	fi
+	if type -p curl &>/dev/null;then
+		B_CURL='true'
+	fi
 	# make sure Xorg is installed
-	if [ -z "$( which Xorg )" ];then
+	if ! type -p Xorg &>/dev/null;then
 		error_handler 244
 	fi
 	# make sure xorg.conf exists, with xorg > 1.4 exception to handle null xorg.conf
@@ -4443,15 +4459,19 @@ check_run_package_tools()
 check_script_depends()
 {
 	eval $LOGPS
-	local wgetPath=$( type -p wget )
-	local logrotatePath=$( type -p logrotate )
 	
-	if [ -z "$wgetPath" ];then
+	if ! type -p curl &>/dev/null;then
+		if [ -n "$( check_package_status 'curl' 'c' )" ];then
+			install_package 'curl'
+			B_CURL='true'
+		fi
+	fi
+	if ! type -p wget &>/dev/null;then
 		if [ -n "$( check_package_status 'wget' 'c' )" ];then
 			install_package 'wget'
 		fi
 	fi
-	if [ -z "$logrotatePath" ];then
+	if ! type -p logrotate &>/dev/null;then
 		if [ -n "$( check_package_status 'logrotate' 'c' )" ];then
 			install_package 'logrotate'
 		fi
@@ -5097,7 +5117,7 @@ check_update_script()
 {
 	local fileDataTemp='' isGood='' extraText='' bRunUpdate='false'
 	local versionTest=0 versionData='' localVersion='' remoteVersion=''
-	local downloadUrl=$2 uArgs='up' ua="-U s-tools/$SELF_NAME"
+	local downloadUrl=$2 uArgs='up' ua="s-tools/$SELF_NAME"
 	local origXorg='/etc/X11/xorg-conf-orig-sg'
 
 	if [ -n "$( grep -E '(dev|svn|alt)' <<< $3 )" ];then
@@ -5142,7 +5162,11 @@ check_update_script()
 			if [ "$bRunUpdate" == 'true' ];then
 				ua="$ua.$uArgs.$SIS"
 				echo -e "${S}Updating ${C}$SELF_NAME${S} now using the $extraText${N}"
-				fileDataTemp="$( wget $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
+				if [ "$B_CURL" == 'true' ];then
+					fileDataTemp="$( curl -A $ua -s $downloadUrl$1 )" || error_handler 198 $1
+				else
+					fileDataTemp="$( wget -U $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
+				fi
 				# all smxi files have this string as last line, if there, the file should usually
 				# run fine, except for weird fringe cases where the ascii file is corrupted partially
 				isGood=$( grep -si '##\*\*EOF\*\*##' <<< "$fileDataTemp" )
@@ -5182,7 +5206,11 @@ check_update_script()
 		# have to worry about rechecking and multi downloads etc
 		*)
 			if [ "$B_SKIP_WGET" != 'true' ];then
-				fileDataTemp="$( wget -q -O - $downloadUrl$1 )" || error_handler 198 $2$1
+				if [ "$B_CURL" == 'true' ];then
+					fileDataTemp="$( curl -s $downloadUrl$1 )" || error_handler 198 $2$1
+				else
+					fileDataTemp="$( wget -q -O - $downloadUrl$1 )" || error_handler 198 $2$1
+				fi
 			fi
 			# run fine, except for weird fringe cases where the ascii file is corrupted partially
 			isGood=$( grep '##\*\*EOF\*\*##' <<< "$fileDataTemp" )
@@ -5218,12 +5246,16 @@ check_update_script()
 check_script_version()
 {
 	local returnValue=0 wgetError=0 validated='' versionData=''
-	local ua="-U s-tools/$SELF_NAME-updater.$SIS"
+	local ua="s-tools/$SELF_NAME-updater.$SIS"
 	local localVersion='' remoteVersion=''
 	if [ "$B_SKIP_WGET" == 'true' ];then
 		returnValue=2
 	else
-		versionData="$( wget $ua -qO - $SELF_DOWNLOAD_VERSION )" || wgetError="$?"
+		if [ "$B_CURL" == 'true' ];then
+			versionData="$( curl -A $ua -s $SELF_DOWNLOAD_VERSION )" || wgetError="$?"
+		else
+			versionData="$( wget -U $ua -q -O - $SELF_DOWNLOAD_VERSION )" || wgetError="$?"
+		fi
 		if [ "$wgetError" -eq 0  ];then
 			validated=$( grep -Esi '#\*\*EOF\*\*#' <<< "$versionData" )
 			if [ -n "$validated" ];then
@@ -5256,7 +5288,8 @@ apply_patch_file()
 	fi
 	local patchFile=$1
 	## this can be changed to branches with -! 20 or -! 21
-	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" ua="-U s-tools/$SELF_NAME-data.patches.$patchFile"
+	local patchUrl="${PATCH_DOWNLOAD}patches/$patchFile" 
+	local ua="s-tools/$SELF_NAME-data.patches.$patchFile"
 	local patchFileDataTemp=''
 
 	cd $SELF_WORKING_DIR/$INSTALL_DIRECTORY # first change to the correct directory
@@ -5265,7 +5298,11 @@ apply_patch_file()
 
 	echo "${S}Retrieving patch ${C}$patchFile${S}...${N}"
 	# get patch file, set to variable
-	patchFileDataTemp="$( wget $ua -q -O - $patchUrl 2>/dev/null )" || error_handler 180 $patchFile
+	if [ "$B_CURL" == 'true' ];then
+		patchFileDataTemp="$( curl -A $ua -s $patchUrl 2>/dev/null )" || error_handler 180 $patchFile
+	else
+		patchFileDataTemp="$( wget -U $ua -q -O - $patchUrl 2>/dev/null )" || error_handler 180 $patchFile
+	fi
 	if [ -n "$patchFileDataTemp" ];then
 		echo "${S}Running patch ${C}$patchFile${S}...${N}"
 		patch -p 0 <<< "$patchFileDataTemp" || error_handler 179 $patchFile
@@ -5710,7 +5747,11 @@ debugger_data_collector()
 		echo "$SELF_NAME will now try to upload this data to the script server..."
 		echo $LINE
 		# -Nc is creating really weird download anomolies, so using -O instead
-		xiin_download="$( wget -q -O - https://github.com/smxi/inxi/raw/xiin/$xiin_file )"
+		if [ "$B_CURL" == 'true' ];then
+			xiin_download="$( curl -s https://github.com/smxi/inxi/raw/xiin/$xiin_file )"
+		else
+			xiin_download="$( wget -q -O - https://github.com/smxi/inxi/raw/xiin/$xiin_file )"
+		fi
 		# if nothing got downloaded kick out error, otherwise we'll use an older version
 		if [[ $? -gt 0 && ! -f $xiin_file ]];then
 			echo -e "ERROR: Failed to download ftp uploader file: $xiin_file\nMaybe the remote site is down or your networking is broken?"
@@ -9335,7 +9376,7 @@ update_xorg()
 # args: $1 - d (driver); f (fglrx data); n (nvidia data)
 show_extra_data()
 {
-	local fullUrl='' ua='-U s-tools/sgfxi-data' uaFull='' dataFull='' dataType=''
+	local fullUrl='' ua='s-tools/sgfxi-data' uaFull='' dataFull='' dataType=''
 	local scriptVersion='' scriptDate='' scriptRemoteVersion='' scriptRemoteDate=''
 	local dataWorking='' bSysInfo='false'
 	
@@ -9367,7 +9408,11 @@ show_extra_data()
 		echo "${S}System Information :: Xorg Version: ${N}$X_VERSION ${S}:: Kernel: ${N}$( uname -r )"
 	fi
 	echo -n "${S}Retrieving live data... ${N}"
-	dataFull="$( wget -q  $uaFull -O - $fullUrl 2>/dev/null )"
+	if [ "$B_CURL" == 'true' ];then
+		dataFull="$( curl -s -A $uaFull $fullUrl 2>/dev/null )"
+	else
+		dataFull="$( wget -q -U $uaFull -O - $fullUrl 2>/dev/null )"
+	fi
 	case $1 in
 		v)
 # 			# don't need to run this if distro maintainer has set path
@@ -9580,7 +9625,7 @@ show_options()
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SELF_NAME to update itself, must be root, but can be in x. Exits after."
 	echo "-v Prints $SELF_NAME current version information. Exits after."
-	echo "-W Skip all wget downloads. Expert Use Only! Only use this to (re)install a driver that has already "
+	echo "-W Skip all automated downloads. Expert Use Only! Only use this to (re)install a driver that has already "
 	echo "   been downloaded using $SELF_NAME previously. Because using this option can have unknown or unintended"
 	echo "   consequences, only use it if you are following instructions to do so. $SELF_NAME always saves its "
 	echo "   driver downloads by default in all cases, so using -W will not change that behavior , but it may stop"
@@ -9831,7 +9876,7 @@ get_options()
 				;;
 			W) B_SKIP_WGET='true'
 				START_OPTIONS=$START_OPTIONS' -W'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip wget downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already. Not recommended!\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -W - Skip automated downloads. Only use if you are having problems connecting\n    but you have the current driver downloaded already. Not recommended!\n"
 				;;
 			x) B_NO_XVMC='true' # because two flags are required to use nvidia xvmc, this is fine
 				START_OPTIONS=$START_OPTIONS' -x'
