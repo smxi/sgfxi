@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.24.19
-####  Date: 2017-11-25
+####  version: 4.24.20
+####  Date: 2017-11-26
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
@@ -135,6 +135,7 @@ B_FORCE_OPTION='false'
 B_FORCE_NO_COMPOSITE='false'
 B_FORCE_UPDATE='false'
 B_GET_LIVE_DRIVERS='false'
+B_GLVN='true' # required maybe for nvidia installs, trips --install-libglvnd
 B_GUI_MODE='false'
 B_IS_APTOSID_KERNEL='false'
 B_IS_XEN='false'
@@ -7286,6 +7287,11 @@ run_driver_installer()
 			if [ "$B_GUI_MODE" == 'true' ];then
 				installerArgs="$installerArgs --no-x-check"
 			fi
+			if [ "$B_GLVN" == 'true' ];then
+				installerArgs="$installerArgs --install-libglvnd"
+			else
+				installerArgs="$installerArgs --no-install-libglvnd"
+			fi
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
 			# note that lenny can be assumed to not need, this, so wait til squeeze stable
@@ -9472,7 +9478,8 @@ show_options()
 	driverCount=$( wc -w <<< $nativeVersions )
 
 	if [ "$B_DISTRO_FLAG" == 'true' ];then
-		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently broken in Debian (works in Ubuntu). Script will default to: '$DISTRO_FGLRX${N}'"'
+		fgDebianSid='echo -e "'${W}'ATI: installer package '$fgDefault' is currently broken\n"
+		in Debian (works in Ubuntu). Script will default to: '$DISTRO_FGLRX${N}'"'
 	else
 		fgDebianSid='echo -e "fglrx:  default: '$fgDefault'		supported-drivers: '$fgVersions'"'
 	fi
@@ -9487,7 +9494,7 @@ show_options()
 		betaText='echo "The following beta drivers are available:"'
 	fi
 	if [ -n "$NV_QUAD" -a "$NV_QUAD" != "$NV_DEFAULT" ];then
-		nvQuadText='echo -e "Nvidia Quadroplex driver (automatically selected if you have a Quad card): '$nvQuad'"'
+		nvQuadText='echo -e "Nvidia Quadroplex driver (automatically selected\nif you have a Quad card): '$nvQuad'"'
 	fi
 
 	if [ "$1" == 'err' ];then
@@ -9503,11 +9510,14 @@ show_options()
 	echo "Xorg version required: 7.1/1.1 or greater - Your X version: $xVersion"
 	echo "Linux Kernel required: 2.6.18 or greater - Your kernel: $(uname -r)"
 	echo $PLINE
-	echo "'default(s):' - The driver installed automatically by $SELF_NAME unless it is not supported by"
-	echo "your card. Some older cards will force an override of this basic default. Script will"
-	echo "print out what driver it will install when you start it up, with option to exit."
+	echo "'default(s):' - The driver installed automatically by $SELF_NAME "
+	echo "unless it is not supported by"
+	echo "your card. Some older cards will force an override of this basic "
+	echo "default. Script will print out what driver it will install when you "
+	echo "start it up, with option to exit."
 	echo
-	echo "'supported-drivers:' choices require -o <see -o for correct syntax> to install>."
+	echo "'supported-drivers:' choices require -o "
+	echo "<see -o for correct syntax> to install>."
 	echo "Fglrx:  default: $fgDefault"
 	echo -n "Other supported-drivers: "
 	counter=0
@@ -9516,7 +9526,7 @@ show_options()
 	do
 		(( counter++ ))
 		case $counter in
-			12|28)
+			7|19|29)
 				echo "$i "
 				echo -n ""
 				;;
@@ -9529,7 +9539,8 @@ show_options()
 		esac
 	done
 	#echo "fglrx:  default: $fgDefault		supported-drivers: $fgVersions"
-	echo "Nvidia: defaults (current + legacy - 3 2 1): $nvDefaults"
+	echo "Nvidia: defaults (current + legacy - 3 2 1): "
+	echo "$nvDefaults"
 	echo -n "Other supported-drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nvVersions )
@@ -9537,7 +9548,7 @@ show_options()
 	do
 		(( counter++ ))
 		case $counter in
-			7|17)
+			7|17|27|37|45)
 				echo "$i "
 				echo -n ""
 				;;
@@ -9555,45 +9566,67 @@ show_options()
 	eval $fgBeta
 	echo $PLINE
 	echo "Script Options:"
-	echo "-A Run the install non-interactively. Will not restart x at end. Expert users only! Requires testing."
-	echo "-b Enable tripleBuffer (nvidia only). triplebuffer can reduce 3d performance on cards"
-	echo "   with low graphics memory (64 mB or less). Default is disabled/off."
-	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta driver (nVidia/AMD cards only)."
-	echo "   If no beta driver is available, the current stable driver for your card type is used."
-	echo "   (Also checks for live latest beta information, and replaces script defaults with newer if present)"
-	echo "-c Force use of Xorg composite mode. Beryl/Compiz requires this for 3d. Old nvidia/ATI/Intel "
-	echo "   cards not supported. Composite is default ON for newer nVidia/ATI cards (-c not required)."
-	echo "-C Skip Xorg configuration. Only use this if your Xorg is already working with your driver."
-	echo "   Main use is if you have dual card output and don't want xorg.conf changed."
-	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards only (formerly -s)."
-	echo "-D Build Distro (Debian/Ubuntu only) packages for fglrx with FGLRX binary run package,"
-	echo "   then install them (formerly -F). Not recommended. Because of constant package"
-	echo "   builder failures, the direct install method is now default."
+	echo "-A Run the install non-interactively. Will not restart x at end."
+	echo "   Expert users only! Requires testing."
+	echo "-b Enable tripleBuffer (nvidia only). triplebuffer can reduce 3d"
+	echo "   performance on cards with low graphics memory (64 mB or less). "
+	echo "   Default is disabled/off."
+	echo "-B Use latest Beta Driver for your card type. Autodetects card type/beta "
+	echo "   driver (nVidia/AMD cards only). If no beta driver is available, "
+	echo "   the current stable driver for your card type is used. (Also checks"
+	echo "   for live latest beta information, and replaces script defaults with"
+	echo "   newer if present)"
+	echo "-c Force use of Xorg composite mode. Beryl/Compiz requires this for 3d. "
+	echo "   Old nvidia/ATI/Intel "
+	echo "   cards not supported. Composite is default ON for newer nVidia/ATI cards "
+	echo "   (-c not required)."
+	echo "-C Skip Xorg configuration. Only use this if your Xorg is already "
+	echo "   working with your driver. Main use is if you have dual card output "
+	echo "   and don't want xorg.conf changed."
+	echo "-d Installs distro packaged nVidia/fglrx drivers. ATI/nVidia cards "
+	echo "   only (formerly -s)."
+	echo "-D Build Distro (Debian/Ubuntu only) packages for fglrx with FGLRX "
+	echo "   binary run package, then install them (formerly -F). Not recommended. "
+	echo "   Because of constant package builder failures, the direct install "
+	echo "   method is now default."
 # 	echo "-e Use experimental drivers (currently: xorg ati only)."
 # 	echo "-E Adds extra experimental driver features. Currently libdrm2 things for ati."
-	echo "-f Force option. Forces (re)install of your driver, bypasses default module check/build/rebuild (nVidia only)."
+	echo "-f Force option. Forces (re)install of your driver, bypasses default "
+	echo "   module check/build/rebuild (nVidia only)."
 	echo "   Note; -f cannot be used with -k because they contradict each other!"
+	echo "-g nVidia only. Turns OFF libglvnd automatic install Default is to let "
+	echo "   nvidia run its own libglvnd installer."
 	echo "-h View this help menu."
-	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 (sets to monochrome )"
-	echo "   -j 1 (default); -j 2 (pale); -j 3 (earthy); -j 4 (dark - for light console background)"
-	echo "-k Build kernel module either for current kernel or another kernel (with -K <kernel version)"
-	echo "   Can be run in X (if not in X and installing to current kernel). Simply builds the kernel"
-	echo "   module for that kernel, and does not remove any other modules or drivers, or update $EXXC."
-	echo "   Requires previous install with $SELF_NAME of the same driver to work. This feature only"
-	echo "   supports nVidia drivers.  $SELF_NAME defaults to building modules for kernels automatically."
-	echo "   The -f option overrides this default behavior and forces a full reinstall of the driver."
-	echo "   Hint: sgfxi -! 40 will install modules to all your non-running kernels automatically!"
-	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: $SELF_NAME -K 2.6.25-2"
+	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 "
+	echo "   (sets to monochrome )"
+	echo "   -j 1 (default); -j 2 (pale); -j 3 (earthy); -j 4 (dark - for light "
+	echo "   console background)"
+	echo "-k Build kernel module either for current kernel or another kernel "
+	echo "   (with -K <kernel version). Can be run in X (if not in X and installing "
+	echo "   to current kernel). Simply builds the kernel module for that kernel, "
+	echo "   and does not remove any other modules or drivers, or update "
+	echo "   $EXXC. Requires previous install with $SELF_NAME of the same driver "
+	echo "   to work. This feature only supports nVidia drivers. $SELF_NAME "
+	echo "   defaults to building modules for kernels automatically."
+	echo "   The -f option overrides this default behavior and forces a full reinstall"
+	echo "   of the driver. Hint: sgfxi -! 40 will install modules to all your "
+	echo "   non-running kernels automatically!"
+	echo "-K Installs nVidia/fglrx driver for another kernel. Syntax: "
+	echo "   $SELF_NAME -K 2.6.25-2"
 	echo "   $SELF_NAME will double check that the kernel exists (Debian/Ubuntu only). "
-	echo "-L List current live driver or status data then exit. Requires extra argument: d to show current drivers;"
-	echo "   n to show current nvidia support status; f to show current fglrx support status;"
-	echo "   v to show current latest local + remote $SELF_NAME svn/server version information."
-	echo "-m Overrides default (-d) dkms driver method, uses $SELF_NAME's old method, kernel-source + m-a build"
-	echo "   of module. Use only if you want to avoid dkms (fglrx/nvidia only). Triggers -d as well."
-	echo "-n Automatically installs correct native xorg nvidia, intel, or ati/amd driver for your system."
-	echo "   Cleans up old binary driver stuff, updates xorg.conf with new driver information,"
-	echo "   and cleans nvidia and fgrlx stuff out of xorg.conf. For radeon/noveau, also preps."
-	echo "-N Force install of specific xorg driver. Syntax: $SELF_NAME -N <driver> Ex: $SELF_NAME -N radeon"
+	echo "-L List current live driver or status data then exit. Requires extra "
+	echo "   argument: d to show current drivers;  n to show current nvidia support "
+	echo "   status; f to show current fglrx support status; v to show current latest "
+	echo "   local + remote $SELF_NAME svn/server version information."
+	echo "-m Overrides default (-d) dkms driver method, uses $SELF_NAME's old method, "
+	echo "   kernel-source + m-a build of module. Use only if you want to avoid dkms "
+	echo "   (fglrx/nvidia only). Triggers -d as well."
+	echo "-n Automatically installs correct native xorg nvidia, intel, or ati/amd "
+	echo "   driver for your system. Cleans up old binary driver stuff, updates xorg.conf"
+	echo "   with new driver information, and cleans nvidia and fgrlx stuff out of "
+	echo "   xorg.conf. For radeon/noveau, also preps."
+	echo "-N Force install of specific xorg driver. Syntax: "
+	echo "   $SELF_NAME -N <driver> Ex: $SELF_NAME -N radeon"
 	echo -n "   Supported Xorg drivers: "
 	counter=0
 	driverCount=$( wc -w <<< $nativeVersions )
@@ -9601,7 +9634,7 @@ show_options()
 	do
 		(( counter++ ))
 		case $counter in
-			12|25)
+			8|18|26|36)
 				echo " $i"
 				echo -n "  "
 				;;
@@ -9613,9 +9646,10 @@ show_options()
 				;;
 		esac
 	done
-	echo "   Also configures xorg.conf as required. Full radeon xorg 3d configuration automatically."
-	echo "-o Override default: install a specific driver, this is an absolute override - syntax:"
-	echo "   -o 177.68 (for nVidia) or: -o 8-6 (for fglrx)"
+	echo "   Also configures xorg.conf as required. Full radeon xorg 3d configuration"
+	echo "   automatically."
+	echo "-o Override default: install a specific driver, this is an absolute override."
+	echo "   syntax: -o 177.68 (for nVidia) or: -o 8-6 (for fglrx)"
 	echo "-q Turns off composite mode. Default is ON for newer nVidia/ATI cards."
 	echo "-Q Skip start X Question, automatically start X post driver install."
 	echo "-r Remove mode lines from xorg.conf"
@@ -9623,64 +9657,84 @@ show_options()
 	echo "-R Skips self updating feature. No restart."
 	
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
-	echo "-U Forces $SELF_NAME to update itself, must be root, but can be in x. Exits after."
+	echo "-U Forces $SELF_NAME to update itself, must be root, but can be in x. "
+	echo "   Exits after."
 	echo "-v Prints $SELF_NAME current version information. Exits after."
-	echo "-W Skip all automated downloads. Expert Use Only! Only use this to (re)install a driver that has already "
-	echo "   been downloaded using $SELF_NAME previously. Because using this option can have unknown or unintended"
-	echo "   consequences, only use it if you are following instructions to do so. $SELF_NAME always saves its "
-	echo "   driver downloads by default in all cases, so using -W will not change that behavior , but it may stop"
-	echo "   other key downloads, like patches. The standard use for this is to download the driver file in X,"
-	echo "   then exit, and install it out of X"
-	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package (nVidia only)"
-	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good reason to not "
-	echo "   want X start/stop tests to run. Gives start X option on completion if not in X. Expert use only."
-	echo "-Y Clean script download and backup files. Shows a list of cleanup actions to carry out, including script uninstaller."
-	echo "   Can be run in X, as root."
-	echo "-z Backup and recreate xorg.conf using the command: X -configure (requires X/Xorg command)"
-	echo "   Only use if you know what you are doing! This creates a simple, basic xorg.conf file."
+	echo "-W Skip all automated downloads. Expert Use Only! Only use this to (re)install"
+	echo "   a driver that has already been downloaded using $SELF_NAME previously. "
+	echo "   Because using this option can have unknown or unintended consequences, "
+	echo "   only use it if you are following instructions to do so. $SELF_NAME always "
+	echo "   saves its driver downloads by default in all cases, so using -W will not "
+	echo "   change that behavior , but it may stop other key downloads, like patches. "
+	echo "   The standard use for this is to download the driver file in X, then exit, "
+	echo "   and install it out of X"
+	echo "-x Reverts to default libXvMC.so.1 for system instead of nVidia package "
+	echo "   (nVidia only)"
+	echo "-X Use to skip auto X start/stop. Do not use this unless you have a good "
+	echo "   reason to not want X start/stop tests to run. Gives start X option on "
+	echo "   completion if not in X. Expert use only."
+	echo "-Y Clean script download and backup files. Shows a list of cleanup actions "
+	echo "   to carry out, including script uninstaller. Can be run in X, as root."
+	echo "-z Backup and recreate xorg.conf using the command: X -configure "
+	echo "   (requires X/Xorg command)"
+	echo "   Only use if you know what you are doing! This creates a simple, basic "
+	echo "   xorg.conf file."
 # 	echo "-Z Skips connection test. Use this if $SELF_NAME gives you connection failed error but"
 # 	echo "   you are sure your connection is fine."
 	echo $PLINE
 	echo "Advanced Options :: Only for Specialized Cases"
-	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore system to default"
-	echo "      without redoing xorg.conf; moves xorg.conf to backup. Only use this on new Xorgs that do not"
-	echo "      require xorg.conf file to operate. Using this command restores system to default."
-	echo "-! 33 Skip Grub file tests. Important: Only use with nVidia/ATI if radeon/nouveau have been blacklisted."
-	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through and test"
-	echo "      each if can be made, then create the modules, excluding your running kernel."
-	echo "      You must have already installed an nVidia driver with $SELF_NAME to use -! 40"
-	echo "      Note: if your installed driver is NOT the default $SELF_NAME offers, you have to"
-	echo "      use either the -o <driver number> OR the -B option (if you are using current beta driver)"
-	echo "      as well as the -! 40 option. EG: to install beta to all kernels: $SELF_NAME -B -! 40"
-	echo "      -! 40 must be the LAST option in your list of options or errors will occur!"
-	echo "--debugger Create debugger data file in $HOME/$SELF_NAME-data - the file is a gz file that holds"
-	echo "           whatever might be helpful to debugging $SELF_NAME issues, like xorg.conf, lspci, inxi"
-	echo "           output if present, etc. Upload file to: ftp.techpatterns.com/incoming OR use a service"
-	echo "           like dropbox.com then give me the url to the uploaded file. If $SELF_NAME has an internet"
-	echo "           connection and python > 2.5, will also automatically upload the data to server for you."
+	echo "-! 32 Remove/Purge all drivers; remove all grub modeline blacklists; restore "
+	echo "      system to default without redoing xorg.conf; moves xorg.conf to backup. "
+	echo "      Only use this on new Xorgs that do not require xorg.conf file to operate. "
+	echo "      Using this command restores system to default."
+	echo "-! 33 Skip Grub file tests. Important: Only use with nVidia/ATI if "
+	echo "      radeon/nouveau have been blacklisted."
+	echo "-! 40 Create modules for all your kernels (nVidia only). Will loop through "
+	echo "      and test each if can be made, then create the modules, excluding your "
+	echo "      running kernel. You must have already installed an nVidia driver with "
+	echo "      $SELF_NAME to use -! 40"
+	echo "      Note: if your installed driver is NOT the default $SELF_NAME offers, "
+	echo "      you have to use either the -o <driver number> OR the -B option (if you "
+	echo "      are using current beta driver) as well as the -! 40 option. EG: to "
+	echo "      install beta to all kernels: $SELF_NAME -B -! 40"
+	echo "      -! 40 must be the LAST option in your list of options or errors "
+	echo "      will occur!"
+	echo "--debugger Create debugger data file in $HOME/$SELF_NAME-data - the file is a "
+	echo "           gz file that holds whatever might be helpful to debugging $SELF_NAME "
+	echo "           issues, like xorg.conf, lspci, $SELF_NAME output if present, etc. "
+	echo "           Upload file to: ftp.techpatterns.com/incoming OR use a service like "
+	echo "           dropbox.com then give me the url to the uploaded file. If $SELF_NAME "
+	echo "           has an internet connection and python > 2.5, will also automatically "
+	echo "           upload the data to server for you."
 	if [ "$1" == 'full' ];then
 		echo $PLINE
 		echo "Developer and Testing Options (Advanced):"
 		echo "-! 1 - Sets flag B_TESTING_1='true' - sets testing function data active."
-		echo "-! 2 - Sets flag B_TESTING_2='true' - triggers exit after run package download/extract."
-		echo "-! 3 - Sets flag B_SKIP_FUNCTION='true' to turn off functions for script testing."
+		echo "-! 2 - Sets flag B_TESTING_2='true' - triggers exit after run package "
+		echo "       download/extract."
+		echo "-! 3 - Sets flag B_SKIP_FUNCTION='true' to turn off functions for script "
+		echo "       testing."
 		echo "-! 4 - Sets flags B_TESTING_1='true' and B_TESTING_2='true'."
 		echo "-! 5 - Sets flags B_TESTING_1, B_TESTING_2, and B_SKIP_FUNCTION ='true'."
-		echo "-! 6 - Sets flag B_TESTING_3='true' - overrides initial driver xorg/kernel support tests."
+		echo "-! 6 - Sets flag B_TESTING_3='true' - overrides initial driver xorg/kernel "
+		echo "       support tests."
 		echo "-! 7 - Sets flag B_TESTING_4='true' - overrides patch controls."
-		echo "-! 8 - Sets flag B_TESTING_5='true' - activates beta/advanced development features for debugging."
-		echo "-! 9 - Sets flag B_TESTING_6='true' - triggers experimental new distro support methods."
+		echo "-! 8 - Sets flag B_TESTING_5='true' - activates beta/advanced development "
+		echo "       features for debugging."
+		echo "-! 9 - Sets flag B_TESTING_6='true' - triggers experimental new distro "
+		echo "       support methods."
 		echo "-! 10 - Triggers an update from the primary dev download server."
 		echo "-! 11 - Triggers an update from svn branch one - if present, of course."
 		echo "-! 12 - Triggers an update from svn branch two - if present, of course."
 		echo "-! <http://......> - Triggers an update from whatever server you list."
 		echo "-! 20 - Uses patch from svn branch one server (must be in branch/one/patches)."
 		echo "-! 21 - Uses patch from svn branch two server (must be in branch/two/patches)."
-		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf version (legacy, don't use)."
+		echo "-! 30 - Backup, download, replace, xorg.conf with basic Debian xorg.conf "
+		echo "        version (legacy, don't use)."
 		echo "        Use X -configure instead to redo your xorg, or -z option in $SELF_NAME."
-		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version (legacy, don't use)."
-		
-		echo "        Use X -configure instead to redo your xorg, or -z option in $SELF_NAME."
+		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version "
+		echo "        (legacy, don't use). Use X -configure instead to redo your xorg, "
+		echo "        or -z option in $SELF_NAME."
 		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
 		echo "   then exit the script without doing the driver download/install."
 		echo "-! 121  - When used with -p, will use the live driver list from smxi.org"
@@ -9727,7 +9781,7 @@ get_options()
 			;;
 	esac
 
-	while getopts AbBcCdDeEfFGHj:kK:L:mnN:o:pP:QrRsStUWXxYzZ!: opt
+	while getopts AbBcCdDeEfFgGHj:kK:L:mnN:o:pP:QrRsStUWXxYzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -9774,6 +9828,10 @@ get_options()
 				B_FGLRX_DIRECT=''
 				START_OPTIONS=$START_OPTIONS' -F'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX package builder install. Not reliable, but try if you want.\n       -F is deprecated, please use -D instead in the future.\n"
+				;;
+			g)	B_GLVN='false'
+				START_OPTIONS=$START_OPTIONS' -g'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -g - nVidia only. Turns OFF libglvnd automatic install Default is to install it.\n"
 				;;
 			G)	B_GUI_MODE='true'
 				B_SKIP_X_TEST='true'
