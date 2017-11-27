@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.00
+####  version: 4.25.01
 ####  Date: 2017-11-26
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
@@ -3582,9 +3582,9 @@ get_live_beta_drivers()
 		case $CARD in
 			$NVIDIA)
 				if [ "$B_CURL" == 'true' ];then
-					driverList="$( curl -y 3 -s $NV_LIVE_DRIVERS )"
+					driverList="$( curl -L -y 3 -s $NV_LIVE_DRIVERS )"
 				else
-					driverList="$( wget -T 3 -t 2 -qO - $NV_LIVE_DRIVERS )"
+					driverList="$( wget -T 3 -t 2 -q -O - $NV_LIVE_DRIVERS )"
 				fi
 				# get beta drivers
 				betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
@@ -3597,9 +3597,9 @@ get_live_beta_drivers()
 				;;
 			$FGLRX)
 				if [ "$B_CURL" == 'true' ];then
-					driverList="$( curl -y 3 -s $FG_LIVE_DRIVERS )"
+					driverList="$( curl -L -y 3 -s $FG_LIVE_DRIVERS )"
 				else
-					driverList="$( wget -T 3 -t 2 -qO - $FG_LIVE_DRIVERS )"
+					driverList="$( wget -T 3 -t 2 -q -O - $FG_LIVE_DRIVERS )"
 				fi
 				betaCurrent=$( grep 'beta' <<< "$driverList" )
 				driverList=$betaCurrent
@@ -3619,9 +3619,9 @@ reset_using_live_driver_data()
 	if [ "$B_SKIP_WGET" != 'true' ];then
 		local uaFull="s-tools/sgfxi-data.tool-data" driverList=''
 		if [ "$B_CURL" == 'true' ];then
-			driverList="$( curl -A $uaFull -y 3 -s http://smxi.org/sg/data/sg-drivers-23 )"
+			driverList="$( curl -L -A $uaFull -y 3 -s http://smxi.org/sg/data/sg-drivers-23 )"
 		else
-			driverList="$( wget -U $uaFull -T 3 -t 2 -qO - http://smxi.org/sg/data/sg-drivers-23 )"
+			driverList="$( wget -U $uaFull -T 3 -t 2 -q -O - http://smxi.org/sg/data/sg-drivers-23 )"
 		fi
 		local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
 		local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
@@ -5221,7 +5221,7 @@ check_update_script()
 				ua="$ua.$uArgs.$SIS"
 				echo -e "${S}Updating ${C}$SELF_NAME${S} now using the $extraText${N}"
 				if [ "$B_CURL" == 'true' ];then
-					fileDataTemp="$( curl -A $ua -s $downloadUrl$1 )" || error_handler 198 $1
+					fileDataTemp="$( curl -L -A $ua -s $downloadUrl$1 )" || error_handler 198 $1
 				else
 					fileDataTemp="$( wget -U $ua -q -O - $downloadUrl$1 )" || error_handler 198 $1
 				fi
@@ -5265,7 +5265,7 @@ check_update_script()
 		*)
 			if [ "$B_SKIP_WGET" != 'true' ];then
 				if [ "$B_CURL" == 'true' ];then
-					fileDataTemp="$( curl -s $downloadUrl$1 )" || error_handler 198 $2$1
+					fileDataTemp="$( curl -L -s $downloadUrl$1 )" || error_handler 198 $2$1
 				else
 					fileDataTemp="$( wget -q -O - $downloadUrl$1 )" || error_handler 198 $2$1
 				fi
@@ -5310,7 +5310,7 @@ check_script_version()
 		returnValue=2
 	else
 		if [ "$B_CURL" == 'true' ];then
-			versionData="$( curl -A $ua -s $SELF_DOWNLOAD_VERSION )" || wgetError="$?"
+			versionData="$( curl -L -A $ua -s $SELF_DOWNLOAD_VERSION )" || wgetError="$?"
 		else
 			versionData="$( wget -U $ua -q -O - $SELF_DOWNLOAD_VERSION )" || wgetError="$?"
 		fi
@@ -5357,7 +5357,7 @@ apply_patch_file()
 	echo "${S}Retrieving patch ${C}$patchFile${S}...${N}"
 	# get patch file, set to variable
 	if [ "$B_CURL" == 'true' ];then
-		patchFileDataTemp="$( curl -A $ua -s $patchUrl 2>/dev/null )" || error_handler 180 $patchFile
+		patchFileDataTemp="$( curl -L -A $ua -s $patchUrl 2>/dev/null )" || error_handler 180 $patchFile
 	else
 		patchFileDataTemp="$( wget -U $ua -q -O - $patchUrl 2>/dev/null )" || error_handler 180 $patchFile
 	fi
@@ -9865,7 +9865,7 @@ show_extra_data()
 	fi
 	echo -n "${S}Retrieving live data... ${N}"
 	if [ "$B_CURL" == 'true' ];then
-		dataFull="$( curl -s -A $uaFull $fullUrl 2>/dev/null )"
+		dataFull="$( curl -L -s -A $uaFull $fullUrl 2>/dev/null )"
 	else
 		dataFull="$( wget -q -U $uaFull -O - $fullUrl 2>/dev/null )"
 	fi
