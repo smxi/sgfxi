@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.01
-####  Date: 2017-11-26
+####  version: 4.25.03
+####  Date: 2017-11-27
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
@@ -90,6 +90,7 @@ SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 NON_DEBIAN_PATTERN='(deb-ats|deb-mep|deb-mm|deb-multimedia|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|siduction|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
 
 APT_TYPE='apt-get'
+BSD_TYPE=''
 CARD='' # card type: fglrx or nvidia
 DISTRIB_CODENAME=''
 DISTRIB_ID=''
@@ -5780,7 +5781,6 @@ debugger_data_collector()
 			touch $Debug_Data_Dir/perl-missing.txt
 		fi
 		echo "Collecting system file data..."
-		ls /sys &> $Debug_Data_Dir/ls-sys.txt
 		cat /proc/1/comm &> $Debug_Data_Dir/proc-1-comm.txt
 		head -n 1 /proc/asound/card*/codec* &> $Debug_Data_Dir/proc-asound-card-codec.txt
 		if [[ -f /proc/version ]];then
@@ -6020,6 +6020,8 @@ debugger_data_collector()
 		if [[ $B_UPLOAD_DEBUG_DATA == 'true' || $1 == 'disk' || $1 == 'sys' || $1 == 'all' ]];then
 			touch $SELF_DATA_DIR/$Debug_Data_Dir/sys-dir-error.txt
 		fi
+		# just on the off chance bsds start having a fake /sys
+		ls /sys &> $Debug_Data_Dir/sys-ls-1.txt
 		# note, only bash 4> supports ;;& for case, so using if/then here
 		if [[ -z $BSD_TYPE ]] && [[ $1 == 'disk' || $1 == 'sys' || $1 == 'all' ]];then
 			echo $Line
@@ -6039,7 +6041,6 @@ debugger_data_collector()
 					rm -f $sys_data_file
 					echo "/sys data generation failed. No data collected." >> $Debug_Data_Dir/sys-dir-error.txt
 				else
-					b_traverse_worked='true'
 					echo 'Completed /sys data collection.'
 					echo -n "$sys_traverse_data" > $sys_data_file
 				fi
@@ -6081,14 +6082,12 @@ debugger_data_collector()
 			echo $completed_gz_file
 			if [[ $B_UPLOAD_DEBUG_DATA == 'true' ]];then
 				echo $Line
-				if [[ $b_traverse_worked == 'true' ]];then
-					upload_debugger_data "$completed_gz_file" "$Ftp_Upload"
-					if [[ $? -gt 0 ]];then
-						echo "Error: looks like the Perl ftp upload failed. Error number: $?"
-					else
-						b_uploaded='true'
-						echo "Hurray! Looks like the Perl ftp upload worked!"
-					fi
+				upload_debugger_data "$completed_gz_file" "$Ftp_Upload"
+				if [[ $? -gt 0 ]];then
+					echo "Error: looks like the Perl ftp upload failed. Error number: $?"
+				else
+					b_uploaded='true'
+					echo "Hurray! Looks like the Perl ftp upload worked!"
 				fi
 			else
 				echo 'You can upload this here using most file managers: ftp.techpatterns.com/incoming'
@@ -6161,7 +6160,7 @@ sys_tree()
 			tree -a -L 10 /sys/$branch > $Debug_Data_Dir/sys-tree-$branch-10.txt
 		done
 	else
-		ls_sys 1
+		#ls_sys 1
 		ls_sys 2
 		ls_sys 3
 		ls_sys 4
