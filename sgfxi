@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.04
-####  Date: 2017-11-28
+####  version: 4.25.05
+####  Date: 2017-12-07
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
@@ -5624,7 +5624,7 @@ log_writer()
 
 debugger_data_collector()
 {
-	local b_inxi='false' b_recommends='false' sys_traverse_data=''
+	local sys_traverse_data=''
 	local b_uploaded='false' completed_gz_file='' sys_data_file=''
 	local Line='-------------------------' 
 	local start_directory=$( pwd )
@@ -5699,7 +5699,7 @@ debugger_data_collector()
 		# diskinfo -v <disk>
 		# fdisk <disk>
 		dmidecode &> $Debug_Data_Dir/dmidecode.txt
-		if [[ $b_repo == 'true' ]];then
+		if type -t get_repo_data &>/dev/null;then
 			get_repo_data "$SELF_DATA_DIR/$Debug_Data_Dir"
 		fi
 		dmesg &> $Debug_Data_Dir/dmesg.txt
@@ -5828,7 +5828,7 @@ debugger_data_collector()
 		echo $XDG_CONFIG_DIRS &> $Debug_Data_Dir/xdg_config_dirs.txt
 		echo $XDG_DATA_HOME &> $Debug_Data_Dir/xdg_data_home.txt
 		echo $XDG_DATA_DIRS &> $Debug_Data_Dir/xdg_data_dirs.txt
-		if [[ $b_recommends == 'true' ]];then
+		if type -t check_recommends_user_output &>/dev/null;then
 			check_recommends_user_output &> $Debug_Data_Dir/check-recommends-user-output.txt
 		fi
 		if [[ $1 == 'xorg' || $1 == 'all' ]];then
@@ -6046,7 +6046,8 @@ debugger_data_collector()
 				fi
 			fi
 		fi
-		if [[ $b_inxi == 'true' ]];then
+		# running in inxi
+		if type -t check_recommends_user_output &>/dev/null;then
 			echo $Line
 			echo "Creating $SELF_NAME output file now. This can take a few seconds..."
 			echo "Starting $SELF_NAME from: $start_directory"
