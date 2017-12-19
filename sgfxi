@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.05
-####  Date: 2017-12-07
+####  version: 4.25.06
+####  Date: 2017-12-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
@@ -137,7 +137,7 @@ B_FORCE_OPTION='false'
 B_FORCE_NO_COMPOSITE='false'
 B_FORCE_UPDATE='false'
 B_GET_LIVE_DRIVERS='false'
-B_GLVN='true' # required maybe for nvidia installs, trips --install-libglvnd
+B_GLVN='false' # nvidia only: trips --install-libglvnd
 B_GUI_MODE='false'
 if tty >/dev/null;then
 	B_IRC='false'
@@ -10044,7 +10044,7 @@ show_options()
 	echo "-f Force option. Forces (re)install of your driver, bypasses default "
 	echo "   module check/build/rebuild (nVidia only)."
 	echo "   Note; -f cannot be used with -k because they contradict each other!"
-	echo "-g nVidia only. Turns OFF libglvnd automatic install Default is to let "
+	echo "-g nVidia only. Turns ON libglvnd automatic install. Default is to not let "
 	echo "   nvidia run its own libglvnd installer."
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 "
@@ -10279,9 +10279,9 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -F'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX package builder install. Not reliable, but try if you want.\n       -F is deprecated, please use -D instead in the future.\n"
 				;;
-			g)	B_GLVN='false'
+			g)	B_GLVN='true'
 				START_OPTIONS=$START_OPTIONS' -g'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -g - nVidia only. Turns OFF libglvnd automatic install Default is to install it.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -g - nVidia only. Turns ON Nvidia libglvnd automatic install. Default is to not install it.\n"
 				;;
 			G)	B_GUI_MODE='true'
 				B_SKIP_X_TEST='true'
