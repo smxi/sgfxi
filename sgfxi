@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.09
-####  Date: 2018-01-08
+####  version: 4.25.10
+####  Date: 2018-01-17
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
