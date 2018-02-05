@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.12
-####  Date: 2018-01-29
+####  version: 4.25.13
+####  Date: 2018-02-05
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2017
 ####  Code contributions copyright: Latino 2008
@@ -7756,6 +7756,12 @@ run_driver_installer()
 				# do NOT use this, it's deprecated: --no-install-libglvnd
 				installerArgs="$installerArgs "
 			fi
+			if [ "$B_NO_UM" == 'true' ];then
+				installerArgs="$installerArgs --no-unified-memory"
+			else
+				# do NOT use this, it's deprecated: --no-install-libglvnd
+				installerArgs="$installerArgs "
+			fi
 			# note: handles change from older /emul libs in Debian
 			# http://www.nvnews.net/vbulletin/showthread.php?t=135332
 			# note that lenny can be assumed to not need, this, so wait til squeeze stable
@@ -10058,8 +10064,7 @@ show_options()
 	echo "-f Force option. Forces (re)install of your driver, bypasses default "
 	echo "   module check/build/rebuild (nVidia only)."
 	echo "   Note; -f cannot be used with -k because they contradict each other!"
-	echo "-g nVidia only. Turns ON libglvnd automatic install. Default is to not let "
-	echo "   nvidia run its own libglvnd installer."
+	echo "-g nVidia only. Turns ON libglvnd automatic install. "
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 "
 	echo "   (sets to monochrome )"
@@ -10119,7 +10124,7 @@ show_options()
 	echo "-r Remove mode lines from xorg.conf"
 # 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
 	echo "-R Skips self updating feature. No restart."
-	
+	echo "-u nVidia only. Adds --no-unified-memory flag. "
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SELF_NAME to update itself, must be root, but can be in x. "
 	echo "   Exits after."
@@ -10245,7 +10250,7 @@ get_options()
 			;;
 	esac
 
-	while getopts AbBcCdDeEfFgGHj:kK:L:mnN:o:pP:QrRsStUWXxYzZ!: opt
+	while getopts AbBcCdDeEfFgGHj:kK:L:mnN:o:pP:QrRsStuUWXxYzZ!: opt
 	do
 		case $opt in
 			A) B_AUTORUN='true'
@@ -10295,7 +10300,7 @@ get_options()
 				;;
 			g)	B_GLVN='true'
 				START_OPTIONS=$START_OPTIONS' -g'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -g - nVidia only. Turns ON Nvidia libglvnd automatic install. Default is to not install it.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -g - nVidia only. Turns ON Nvidia libglvnd automatic install.\n"
 				;;
 			G)	B_GUI_MODE='true'
 				B_SKIP_X_TEST='true'
@@ -10393,6 +10398,10 @@ get_options()
 			t) B_TWINVIEW='true'
 				START_OPTIONS=$START_OPTIONS' -t'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: this is deprecated. Always sets for twinview (nVidia only)\n"
+				;;
+			u)	B_NO_UM='true'
+				START_OPTIONS=$START_OPTIONS' -u'
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -u - nVidia only. Adds --no-unified-memory flag.\n"
 				;;
 			U) B_FORCE_UPDATE='true'
 				;;
