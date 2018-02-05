@@ -613,6 +613,12 @@ driver_version_hacks()
 			fi
 			log_function_data "testData: $testData\nForcing nvidia installer option: $EXTRA_ARGS"
 			;;
+        390.*|387.*)
+                if  [[ ${KERNEL_FULL} = "4.14"* ]] || [[ ${KERNEL_FULL} = "4.15"* ]];then
+                    EXTRA_ARGS='--no-unified-memory' #on new kernel 4.14 and 4.15 dont compile without no-unified-memory
+                    B_GLVN='true' #in nvidia drivers 387/390 requres confirmation about the libglvnd
+                fi
+            ;;
 	esac
 	
 	# make sure that the call either sets globals OR returns a driver, not both.
@@ -2102,7 +2108,7 @@ driver_support_tests()
 									14)
 										case $DRIVER_DEFAULT in
 											390.*|387.*|384.*|340.[1-9][0-9][0-9]|304.13[4-9]|304.1[4-9][0-9]|$DISTRO_NVIDIA)
-												: # do nothing
+												driver_version_hacks "$DRIVER_DEFAULT" #we have to set some flags otherwise install will fail
 												;;
 											*) # use 225 for beta testing errors
 												if [ "$B_TESTING_3" != 'true' ];then
@@ -2114,7 +2120,7 @@ driver_support_tests()
 									15)
 										case $DRIVER_DEFAULT in
 											390.*|387.*|384.*|340.[1-9][0-9][0-9]|304.13[4-9]|304.1[4-9][0-9]|$DISTRO_NVIDIA)
-												: # do nothing
+												driver_version_hacks "$DRIVER_DEFAULT" #we have to set some flags otherwise install will fail
 												;;
 											*) # use 225 for beta testing errors
 												if [ "$B_TESTING_3" != 'true' ];then
