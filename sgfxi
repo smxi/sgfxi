@@ -6,7 +6,7 @@
 ####  version: 4.25.13
 ####  Date: 2018-02-05
 ########################################################################
-####  Copyright (C) Harald Hope 2007-2017
+####  Copyright (C) Harald Hope 2007-2018
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  function check_ia32_libs by Steven Barrett (damentz, maintainer of zen/liquorix projects).
