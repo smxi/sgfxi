@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.13
-####  Date: 2018-02-05
+####  version: 4.25.14
+####  Date: 2018-03-16
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2018
 ####  Code contributions copyright: Latino 2008
@@ -137,7 +137,7 @@ B_FORCE_OPTION='false'
 B_FORCE_NO_COMPOSITE='false'
 B_FORCE_UPDATE='false'
 B_GET_LIVE_DRIVERS='false'
-B_GLVN='false' # nvidia only: trips --install-libglvnd
+B_GLVN='true' # nvidia only: adds --install-libglvnd flag
 B_GUI_MODE='false'
 if tty >/dev/null;then
 	B_IRC='false'
@@ -151,6 +151,7 @@ B_LAUNCH_FROM_X='false'
 B_LOGGING_STARTED='false'
 B_MOVE_X_CONF='false'
 B_NATIVE_DRIVER='false'
+B_NO_UM='true' # nvidia only: adds --no-unified-memory flag
 B_NO_XVMC='false'
 B_PRINT_VER='false' # utilities for smxi
 B_REMOVE_MODELINES='false'
@@ -10119,12 +10120,12 @@ show_options()
 	echo "   automatically."
 	echo "-o Override default: install a specific driver, this is an absolute override."
 	echo "   syntax: -o 177.68 (for nVidia) or: -o 8-6 (for fglrx)"
-	echo "-q Turns off composite mode. Default is ON for newer nVidia/ATI cards."
+	echo "-q Turns OFF composite mode. Default is ON for newer nVidia/ATI cards."
 	echo "-Q Skip start X Question, automatically start X post driver install."
 	echo "-r Remove mode lines from xorg.conf"
 # 	echo "-t Enables dynamic twinview (nVidia only) - LEGACY, unused now. Default is on, enabled."
 	echo "-R Skips self updating feature. No restart."
-	echo "-u nVidia only. Adds --no-unified-memory flag. "
+	echo "-u nVidia only. Removes --no-unified-memory flag. "
 # 	echo "-S Skips automatic logout and X startup when script is run in standalone mode."
 	echo "-U Forces $SELF_NAME to update itself, must be root, but can be in x. "
 	echo "   Exits after."
@@ -10298,9 +10299,9 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -F'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -F - Using FGLRX package builder install. Not reliable, but try if you want.\n       -F is deprecated, please use -D instead in the future.\n"
 				;;
-			g)	B_GLVN='true'
+			g)	B_GLVN='false'
 				START_OPTIONS=$START_OPTIONS' -g'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -g - nVidia only. Turns ON Nvidia libglvnd automatic install.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -g - nVidia only. Turns OFF Nvidia libglvnd automatic install.\n"
 				;;
 			G)	B_GUI_MODE='true'
 				B_SKIP_X_TEST='true'
@@ -10399,7 +10400,7 @@ get_options()
 				START_OPTIONS=$START_OPTIONS' -t'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -t - twinview on: this is deprecated. Always sets for twinview (nVidia only)\n"
 				;;
-			u)	B_NO_UM='true'
+			u)	B_NO_UM='false'
 				START_OPTIONS=$START_OPTIONS' -u'
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -u - nVidia only. Adds --no-unified-memory flag.\n"
 				;;
