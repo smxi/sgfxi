@@ -10402,7 +10402,7 @@ get_options()
 				;;
 			u)	B_NO_UM='false'
 				START_OPTIONS=$START_OPTIONS' -u'
-				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -u - nVidia only. Adds --no-unified-memory flag.\n"
+				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -u - nVidia only. Removes --no-unified-memory flag.\n"
 				;;
 			U) B_FORCE_UPDATE='true'
 				;;
