@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.16
-####  Date: 2018-03-28
+####  version: 4.25.17
+####  Date: 2018-04-09
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2018
 ####  Code contributions copyright: Latino 2008
@@ -10065,7 +10065,7 @@ show_options()
 	echo "-f Force option. Forces (re)install of your driver, bypasses default "
 	echo "   module check/build/rebuild (nVidia only)."
 	echo "   Note; -f cannot be used with -k because they contradict each other!"
-	echo "-g nVidia only. Turns ON libglvnd automatic install. "
+	echo "-g nVidia only. Turns OFF libglvnd automatic install. "
 	echo "-h View this help menu."
 	echo "-j Alternate text/output script colors. Requires this syntax: -j 0 "
 	echo "   (sets to monochrome )"
