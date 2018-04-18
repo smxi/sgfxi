@@ -270,7 +270,7 @@ NV_LEGACY_5=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 8xxx/21x cards
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='396.18:::::'
+NV_VERSIONS_BETA='396.18.02:::::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 6 ) # old, tnt etc
 NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # ge4xx cards
