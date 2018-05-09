@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.21
-####  Date: 2018-05-04
+####  version: 4.25.22
+####  Date: 2018-05-08
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2018
 ####  Code contributions copyright: Latino 2008
@@ -321,7 +321,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='396.24:390.48:390.42:390.25:387.34:387.22:384.111:384.98:384.90:384.69:381.22:378.13:375.66:375.39:370.28:367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:340.106:340.104:340.102:340.101:340.98:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.137:304.135:304.134:304.132:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='396.24:390.48:390.42:387.34:387.22:384.111:384.98:384.90:384.69:381.22:378.13:375.66:375.39:370.28:367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:340.106:340.104:340.102:340.101:340.98:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.137:304.135:304.134:304.132:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_5='340xx'
@@ -1334,6 +1334,14 @@ driver_support_tests()
 										: ## support should be working, see feedback
 										;;
 								esac
+								;;
+						esac
+						# turn off libglvnd for these, don't know the cutoff, but assuming older drivers 
+						# don't support that option. Will check supported options for those drivers
+						case $DRIVER_DEFAULT in
+							378.*|375.*|370.*|367.*|364.*|361.*|358.*|355.*|352.*|349.*|346.*|343.*|340.*|337.*|334.*|331.*|325.*|319.*|313.*|310.*|304.*|302.*|295.*|290.*|285.*|173.*)
+								B_GLVN='false'
+								# B_NO_UM='false' # nvidia only: adds --no-unified-memory flag
 								;;
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
