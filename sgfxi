@@ -1346,6 +1346,18 @@ driver_support_tests()
 						esac
 						# note: the legacy 1 latest should handle xorg 1.7
 						case $X_VERSION in
+							1.20*|1.21*)
+								case $DRIVER_DEFAULT in
+									396.*|390.[6-9]*|340.10[7-9]|340.1[1-9][0-9]|$DISTRO_NVIDIA)
+										:
+										;;
+									*)
+										if [ "$B_TESTING_3" != 'true' ];then
+											error_handler 226
+										fi
+										;;
+								esac
+								;;
 							1.18*|1.17.99*)
 								case $DRIVER_DEFAULT in
 									396.*|390.*|387.*|384.*|381.*|378.*|375.*|370.*|367.*|364.*|361.*|358.*|355.*|352.*|349.*|340.[8-9][0-9]|340.[1-9][0-9][0-9]|304.1[2-9][0-9]|$DISTRO_NVIDIA)
