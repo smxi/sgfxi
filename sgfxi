@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.25
-####  Date: 2018-07-16
+####  version: 4.25.26
+####  Date: 2018-08-06
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2018
 ####  Code contributions copyright: Latino 2008
@@ -7463,7 +7463,7 @@ download_extract_driver()
 prep_install()
 {
 	eval $LOGPS
-	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-7]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-7]\.[0-9]{1,2}' )
+	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[0-9]{1,2}\.[0-9]{1,2}' /proc/version | grep -Eo '[0-9]{1,2}\.[0-9]{1,2}' )
 	local gccPackage="gcc-$gccVersion"  
 	local libMesaGlx='' ubgv='' bUpdateGcc='false'
 
@@ -7479,15 +7479,15 @@ prep_install()
 		debian)
 			libMesaGlx='libgl1-mesa-glx'
 			# it looks like maybe as of gcc 5 debian dropped the decimal
-			if [ -n "$gccVersion" -a -n "$( grep -E '^[5-9]' <<< $gccVersion)" ];then
-				gccVersion=$(grep -Eo '^[5-9]' <<< $gccVersion )
+			if [ -n "$gccVersion" -a -n "$( grep -E '^[0-9]{1,2}' <<< $gccVersion)" ];then
+				gccVersion=$(grep -Eo '^[0-9]{1,2}' <<< $gccVersion )
 				gccPackage="gcc-$gccVersion"
 			fi
 			;;
 		ubuntu)
 			libMesaGlx='libgl1-mesa-glx'
-			if [ -n "$gccVersion" -a -n "$( grep -E '^[5-9]' <<< $gccVersion)" ];then
-				gccVersion=$(grep -Eo '^[5-9]' <<< $gccVersion )
+			if [ -n "$gccVersion" -a -n "$( grep -E '^[0-9]{1,2}' <<< $gccVersion)" ];then
+				gccVersion=$(grep -Eo '^[0-9]{1,2}' <<< $gccVersion )
 				gccPackage="gcc-$gccVersion"
 			fi
 			;;
