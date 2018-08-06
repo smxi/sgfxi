@@ -7463,7 +7463,7 @@ download_extract_driver()
 prep_install()
 {
 	eval $LOGPS
-	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-7]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-7]\.[0-9]{1,2}' )
+	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[4-8]\.[0-9]{1,2}' /proc/version | grep -Eo '[4-8]\.[0-9]{1,2}' )
 	local gccPackage="gcc-$gccVersion"  
 	local libMesaGlx='' ubgv='' bUpdateGcc='false'
 
