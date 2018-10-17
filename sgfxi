@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.25.31
-####  Date: 2018-10-15
+####  version: 4.26.00
+####  Date: 2018-10-16
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2018
 ####  Code contributions copyright: Latino 2008
@@ -259,31 +259,34 @@ OTHER_VERSIONS=''
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # https://raw.githubusercontent.com/aaronp24/nvidia-versions/master/nvidia-versions.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='396.54:340.107:304.137:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='410.66:390.87:340.107:304.137:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
-NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 6 ) # old, tnt etc
-NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # ge4xx cards
-NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # 5xxx cards
-NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # 6/7xxx cards
-NV_LEGACY_5=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 8xxx/21x cards
+NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 7 ) # old, tnt etc
+NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 6 ) # ge4xx cards
+NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # 5xxx cards
+NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # 6/7xxx cards
+NV_LEGACY_5=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # 8xxx/21x cards
+NV_LEGACY_6=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # gt4xx/gt5xx/gt6xx/gt7xx
+
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='410.57:::::'
+NV_VERSIONS_BETA='::::::'
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
-NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 6 ) # old, tnt etc
-NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # ge4xx cards
-NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # 5xxx cards
-NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # 6/7xxx cards
-NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 8xxx/21x cards
+NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 7 ) # old, tnt etc
+NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 6 ) # ge4xx cards
+NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # 5xxx cards
+NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # 6/7xxx cards
+NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # 8xxx/21x cards
+NV_LEGACY_BETA_6=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # gt4xx/gt5xx/gt6xx/gt7xx
 
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
-NV_BETA="$NV_VERSIONS_BETA:::"
-# stable primary: 390.25 390.42 390.48 396.24 396.51 396.54
+NV_BETA="$NV_VERSIONS_BETA::::"
+# stable primary: 390.25 390.42 390.48 396.24 396.51 396.54 410.66
 # stable primary: 375.26 378.13 381.22 384.59 384.90 384.98 384.111 387.22 387.34
 # stable primary: 355.11 361.28 361.42 364.19 367.27 367.35 367.44 370.28 375.20
 # stable primary: 343.36 346.35 346.47 346.59 349.16 346.72 352.21 352.30 352.41
@@ -293,7 +296,7 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
 # beta requested by users: 396.54.09 not available for download
-# lt stable primary: 390.87
+# lt stable primary: 390.87 410.66
 # lt stable primary: 384.90 384.98 384.111 390.25 390.42 390.48 390.59 390.67 390.77
 # lt stable primary: 367.35 367.44 367.57 375.20 375.26 375.39 375.66 384.59 384.69
 # lt stable primary: 346.72 346.82 346.87 352.41 352.55 352.63 361.28 361.42 367.27
@@ -321,12 +324,14 @@ NV_BETA="$NV_VERSIONS_BETA:::"
 # stable legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121 
 # stable legacy 5: 340.101 340.102 340.104 340.106 340.107
 # stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76 340.93 340.96 340.98 
+# stable legacy 6: 390.77 390.87
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='396.54:396.51:390.87:390.77:387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:340.107:340.106:340.102:340.101:340.98:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.137:304.135:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='410.66:396.54:396.51:390.87:390.77:387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:340.107:340.106:340.102:340.101:340.98:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.137:304.135:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
+NV_DEBIAN_LEGACY_6='390xx'
 NV_DEBIAN_LEGACY_5='340xx'
 NV_DEBIAN_LEGACY_4='304xx'
 NV_DEBIAN_LEGACY_3='173xx'
@@ -334,18 +339,21 @@ NV_DEBIAN_LEGACY_2='96xx'
 NV_DEBIAN_LEGACY_1='71xx'
 # arch linux
 NV_AR_CURRENT=''
+NV_AR_LEGACY_6='390xx'
 NV_AR_LEGACY_5='340xx'
 NV_AR_LEGACY_4='304xx'
 NV_AR_LEGACY_3='173xx'
 NV_AR_LEGACY_2='96xx'
 # ubuntu 
 NV_UB_CURRENT='343'
+NV_UB_LEGACY_6='390'
 NV_UB_LEGACY_5='340'
 NV_UB_LEGACY_4='304'
 NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
 # fedora
 NV_FED_CURRENT="-$NV_DEFAULT" # note this will be out of sync until repo catches up, needs tests
+NV_FED_LEGACY_9='-390xx'
 NV_FED_LEGACY_5='-340xx'
 NV_FED_LEGACY_4='-304xx'
 NV_FED_LEGACY_3='-173xx'
@@ -565,7 +573,8 @@ set_test_data()
 # 		CARD_DATA=10de:0392 # fake nvidia 7xxx legacy (304.xx drivers)
 # 		CARD_DATA=10de:0422 # fake nvidia 8-9xxx- (340.xx GS 8400)
 #		CARD_DATA=10de:0a23 # fake nvidia  (340.xx geforce210 )
-		CARD_DATA=10de:1183 # fake nvidia (GeForce GTX 660 Ti 378)
+#		CARD_DATA=10de:1048 # fake nvidia  (390.xx GeForce 605 )
+#		CARD_DATA=10de:1183 # fake nvidia (GeForce GTX 660 Ti 378)
 # 		FG_DEFAULT='8-5'
 # 		NV_DEFAULT='177.80'
 # 		# set system bits to test 32/64 specific behaviors
@@ -2932,7 +2941,7 @@ error_handler()
 			errorData="The option you selected: $errorExtra is not supported."
 			;;
 		227)
-			errorData="The newest $CARD drivers ( >= 177.167 ) no longer support your $CARD GeForce 5xxx card.\nYou must use the $NV_LEGACY_3 driver or lower.\nThat is the default driver when you run this script."
+			errorData="The newest $CARD drivers ( >= 177.167 ) no longer support your $CARD GeForce 5xxx card.\nYou must use the $NV_LEGACY_4 driver or lower.\nThat is the default driver when you run this script."
 			;;
 		226)
 			errorData="The driver you selected: $DRIVER_DEFAULT does not support your current Xorg version: $X_VERSION\nIf this is wrong, please let the script maintainer know.\nYou can override this test with -! 6 option. If install works, let maintainer know."
@@ -3348,6 +3357,16 @@ detect_card_version()
 						B_COMPOSITE='true'
 					fi
 					;;
+				# https://www.nvidia.com/object/IO_32667.html
+				# gawk '{t=t tolower($NF) "|"}END{gsub(/0x/,"",t);print t}'
+				06c0|06c4|06ca|06cd|06d1|0771|0772|06d2|088f|06d8|06d9|06da|06dc|06dd|06de|0773|082f|0840|0842|0846|0866|0907|091e|06df|0dc0|0dc4|0dc5|0dc6|0dcd|0dce|0dd1|0dd2|0dd3|0dd6|0dd8|0914|0dda|0de0|0de1|0de2|0de3|0de4|0de5|0de7|0de8|0de9|0692|0725|0728|072b|072e|0753|0754|3977|2210|0dea|365a|365b|365e|3660|366c|0deb|0dec|0ded|0dee|0def|0df0|0df1|0df2|0df3|0df4|0952|0953|0df5|0df6|0df7|0df8|0df9|0dfa|0dfc|0e22|0e23|0e24|0e30|0e31|0e3a|0e3b|0f00|0f01|0f02|0f03|1040|1042|1048|1049|104a|104b|844c|846b|b590|0625|a625|104c|1050|1051|1052|1054|1055|1056|1057|1058|2af1|3682|3692|3695|36a8|36ac|36ad|3682|1059|105a|105b|2afb|30b1|30f3|36a1|107c|107d|1080|1081|1082|1084|1086|1087|1088|1089|108b|1091|088e|0891|0974|098d|1094|1096|0911|109a|109b|0799|999f|0600|0606|064a|064c|067a|0680|0686|0689|068b|068d|068e|0691|0692|0694|0702|0719|0725|0728|072b|072e|0732|0763|0773|0774|0776|077a|077b|077c|077d|077e|077f|0781|0798|0799|079b|079c|0807|0821|0823|0830|0833|0837|083e|0841|0853|0854|0855|0856|0857|0858|0863|0868|0869|0873|0878|087b|087f|0881|0885|088a|089b|0921|092e|092f|0932|093a|093c|093f|0941|0945|0954|0965|054d|054e|0554|0557|0562|0565|0568|0590|0592|0594|0595|05a2|05b1|05b3|05da|05de|05e0|05e8|05f4|060f|062f|064e|0652|0653|0655|065e|0662|068d|06ad|06ae|06af|06b0|06c0|06c1|18ef|18f9|18fb|18fd|18ff|218a|21bb|21bc|220e|2210|2212|2214|2218|225b|225d|226d|226f|22d2|22d9|2335|2337|2aef|2af9|10dd|10ed|11fd|124d|126d|131d|13fd|14c7|1507|15ad|15ed|160d|163d|165d|166d|16cd|16dd|170d|176d|178d|179d|2132|2136|21ba|21fa|220a|221a|223a|224a|227a|228a|22fa|232a|233a|235a|236a|238a|8595|85ea|85eb|85ec|85ee|85f3|860e|861a|861b|8628|8643|864c|8652|8660|8661|0dac|0dad|0ef3|17f5|fa01|fa02|fa03|fa05|fa11|fa13|fa18|fa19|fa21|fa23|fa2a|fa32|fa33|fa36|fa38|fa42|fa43|fa45|fa47|fa49|fa58|fa59|fa88|fa89|b092|c0d5|c0d7|c0e2|c0e3|c0e4|c10d|c652|c709|c711|c736|c737|c745|c750|10b8|10e9|1116|aa33|aaa2|aaa3|acb2|acc1|ae61|ae65|ae6a|ae71|0083|0926|0982|0983|1005|1012|1019|1030|1055|1067|1092|2200|2213|2220|309c|30b4|30b7|30e4|361b|361c|361d|3656|365a|365e|3661|366c|3685|3686|3687|3696|369b|369c|369d|369e|36a6|36a7|36a9|36af|36b0|36b6|3800|3801|3802|3803|3804|3806|3808|380d|380e|380f|3811|3812|3813|3816|3817|3818|381a|381c|381d|3901|3902|3903|3904|3905|3907|3910|3912|3913|3915|3983|5001|5003|5005|500d|5014|5017|5019|501a|501f|5025|5027|502a|502b|502d|502e|502f|5030|5031|5032|5033|503e|503f|5040|0177|0180|0190|0192|0224|01c0|20dd|20df|210e|2202|90d7|90dd|5530|5031|0106|1013|1200|1201|1203|1205|1206|1207|1208|1210|1211|1212|1213|1241|1243|1244|1245|1246|1247|212a|212b|212c|1248|1249|124b|124d|10cc|1251)
+					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-6' 'driver' )
+					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-6' 'set-exists' )
+					LEGACY_LEVEL=6
+					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
+						B_COMPOSITE='true'
+					fi
+					;;
 				*)
 					# set flags for fully supported non-legacy cards
 					B_USE_XVMC='true'
@@ -3483,6 +3502,12 @@ assign_standard_or_beta_driver()
 						NV_BETA="$NV_BETA:$betaCurrent"
 					fi
 				fi
+				if [ -n "$beta390" ];then
+					if [ -z "$NV_LEGACY_BETA_6" -o "$( compare_numbers $beta390 $NV_LEGACY_BETA_6 )" -eq 0 ];then
+						NV_LEGACY_BETA_6=$beta390
+						NV_BETA="$NV_BETA:$beta390"
+					fi
+				fi
 				if [ -n "$beta340" ];then
 					if [ -z "$NV_LEGACY_BETA_5" -o "$( compare_numbers $beta340 $NV_LEGACY_BETA_5 )" -eq 0 ];then
 						NV_LEGACY_BETA_5=$beta340
@@ -3539,6 +3564,10 @@ assign_standard_or_beta_driver()
 				legacy-5)
 					betaDriver=$NV_LEGACY_BETA_5
 					stableDriver=$NV_LEGACY_5
+					;;
+				legacy-6)
+					betaDriver=$NV_LEGACY_BETA_6
+					stableDriver=$NV_LEGACY_6
 					;;
 			esac
 			;;
@@ -3649,7 +3678,7 @@ assign_standard_or_beta_driver()
 
 get_live_beta_drivers()
 {
-	local driverList='' betaCurrent='' beta340='' beta304='' beta173='' beta96='' beta71=''
+	local driverList='' betaCurrent='' beta390='' beta340='' beta304='' beta173='' beta96='' beta71=''
 	
 	# get data
 	if [ "$B_SKIP_WGET" != 'true' ];then
@@ -3662,12 +3691,13 @@ get_live_beta_drivers()
 				fi
 				# get beta drivers
 				betaCurrent=$( awk '/^curr.*beta/ {print $3}' <<< "$driverList" )
+				beta390=$( awk '/^390.*beta/ {print $3}' <<< "$driverList" )
 				beta340=$( awk '/^340.*beta/ {print $3}' <<< "$driverList" )
 				beta304=$( awk '/^304.*beta/ {print $3}' <<< "$driverList" )
 				beta173=$( awk '/^173.*beta/ {print $3}' <<< "$driverList" )
 				beta96=$( awk '/^96.*beta/ {print $3}' <<< "$driverList" )
 				beta71=$( awk '/^71.*beta/ {print $3}' <<< "$driverList" )
-				driverList="$betaCurrent:$beta173:$beta96:$beta71"
+				driverList="$betaCurrent:$beta390:$beta340:$beta304:$beta173:$beta96:$beta71"
 				;;
 			$FGLRX)
 				if [ "$B_CURL" == 'true' ];then
@@ -3693,9 +3723,9 @@ reset_using_live_driver_data()
 	if [ "$B_SKIP_WGET" != 'true' ];then
 		local uaFull="s-tools/sgfxi-data.tool-data" driverList=''
 		if [ "$B_CURL" == 'true' ];then
-			driverList="$( curl -L -A $uaFull -y 3 -s http://smxi.org/sg/data/sg-drivers-23 )"
+			driverList="$( curl -L -A $uaFull -y 3 -s https://smxi.org/sg/data/sg-drivers-23 )"
 		else
-			driverList="$( wget -U $uaFull -T 3 -t 2 -q -O - http://smxi.org/sg/data/sg-drivers-23 )"
+			driverList="$( wget -U $uaFull -T 3 -t 2 -q -O - https://smxi.org/sg/data/sg-drivers-23 )"
 		fi
 		local nvidiaDefault=$( grep -iA 1 'NVidia Default Stable' <<< "$driverList" | grep 'DEFAULT' )
 		local nvidiaBeta=$( grep -iA 1 'Nvidia Beta Drivers' <<< "$driverList" | grep 'DEFAULT' )
@@ -3704,23 +3734,25 @@ reset_using_live_driver_data()
 		# reset script locals with remote values, but only if wget succeeded, otherwise use script
 		# local values as an acceptable failsafe default.
 		if [ -n "$driverList" ];then
-			# DEFAULT: 306.23 :: LEGACY 4: 304.23 ::  LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
+			# DEFAULT: 306.23 :: LEGACY 6: 390.87 :: LEGACY 5: 340.135; LEGACY 4: 304.23 ::  LEGACY 3: 173.14.27 :: LEGACY 2: 96.43.18 :: LEGACY 1: 71.86.14
 			NV_DEFAULT=$( awk '{print $2}' <<< "$nvidiaDefault" )
-			NV_LEGACY_1=$( awk '{print $6}' <<< "$nvidiaDefault" ) # old, tnt etc
-			NV_LEGACY_2=$( awk '{print $10}' <<< "$nvidiaDefault" ) # ge4xx cards
-			NV_LEGACY_3=$( awk '{print $14}' <<< "$nvidiaDefault" ) # 5xxx cards
-			NV_LEGACY_4=$( awk '{print $18}' <<< "$nvidiaDefault" ) # 6/7xxx cards
-			NV_LEGACY_5=$( awk '{print $22}' <<< "$nvidiaDefault" ) # 8/9xxx/21x cards
-			NV_VERSIONS=$( awk '{print $2 ":" $6 ":" $10 ":" $14 ":" $18 ":" $22 }' <<< "$nvidiaDefault" )
+			NV_LEGACY_6=$( awk '{print $6}' <<< "$nvidiaDefault" ) # 8/9xxx/21x cards
+			NV_LEGACY_5=$( awk '{print $10}' <<< "$nvidiaDefault" ) # 6/7xxx cards
+			NV_LEGACY_4=$( awk '{print $14}' <<< "$nvidiaDefault" ) # 5xxx cards
+			NV_LEGACY_3=$( awk '{print $18}' <<< "$nvidiaDefault" ) # ge4xx cards
+			NV_LEGACY_2=$( awk '{print $22}' <<< "$nvidiaDefault" ) # old, tnt etc
+			NV_LEGACY_1=$( awk '{print $26}' <<< "$nvidiaDefault" ) # old, tnt etc
+			NV_VERSIONS=$( awk '{print $2 ":" $10 ":" $14 ":" $18 ":" $22 ":" $26 }' <<< "$nvidiaDefault" )
 			
 			# DEFAULT: 260.19.06 :: LEGACY 3: N/A :: LEGACY 2: N/A  :: LEGACY 1: N/A
 			## beta drivers 
 			NV_DEFAULT_BETA=$( awk '{print $2}' <<< "$nvidiaBeta" ) # >= 6xxx
-			NV_LEGACY_BETA_1=$( awk '{print $6}' <<< "$nvidiaBeta" ) # old, tnt etc
-			NV_LEGACY_BETA_2=$( awk '{print $10}' <<< "$nvidiaBeta" ) # ge4xx cards
-			NV_LEGACY_BETA_3=$( awk '{print $14}' <<< "$nvidiaBeta" ) # 5xxx cards
-			NV_LEGACY_BETA_4=$( awk '{print $18}' <<< "$nvidiaBeta" ) # 5xxx cards
-			NV_LEGACY_BETA_5=$( awk '{print $22}' <<< "$nvidiaBeta" ) # 5xxx cards
+			NV_LEGACY_BETA_6=$( awk '{print $6}' <<< "$nvidiaBeta" ) # 5xxx cards
+			NV_LEGACY_BETA_5=$( awk '{print $10}' <<< "$nvidiaBeta" ) # 5xxx cards
+			NV_LEGACY_BETA_4=$( awk '{print $14}' <<< "$nvidiaBeta" ) # 5xxx cards
+			NV_LEGACY_BETA_3=$( awk '{print $18}' <<< "$nvidiaBeta" ) # ge4xx cards
+			NV_LEGACY_BETA_2=$( awk '{print $22}' <<< "$nvidiaBeta" ) # old, tnt etc
+			NV_LEGACY_BETA_1=$( awk '{print $26}' <<< "$nvidiaBeta" ) # old, tnt etc
 			
 			# DEFAULT: 10-9 :: PREVIOUS 1: 10-8 :: PREVIOUS 2: 9-3
 			# fglrx drivers
@@ -8362,6 +8394,9 @@ install_distro_drivers()
 						5)	nvidiaDriver="nvidia-$NV_AR_LEGACY_5"
 							nvidiaUtils="nvidia-$NV_AR_LEGACY_5-utils"
 							;;
+						6)	nvidiaDriver="nvidia-$NV_AR_LEGACY_6"
+							nvidiaUtils="nvidia-$NV_AR_LEGACY_6-utils"
+							;;
 						*)	nvidiaDriver="nvidia"
 							nvidiaUtils="nvidia-utils"
 							;;
@@ -8402,6 +8437,12 @@ install_distro_drivers()
 							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_5"
 							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_5"
 							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_5-kernel-source"
+							;;
+						6)
+							nvidiaDriver="nvidia-legacy-$NV_DEBIAN_LEGACY_6-driver"
+							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_6"
+							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_6"
+							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_6-kernel-source"
 							;;
 						*)	nvidiaDriver="nvidia-driver"
 							nvidiaGlx='nvidia-glx'
@@ -8476,6 +8517,12 @@ install_distro_drivers()
 								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_5-libs.$archExt64"
 							fi
 							;;
+						6)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_6"
+							nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_6-libs.$archExt"
+							if [ "$BITS" == '64' ];then
+								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_6-libs.$archExt64"
+							fi
+							;;
 						*)	akmodNvidia="akmod-nvidia"
 							nvidiaDriver="xorg-x11-drv-nvidia-libs.$archExt"
 							if [ "$BITS" == '64' ];then
@@ -8521,6 +8568,10 @@ install_distro_drivers()
 						5)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_5"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_5-modaliases"
 							nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_5"
+							;;
+						6)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_6"
+							nvidiaModal="nvidia-$NV_UB_LEGACY_6-modaliases"
+							nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_6"
 							;;
 						*)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_CURRENT"
 							nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
@@ -9861,7 +9912,7 @@ update_xorg()
 				fi
 				# this should let 3D work again for older cards, 400 etc:
 				# u
-# 				if [ "$DRIVER_DEFAULT" == "$NV_LEGACY_1" ];then
+# 				if [ "$DRIVER_DEFAULT" == "$NV_LEGACY_2" ];then
 # 					allowGlx='Option\t"AllowGLXWithComposite"\t"'$stateTrue'"\n\t'
 # 				fi
 				# note: coolbits requires an integer value
@@ -10069,7 +10120,7 @@ show_options()
 		esac
 	done
 	#echo "fglrx:  default: $fgDefault		supported-drivers: $fgVersions"
-	echo "Nvidia: defaults (current + legacy - 3 2 1): "
+	echo "Nvidia: defaults (current + legacy - 6 5 4 3 2 1): "
 	echo "$nvDefaults"
 	echo -n "Other supported-drivers: "
 	counter=0
@@ -10264,7 +10315,7 @@ show_options()
 		echo "-! 31 - Backup, download, replace, xorg.conf with basic xorg.conf version "
 		echo "        (legacy, don't use). Use X -configure instead to redo your xorg, "
 		echo "        or -z option in $SELF_NAME."
-		echo "-p Print currently supported drivers, <default>:<latest>:<legacy1>:<legacy2>"
+		echo "-p Print currently supported drivers, <default>:<latest>:<legacy6>:<legacy5>:<legacy4>:<legacy3>"
 		echo "   then exit the script without doing the driver download/install."
 		echo "-! 121  - When used with -p, will use the live driver list from smxi.org"
 		echo "          instead of the drivers taken from the local user $SELF_NAME values."
