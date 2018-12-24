@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.06
-####  Date: 2018-12-12
+####  version: 4.26.07
+####  Date: 2018-12-24
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2018
 ####  Code contributions copyright: Latino 2008
@@ -9739,7 +9739,7 @@ update_xorgconf_driver_version()
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|i128|i740|i810|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|i128|i740|i810|i815|i830|i845|i855|i865|i915|i945|i965|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	# confirm that it got written, if they add other driver names etc, like modesetting, it will fail until
 	# sgfxi is updated with those new names.
 	if [[ -z $( grep "\"$driverName\"" $EXXC ) ]];then
