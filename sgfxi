@@ -105,7 +105,7 @@ NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
 #NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
 # http://blog.mecheye.net/2014/04/xwayland/ - good info on xwayland, and general xorg architecture
-NATIVE_OVERRIDE_SUPPORTED='apm|ark|ati|chips|cirrus|fbdev|geode|glide|glint|i128|i740|intel|imstt|mach64|mga|modesetting|neomagic|nsc|openchrome|nouveau|r128|radeon|rendition|s3|s3virge|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|vesa|vga|via|voodoo|vmware|v4l'
+NATIVE_OVERRIDE_SUPPORTED='amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fbturbo|geode|glide|glint|i128|i740|i810|i815|i830|i845|i855|i865|i915|i945|i965|intel|imstt|mach64|mga|modesetting|neomagic|nsc|openchrome|nouveau|r128|radeon|rendition|s3|s3virge|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|v4l|vesa|vga|via|vmware|voodoo'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
 SELF_COLORS=1
@@ -9739,7 +9739,7 @@ update_xorgconf_driver_version()
 	# not converting: i810-modesetting i740 i128: note openchrome just released in sid
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
-	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glint|i128|i740|i810|i815|i830|i845|i855|i865|i915|i945|i965|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glide|glint|i128|i740|i810|i815|i830|i845|i855|i865|i915|i945|i965|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|r128|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
 	# confirm that it got written, if they add other driver names etc, like modesetting, it will fail until
 	# sgfxi is updated with those new names.
 	if [[ -z $( grep "\"$driverName\"" $EXXC ) ]];then
