@@ -2238,6 +2238,7 @@ driver_support_tests()
 										esac
 										;;
 								esac
+								;;
 							5)
 								case $KERNEL_MATH in
 									0)
@@ -2256,8 +2257,7 @@ driver_support_tests()
 								# end KERNEL_MATH
 								;;
 						esac
-# 					fi
-					;;
+						;;
 			esac
 			;;
 		nvidia-supported-driver)
