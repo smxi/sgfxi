@@ -3,10 +3,10 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.17
-####  Date: 2019-07-08
+####  version: 4.26.18
+####  Date: 2019-07-19
 ########################################################################
-####  Copyright (C) Harald Hope 2007-2018
+####  Copyright (C) Harald Hope 2007-2019
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  function check_ia32_libs by Steven Barrett (damentz, maintainer of zen/liquorix projects).
@@ -4489,18 +4489,19 @@ check_set_distro()
 		local isJessie=$( grep -Eis '^(jessie|8\.)' <<< "$edvContent" )
 		local isStretch=$( grep -Eis '^(stretch|9\.)' <<< "$edvContent" )
 		local isBuster=$( grep -Eis '^(buster|10\.)' <<< "$edvContent" )
+		local isBullseye=$( grep -Eis '^(bullseye|11\.)' <<< "$edvContent" )
 
 		# first tests sources
 		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | \
-		grep -Eicw '(stable|wheezy|squeeze|lenny|etch|jessie|stretch)' )
+		grep -Eicw '(stable|wheezy|squeeze|lenny|etch|jessie|stretch|buster)' )
 		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | \
-		grep -Eicw '(buster|testing)' )
+		grep -Eicw '(bullseye|testing)' )
 		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | \
 		grep -Eicw '(sid|unstable)' )
 
 		# then test conf for default version
-		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny|squeeze|wheezy|jessie|stretch)"' <<< "$eaaContent" )
-		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|buster)"' <<< "$eaaContent" )
+		local isStableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(stable|etch|lenny|squeeze|wheezy|jessie|stretch|buster)"' <<< "$eaaContent" )
+		local isTestingDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(testing|bullseye)"' <<< "$eaaContent" )
 		local isUnstableDefault=$( grep -Esi 'APT::Default-Release[[:space:]]"(sid|unstable)"' <<< "$eaaContent" )
 	# arch tests
 	elif [ -f "$EAR" ] || [ -n "$( grep -si '^arch' <<< $etcIssue  )" ];then
@@ -4543,8 +4544,9 @@ check_set_distro()
 				APT_TYPE='apt-get'
 			fi
 			# set system type. This test will never be perfect, but it's a good approximation
-			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o -n "$isWheezy" -o -n "$isJessie"  -o -n "$isStretch" \
-			     -o -n "$isStableDefault" ] || [ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
+			if [ -n "$isEtch" -o -n "$isLenny" -o -n "$isSqueeze" -o -n "$isWheezy" -o -n "$isJessie" \
+			-o -n "$isStretch" -o -n "$isBuster" -o -n "$isStableDefault" ] || \
+			[ "$isStable" -gt 0 -a "$isUnstable" -eq 0  -a "$isTesting" -eq 0 ];then
 				if [ -n "$isEtch" ];then
 					FG_DISTRIB_CODENAME='etch'
 					SYSTEM_CODENAME='etch'
@@ -4563,11 +4565,14 @@ check_set_distro()
 				elif [ -n "$isStretch" ];then
 					FG_DISTRIB_CODENAME='stretch' # note: 'stable' breaks the installer
 					SYSTEM_CODENAME='stretch'
+				elif [ -n "$isBuster" ];then
+					FG_DISTRIB_CODENAME='buster' # note: 'stable' breaks the installer
+					SYSTEM_CODENAME='buster'
 				else
 					FG_DISTRIB_CODENAME='stable'
 					SYSTEM_CODENAME='stable'
 				fi
-			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isBuster" -o "$isTesting" -gt 0 ];then
+			elif [ "$isUnstable" -eq 0 -o -n "$isTestingDefault" ] && [ -n "$isBullseye" -o "$isTesting" -gt 0 ];then
 				FG_DISTRIB_CODENAME='sid'
 				SYSTEM_CODENAME='testing'
 			else
