@@ -31,7 +31,7 @@
 ########################################################################
 ####  CONVENTIONS:
 ####  Indentation: TABS
-####  Do not use `....`, those are totally non-reabable, use $(....)
+####  Do not use `....`, those are totally non-readable, use $(....)
 ####  Do not use one liner flow controls. The ONLY time you should use ; is in
 ####  this single case: if [ condition ];then (ie, never: [ condition ] && statement)
 ####
