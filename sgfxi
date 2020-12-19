@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.37
-####  Date: 2020-11-17
+####  version: 4.26.38
+####  Date: 2020-12-19
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2019
 ####  Code contributions copyright: Latino 2008
@@ -7634,8 +7634,8 @@ prep_install()
 	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[0-9]{1,2}\.[0-9]{1,2}' /proc/version | grep -Eo '[0-9]{1,2}\.[0-9]{1,2}' )
 	local gccPackage="gcc-$gccVersion"  
 	local libMesaGlx='' ubgv='' bUpdateGcc='false'
-	
 	local procVersion="$(cat /proc/version)"
+	
 	# old: 
 	# procVersion="Linux version 4.19.0-9-amd64 (debian-kernel@lists.debian.org) (gcc version 8.3.0 (Debian 8.3.0-6)) #1 SMP Debian 4.19.118-2+deb10u1 (2020-06-07)"
 	# new: debian
@@ -7643,12 +7643,14 @@ prep_install()
 	# new: slackwhare
 	# procVersion="Linux version 5.8.0 (root@thinkpad.slackware.bg) (gcc (GCC) 9.3.0, GNU ld version 2.33.1-slack15) #1 SMP Wed Aug 5 13:07:00 EEST 2020"
 	# echo $procVersion
+	# procVersion="Linux version 5.9.0-5-amd64 (debian-kernel@lists.debian.org) (gcc-10 (Debian 10.2.1-1) 10.2.1 20201207, GNU ld (GNU Binutils for Debian) 2.35.1) #1 SMP Debian 5.9.15-1 (2020-12-17)"
+	#  echo $procVersion
 	if [ -n "$(grep -i 'gcc version' <<< $procVersion)" ];then
 		# echo 'old gcc'
 		gccVersion=$( sed -r "s|.* \(gcc version ([0-9\.]+) .*|\1|" <<< $procVersion)
 	elif [ -n "$(grep -iE '\(gcc.*GNU' <<< $procVersion)" ];then
 		# echo 'new gcc'
-		gccVersion=$( sed -r "s|.* \(gcc.* \([^\)]+\) ([0-9\.]+), GNU.*|\1|" <<< $procVersion)
+		gccVersion=$( sed -r "s|.* \(gcc.* \([^\)]+\) ([0-9\.]+)(\s[^.]*)?, GNU.*|\1|" <<< $procVersion)
 	fi
 	# echo 'gcc v:' $gccVersion
 	# exit
