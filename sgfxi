@@ -3,10 +3,10 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.39
-####  Date: 2020-12-30
+####  version: 4.26.40
+####  Date: 2021-01-01
 ########################################################################
-####  Copyright (C) Harald Hope 2007-2019
+####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  function check_ia32_libs by Steven Barrett (damentz, maintainer of zen/liquorix projects).
@@ -405,6 +405,7 @@ FG_LEGACY_2='' # random releases/xorg support, hard to follow. note as of 2012-1
 # making a file name format decision and sticking to it. ie: betav1 beta beta6 and so on.
 FG_DEFAULT_BETA=''
 FG_BETA="$FG_DEFAULT_BETA:"
+####  Copyright (C) Harald Hope 2007-2019
 
 # note: amd release a zip file that contains a space in the name, so I'm not spending 
 # any more of my time on this group of undisciplined incompetents at this point.
@@ -421,6 +422,7 @@ FGLRX_PACKAGE_PREFIX='' # set to amd or ati, amd is for >= 12-1
 ### FG Legacy 2: ###
 # 12-6 13.1
 ### Beta Series: ###
+####  Copyright (C) Harald Hope 2007-2019
 # 14.3.14 14.5.2 14.7.1
 ### Older Betas: ###
 # 13.8-beta2
@@ -5791,7 +5793,7 @@ log_function_data()
 log_driver_installer_failure()
 {
 	local nvidiaLog='/var/log/nvidia-installer.log'
-	local atiLog='/usr/share/ati/fglrx- install.log'
+	local atiLog='/usr/share/ati/fglrx-install.log'
 	local errorLog=''
 	
 	case $CARD in
@@ -6460,7 +6462,7 @@ upload_debugger_data()
 install_native_driver()
 {
 	eval $LOGPS
-	local xorgBase='' xorgNv='nouveau' xorgAti='ati' xorgIntel='intel'
+	local xorgBase='' xorgNv='nouveau' xorgAmd='amdgpu' xorgIntel='intel'
 	local xorgDriver='' driver='' currentlyInstalled='' xorgCore=''
 	local driverInstall='' experimentalText='' libMesaGlx=''
 	local extraAtiPackage1='' bSkipInstall='false'
@@ -6477,7 +6479,7 @@ install_native_driver()
 				NATIVE_OVERRIDE='nouveau'
 				;;
 			$FGLRX)
-				NATIVE_OVERRIDE='radeon'
+				NATIVE_OVERRIDE='amdgpu'
 				;;
 		esac
 	fi
@@ -6496,8 +6498,8 @@ install_native_driver()
 			xorgBase='xf86-video-'
 			xorgCore='xorg-server'
 			libMesaGlx='libgl'
-			if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
-				NATIVE_OVERRIDE=$xorgAti
+			if [ "$NATIVE_OVERRIDE" == 'amdgpu' ];then
+				NATIVE_OVERRIDE=$xorgAmd
 			fi
 			;;
 		fedora)
@@ -6522,7 +6524,7 @@ install_native_driver()
 				;;
 			# note: use default ati here and only override to radeon/radeonhd for native override
 			$FGLRX)
-				xorgDriver=$xorgAti
+				xorgDriver=$xorgAmd
 				;;
 			$INTEL)
 				xorgDriver=$xorgIntel
@@ -6604,7 +6606,7 @@ install_native_driver()
 				eval $extraAtiPackage1
 			fi
 		fi
-		# we'll need this to determine whether to do a reboot for radeon/nouveau
+		# we'll need this to determine whether to do a reboot for amdgpu/nouveau
 		NON_FREE_DRIVER=$( grep -Esi 'Driver[[:space:]]+"(fglrx|nvidia)"' $EXXC | grep -oEs "(nvidia|fglrx)" )
 		## clean / update xorg, this is only to change driver to ati/nv, no full xorg conf yet.
 		if [ "$B_RESTORE_DEFAULTS" == 'false' ];then
@@ -6613,7 +6615,7 @@ install_native_driver()
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
 		
 		case $NATIVE_OVERRIDE in
-			nouveau|radeon)
+			amdgpu|nouveau)
 				case $SYSTEM_BASE in
 					arch|fedora|debian|ubuntu)
 						add_module "$NATIVE_OVERRIDE"
@@ -6638,7 +6640,7 @@ native_driver_install_keep()
 	eval $LOGUS
 	local lgmd='libgl1-mesa-dri'  ldrm='libdrm2'
 
-	if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
+	if [ "$NATIVE_OVERRIDE" == 'amdgpu' ];then
 		if [ -z "$( check_package_status "$lgmd" 'i' )" ];then
 			install_package $lgmd
 		fi
@@ -6749,7 +6751,7 @@ set_modesetting_off()
 	local bShowMessage='false' retValue=1 # default false
 	
 	case $1 in
-		nouveau|radeon)
+		amdgpu|nouveau)
 			case $SYSTEM_BASE in
 				# note that the nvidia installer now requires blacklisting a priori, so 
 				# just treat arch like the other distros
@@ -6801,7 +6803,7 @@ set_modesetting_on()
 	local bShowMessage='false'
 
 	case $1 in
-		modesetting|nouveau|radeon)
+		modesetting|amdgpu|nouveau)
 			# only act if blacklist/nomodeset was removed
 			remove_grub_nomodeset_blacklist_item $1
 			if [ "$?" -eq 0 ];then
@@ -6850,7 +6852,7 @@ get_active_grub_files()
 	eval $LOGUE
 }
 
-# args: $1 - radeon/nouveau
+# args: $1 - amdgpu/nouveau
 add_grub_nomodeset_blacklist_item()
 {
 	eval $LOGUS
@@ -6858,8 +6860,8 @@ add_grub_nomodeset_blacklist_item()
 	local returnValue=1 activeFile='No'
 	local noModesetString='nomodeset'
 	local noModesetString2="$1.modeset=0"
-	local moduleSearch1="nomodeset|rdblacklist=nouveau|rdblacklist=radeon|nouveau.blacklist=1|radeon.blacklist=1"
-	local moduleSearch2="nouveau.modeset=0|radeon.modeset=0"
+	local moduleSearch1="nomodeset|rdblacklist=nouveau|rdblacklist=amdgpu|nouveau.blacklist=1|amdgpu.blacklist=1"
+	local moduleSearch2="nouveau.modeset=0|amdgpu.modeset=0"
 	local grubFiles=$( get_active_grub_files )
 
 	case $SYSTEM_BASE in
@@ -6872,7 +6874,7 @@ add_grub_nomodeset_blacklist_item()
 		if [ -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" -o -z "$( grep -Eis '('$moduleSearch2')' $grubFiles )" ];then
 			echo -n "${S}Adding ${C}$grubFiles $noModesetString/$noModesetString2${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			if [ -f "$GRUB1" ];then
-				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
+				if [ -z "$( grep -radeonEis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
 					sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1
 					activeFile=$GRUB1
 				fi
@@ -6948,12 +6950,17 @@ add_grub_nomodeset_blacklist_item()
 			fi
 			;;
 	esac
-	
+	if [ "$returnValue" == 0 && -n "$( type -P update-grub )" ];then
+		echo "${S}Running ${C}update-grub${S}...${N}"
+		update-grub
+		echo "${C}update-grub${S} completed.${N}"
+		log_function_data "update-grub executed as expected"
+	fi
 	eval $LOGUE
 	return $returnValue
 }
 
-# args: $1 - radeon/nouveau
+# args: $1 - amdgpu/nouveau
 remove_grub_nomodeset_blacklist_item()
 {
 	eval $LOGUS
@@ -6969,6 +6976,12 @@ remove_grub_nomodeset_blacklist_item()
 			log_function_data "file updated to remove $1 blacklist: $grubFiles"
 			echo "${S}Removed${N}"
 			returnValue=0
+			if [ -n "$( type -P update-grub )" ];then
+				echo "${S}Running ${C}update-grub${S}...${N}"
+				update-grub
+				echo "${C}update-grub${S} completed.${N}"
+				log_function_data "update-grub executed as expected"
+			fi
 		fi
 	elif [ "$B_SKIP_GRUB_FILE" == 'true' ];then
 		echo "${M}Skipping grub file removal due to ${C}-! 33${M} option being used. Make sure to remove all blacklists"
@@ -6980,7 +6993,7 @@ remove_grub_nomodeset_blacklist_item()
 	return $returnValue
 }
 
-# args: $1 - nouveau/radeon
+# args: $1 - amdgpu/nouveau
 add_modprobe_d_blacklist_item()
 {
 	eval $LOGUS
@@ -7003,7 +7016,7 @@ add_modprobe_d_blacklist_item()
 	return $returnValue
 }
 
-# args: $1 - nouveau/radeon
+# args: $1 - amdgpu/nouveau
 remove_modprobe_d_blacklist_item()
 {
 	eval $LOGUS
@@ -7028,19 +7041,19 @@ remove_modprobe_d_blacklist_item()
 	return $returnValue
 }
 
-# 1 - add-nouveau|radeon/remove-nouveau|radeon; 
+# 1 - add-amdgpu|nouveau/remove-amdgpu|nouveau; 
 update_initramfs()
 {
 	eval $LOGPS
 	local storedNouveau="/boot/initramfs-$KERNEL_FULL-nouveau.img"
-	local storedRadeon="/boot/initramfs-$KERNEL_FULL-radeon.img"
+	local storedAMD="/boot/initramfs-$KERNEL_FULL-amdgpu.img"
 	local startingInitram="/boot/initramfs-$KERNEL_FULL.img"
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			case $1 in
-				remove-nouveau|remove-radeon)
+				remove-amdgpu|remove-nouveau)
 					if [ -n "$( type -p update-initramfs )" ];then
-						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau/Radeon from initrd... ${N}"
+						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau/Amdgpu from initrd... ${N}"
 						update-initramfs -u -k $KERNEL_FULL
 					fi
 					;;
@@ -7048,17 +7061,12 @@ update_initramfs()
 			;;
 		fedora)
 			case $1 in
-				remove-nouveau)
-					if [ -n "$( type -p dracut )" ];then
-						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}nouveau${S} now...${N}"
-						mv -f $startingInitram $storedNouveau
-						dracut $startingInitram $KERNEL_FULL
-					fi
-					;;
-				remove-radeon)
-					if [ -n "$( type -p dracut )" ];then
-						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}radeon${S} now...${N}"
-						mv -f $startingInitram $storedRadeon
+				add-amdgpu)
+					if [ -f "$storedAMD" ];then
+						echo "${S}Restoring ${C}initramfs${S} with ${C}amdgpu${S} now...${N}"
+						mv -f $storedAMD $startingInitram 
+					elif [ -n "$( type -p dracut )" ];then
+						echo "${S}Building ${C}initramfs${S} with ${C}amdgpu${S} now...${N}"
 						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
@@ -7071,12 +7079,17 @@ update_initramfs()
 						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
-				add-radeon)
-					if [ -f "$storedRadeon" ];then
-						echo "${S}Restoring ${C}initramfs${S} with ${C}radeon${S} now...${N}"
-						mv -f $storedRadeon $startingInitram 
-					elif [ -n "$( type -p dracut )" ];then
-						echo "${S}Building ${C}initramfs${S} with ${C}radeon${S} now...${N}"
+				remove-amdgpu)
+					if [ -n "$( type -p dracut )" ];then
+						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}amdgpu${S} now...${N}"
+						mv -f $startingInitram $storedAMD
+						dracut $startingInitram $KERNEL_FULL
+					fi
+					;;
+				remove-nouveau)
+					if [ -n "$( type -p dracut )" ];then
+						echo "${S}Updating ${C}initramfs${S} to get rid of ${C}nouveau${S} now...${N}"
+						mv -f $startingInitram $storedNouveau
 						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
@@ -7085,7 +7098,6 @@ update_initramfs()
 	esac
 	eval $LOGPE
 }
-
 # args: $1 - module; $2 - modeset-on/modeset-off
 reboot_now_question()
 {
@@ -7174,6 +7186,8 @@ reboot_now_question()
 		reboot_now_question "$@"
 	fi
 }
+## for nonfree/free driver testing, use off/on with sudo to test files / initramfs gets updated
+# set_modesetting_off nouveau
 
 # args: $1 - shutdown/reboot
 handle_shutdowns()
@@ -8389,7 +8403,7 @@ remove_module()
 		fi
 	else
 		case $1 in
-			nouveau|radeon)
+			amdgpu|nouveau)
 				set_modesetting_off "$1" "$outcome"
 				;;
 		esac
@@ -8427,7 +8441,7 @@ add_module()
 	# going to run this for all cases, not just failure, maybe that will work better
 	# handle the no grub file explicitly in this one
 	case $1 in
-		nouveau|radeon)
+		amdgpu|nouveau)
 			set_modesetting_on "$1" "$outcome"
 			;;
 	esac
@@ -9822,7 +9836,7 @@ update_xorgconf_driver_version()
 	if [ "$B_NATIVE_DRIVER" == 'true' ];then
 		case $CARD in
 			$FGLRX)
-				driverName='radeon'
+				driverName='amdgpu'
 				;;
 			$INTEL)
 				driverName='intel'
@@ -10065,7 +10079,7 @@ update_xorg()
 		if [ "$CARD" == $INTEL ];then
 			:
 		# note: changed XAA to EXA
-		elif [ "$NATIVE_OVERRIDE" == 'radeon' ];then
+		elif [ "$NATIVE_OVERRIDE" == 'amdgpu' ];then
 			# removed: Option  "AGPFastWrite"    "off"\n\tOption  "AGPMode" "4"\n\tOption   "ColorTiling" "on"
 			perl -pi -e 's/^([\s]*Driver\s*"radeon")/\1\n\t\n\tOption  "DynamicClocks"   "on"\n\tOption   "EnablePageFlip" "on"\n\tOption   "AccelMethod" "EXA"/' $EXXC
 		fi
