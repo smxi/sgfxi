@@ -6951,7 +6951,7 @@ add_grub_nomodeset_blacklist_item()
 			fi
 			;;
 	esac
-	if [ "$returnValue" == 0 && -n "$( type -P update-grub )" ];then
+	if [ "$returnValue" == 0 -a -n "$( type -P update-grub )" ];then
 		echo "${S}Running ${C}update-grub${S}...${N}"
 		update-grub
 		echo "${C}update-grub${S} completed.${N}"
