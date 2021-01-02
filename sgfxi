@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.40
-####  Date: 2021-01-01
+####  version: 4.26.41
+####  Date: 2021-01-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
@@ -23,7 +23,7 @@
 ####  Script URL: http://smxi.org/sg/sgfxi
 ####  Script GIT: https://github.com/smxi/sgfxi
 ####  Script Documentation: http://smxi.org/docs/
-####  Script Home page: http://techpatterns.com/forums/about933.html
+####  Script Home page: http://techpatternsNATIVE_OVERRIDE.com/forums/about933.html
 ########################################################################
 #### DEFINE:
 #### TRUE: -eq 0; == 'true'; function return 0
@@ -50,7 +50,7 @@
 ####	Arrays should start with a_ or A_
 ####  All functions should follow standard naming, ie, verb adjective noun, get_cpu_data
 ########################################################################
-####  TESTING FLAGS
+####  TESTING FLAGSNATIVE_OVERRIDE
 ####  sgfxi supports advanced testing triggers to do various things, using -! <arg>
 ####  -! 1 - triggers default B_TESTING_1='true' - triggers testing data function
 ####  -! 2 - triggers default B_TESTING_2='true' - triggers post test exit
@@ -59,7 +59,7 @@
 ####  -! 5 - triggers B_TESTING_1='true', B_TESTING_2='true', and B_SKIP_FUNCTION='true'
 ####  -! 6 - triggers B_TESTING_3='true' - overrides xorg/kernel support tests
 ####  -! 7 - triggers B_TESTING_4='true' - overrides patch tests
-####  -! 8 - triggers B_TESTING_5='true' - triggers advanced, beta tests for general script
+####  -! 8 - triggers s"   "on"\n\tOption   "EnablePageFlip" "on"\n\tOption   "AccelMethod" "EXA"/' $EXXC
 ####  -! 9 - triggers B_TESTING_6='true' - triggers new distro development tests
 ####  -! 10 - triggers an update from the primary dev download server
 ####  -! 11 - triggers an update from svn branch one - if present, of course
@@ -6512,7 +6512,7 @@ install_native_driver()
 	if [ "$B_EXPERIMENTAL" == 'true' ];then
 		experimentalText=' experimental'
 	fi
-	#
+	#17
 	if [ "$B_DEFAULT_NATIVE_DRIVER" == 'true' -o -n "$NATIVE_OVERRIDE" ];then
 		eval $LOGPS
 		# assign defaults from earlier CARD assignments in -n
@@ -6522,7 +6522,7 @@ install_native_driver()
 			$NVIDIA)
 				xorgDriver=$xorgNv
 				;;
-			# note: use default ati here and only override to radeon/radeonhd for native override
+			# note: use default amd here and only override to radeon/radeonhd for native override
 			$FGLRX)
 				xorgDriver=$xorgAmd
 				;;
@@ -6614,14 +6614,14 @@ install_native_driver()
 		fi
 		process_xvmc # this will restore xvmc defaults if nvidia stuff was being used
 		
-		case $NATIVE_OVERRIDE in
-			amdgpu|nouveau)
+		case $xorgDriver in
+			amdgpu|modesetting|nouveau)
 				case $SYSTEM_BASE in
 					arch|fedora|debian|ubuntu)
-						add_module "$NATIVE_OVERRIDE"
+						add_module "$xorgDriver"
 						;;
 				esac
-				set_modesetting_on $NATIVE_OVERRIDE
+				set_modesetting_on $xorgDriver
 				;;
 		esac
 
@@ -6639,8 +6639,8 @@ native_driver_install_keep()
 {
 	eval $LOGUS
 	local lgmd='libgl1-mesa-dri'  ldrm='libdrm2'
-
-	if [ "$NATIVE_OVERRIDE" == 'amdgpu' ];then
+	# don't remember about this, assume this is a radeon or radeonhd legacy item?
+	if [ "$NATIVE_OVERRIDE" == 'radeon' ];then
 		if [ -z "$( check_package_status "$lgmd" 'i' )" ];then
 			install_package $lgmd
 		fi
@@ -6860,8 +6860,8 @@ add_grub_nomodeset_blacklist_item()
 	local returnValue=1 activeFile='No'
 	local noModesetString='nomodeset'
 	local noModesetString2="$1.modeset=0"
-	local moduleSearch1="nomodeset|rdblacklist=nouveau|rdblacklist=amdgpu|nouveau.blacklist=1|amdgpu.blacklist=1"
-	local moduleSearch2="nouveau.modeset=0|amdgpu.modeset=0"
+	local moduleSearch1="nomodeset|rdblacklist=nouveau|rdblacklist=amdgpu|rdblacklist=radeon|amdgpu.blacklist=1|nouveau.blacklist=1|radeon.blacklist=1"
+	local moduleSearch2="amdgpu.modeset=0|nouveau.modeset=0|radeon.modeset=0"
 	local grubFiles=$( get_active_grub_files )
 
 	case $SYSTEM_BASE in
@@ -6874,7 +6874,7 @@ add_grub_nomodeset_blacklist_item()
 		if [ -z "$( grep -Eis '('$moduleSearch1')' $grubFiles )" -o -z "$( grep -Eis '('$moduleSearch2')' $grubFiles )" ];then
 			echo -n "${S}Adding ${C}$grubFiles $noModesetString/$noModesetString2${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			if [ -f "$GRUB1" ];then
-				if [ -z "$( grep -radeonEis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
+				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
 					sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1
 					activeFile=$GRUB1
 				fi
@@ -6980,7 +6980,7 @@ remove_grub_nomodeset_blacklist_item()
 				echo "${S}Running ${C}update-grub${S}...${N}"
 				update-grub
 				echo "${C}update-grub${S} completed.${N}"
-				log_function_data "update-grub executed as expected"
+				log_function_data "update-grub executed as expected"log_function_data "operation outcome: $outcome"
 			fi
 		fi
 	elif [ "$B_SKIP_GRUB_FILE" == 'true' ];then
@@ -8441,7 +8441,7 @@ add_module()
 	# going to run this for all cases, not just failure, maybe that will work better
 	# handle the no grub file explicitly in this one
 	case $1 in
-		amdgpu|nouveau)
+		amdgpu|modesetting|nouveau)
 			set_modesetting_on "$1" "$outcome"
 			;;
 	esac
@@ -9765,6 +9765,7 @@ set_server_flag()
 	create_section_serverflags
 	if [ -z "$( grep -Eis '^[[:space:]]*Option[[:space:]]+"'$1'"[[:space:]]+' $EXXC )" ];then
 		perl -pi -e 's/^([\s]*Section\s*"ServerFlags")/\1\n\tOption      "'$1'"\t"true"\n/' $EXXC
+		log_function_data "Perl outcome: $?"
 	fi
 	eval $LOGUE
 }
@@ -9783,7 +9784,9 @@ create_driver_entry()
 	if [ -n "$( grep -E '^[0-9]+$' <<< $deviceLineNu )" ];then
 		# this is a trick to only grep within a block delimited by start/EndSection
 		local isDriver=$( sed -n ''$deviceLineNu',/EndSection/ p' $EXXC | grep -Ei 'Driver[[:space:]]*".*"' )
+		log_function_data "sed 1 outcome: $?"
 		local isBusId=$( sed -n ''$deviceLineNu',/EndSection/ p' $EXXC | grep -Ei 'BusID[[:space:]]*".*"' )
+		log_function_data "sed 2 outcome: $?"
 
 		# echo isBusId: $isBusId
 		# echo isDriver: $isDriver
@@ -9796,6 +9799,7 @@ create_driver_entry()
 		if [ -z "$isDriver" ];then
 			sed -i ''${deviceLineNu}',/EndSection/ s/Section[[:space:]]*"Device"/&\
 \tDriver "vesa"/' $EXXC
+			log_function_data "sed 3 outcome: $?"
 		fi
 		# only adding busid if driver is missing, otherwise mistakes will happen
 		# xorg has a bug with bus id with hex, this is now handled in sgfxi
@@ -9804,6 +9808,7 @@ create_driver_entry()
 			pcibusid_hex_to_dec
 			sed -i ''${deviceLineNu}',/EndSection/ s/Driver[[:space:]]".*"/&\
 \t#BusID "PCI:'${BUS_ID}'"/' $EXXC
+			log_function_data "sed 4 outcome: $?"
 		fi
 	fi
 	eval $LOGUE
@@ -9856,6 +9861,7 @@ update_xorgconf_driver_version()
 	# previous: (i810|nvidia|nv|fglrx|ati|radeon|apm|iftv|fbdev|vesa)
 	# these are all known xserver-xorg-video-xxxx drivers, plus nvidia and fglrx
 	sed -i -r 's%^\s*Driver\s*"(amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fglrx|glide|glint|i128|i740|i810|i815|i830|i845|i855|i865|i915|i945|i965|iftv|imstt|intel|ivtv|mach64|mesa|mga|modesetting|neomagic|newport|nouveau|nsc|nvidia|nv|openchrome|r128|radeonhd|radeon|rendition|s3virge|s3|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|unichrome|v4l|vboxvideo|vesa|vga|via|vmware|voodoo)"%\tDriver\t"'$driverName'"%' $EXXC
+	log_function_data "sed 1 outcome: $?"
 	# confirm that it got written, if they add other driver names etc, like modesetting, it will fail until
 	# sgfxi is updated with those new names.
 	if [[ -z $( grep "\"$driverName\"" $EXXC ) ]];then
@@ -9912,11 +9918,12 @@ check_extensions()
 	s/^[\s]*#*[\s]*Option\s*"Render".*\n?//;
 	s/^[\s]*#*[\s]*Option\s*"AIGLX".*\n?//;
 	s/^[\s]*#*[\s]*Option\s*"Aiglx".*\n?//' $EXXC
-	
+	log_function_data "perl 1 outcome: $?"
 	create_section_extensions
 	
 	# rebuild the extensions now
 	perl -pi -e 's/^([\s]*Section\s*"Extensions")/\1\n'$compComment'\tOption      "Composite"\t"'$compState'"\n'$rendComment'\tOption      "RENDER"\t"'$rendState'"'$aiglxString'/' $EXXC
+	log_function_data "perl 2 outcome: $?"
 	eval $LOGUE
 }
 
@@ -9956,11 +9963,12 @@ clear_prep_xorg()
 	s/^.*TexturedXrender.*\n?//;
 	s/^.*ignoreABI.*\n?//;
 	s/^.*AccelMethod.*\n?//' $EXXC
-
+	log_function_data "perl 1 outcome: $?"
 	# turn on dri again for fglrx/intel, it's off for nvidia
 	case $CARD in
 		$FGLRX|$INTEL)
 			perl -pi -e 's/^[\s]*#*[\s]*Load\s*"dri"/\tLoad\t"dri"/' $EXXC
+			log_function_data "perl 2 outcome: $?"
 			;;
 	esac
 	eval $LOGUE
@@ -9982,6 +9990,7 @@ remove_modelines()
 	fi
 	if [ "$removeThem" == 'true' ];then
 		perl -pi -e 's/^.*Mode.ine.*\n?//g' $EXXC
+		log_function_data "perl 1 outcome: $?"
 	fi
 	eval $LOGUE
 }
@@ -10054,6 +10063,7 @@ update_xorg()
 				## xorg reports: 15.059] (WW) NVIDIA(0): Option "UseEvents" is not used
 				# perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$ignoreDisplay$allowGlx'Option      "Coolbits"\t"8"\n\tOption      "TripleBuffer"\t"'$triple'"\n\tOption      "UseEvents"\t"'$useEvents'"/' $EXXC
 				perl -pi -e 's/^([\s]*Driver\s*"nvidia")/\1\n\t'$allowGlx'Option      "Coolbits"\t"8"\n\tOption      "TripleBuffer"\t"'$triple'"\n/' $EXXC
+				log_function_data "perl 1 outcome: $?"
 				;;
 			$FGLRX)
 				# set any custom stuff here
@@ -10070,7 +10080,7 @@ update_xorg()
 				# \n\tOption      "VideoOverlay" "on"
 				# \n\tOption      "MonitorLayout" "'$layout'
 				perl -pi -e 's/^([\s]*Load\s*"extmod")/#\1\n\tSubSection  "extmod"\n\t  Option  "omit xfree86-dga"\n\tEndSubSection/' $EXXC
-
+				log_function_data "perl 2 outcome: $?"
 				#s/^([\s]*Driver\s*"fglrx")/\1\n\tOption      "UseInternalAGPGART" "'$agpart'"\n\tOption "TexturedXrender"/
 				;;
 		esac
@@ -10082,6 +10092,7 @@ update_xorg()
 		elif [ "$NATIVE_OVERRIDE" == 'amdgpu' ];then
 			# removed: Option  "AGPFastWrite"    "off"\n\tOption  "AGPMode" "4"\n\tOption   "ColorTiling" "on"
 			perl -pi -e 's/^([\s]*Driver\s*"radeon")/\1\n\t\n\tOption  "DynamicClocks"   "on"\n\tOption   "EnablePageFlip" "on"\n\tOption   "AccelMethod" "EXA"/' $EXXC
+			log_function_data "perl 3 outcome: $?"
 		fi
 	fi
 	eval $LOGPE
