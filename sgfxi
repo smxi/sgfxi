@@ -3,7 +3,7 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.42
+####  version: 4.26.43
 ####  Date: 2021-01-02
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
@@ -6877,34 +6877,41 @@ add_grub_nomodeset_blacklist_item()
 			if [ -f "$GRUB1" ];then
 				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
 					sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1
+					log_function_data "$GRUB1 update result 1: $?"
 					activeFile=$GRUB1
 				fi
 				if [ -z "$( grep -Eis 'kopt.*root=.*('$moduleSearch1')' $GRUB1 )" ];then
 					sed -i "/kopt.*root=/s|$| $noModesetString|" $GRUB1
+					log_function_data "$GRUB1 update result 2: $?"
 					activeFile=$GRUB1
 				fi
 				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch2')' $GRUB1 )" ];then
 					sed -i "/kernel.* root=/s|$| $noModesetString2|" $GRUB1
+					log_function_data "$GRUB1 update result 31: $?"
 					activeFile=$GRUB1
 				fi
 				if [ -z "$( grep -Eis 'kopt.*root=.*('$moduleSearch2')' $GRUB1 )" ];then
 					sed -i "/kopt.*root=/s|$| $noModesetString2|" $GRUB1
+					log_function_data "$GRUB1 update result 4: $?"
 					activeFile=$GRUB1
 				fi
 			fi
 			if [ -f "$GRUB2" ];then
 				if [ -z "$( grep -Eis 'linux.*root=.*('$moduleSearch1')' $GRUB2 )" ];then
 					sed -i "/linux.* root=/s|$| $noModesetString|" $GRUB2
+					log_function_data "$GRUB2 update result 1: $?"
 					activeFile=$GRUB2
 				fi
 				if [ -z "$( grep -Eis 'linux.*root=.*('$moduleSearch2')' $GRUB2 )" ];then
 					sed -i "/linux.* root=/s|$| $noModesetString2|" $GRUB2
+					log_function_data "$GRUB2 update result 2: $?"
 					activeFile=$GRUB2
 				fi
 			fi
 			if [ -f "$GRUB1_FED" -a ! -f "$GRUB2" ];then
 				if [ -z "$( grep -Eis 'kernel.*root=.*('$moduleSearch1')' $GRUB1_FED )" ];then
 					sed -i "/kernel.* root=/s|$| $noModesetString|" $GRUB1_FED
+					log_function_data "$GRUB1_FED update result 1: $?"
 					activeFile=$GRUB1_FED
 				fi
 			fi
@@ -6918,15 +6925,15 @@ add_grub_nomodeset_blacklist_item()
 		if [ -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*$moduleSearch1" $GRUBED )" ];then
 			echo -n "${S}Adding ${C}$GRUBED $noModesetString${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 '$noModesetString'"|' $GRUBED
+			log_function_data "File $GRUBED updated to add $1 $noModesetString: $GRUBED result: $?"
 			echo "${S}Added${N}"
-			log_function_data "File $GRUBED updated to add $1 $noModesetString: $GRUBED"
 			returnValue=0
 		fi
 		if [ -z "$( grep -Eis "^GRUB_CMDLINE_LINUX_DEFAULT=.*$moduleSearch2" $GRUBED )" ];then
 			echo -n "${S}Adding ${C}$GRUBED $noModesetString2${S} for ${C}$1${S} blacklist${S} items..... ${N}"
 			sed -r -i 's|GRUB_CMDLINE_LINUX_DEFAULT="(.*)"|GRUB_CMDLINE_LINUX_DEFAULT="\1 '$noModesetString2'"|' $GRUBED
+			log_function_data "File $GRUBED updated to add $1 $noModesetString2: $GRUBED result: $?"
 			echo "${S}Added${N}"
-			log_function_data "File $GRUBED updated to add $1 $noModesetString2: $GRUBED"
 			returnValue=0
 		fi
 	fi
@@ -6936,7 +6943,7 @@ add_grub_nomodeset_blacklist_item()
 				if [ -z "$( grep -si 'vmalloc=' $GRUB1_FED )" ];then
 					echo -n "${S}Adding ${C}$GRUB1_FED vmalloc=256m${S} item..... ${N}"
 					sed -i '/kernel.* root=/s|$| vmalloc=256m|' $GRUB1_FED
-					log_function_data "File $GRUB1_FED updated to add vmalloc=256m: $GRUB1_FED"
+					log_function_data "File $GRUB1_FED updated to add vmalloc=256m: $GRUB1_FED result: $?"
 					echo "${S}Added${N}"
 				fi
 				# also make system bootable to init 3 easily with grub, otherwise you can
@@ -6944,8 +6951,9 @@ add_grub_nomodeset_blacklist_item()
 				if [ -n "$( grep -Eis '^[[:space:]]*(hiddenmenu|timeout=0)' $GRUB1_FED )" ];then
 					echo -n "${S}Unhiding grub menu and adding ${C}timeout=3${S} to ${C}$GRUB1_FED${S}..... ${N}"
 					sed -i 's|^[[:space:]]*hiddenmenu|#hiddenmenu|' $GRUB1_FED
+					log_function_data "File $GRUB1_FED updated to unhide menu: $GRUB1_FED result: $?"
 					sed -i 's|^[[:space:]]*timeout=0|timeout=3|' $GRUB1_FED
-					log_function_data "File $GRUB1_FED updated to restore grub timeout/unhide menu: $GRUB1_FED"
+					log_function_data "File $GRUB1_FED updated to restore grub timeout: $GRUB1_FED result: $?"
 					echo "${S}Modified${N}"
 				fi
 			fi
@@ -7017,7 +7025,7 @@ add_modprobe_d_blacklist_item()
 	return $returnValue
 }
 
-# args: $1 - amdgpu/nouveau
+# args: $1 - amdgpu/nouveau&&
 remove_modprobe_d_blacklist_item()
 {
 	eval $LOGUS
