@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.43
-####  Date: 2021-01-02
+####  version: 4.26.44
+####  Date: 2021-01-03
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
@@ -514,7 +514,7 @@ LOG_FILE="$SELF_NAME.log"
 LOGPS='log_function_data ps $FUNCNAME "$( echo $@ )"'
 LOGPE='log_function_data pe $FUNCNAME'
 LOGUS='log_function_data us $FUNCNAME "$( echo $@ )"'
-LOGUE='log_function_data ue $FUNCNAME'
+LOGUE='log_function_data ue $FUNCNAME'435.*|
 
 SELF_ROTATE="/etc/logrotate.d/$SELF_NAME"
 SM_VALUES="/usr/local/bin/$SELF_NAME-values"
@@ -2261,7 +2261,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-									4|5|6|7)
+									4)
 										case $DRIVER_DEFAULT in
 											460.*|455.*|450.*|440.*|435.*|390.*|340.[1-9][0-9][0-9]|304.13[7-9]|304.1[4-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
@@ -2273,9 +2273,21 @@ driver_support_tests()
 												;;
 										esac
 										;;
-									8|9|10)
+									5|6|7)
 										case $DRIVER_DEFAULT in
-											460.*|455.*|450.*|390.*|340.[1-9][0-9][0-9]|304.13[7-9]|304.1[4-9][0-9]|$DISTRO_NVIDIA)
+											460.*|455.*|450.*|440.*|390.*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									8|9|10|11|12)
+										case $DRIVER_DEFAULT in
+											460.*|455.*|450.*|390.*|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2286,12 +2298,27 @@ driver_support_tests()
 										esac
 										;;
 								esac
-								# end KERNEL_MATH
+								;; # end KERNEL_MATH
+							6)
+								case $KERNEL_MATH in
+									0|1|2|3)
+										case $DRIVER_DEFAULT in
+											460.*|455.*|450.*|390.*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+								esac
 								;;
 						esac
 						;;
-			esac
-			;;
+				esac
+				;;
 		nvidia-supported-driver)
 			:
 			;;
@@ -6455,7 +6482,7 @@ upload_debugger_data()
 ########################################################################
 
 ### -------------------------------------------------------------------
-### Native Driver installer section
+### Native Driver installer section2
 ### -------------------------------------------------------------------
 
 # this bypasses core binary installers and just runs the required pieces
@@ -6752,7 +6779,7 @@ set_modesetting_off()
 	local bShowMessage='false' retValue=1 # default false
 	
 	case $1 in
-		amdgpu|nouveau)
+		amdgpu|modesetting|nouveau)
 			case $SYSTEM_BASE in
 				# note that the nvidia installer now requires blacklisting a priori, so 
 				# just treat arch like the other distros
@@ -6804,7 +6831,7 @@ set_modesetting_on()
 	local bShowMessage='false'
 
 	case $1 in
-		modesetting|amdgpu|nouveau)
+		amdgpu|modesetting|nouveau)
 			# only act if blacklist/nomodeset was removed
 			remove_grub_nomodeset_blacklist_item $1
 			if [ "$?" -eq 0 ];then
@@ -6861,8 +6888,9 @@ add_grub_nomodeset_blacklist_item()
 	local returnValue=1 activeFile='No'
 	local noModesetString='nomodeset'
 	local noModesetString2="$1.modeset=0"
-	local moduleSearch1="nomodeset|rdblacklist=nouveau|rdblacklist=amdgpu|rdblacklist=radeon|amdgpu.blacklist=1|nouveau.blacklist=1|radeon.blacklist=1"
-	local moduleSearch2="amdgpu.modeset=0|nouveau.modeset=0|radeon.modeset=0"
+	local moduleSearch1="nomodeset|rdblacklist=(amdgpu|modesetting|nouveau|radeon|radeonhd)"
+	moduleSearch1=$moduleSearch1"|(amdgpu|modesetting|nouveau|radeon|radeonhd)\.blacklist=1"
+	local moduleSearch2="(amdgpu|modesetting|nouveau|radeon|radeonhd)\.modeset=0"
 	local grubFiles=$( get_active_grub_files )
 
 	case $SYSTEM_BASE in
@@ -6975,7 +7003,9 @@ remove_grub_nomodeset_blacklist_item()
 	eval $LOGUS
 
 	local returnValue=1
-	local searchReplace1="nomodeset|$1.modeset=0|rdblacklist=$1|$1.blacklist=1"
+	local searchReplace1="nomodeset|(amdgpu|modesetting|nouveau|radeon|radeonhd|$1)\.modeset=0"
+	searchReplace1=$searchReplace1"|rdblacklist=(amdgpu|modesetting|nouveau|radeon|radeonhd|$1)"
+	searchReplace1=$searchReplace1"|(amdgpu|modesetting|nouveau|radeon|radeonhd|$1)\.blacklist=1"
 	local grubFiles=$( get_active_grub_files )
 	
 	if [ -n "$grubFiles" ];then
@@ -7060,9 +7090,15 @@ update_initramfs()
 	case $SYSTEM_BASE in
 		debian|ubuntu)
 			case $1 in
-				remove-amdgpu|remove-nouveau)
+				remove-amdgpu|remove-modesetting|remove-nouveau)
 					if [ -n "$( type -p update-initramfs )" ];then
-						echo "${S}Running ${C}update-initramfs -u${S} to remove Nouveau/Amdgpu from initrd... ${N}"
+						echo "${S}Running ${C}update-initramfs -u${S} to remove $1 from initrd... ${N}"
+						update-initramfs -u -k $KERNEL_FULL
+					fi
+					;;
+				add-amdgpu|add-modesetting|add-nouveau)
+					if [ -n "$( type -p update-initramfs )" ];then
+						echo "${S}Running ${C}update-initramfs -u${S} to add $1 to initrd... ${N}"
 						update-initramfs -u -k $KERNEL_FULL
 					fi
 					;;
@@ -7079,6 +7115,7 @@ update_initramfs()
 						dracut $startingInitram $KERNEL_FULL
 					fi
 					;;
+				
 				add-nouveau)
 					if [ -f "$storedNouveau" ];then
 						echo "${S}Restoring ${C}initramfs${S} with ${C}nouveau${S} now...${N}"
@@ -7147,7 +7184,7 @@ reboot_now_question()
 	elif [ "$2" == 'modeset-on' ];then
 		echo "${M}To make your new ${C}$1 Xorg / Kernel modules${S} fully functional, you will need to reboot first"
 		echo
-		echo "${W}The ${C}$1${W} drivers have very unreliable support for newer ${C}nVidia/ATI${W} cards!"
+		echo "${W}The ${C}$1${W} drivers may not have great support for newer ${C}$CARD${W} cards."
 		echo 
 		echo "${S}If your desktop fails to start properly after you reboot, you may need to do one of two things:"
 		echo "1 - move your xorg.conf file to a temporary new file name, like: "
