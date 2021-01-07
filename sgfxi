@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  New: Ubuntu support in progress. Arch/Fedora Support under development
-####  version: 4.26.44
-####  Date: 2021-01-03
+####  version: 4.26.45
+####  Date: 2021-01-07
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
@@ -514,11 +514,10 @@ LOG_FILE="$SELF_NAME.log"
 LOGPS='log_function_data ps $FUNCNAME "$( echo $@ )"'
 LOGPE='log_function_data pe $FUNCNAME'
 LOGUS='log_function_data us $FUNCNAME "$( echo $@ )"'
-LOGUE='log_function_data ue $FUNCNAME'435.*|
+LOGUE='log_function_data ue $FUNCNAME'
 
 SELF_ROTATE="/etc/logrotate.d/$SELF_NAME"
 SM_VALUES="/usr/local/bin/$SELF_NAME-values"
-
 EXPERIMENTAL_XORG_ATI='xserver-xorg-video-ati_6.6.193-1'
 EXPERIMENTAL_LIBDRM2='libdrm2_2.4.0~git20070625-1'
 EXPERIMENTAL_LIBDRM_DEV='libdrm-dev_2.4.0~git20070625-1'
@@ -5719,8 +5718,7 @@ create_log()
 	rm -f ${LOG_FILE_DIR}200*-sgfxi.log
 	# check and create logfile:
 	LOG_FILE=$LOG_FILE_DIR$LOG_FILE
-
-	if [ ! -f $SELF_ROTATE ];then
+	if [ ! -f "$SELF_ROTATE" ];then
 		echo "$LOG_FILE {
 	rotate 8
 	create
@@ -5734,11 +5732,12 @@ create_log()
 			sed -i 's/size[[:space:]]120k/size 10k/' $SELF_ROTATE
 		fi
 	fi
+	
 	touch $LOG_FILE # make sure there's one there for rotate to look at
 	if [ -n "$( which logrotate )" ];then
-		logrotate $SELF_ROTATE
+		logrotate "$SELF_ROTATE"
 	fi
-
+	
 	touch $LOG_FILE # and if rotated, need a new one
 	# sudo start will only show as information to check for 'sudo su -' starts, all others
 # have exited with error
@@ -10898,7 +10897,6 @@ fi
 
 ## this is separate so card can get set first for native installer
 set_card
-
 if [ "$B_NATIVE_DRIVER" != 'true' ];then
 	detect_card_version
 fi
@@ -10913,6 +10911,7 @@ fi
 if [ "$B_PRINT_VER" != 'true' ];then
 	create_log
 fi
+
 # need to handle new xorg no xorg.conf systems
 # no need to create this if the card isn't supported, so this comes
 # after print info and log start unless > 1 card detected
