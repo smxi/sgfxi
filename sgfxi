@@ -42,7 +42,7 @@
 ####  VARIABLE/FUNCTION NAMING:
 ####  All variables should explain what they are, except counters like i, j
 ####  All variables MUST be initialized / declared explicitly
-####, globals UPPER CASE, at top of script, SOME_VARIABLE='' (words separated by _ ).
+####, globals UPPER CASE, at top of script, SOME_VARIAB7LE='' (words separated by _ ).
 ####  Locals always: local someVariable= (lower case, all except first word started upper case)
 ####  and at the top of the function. ie: testTrunkData
 ####
@@ -259,7 +259,7 @@ OTHER_VERSIONS=''
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # https://raw.githubusercontent.com/aaronp24/nvidia-versions/master/nvidia-versions.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='460.32.03:390.138:340.108:304.137:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='460.32.03:390.141:340.108:304.137:173.14.39:96.43.23:71.86.15'
 # in case the new ones don't support 3.10 kernel
 # NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
@@ -329,11 +329,11 @@ NV_BETA="$NV_VERSIONS_BETA::::"
 # stable legacy 4: 304.64 304.84 304.88 304.108 304.116 304.117 304.119 304.121 
 # stable legacy 5: 340.101 340.102 340.104 340.106 340.107 340.108
 # stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76 340.93 340.96 340.98 
-# stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138
+# stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138 390.141
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS='460.32.03:455.45.01:455.38:450.80.02:440.100:435.21:430.40:418.74:415.27:410.78:396.54:390.138:390.132:387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:340.108:340.107:340.106:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.137:304.135:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
+NV_OTHERS='460.32.03:455.45.01:455.38:450.80.02:440.100:435.21:430.40:418.74:415.27:410.78:396.54:390.141:390.138:387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:340.108:340.107:340.106:337.25:334.21:331.89:325.15:319.72:313.30:310.44:304.137:304.135:295.71:290.10:285.05.09:280.13:275.43:270.41.19:260.19.44:256.53:195.36.31:190.53:185.18.36:180.60:177.82:173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
 # distro legacies (default to Debian packages):
 NV_DEBIAN_LEGACY_6='390xx'
