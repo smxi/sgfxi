@@ -358,7 +358,7 @@ NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
 # fedora
 NV_FED_CURRENT="-$NV_DEFAULT" # note this will be out of sync until repo catches up, needs tests
-NV_FED_LEGACY_9='-390xx'
+NV_FED_LEGACY_6='-390xx'
 NV_FED_LEGACY_5='-340xx'
 NV_FED_LEGACY_4='-304xx'
 NV_FED_LEGACY_3='-173xx'
