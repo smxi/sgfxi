@@ -87,7 +87,12 @@ SELF_WORKING_DIR="/usr/src/$SELF_NAME-downloads"
 SM_KERNEL_DOWNLOADS='/usr/src/sm-kernel-downloads'
 
 # script global data
-NON_DEBIAN_PATTERN='(deb-ats|deb-mep|deb-mm|deb-multimedia|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|rarewares|rox4debian|siduction|sidux|skype|swiftfox|tovid|videolan|virtualbox|wine-hq|xadras)'
+NON_DEBIAN='(deb-ats|deb-mep|deb-mm|deb-multimedia|deb-op|deb-sdx|deb-skp|deb-swift|deb-vb|'
+NON_DEBIAN=$NON_DEBIAN'alphagemini|aptosid|byteme|cathbard|debian-multimedia|dotdeb|'
+NON_DEBIAN=$NON_DEBIAN'edevelop|eeepc|freevo|giss.tv|google|java|kanotix|kde|kiberpipa|'
+NON_DEBIAN=$NON_DEBIAN'kplayer|lamaresh|liquorix|lxde|mepis|moblock|opera|noreply|prodeia.de|'
+NON_DEBIAN=$NON_DEBIAN'rarewares|rox4debian|siduction|sidux|skype|swiftfox|tovid|videolan|'
+NON_DEBIAN=$NON_DEBIAN'virtualbox|wine-hq|xadras)'
 
 APT_TYPE='apt-get'
 BSD_TYPE=''
@@ -103,9 +108,15 @@ SYSTEM_BASE=''
 SYSTEM_CODENAME=''
 NATIVE_OVERRIDE=''
 # this is the actual pattern that will be used to search for this stuff in script
-#NATIVE_OVERRIDE_SUPPORTED='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
+#NATIVE_DRIVERS='ati|i128|i740|i810|i810-modesetting|intel|mga|neomagic|nv|openchrome|
+# radeon|radeonhd|sis|tdfx|vesa|via|vga|voodoo'
 # http://blog.mecheye.net/2014/04/xwayland/ - good info on xwayland, and general xorg architecture
-NATIVE_OVERRIDE_SUPPORTED='amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fbturbo|geode|glide|glint|i128|i740|i810|i815|i830|i845|i855|i865|i915|i945|i965|intel|imstt|mach64|mga|modesetting|neomagic|nsc|openchrome|nouveau|r128|radeon|rendition|s3|s3virge|savage|siliconmotion|sisimedia|sisusb|sis|tdfx|tga|trident|tseng|v4l|vesa|vga|via|vmware|voodoo'
+NATIVE_DRIVERS='amdgpu|apm|ark|ati|chips|cirrus|cyrix|fbdev|fbturbo|geode|glide|glint|'
+NATIVE_DRIVERS=$NATIVE_DRIVERS'i128|i740|i810|i815|i830|i845|i855|i865|i915|i945|i965|intel|'
+NATIVE_DRIVERS=$NATIVE_DRIVERS'imstt|mach64|mga|modesetting|neomagic|nsc|openchrome|nouveau|'
+NATIVE_DRIVERS=$NATIVE_DRIVERS'r128|radeon|rendition|s3|s3virge|savage|siliconmotion|'
+NATIVE_DRIVERS=$NATIVE_DRIVERS'sisimedia|sisusb|sis|tdfx|tga|trident|tseng|v4l|vesa|vga|via|'
+NATIVE_DRIVERS=$NATIVE_DRIVERS'vmware|voodoo'
 PACKAGE_MANAGER=''
 # options: 0 - monochrome; 1 default; more coming?
 SELF_COLORS=1
@@ -4552,11 +4563,11 @@ check_set_distro()
 		local isBullseye=$( grep -Eis '^(bullseye|11\.)' <<< "$edvContent" )
 
 		# first tests sources
-		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | \
+		local isStable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN" | \
 		grep -Eicw '(stable|wheezy|squeeze|lenny|etch|jessie|stretch|buster)' )
-		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | \
+		local isTesting=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN" | \
 		grep -Eicw '(bullseye|testing)' )
-		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN_PATTERN" | \
+		local isUnstable=$( grep -Esiw '^[[:space:]]*deb' <<< "$easContent" | grep -Eiv "$NON_DEBIAN" | \
 		grep -Eicw '(sid|unstable)' )
 
 		# then test conf for default version
@@ -10242,7 +10253,7 @@ show_options()
 	local nvQuadText='' nvQuad=$( echo $NV_QUAD | tr ':' ' ' | sed 's/1.0-//g')
 	local fgDefault=$FG_DEFAULT
 	local fgVersions=$( echo "$FG_VERSIONS:$FG_OTHERS" | sed 's/:/ /g')
-	local nativeVersions=$( echo $NATIVE_OVERRIDE_SUPPORTED | sed 's/|/ /g' )
+	local nativeVersions=$( echo $NATIVE_DRIVERS | sed 's/|/ /g' )
 	local fgBeta='' nvBeta='' betaText='' fgDebianSid=''
 	local counter=0 driverCount=0 bSkipOutput=''
 	driverCount=$( wc -w <<< $nativeVersions )
@@ -10646,7 +10657,7 @@ get_options()
 				START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -n - Auto install of native xorg intel, nvidia, 3dfx, or ati drivers.\n"
 				;;
 			N)
-				if [ -n $( grep -sE '('$NATIVE_OVERRIDE_SUPPORTED')' <<< $NATIVE_OVERRIDE ) ];then
+				if [ -n $( grep -sE '('$NATIVE_DRIVERS')' <<< $NATIVE_OVERRIDE ) ];then
 					NATIVE_OVERRIDE="$OPTARG"
 					B_NATIVE_DRIVER='true'
 					START_OPTIONS_PRINT="$START_OPTIONS_PRINT  -N - Native driver custom install. You have requested to install the xorg driver: $NATIVE_OVERRIDE\n"
