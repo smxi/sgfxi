@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.56
-####  Date: 2021-06-22
+####  version: 4.26.57
+####  Date: 2021-06-23
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
@@ -1399,7 +1399,7 @@ driver_support_tests()
 						case $X_VERSION in
 							1.20*|1.21*)
 								case $DRIVER_DEFAULT in
-									470.*|465.*|460.*|455.*|450.*|440.*|435.*|430.*|418.*|415.*|410.*|396.*|390.[6-9]*|340.10[7-9]|340.1[1-9][0-9]|$DISTRO_NVIDIA)
+									470.*|465.*|460.*|390.1[4-9]*|340.1[0-9][0-9]|$DISTRO_NVIDIA)
 										:
 										;;
 									*)
