@@ -345,6 +345,8 @@ NV_BETA="$NV_VERSIONS_BETA::::"
 # stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138 390.141 390.143
 # stable legacy 6: 
 
+# check here for next legacy: https://www.nvidia.com/en-us/drivers/unix/legacy-gpu/
+
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
 NV_OTHERS=$NV_OTHERS'465.31:465.27:470.57.02:'
