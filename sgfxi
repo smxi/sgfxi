@@ -5778,7 +5778,7 @@ create_log()
 	fi
 	
 	touch $LOG_FILE # make sure there's one there for rotate to look at
-	if [ -n "$( which logrotate )" ];then
+	if [ -n "$( command -v logrotate )" ];then
 		logrotate "$SELF_ROTATE"
 	fi
 	
@@ -9682,7 +9682,7 @@ move_x_conf()
 		message1=''
 	fi
 	
-	if [ -n "$( which $X_NAME )" ];then
+	if [ -n "$( comand -v $X_NAME )" ];then
 		if [ "$B_RESTORE_DEFAULTS" != 'true' -a "$( x_is_running )" == 'true' ];then
 			start_stop_x 'stop'
 		fi
@@ -9711,7 +9711,7 @@ create_x_conf()
 	
 	local bRepeat='false' opt='' options=''
 	
-	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep -E '[1-4]\.[0-9]+(\.[0-9]+)?' )" -a -n "$( which $X_NAME )" ];then
+	if [ ! -f $EXXC -a -n "$( echo $X_VERSION | grep -E '[1-4]\.[0-9]+(\.[0-9]+)?' )" -a -n "$( command -v $X_NAME )" ];then
 		log_function_data "xorg is present, no xorg.conf file"
 		
 		echo $LINE
@@ -9793,7 +9793,7 @@ create_x_conf()
 		if [ "$bRepeat" == 'true' ];then
 			create_x_conf
 		fi
-	elif [ ! -f $EXXC -a -z "$( which X )" ];then
+	elif [ ! -f $EXXC -a -z "$( command -v X )" ];then
 		log_function_data "There is no xorg.conf file, and no X command to build one with."
 		error_handler 244
 	else
