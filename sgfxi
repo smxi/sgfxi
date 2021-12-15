@@ -2343,13 +2343,25 @@ driver_support_tests()
 												;;
 										esac
 										;;
+									16)
+										case $DRIVER_DEFAULT in
+											495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
 								esac
 								;; # end KERNEL_MATH
 							6)
 								case $KERNEL_MATH in
 									0|1|2|3)
 										case $DRIVER_DEFAULT in
-											495.*|470.*|465.*|460.*|390.*|$DISTRO_NVIDIA)
+											495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
