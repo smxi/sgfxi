@@ -2343,7 +2343,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-									16)
+									16|17|18|19|20)
 										case $DRIVER_DEFAULT in
 											495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
 												: # do nothing
