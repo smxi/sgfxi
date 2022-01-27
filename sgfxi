@@ -2345,7 +2345,7 @@ driver_support_tests()
 										;;
 									16|17|18|19|20)
 										case $DRIVER_DEFAULT in
-											495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
+											510.*|495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2361,7 +2361,7 @@ driver_support_tests()
 								case $KERNEL_MATH in
 									0|1|2|3)
 										case $DRIVER_DEFAULT in
-											495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
+											510.*|495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
