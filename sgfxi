@@ -4,7 +4,7 @@
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
 ####  version: 4.26.66
-####  Date: 2022-02-09
+####  Date: 2022-02-10
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
@@ -356,7 +356,8 @@ NV_BETA="$NV_VERSIONS_BETA::::"
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS=$NV_OTHERS'510.47.03:495.46:495.44:470.103.01:470.86:470.74:470.63.01:465.31:465.27:'
+NV_OTHERS=$NV_OTHERS'510.47.03:'
+NV_OTHERS=$NV_OTHERS'495.46:495.44:470.103.01:470.86:470.74:465.31:465.27:'
 NV_OTHERS=$NV_OTHERS'460.84:460.80:455.45.01:455.38:450.80.02:'
 NV_OTHERS=$NV_OTHERS'440.100:435.21:430.40:418.74:415.27:410.78:396.54:'
 # legacy 6
