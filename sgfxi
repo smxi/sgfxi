@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.67
-####  Date: 2022-02-23
+####  version: 4.26.68
+####  Date: 2022-03-22
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
@@ -271,35 +271,38 @@ OTHER_VERSIONS=''
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # https://raw.githubusercontent.com/aaronp24/nvidia-versions/master/nvidia-versions.txt
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='510.54:390.144:340.108:304.137:173.14.39:96.43.23:71.86.15'
-# in case the new ones don't support 3.10 kernel
-# NV_VERSIONS='325.15:304.88:173.14.37:96.43.23:71.86.15'
+NV_VERSIONS='510.60.02:470.103.01:390.144:340.108:304.137:173.14.39:96.43.23:71.86.15'
+# assign to each level
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
-NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 7 ) # old, tnt etc
-NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 6 ) # ge4xx cards
-NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # 5xxx cards
-NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # 6/7xxx cards
-NV_LEGACY_5=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # 8xxx/21x cards
-NV_LEGACY_6=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # gt4xx/gt5xx/gt6xx/gt7xx
+NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 8 ) # old, tnt etc
+NV_LEGACY_2=$( echo $NV_VERSIONS | cut -d ':' -f 7 ) # ge4xx cards
+NV_LEGACY_3=$( echo $NV_VERSIONS | cut -d ':' -f 6 ) # 5xxx cards
+NV_LEGACY_4=$( echo $NV_VERSIONS | cut -d ':' -f 5 ) # 6/7xxx cards
+NV_LEGACY_5=$( echo $NV_VERSIONS | cut -d ':' -f 4 ) # 8xxx/21x cards
+NV_LEGACY_6=$( echo $NV_VERSIONS | cut -d ':' -f 3 ) # gt4xx/gt5xx/gt6xx/gt7xx
+NV_LEGACY_7=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) # 
 
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='::::::'
+NV_VERSIONS_BETA=':::::::'
+# note: nvidia stopped doing betas for anything but current a long time ago
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
-NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 7 ) # old, tnt etc
-NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 6 ) # ge4xx cards
-NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # 5xxx cards
-NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # 6/7xxx cards
-NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # 8xxx/21x cards
-NV_LEGACY_BETA_6=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # gt4xx/gt5xx/gt6xx/gt7xx
+NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 8 ) # old, tnt etc
+NV_LEGACY_BETA_2=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 7 ) # ge4xx cards
+NV_LEGACY_BETA_3=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 6 ) # 5xxx cards
+NV_LEGACY_BETA_4=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 5 ) # 6/7xxx cards
+NV_LEGACY_BETA_5=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 4 ) # 8xxx/21x cards
+NV_LEGACY_BETA_6=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 3 ) # gt4xx/gt5xx/gt6xx/gt7xx
+NV_LEGACY_BETA_7=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 2 ) # 
 
 # latest quad: http://www.nvidia.com/object/linux_display_archive.html
 NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
+NV_BETA="$NV_VERSIONS_BETA"
 # Note: 495.44 and newer requires kernel 3.10 or newer
-NV_BETA="$NV_VERSIONS_BETA::::"
-# stable primary: 470.86 470.103.01 495.44 495.46 510.47.03 510.54
+# stable primary: 
+# stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02
 # stable primary: 460.56 460.67 460.73.01 465.27 465.31 470.57.02 470.63.01 470.74
 # stable primary: 450.57 450.66 450.80.02 455.28 455.38 455.45.01 460.32.03 460.39
 # stable primary: 430.40 435.21 440.31 440.36 440.44 440.59 440.64 440.82 440.100
@@ -314,7 +317,7 @@ NV_BETA="$NV_VERSIONS_BETA::::"
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
 # beta requested by users: 396.54.09 not available for download
-# lts primary: 470.74 470.86 470.103.01 495.44 495.46
+# lts primary: 470.74 470.86 470.103.01 495.44 495.46 510.60.02
 # lts primary: 460.32.03 460.39 460.56 460.67 460.80 460.84 470.57.02 470.63.01
 # lts primary: 430.40 440.31 440.36 440.44 440.59 440.64 440.82 450.66 450.80.02
 # lts primary: 390.87 390.116 390.129 410.66 410.73 410.78 430.14 430.26 430.34 
@@ -337,8 +340,8 @@ NV_BETA="$NV_VERSIONS_BETA::::"
 
 ## Legacy Branches Drivers ##
 # check here for next legacy: https://www.nvidia.com/en-us/drivers/unix/legacy-gpu/
-
-# stable legacy 6: 390.144 
+# stable legacy 7: 470.94 470.103.01
+# stable legacy 6: 390.144 390.147 
 # stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138 390.141 390.143
 # stable legacy 5: 340.101 340.102 340.104 340.106 340.107 340.108
 # stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76 340.93 340.96 340.98 
@@ -356,10 +359,12 @@ NV_BETA="$NV_VERSIONS_BETA::::"
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS=$NV_OTHERS'510.54:510.47.03:'
-NV_OTHERS=$NV_OTHERS'495.46:495.44:470.103.01:470.86:470.74:465.31:465.27:'
+NV_OTHERS=$NV_OTHERS''
+NV_OTHERS=$NV_OTHERS'495.46:495.44:465.31:465.27:510.60.02:510.54:510.47.03:'
 NV_OTHERS=$NV_OTHERS'460.84:460.80:455.45.01:455.38:450.80.02:'
 NV_OTHERS=$NV_OTHERS'440.100:435.21:430.40:418.74:415.27:410.78:396.54:'
+# legacy 7
+NV_OTHERS=$NV_OTHERS'470.103.01:470.94'
 # legacy 6
 NV_OTHERS=$NV_OTHERS'390.144:390.143:390.141:390.138:'
 NV_OTHERS=$NV_OTHERS'387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:'
@@ -374,28 +379,31 @@ NV_OTHERS=$NV_OTHERS'256.53:195.36.31:190.53:185.18.36:180.60:177.82:'
 # legacy 3, 2, 1
 NV_OTHERS=$NV_OTHERS'173.14.37:169.12:100.14.19:96.43.20:71.86.14'
 
+## these aren't tracked anymore beyond guessing, nobody cares
 # distro legacies (default to Debian packages):
+NV_DEBIAN_LEGACY_7='470xx' # only 470-tesla driver found, but nobody cares
 NV_DEBIAN_LEGACY_6='390xx'
 NV_DEBIAN_LEGACY_5='340xx'
 NV_DEBIAN_LEGACY_4='304xx'
 NV_DEBIAN_LEGACY_3='173xx'
 NV_DEBIAN_LEGACY_2='96xx'
 NV_DEBIAN_LEGACY_1='71xx'
-# arch linux
+# arch linux: not supported anymore unless they do the work
 NV_AR_CURRENT=''
+NV_AR_LEGACY_7='470xx'
 NV_AR_LEGACY_6='390xx'
 NV_AR_LEGACY_5='340xx'
 NV_AR_LEGACY_4='304xx'
 NV_AR_LEGACY_3='173xx'
 NV_AR_LEGACY_2='96xx'
-# ubuntu 
+# ubuntu: not supported anymore unless they do the work, all of it
 NV_UB_CURRENT='343'
 NV_UB_LEGACY_6='390'
 NV_UB_LEGACY_5='340'
 NV_UB_LEGACY_4='304'
 NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
-# fedora
+# fedora: note supported anymore unless they do the work
 NV_FED_CURRENT="-$NV_DEFAULT" # note this will be out of sync until repo catches up, needs tests
 NV_FED_LEGACY_6='-390xx'
 NV_FED_LEGACY_5='-340xx'
@@ -3552,6 +3560,15 @@ detect_card_version()
 						B_COMPOSITE='true'
 					fi
 					;;
+				# no data on legacy 7 card IDs yet as of 2022-03-21, but it's listed in their version file
+				xxxx)
+					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-7' 'driver' )
+					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-7' 'set-exists' )
+					LEGACY_LEVEL=7
+					if [ "$B_FORCE_NO_COMPOSITE" != 'true' ];then
+						B_COMPOSITE='true'
+					fi
+					;;
 				*)
 					# set flags for fully supported non-legacy cards
 					B_USE_XVMC='true'
@@ -3674,16 +3691,24 @@ assign_standard_or_beta_driver()
 			if [ "$B_USE_BETA" == 'true' -a "$1" == 'default' -a "$2" == 'driver' ];then
 				liveBetas=$( get_live_beta_drivers )
 				betaCurrent=$( cut -d ':' -f 1 <<< "$liveBetas" )
-				beta340=$( cut -d ':' -f 2 <<< "$liveBetas" )
-				beta304=$( cut -d ':' -f 3 <<< "$liveBetas" )
-				beta173=$( cut -d ':' -f 4 <<< "$liveBetas" )
-				beta96=$( cut -d ':' -f 5 <<< "$liveBetas" )
-				beta71=$( cut -d ':' -f 6 <<< "$liveBetas" )
+				beta470=$( cut -d ':' -f 2 <<< "$liveBetas" )
+				beta390=$( cut -d ':' -f 3 <<< "$liveBetas" )
+				beta340=$( cut -d ':' -f 4 <<< "$liveBetas" )
+				beta304=$( cut -d ':' -f 5 <<< "$liveBetas" )
+				beta173=$( cut -d ':' -f 6 <<< "$liveBetas" )
+				beta96=$( cut -d ':' -f 7 <<< "$liveBetas" )
+				beta71=$( cut -d ':' -f 8 <<< "$liveBetas" )
 				## assign live defaults if required
 				if [ -n "$betaCurrent" ];then
 					if [ -z "$NV_DEFAULT_BETA" -o "$( compare_numbers $betaCurrent $NV_DEFAULT_BETA )" -eq 0 ];then
 						NV_DEFAULT_BETA=$betaCurrent
 						NV_BETA="$NV_BETA:$betaCurrent"
+					fi
+				fi
+				if [ -n "$beta470" ];then
+					if [ -z "$NV_LEGACY_BETA_7" -o "$( compare_numbers $beta470 $NV_LEGACY_BETA_7 )" -eq 0 ];then
+						NV_LEGACY_BETA_6=$beta470
+						NV_BETA="$NV_BETA:$beta470"
 					fi
 				fi
 				if [ -n "$beta390" ];then
@@ -3752,6 +3777,10 @@ assign_standard_or_beta_driver()
 				legacy-6)
 					betaDriver=$NV_LEGACY_BETA_6
 					stableDriver=$NV_LEGACY_6
+					;;
+				legacy-7)
+					betaDriver=$NV_LEGACY_BETA_7
+					stableDriver=$NV_LEGACY_7
 					;;
 			esac
 			;;
@@ -8636,6 +8665,9 @@ install_distro_drivers()
 						6)	nvidiaDriver="nvidia-$NV_AR_LEGACY_6"
 							nvidiaUtils="nvidia-$NV_AR_LEGACY_6-utils"
 							;;
+						7)	nvidiaDriver="nvidia-$NV_AR_LEGACY_7"
+							nvidiaUtils="nvidia-$NV_AR_LEGACY_7-utils"
+							;;
 						*)	nvidiaDriver="nvidia"
 							nvidiaUtils="nvidia-utils"
 							;;
@@ -8682,6 +8714,12 @@ install_distro_drivers()
 							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_6"
 							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_6"
 							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_6-kernel-source"
+							;;
+						7)
+							nvidiaDriver="nvidia-legacy-$NV_DEBIAN_LEGACY_7-driver"
+							nvidiaGlx="nvidia-glx-legacy-$NV_DEBIAN_LEGACY_7"
+							nvidiaSettings="nvidia-settings-legacy-$NV_DEBIAN_LEGACY_7"
+							nvidiaSource="nvidia-legacy-$NV_DEBIAN_LEGACY_7-kernel-source"
 							;;
 						*)	nvidiaDriver="nvidia-driver"
 							nvidiaGlx='nvidia-glx'
@@ -8762,6 +8800,12 @@ install_distro_drivers()
 								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_6-libs.$archExt64"
 							fi
 							;;
+						7)	akmodNvidia="akmod-nvidia$NV_FED_LEGACY_7"
+							nvidiaDriver="xorg-x11-drv-nvidia$NV_FED_LEGACY_7-libs.$archExt"
+							if [ "$BITS" == '64' ];then
+								nvidiaDriver2="xorg-x11-drv-nvidia$NV_FED_LEGACY_7-libs.$archExt64"
+							fi
+							;;
 						*)	akmodNvidia="akmod-nvidia"
 							nvidiaDriver="xorg-x11-drv-nvidia-libs.$archExt"
 							if [ "$BITS" == '64' ];then
@@ -8811,6 +8855,10 @@ install_distro_drivers()
 						6)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_6"
 							nvidiaModal="nvidia-$NV_UB_LEGACY_6-modaliases"
 							nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_6"
+							;;
+						7)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_LEGACY_7"
+							nvidiaModal="nvidia-$NV_UB_LEGACY_7-modaliases"
+							nvidiaSettings="nvidia-settings-$NV_UB_LEGACY_7"
 							;;
 						*)	nvidiaDriver="nvidia${ubGlx}-$NV_UB_CURRENT"
 							nvidiaModal="nvidia-$NV_UB_CURRENT-modaliases"
