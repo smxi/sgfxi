@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.68
-####  Date: 2022-03-22
+####  version: 4.26.69
+####  Date: 2022-03-28
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2021
 ####  Code contributions copyright: Latino 2008
@@ -340,6 +340,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 
 ## Legacy Branches Drivers ##
 # check here for next legacy: https://www.nvidia.com/en-us/drivers/unix/legacy-gpu/
+# echo [device/id list] | awk -F "\t" '{a = a " "  tolower($2)} END {print a}' | tr ' ' "\n" | sort | uniq | tr "\n" '|'
 # stable legacy 7: 470.94 470.103.01
 # stable legacy 6: 390.144 390.147 
 # stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138 390.141 390.143
@@ -364,7 +365,7 @@ NV_OTHERS=$NV_OTHERS'495.46:495.44:465.31:465.27:510.60.02:510.54:510.47.03:'
 NV_OTHERS=$NV_OTHERS'460.84:460.80:455.45.01:455.38:450.80.02:'
 NV_OTHERS=$NV_OTHERS'440.100:435.21:430.40:418.74:415.27:410.78:396.54:'
 # legacy 7
-NV_OTHERS=$NV_OTHERS'470.103.01:470.94'
+NV_OTHERS=$NV_OTHERS'470.103.01:470.94:'
 # legacy 6
 NV_OTHERS=$NV_OTHERS'390.144:390.143:390.141:390.138:'
 NV_OTHERS=$NV_OTHERS'387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:'
@@ -397,7 +398,8 @@ NV_AR_LEGACY_4='304xx'
 NV_AR_LEGACY_3='173xx'
 NV_AR_LEGACY_2='96xx'
 # ubuntu: not supported anymore unless they do the work, all of it
-NV_UB_CURRENT='343'
+NV_UB_CURRENT='510'
+NV_UB_LEGACY_7='470'
 NV_UB_LEGACY_6='390'
 NV_UB_LEGACY_5='340'
 NV_UB_LEGACY_4='304'
@@ -405,6 +407,7 @@ NV_UB_LEGACY_3='173'
 NV_UB_LEGACY_2='96'
 # fedora: note supported anymore unless they do the work
 NV_FED_CURRENT="-$NV_DEFAULT" # note this will be out of sync until repo catches up, needs tests
+NV_FED_LEGACY_7='-470xx'
 NV_FED_LEGACY_6='-390xx'
 NV_FED_LEGACY_5='-340xx'
 NV_FED_LEGACY_4='-304xx'
@@ -3548,6 +3551,7 @@ detect_card_version()
 						B_COMPOSITE='true'
 					fi
 					;;
+				# 
 				# https://www.nvidia.com/object/IO_32667.html
 				# gawk '{t=t tolower($NF) "|"}END{gsub(/0x/,"",t);print t}'
 				# perl -wse 'my %a;while (<>){chomp($_);$_ = lc($_);$_ =~ s/.*([a-f0-9]{4})\s([a-f0-9]{4})\s([a-f0-9]{4})$/$1/;$_ =~ /([a-f0-9]{4})$/; $a{$1}=$1 if !$a{$1};}print join("|",sort keys %a);'
@@ -3560,8 +3564,10 @@ detect_card_version()
 						B_COMPOSITE='true'
 					fi
 					;;
-				# no data on legacy 7 card IDs yet as of 2022-03-21, but it's listed in their version file
-				xxxx)
+				# echo [device/id list] | awk -F "\t" '{a = a " "  tolower($2)} END {print a}' | tr ' ' "\n" | sort | uniq | tr "\n" '|'
+				# https://download.nvidia.com/XFree86/Linux-x86_64/495.46/README/supportedchips.html#legacy_470.xx
+				# https://github.com/NVIDIA/nvidia-installer/blob/main/nvLegacy.h
+				01c6|0595|05b2|0fc6|0fc8|0fc9|0fcd|0fce|0fd1|0fd2|0fd3|0fd4|0fd5|0fd8|0fd9|0fdf|0fe0|0fe1|0fe2|0fe3|0fe4|0fe9|0fea|0fec|0fed|0fee|0ff6|0ff8|0ff9|0ffa|0ffb|0ffc|0ffd|0ffe|0fff|1001|1004|1005|1007|1008|100a|100c|1021|1022|1023|1024|1026|1027|1028|1029|102a|102d|103a|103c|106f|1074|10de|1180|1183|1184|1185|1187|1188|1189|118a|118e|118f|1193|1194|1195|1198|1199|119a|119d|119e|119f|11a0|11a1|11a2|11a3|11a7|11b4|11b6|11b7|11b8|11ba|11bc|11bd|11be|11c0|11c2|11c3|11c4|11c5|11c6|11c8|11cb|11e0|11e1|11e2|11e3|11fa|11fc|1280|1281|1282|1284|1286|1287|1288|1289|128b|1290|1291|1292|1293|1295|1296|1298|1299|129a|12b9|12ba|1458|17aa|1b0a|2afa|2b0d|2b0f|2b16|2b20|2b21|30bb|30da|30dc|30dd|30df|3117|361b|362d|362e|3630|3637|3675|367a|367c|3683|3684|369b|36a7|36af|36f0|d001)
 					DRIVER_INSTALL=$( assign_standard_or_beta_driver 'legacy-7' 'driver' )
 					B_BETA_EXISTS=$( assign_standard_or_beta_driver 'legacy-7' 'set-exists' )
 					LEGACY_LEVEL=7
