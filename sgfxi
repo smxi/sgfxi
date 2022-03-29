@@ -270,6 +270,11 @@ OTHER_VERSIONS=''
 # main url: ftp://download.nvidia.com/XFree86/
 # http://us.download.nvidia.com/XFree86/Linux-x86/latest.txt
 # https://raw.githubusercontent.com/aaronp24/nvidia-versions/master/nvidia-versions.txt
+#
+# See: detect_card_version() for code to snip out the product IDs from 
+# https://download.nvidia.com/XFree86/Linux-x86_64/510.60.02/README/supportedchips.html
+# Replace latest driver number in above url to get the current legacy product ID list
+# if legacy list page is not updated, which sometimes happens.
 # 304.88, 310.44, 313.30 fix buffer overflow issue
 NV_VERSIONS='510.60.02:470.103.01:390.144:340.108:304.137:173.14.39:96.43.23:71.86.15'
 # assign to each level
@@ -340,10 +345,12 @@ NV_BETA="$NV_VERSIONS_BETA"
 
 ## Legacy Branches Drivers ##
 # check here for next legacy: https://www.nvidia.com/en-us/drivers/unix/legacy-gpu/
-# echo [device/id list] | awk -F "\t" '{a = a " "  tolower($2)} END {print a}' | tr ' ' "\n" | sort | uniq | tr "\n" '|'
+# https://github.com/NVIDIA/nvidia-installer/blob/main/nvLegacy.h
+# https://download.nvidia.com/XFree86/Linux-x86_64/510.60.02/README/supportedchips.html
 # stable legacy 7: 470.94 470.103.01
 # stable legacy 6: 390.144 390.147 
 # stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138 390.141 390.143
+# unsupported: legacy 367.xx: only supports 3 GRID type cards
 # stable legacy 5: 340.101 340.102 340.104 340.106 340.107 340.108
 # stable legacy 5: 340.24 340.32 340.46 340.58 340.65 340.76 340.93 340.96 340.98 
 # stable legacy 4: 304.137
