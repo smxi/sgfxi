@@ -306,8 +306,8 @@ NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA"
 # Note: 495.44 and newer requires kernel 3.10 or newer
-# 4.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
-# Those will probably have 4.18 support in them so safe guess, assume these don't support
+# 5.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
+# Newer will probably have 5.18 support in them, assume these two legacies don't support.
 # stable primary: 
 # stable primary: 
 # stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02 510.68.02
@@ -2384,7 +2384,7 @@ driver_support_tests()
 										esac
 										;;
 									# add supported versions if new releases as of 2022-04-29
-									# I'm guessing only 470 and 390 will get 4.18 updates
+									# I'm guessing only 470 and 390 will get 5.18 updates
 									# > 470.103.01, 390.144
 									18|19|20)
 										case $DRIVER_DEFAULT in
@@ -2401,7 +2401,7 @@ driver_support_tests()
 								esac
 								;; # end KERNEL_MATH
 							# add supported versions if new releases as of 2022-04-29
-							# I'm guessing only 470 and 390 will get 4.18 updates
+							# I'm guessing only 470 and 390 will get 5.18 updates
 							# > 470.103.01, 390.144
 							6)
 								case $KERNEL_MATH in
