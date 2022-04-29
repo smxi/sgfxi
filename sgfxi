@@ -306,6 +306,9 @@ NV_QUAD=$NV_DEFAULT # no more individual quad drivers
 # this is what gets tested, and any other beta drivers remaining
 NV_BETA="$NV_VERSIONS_BETA"
 # Note: 495.44 and newer requires kernel 3.10 or newer
+# 4.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
+# Those will probably have 4.18 support in them so safe guess, assume these don't support
+# stable primary: 
 # stable primary: 
 # stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02 510.68.02
 # stable primary: 460.56 460.67 460.73.01 465.27 465.31 470.57.02 470.63.01 470.74
@@ -322,6 +325,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
 # beta requested by users: 396.54.09 not available for download
+# lts primary: 
 # lts primary: 470.74 470.86 470.103.01 495.44 495.46 510.60.02 510.68.02
 # lts primary: 460.32.03 460.39 460.56 460.67 460.80 460.84 470.57.02 470.63.01
 # lts primary: 430.40 440.31 440.36 440.44 440.59 440.64 440.82 450.66 450.80.02
@@ -367,8 +371,9 @@ NV_BETA="$NV_VERSIONS_BETA"
 
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
-NV_OTHERS=$NV_OTHERS''
-NV_OTHERS=$NV_OTHERS'495.46:495.44:465.31:465.27:510.68.02:510.60.02:510.54:510.47.03:'
+## NOTE re order: highest first, decreasing left to right. 
+NV_OTHERS=$NV_OTHERS'510.68.02:'
+NV_OTHERS=$NV_OTHERS'510.60.02:510.54:510.47.03:495.46:495.44:465.31:465.27:'
 NV_OTHERS=$NV_OTHERS'460.84:460.80:455.45.01:455.38:450.80.02:'
 NV_OTHERS=$NV_OTHERS'440.100:435.21:430.40:418.74:415.27:410.78:396.54:'
 # legacy 7
@@ -2366,7 +2371,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-									16|17|18|19|20)
+									16|17)
 										case $DRIVER_DEFAULT in
 											510.*|495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
 												: # do nothing
@@ -2378,13 +2383,31 @@ driver_support_tests()
 												;;
 										esac
 										;;
+									# add supported versions if new releases as of 2022-04-29
+									# I'm guessing only 470 and 390 will get 4.18 updates
+									# > 470.103.01, 390.144
+									18|19|20)
+										case $DRIVER_DEFAULT in
+											510.68.*|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
 								esac
 								;; # end KERNEL_MATH
+							# add supported versions if new releases as of 2022-04-29
+							# I'm guessing only 470 and 390 will get 4.18 updates
+							# > 470.103.01, 390.144
 							6)
 								case $KERNEL_MATH in
 									0|1|2|3)
 										case $DRIVER_DEFAULT in
-											510.*|495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
+											510.68.*|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
