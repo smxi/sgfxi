@@ -1647,8 +1647,8 @@ driver_support_tests()
 								;;
 						esac
 						# ftp://download.nvidia.com/XFree86/Linux-x86/256.35/NVIDIA-Linux-x86-256.35.run
-						#ftp://download.nvidia.com/XFree86/Linux-x86_64/256.35/NVIDIA-Linux-x86_64-256.35.run
-						#ftp://download.nvidia.com/XFree86/Linux-x86_64/256.35/NVIDIA-Linux-x86-256.35.run
+						# ftp://download.nvidia.com/XFree86/Linux-x86_64/256.35/NVIDIA-Linux-x86_64-256.35.run
+						# ftp://download.nvidia.com/XFree86/Linux-x86_64/256.35/NVIDIA-Linux-x86-256.35.run
 						# white list of old path version drivers
 						# new download urls, no -pkgx in file name string
 						case $DRIVER_DEFAULT in
