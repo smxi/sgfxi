@@ -2051,8 +2051,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-								esac
-								# end KERNEL_MATH
+								esac # end KERNEL_MATH
 								;;
 							4)
 								case $KERNEL_MATH in
@@ -2308,7 +2307,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-								esac
+								esac # end KERNEL_MATH
 								;;
 							5)
 								case $KERNEL_MATH in
@@ -2411,9 +2410,9 @@ driver_support_tests()
 												fi
 												;;
 										esac
-										;;
-								esac
-								;; # end KERNEL_MATH
+										;; 
+								esac # end KERNEL_MATH
+								;;
 							# add supported versions if new releases as of 2022-04-29
 							# I'm guessing only 390 (maybe), 470 and 390 will get 6.x updates
 							6)
@@ -2430,7 +2429,7 @@ driver_support_tests()
 												;;
 										esac
 										;;
-								esac
+								esac # end KERNEL_MATH
 								;;
 						esac
 						;;
