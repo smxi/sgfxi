@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.79
-####  Date: 2022-11-10
+####  version: 4.26.80
+####  Date: 2022-12-01
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2022
 ####  Code contributions copyright: Latino 2008
@@ -276,7 +276,7 @@ OTHER_VERSIONS=''
 # Replace latest driver number in above url to get the current legacy product ID list
 # if legacy list page is not updated, which sometimes happens.
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='520.56.06:470.141.03:390.154:340.108:304.137:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='525.60.11:470.161.03:390.157:340.108:304.137:173.14.39:96.43.23:71.86.15'
 # assign to each level
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 8 ) # old, tnt etc
@@ -290,7 +290,7 @@ NV_LEGACY_7=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) #
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='525.53:::::::'
+NV_VERSIONS_BETA=':::::::'
 # note: nvidia stopped doing betas for anything but current a long time ago
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 8 ) # old, tnt etc
@@ -310,7 +310,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # 5.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
 # Newer will probably have 5.18 support in them, assume these two legacies latest support.
 # stable primary: 
-# stable primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 520.56.06
+# stable primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 520.56.06 525.60.11
 # stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02 510.68.02
 # stable primary: 460.56 460.67 460.73.01 465.27 465.31 470.57.02 470.63.01 470.74
 # stable primary: 450.57 450.66 450.80.02 455.28 455.38 455.45.01 460.32.03 460.39
@@ -353,7 +353,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # https://github.com/NVIDIA/nvidia-installer/blob/main/nvLegacy.h
 # https://download.nvidia.com/XFree86/Linux-x86_64/510.60.02/README/supportedchips.html
 # stable legacy 7: 470.94 470.103.01 470.129.06 470.141.03
-# stable legacy 6: 390.144 390.147 390.151 390.154
+# stable legacy 6: 390.144 390.147 390.151 390.154 390.157
 # stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138 390.141 390.143
 # unsupported: legacy 367.xx: only supports 3 GRID type cards
 # stable legacy 5: 340.101 340.102 340.104 340.106 340.107 340.108
@@ -373,14 +373,14 @@ NV_BETA="$NV_VERSIONS_BETA"
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
 ## NOTE re order: highest first, decreasing left to right. 
-NV_OTHERS=$NV_OTHERS'515.76:515.65.01:515.57:515.48.07:510.73.05:510.68.02:'
+NV_OTHERS=$NV_OTHERS'525.60.11:515.76:515.65.01:515.57:515.48.07:510.73.05:510.68.02:'
 NV_OTHERS=$NV_OTHERS'510.60.02:510.54:510.47.03:495.46:495.44:465.31:465.27:'
 NV_OTHERS=$NV_OTHERS'460.84:460.80:455.45.01:455.38:450.80.02:'
 NV_OTHERS=$NV_OTHERS'440.100:435.21:430.40:418.74:415.27:410.78:396.54:'
 # legacy 7
-NV_OTHERS=$NV_OTHERS'470.141.03:470.129.06:470.103.01:'
+NV_OTHERS=$NV_OTHERS'470.161.03:470.141.03:470.129.06:470.103.01:'
 # legacy 6
-NV_OTHERS=$NV_OTHERS'390.154:390.151:390.144:'
+NV_OTHERS=$NV_OTHERS'390.157:390.154:390.151:390.144:'
 NV_OTHERS=$NV_OTHERS'387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:'
 NV_OTHERS=$NV_OTHERS'367.57:364.19:361.42:358.16:355.11:352.63:346.87:343.36:'
 # legacy 5
