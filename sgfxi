@@ -3,10 +3,10 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.80
-####  Date: 2022-12-01
+####  version: 4.26.81
+####  Date: 2023-01-16
 ########################################################################
-####  Copyright (C) Harald Hope 2007-2022
+####  Copyright (C) Harald Hope 2007-2023
 ####  Code contributions copyright: Latino 2008
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  function check_ia32_libs by Steven Barrett (damentz, maintainer of zen/liquorix projects).
@@ -7864,7 +7864,7 @@ download_extract_driver()
 prep_install()
 {
 	eval $LOGPS
-	local gccVersion=$( grep -Eio 'gcc[[:space:]]*version[[:space:]]*[0-9]{1,2}\.[0-9]{1,2}' /proc/version | grep -Eo '[0-9]{1,2}\.[0-9]{1,2}' )
+	local gccVersion=$( grep -m 1 -Eio 'gcc[[:space:]]*(version|\([^\)]+\))[[:space:]]*[0-9]{1,2}\.[0-9]{1,2}' /proc/version | grep -Eo '[0-9]{1,2}\.[0-9]{1,2}$' )
 	local gccPackage="gcc-$gccVersion"  
 	local libMesaGlx='' ubgv='' bUpdateGcc='false'
 	local procVersion="$(cat /proc/version)"
