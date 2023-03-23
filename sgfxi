@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.83
-####  Date: 2023-02-28
+####  version: 4.26.84
+####  Date: 2023-03-23
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2023
 ####  Code contributions copyright: Latino 2008
@@ -276,7 +276,7 @@ OTHER_VERSIONS=''
 # Replace latest driver number in above url to get the current legacy product ID list
 # if legacy list page is not updated, which sometimes happens.
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='525.89.02:470.161.03:390.157:340.108:304.137:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='530.41.03:470.161.03:390.157:340.108:304.137:173.14.39:96.43.23:71.86.15'
 # assign to each level
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 8 ) # old, tnt etc
@@ -290,7 +290,7 @@ NV_LEGACY_7=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) #
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='530.30.02:::::::'
+NV_VERSIONS_BETA=':::::::'
 # note: nvidia stopped doing betas for anything but current a long time ago
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 8 ) # old, tnt etc
@@ -309,7 +309,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # Note: 495.44 and newer requires kernel 3.10 or newer
 # 5.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
 # Newer will probably have 5.18 support in them, assume these two legacies latest support.
-# stable primary: 
+# stable primary: 530.41.03
 # stable primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 520.56.06 525.60.11
 # stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02 510.68.02
 # stable primary: 460.56 460.67 460.73.01 465.27 465.31 470.57.02 470.63.01 470.74
@@ -374,8 +374,8 @@ NV_BETA="$NV_VERSIONS_BETA"
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
 ## NOTE re order: highest first, decreasing left to right. 
-NV_OTHERS=$NV_OTHERS'525.89.02:525.60.11:520.56.06:'
-NV_OTHERS=$NV_OTHERS'515.76:515.65.01:515.57:515.48.07:'
+NV_OTHERS=$NV_OTHERS'530.41.03:525.89.02:525.60.11:'
+NV_OTHERS=$NV_OTHERS'520.56.06:515.76:515.65.01:'
 NV_OTHERS=$NV_OTHERS'510.73.05:510.68.02:495.46:495.44:465.31:'
 NV_OTHERS=$NV_OTHERS'460.84:455.45.01:450.80.02:'
 NV_OTHERS=$NV_OTHERS'440.100:435.21:430.40:418.74:415.27:410.78:396.54:'
