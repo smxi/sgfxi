@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.87
-####  Date: 2023-08-09
+####  version: 4.26.88
+####  Date: 2023-08-23
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2023
 ####  Code contributions copyright: Latino 2008
@@ -276,7 +276,7 @@ OTHER_VERSIONS=''
 # Replace latest driver number in above url to get the current legacy product ID list
 # if legacy list page is not updated, which sometimes happens.
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='535.98:470.199.02:390.157:340.108:304.137:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='535.104.05:470.199.02:390.157:340.108:304.137:173.14.39:96.43.23:71.86.15'
 # assign to each level
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 8 ) # old, tnt etc
@@ -309,7 +309,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # Note: 495.44 and newer requires kernel 3.10 or newer
 # 5.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
 # Newer will probably have 5.18 support in them, assume these two legacies latest support.
-# stable primary: 530.41.03 535.54.03 535.86.05 535.98
+# stable primary: 530.41.03 535.54.03 535.86.05 535.98 535.104.05
 # stable primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 520.56.06 525.60.11
 # stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02 510.68.02
 # stable primary: 460.56 460.67 460.73.01 465.27 465.31 470.57.02 470.63.01 470.74
@@ -326,7 +326,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
 # beta requested by users: 396.54.09 not available for download
-# lts primary: 535.54.03 535.86.05 535.98
+# lts primary: 535.54.03 535.86.05 535.98 535.104.05
 # lts primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 525.60.11 525.89.02
 # lts primary: 470.74 470.86 470.103.01 495.44 495.46 510.60.02 510.68.02
 # lts primary: 460.32.03 460.39 460.56 460.67 460.80 460.84 470.57.02 470.63.01
@@ -375,7 +375,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
 ## NOTE re order: highest first, decreasing left to right. 
-NV_OTHERS=$NV_OTHERS'535.98:535.86.05:535.54.03:530.41.03:525.89.02:'
+NV_OTHERS=$NV_OTHERS'535.104.05:535.98:535.86.05:535.54.03:530.41.03:525.89.02:'
 NV_OTHERS=$NV_OTHERS'520.56.06:515.76:515.65.01:'
 NV_OTHERS=$NV_OTHERS'510.73.05:495.46:465.31:'
 NV_OTHERS=$NV_OTHERS'460.84:455.45.01:450.80.02:'
