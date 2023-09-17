@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.88
-####  Date: 2023-08-23
+####  version: 4.26.89
+####  Date: 2023-09-17
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2023
 ####  Code contributions copyright: Latino 2008
@@ -22,7 +22,7 @@
 ####  Get the full text of the GPL here: http://www.gnu.org/licenses/gpl.txt
 ########################################################################
 ####  Script URL: http://smxi.org/sg/sgfxi
-####  Script GIT: https://github.com/smxi/sgfxi
+####  Script GIT: https://codeberg.orgsmxi/sgfxi
 ####  Script Documentation: http://smxi.org/docs/
 ####  Script Home page: http://techpatternsNATIVE_OVERRIDE.com/forums/about933.html
 ########################################################################
@@ -562,8 +562,8 @@ BASE_INDEX=$(( $( date +%s ) % ${#A_BASE_URLS[@]} ))
 SELF_DOWNLOAD_ALT=${A_BASE_URLS[${BASE_INDEX}]}
 SELF_DOWNLOAD_VERSION='https://smxi.org/sm/sm-versions'
 SELF_DOWNLOAD_DEV='http://techpatterns.com/downloads/distro/'
-SELF_DOWNLOAD_BRANCH_1='https://github.com/smxi/sgfxi/raw/one/'
-SELF_DOWNLOAD_BRANCH_2='https://github.com/smxi/sgfxi/raw/one/'
+SELF_DOWNLOAD_BRANCH_1='https://codeberg.org/smxi/sgfxi/raw/one/'
+SELF_DOWNLOAD_BRANCH_2='https://codeberg.org/smxi/sgfxi/raw/one/'
 
 ARCH_FGLRX='arch-fglrx'
 ARCH_NVIDIA='arch-nvidia'
