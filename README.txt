@@ -1,4 +1,4 @@
-Please file issue reports or feature requests at:
+Please file issue reports, feature requests, or pull requests at:
 
 https://codeberg.org/smxi/sgfxi
 
