@@ -353,6 +353,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # check here for next legacy: https://www.nvidia.com/en-us/drivers/unix/legacy-gpu/
 # https://github.com/NVIDIA/nvidia-installer/blob/main/nvLegacy.h
 # https://download.nvidia.com/XFree86/Linux-x86_64/510.60.02/README/supportedchips.html
+# stable legacy 8: 
 # stable legacy 7: 
 # stable legacy 7: 470.94 470.103.01 470.129.06 470.141.03 470.161.03 470.199.02
 # stable legacy 6: 390.144 390.147 390.151 390.154 390.157
