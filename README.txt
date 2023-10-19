@@ -1,6 +1,6 @@
 Please file issue reports, feature requests, or pull requests at:
 
-https://codeberg.org/smxi/sgfxi
+https://codeberg.org/smxi/sgfxi/issues
 
 The Codeberg repos will be mirrored to Github until the end of 2023, after that,
 no updates to github repos will be made. Some time after that, the code will be
