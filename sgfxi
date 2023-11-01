@@ -3,8 +3,8 @@
 ####  Script Name: simple/system graphics installer: sgfxi
 ####  Debian Sid, Testing, and Stable graphic driver install.
 ####  Note: Ubuntu support varies. Arch/Fedora support anemic
-####  version: 4.26.90
-####  Date: 2023-10-18
+####  version: 4.26.91
+####  Date: 2023-10-31
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2023
 ####  Code contributions copyright: Latino 2008
@@ -276,7 +276,7 @@ OTHER_VERSIONS=''
 # Replace latest driver number in above url to get the current legacy product ID list
 # if legacy list page is not updated, which sometimes happens.
 # 304.88, 310.44, 313.30 fix buffer overflow issue
-NV_VERSIONS='535.104.05:470.199.02:390.157:340.108:304.137:173.14.39:96.43.23:71.86.15'
+NV_VERSIONS='545.29.02:470.223.02:390.157:340.108:304.137:173.14.39:96.43.23:71.86.15'
 # assign to each level
 NV_DEFAULT=$( echo $NV_VERSIONS | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_1=$( echo $NV_VERSIONS | cut -d ':' -f 8 ) # old, tnt etc
@@ -290,7 +290,7 @@ NV_LEGACY_7=$( echo $NV_VERSIONS | cut -d ':' -f 2 ) #
 
 ## beta drivers 
 # use null for position (ie, ::) if no newer beta is availablet than current stable
-NV_VERSIONS_BETA='545.23.06:::::::'
+NV_VERSIONS_BETA=':::::::'
 # note: nvidia stopped doing betas for anything but current a long time ago
 NV_DEFAULT_BETA=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 1 ) # >= 6xxx
 NV_LEGACY_BETA_1=$( echo $NV_VERSIONS_BETA | cut -d ':' -f 8 ) # old, tnt etc
@@ -309,7 +309,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # Note: 495.44 and newer requires kernel 3.10 or newer
 # 5.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
 # Newer will probably have 5.18 support in them, assume these two legacies latest support.
-# stable primary: 530.41.03 535.54.03 535.86.05 535.98 535.104.05
+# stable primary: 530.41.03 535.54.03 535.86.05 535.98 535.104.05 545.29.02
 # stable primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 520.56.06 525.60.11
 # stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02 510.68.02
 # stable primary: 460.56 460.67 460.73.01 465.27 465.31 470.57.02 470.63.01 470.74
@@ -326,7 +326,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # stable primary: 280.13 285.05.09 290.10 295.20 295.33 295.40
 # stable primary: 275.09.07 275.19 275.21 
 # beta requested by users: 396.54.09 not available for download
-# lts primary: 535.54.03 535.86.05 535.98 535.104.05
+# lts primary: 535.54.03 535.86.05 535.98 535.104.05 
 # lts primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 525.60.11 525.89.02
 # lts primary: 470.74 470.86 470.103.01 495.44 495.46 510.60.02 510.68.02
 # lts primary: 460.32.03 460.39 460.56 460.67 460.80 460.84 470.57.02 470.63.01
@@ -354,7 +354,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # https://github.com/NVIDIA/nvidia-installer/blob/main/nvLegacy.h
 # https://download.nvidia.com/XFree86/Linux-x86_64/510.60.02/README/supportedchips.html
 # stable legacy 8: 
-# stable legacy 7: 
+# stable legacy 7: 470.223.02 
 # stable legacy 7: 470.94 470.103.01 470.129.06 470.141.03 470.161.03 470.199.02
 # stable legacy 6: 390.144 390.147 390.151 390.154 390.157
 # stable legacy 6: 390.77 390.87 390.116 390.129 390.132 390.138 390.141 390.143
@@ -376,13 +376,13 @@ NV_BETA="$NV_VERSIONS_BETA"
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
 ## NOTE re order: highest first, decreasing left to right. 
-NV_OTHERS=$NV_OTHERS'535.104.05:535.98:535.86.05:535.54.03:530.41.03:525.89.02:'
+NV_OTHERS=$NV_OTHERS'545.29.02:535.104.05:535.98:530.41.03:525.89.02:'
 NV_OTHERS=$NV_OTHERS'520.56.06:515.76:515.65.01:'
 NV_OTHERS=$NV_OTHERS'510.73.05:495.46:465.31:'
 NV_OTHERS=$NV_OTHERS'460.84:455.45.01:450.80.02:'
 NV_OTHERS=$NV_OTHERS'440.100:435.21:430.40:418.74:415.27:410.78:396.54:'
 # legacy 7
-NV_OTHERS=$NV_OTHERS'470.161.03:470.141.03:470.129.06:'
+NV_OTHERS=$NV_OTHERS'470.223.02:470.161.03:470.141.03:'
 # legacy 6
 NV_OTHERS=$NV_OTHERS'390.157:390.154:390.151:'
 NV_OTHERS=$NV_OTHERS'387.34:384.111:384.98:381.22:378.13:375.66:375.39:370.28:'
@@ -2377,7 +2377,7 @@ driver_support_tests()
 										;;
 									16|17)
 										case $DRIVER_DEFAULT in
-											545.*|535.*|530.*|525.*|520.*|515.*|495.*|390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
+											545.*|535.*|530.*|525.*|520.*|515.*|495.*|470.*|3390.14[4-9]|390.15[0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2392,7 +2392,7 @@ driver_support_tests()
 									# > 470.103.01, 390.144: 5.18: 470.129.06
 									18)
 										case $DRIVER_DEFAULT in
-											545.*|535.*|530.*|525.*|520.*|515.*|470.1[2-9][0-9].*|390.1[5-9][0-9]|$DISTRO_NVIDIA)
+											545.*|535.*|530.*|525.*|520.*|515.*|470.*|390.1[5-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2405,7 +2405,7 @@ driver_support_tests()
 									# Linus says 5.x ends at 5.19
 									19|20)
 										case $DRIVER_DEFAULT in
-											545.*|535.*|530.*|525.*|520.*|515.*|470.1[4-9][0-9].*|390.1[5-9][0-9]|$DISTRO_NVIDIA)
+											545.*|535.*|530.*|525.*|520.*|515.*|470.*|390.1[5-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2424,7 +2424,7 @@ driver_support_tests()
 								case $KERNEL_MATH in
 									0|1|2|3)
 										case $DRIVER_DEFAULT in
-											545.*|535.*|530.*|525.*|470.1[6-9][0-9].*|390.15[7-9]|390.1[6-9][0-9]|$DISTRO_NVIDIA)
+											545.*|535.*|530.*|525.*|470.*|390.15[7-9]|390.1[6-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
@@ -2436,7 +2436,19 @@ driver_support_tests()
 										;;
 									4|5)
 										case $DRIVER_DEFAULT in
-											545.*|535.*|470.19[0-9].*|390.15[7-9]|390.1[6-9][0-9]|$DISTRO_NVIDIA)
+											545.*|535.*|470.[12][0-9][0-9][0-9].*|390.15[7-9]|390.1[6-9][0-9]|$DISTRO_NVIDIA)
+												: # do nothing
+												;;
+											*) # use 225 for beta testing errors
+												if [ "$B_TESTING_3" != 'true' ];then
+													error_handler 234 $KERNEL_NUMBER
+												fi
+												;;
+										esac
+										;;
+									6)
+										case $DRIVER_DEFAULT in
+											545.*|470.2[0-9][0-9].*|390.15[7-9]|390.1[6-9][0-9]|$DISTRO_NVIDIA)
 												: # do nothing
 												;;
 											*) # use 225 for beta testing errors
