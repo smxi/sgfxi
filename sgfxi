@@ -8,6 +8,7 @@
 ########################################################################
 ####  Copyright (C) Harald Hope 2007-2023
 ####  Code contributions copyright: Latino 2008
+####  Ongoing Nvidia driver update PR: Neo2SHYAlien
 ####  Contributors: ati card driver and xorg configuration in general: damentz and d2kx
 ####  function check_ia32_libs by Steven Barrett (damentz, maintainer of zen/liquorix projects).
 ####  
@@ -309,6 +310,7 @@ NV_BETA="$NV_VERSIONS_BETA"
 # Note: 495.44 and newer requires kernel 3.10 or newer
 # 5.18 kernel: >= 510.68.02 NOTE: update kernel tests with > 470.103.01, 390.144 drivers!
 # Newer will probably have 5.18 support in them, assume these two legacies latest support.
+# stable primary: 
 # stable primary: 530.41.03 535.54.03 535.86.05 535.98 535.104.05 545.29.02 545.29.06
 # stable primary: 510.73.05 515.48.07 515.57 515.65.01 515.76 520.56.06 525.60.11
 # stable primary: 470.86 495.44 495.46 510.47.03 510.54 510.60.02 510.68.02
@@ -376,7 +378,8 @@ NV_BETA="$NV_VERSIONS_BETA"
 # beta/others: 310.14 313.09 319.12 355.06
 ## note: no earlier 302 or 295 drivers offered because they had a security hole
 ## NOTE re order: highest first, decreasing left to right. 
-NV_OTHERS=$NV_OTHERS'545.29.06:545.29.02:535.104.05:535.98:530.41.03:525.89.02:'
+NV_OTHERS=$NV_OTHERS'545.29.06:545.29.02:'
+NV_OTHERS=$NV_OTHERS'535.104.05:530.41.03:525.89.02:'
 NV_OTHERS=$NV_OTHERS'520.56.06:515.76:515.65.01:'
 NV_OTHERS=$NV_OTHERS'510.73.05:495.46:465.31:'
 NV_OTHERS=$NV_OTHERS'460.84:455.45.01:450.80.02:'
